@@ -1,0 +1,3303 @@
+openapi: 3.1.0
+info:
+  title: Giliran API
+  version: 1.0.0
+  summary: REST API for Giliran, a transparent arisan (rotating savings group) manager.
+  description: |
+    Backend API for the Giliran mobile app (Flutter) built with Go Fiber.
+    Scope: MVP features 1–33 of the Giliran PRD.
+
+    ## Response conventions
+    - **Success:** body is `{"data": ...}`. Lists may add `meta` (`pagination`,
+      `next_cursor`/`has_more`, or a summary). `message` appears only when it adds
+      real feedback. Empty lists return `"data": []`.
+    - **Status codes:** `200` read/update, `201` create (with `Location`), `204` no body.
+    - **Errors:** RFC 9457 Problem Details, `Content-Type: application/problem+json`,
+      with a stable machine-readable `code`, optional `errors[]` for field
+      validation, and `request_id` for support. Clients branch on `code`, never on `detail`.
+    - **Naming:** `snake_case` fields, UUID ids, UTC ISO 8601 timestamps
+      (`2026-10-23T08:30:00Z`), business dates as `YYYY-MM-DD` in Asia/Jakarta.
+    - **Money:** integer rupiah. `150000` means Rp150.000.
+    - **Idempotency:** payment, payout, draw and reminder writes require an
+      `Idempotency-Key` header (8–100 chars). A retry with the same key and body
+      returns the original response; the same key with a different body returns
+      `422 idempotency_key_reused`.
+    - **The app never moves money.** Payments are records of transfers made outside the app.
+
+    ## Error codes
+    | code | status | meaning |
+    |---|---|---|
+    | `validation_error` | 422 | Request fields invalid; see `errors[]` |
+    | `bad_request` | 400 | Malformed request (bad JSON, bad UUID) |
+    | `invalid_pagination` | 400 | Pagination parameters out of range |
+    | `unauthorized` | 401 | Missing, invalid or expired access token |
+    | `otp_invalid` | 401 | Firebase ID token rejected |
+    | `refresh_token_invalid` | 401 | Refresh token unknown, expired or revoked |
+    | `pin_invalid` | 401 | Wrong PIN |
+    | `pin_not_set` | 409 | Action requires a PIN that has not been set |
+    | `pin_locked` | 423 | Too many wrong PIN attempts |
+    | `forbidden_role` | 403 | Your role in this group cannot do this |
+    | `user_not_found` | 404 | |
+    | `group_not_found` | 404 | Group missing or you are not a member |
+    | `member_not_found` | 404 | |
+    | `period_not_found` | 404 | |
+    | `payment_not_found` | 404 | |
+    | `invite_not_found` | 404 | Invite code invalid or reset |
+    | `claim_not_found` | 404 | Claim link invalid or expired |
+    | `draw_not_found` | 404 | Verification code unknown |
+    | `phone_already_registered` | 409 | New phone number already has an account |
+    | `group_full` | 409 | No free slots |
+    | `group_not_draft` | 409 | Setting can only change before the group starts |
+    | `group_not_active` | 409 | Group is not running |
+    | `already_member` | 409 | You are already in this group |
+    | `fixed_order_incomplete` | 409 | Every slot needs a position before start |
+    | `slots_not_filled` | 409 | Every slot needs a member before start |
+    | `payment_info_missing` | 409 | Organizer payment info required before start |
+    | `invalid_payment_state` | 409 | Payment status change not allowed |
+    | `payment_already_reviewed` | 409 | Proof was already approved or rejected |
+    | `period_not_open` | 409 | Period is not open for this action |
+    | `draw_too_early` | 409 | Draw date has not arrived |
+    | `draw_already_done` | 409 | Period already drawn |
+    | `payments_incomplete` | 409 | Not all payments are in; resend with `confirm_incomplete: true` |
+    | `payout_already_recorded` | 409 | |
+    | `obligations_outstanding` | 409 | Unpaid obligations block leaving or deleting the account |
+    | `organizer_cannot_leave` | 409 | Transfer ownership or close the group first |
+    | `pending_request_exists` | 409 | A pending leave request or transfer already exists |
+    | `idempotency_key_reused` | 422 | Same key sent with a different request |
+    | `file_too_large` | 413 | Upload over 5 MB |
+    | `unsupported_media_type` | 415 | Upload must be JPEG, PNG or WebP |
+    | `rate_limit_exceeded` | 429 | Too many requests; see `Retry-After` |
+    | `internal_error` | 500 | Unexpected error |
+    | `service_unavailable` | 503 | Temporarily unavailable |
+  contact:
+    name: Joshua Jeremia Pardede
+    url: https://github.com/equinox-jj
+  license:
+    name: Proprietary
+
+servers:
+  - url: https://api.giliran.monai.my.id/api/v1
+    description: Production
+  - url: http://localhost:8080/api/v1
+    description: Local development
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: System
+  - name: Auth
+    description: Phone OTP sign-in, tokens and PIN.
+  - name: Me
+    description: The signed-in user's profile, settings, devices and groups.
+  - name: Groups
+  - name: Members
+    description: Invites, guests, claims, leave requests and ownership.
+  - name: Periods
+  - name: Payments
+  - name: Payouts
+  - name: Draws
+  - name: Transparency
+    description: Activity log and obligations.
+  - name: Reminders
+  - name: Public
+    description: Endpoints that need no account.
+
+paths:
+  # ------------------------------------------------------------------ System
+  /health:
+    get:
+      tags: [System]
+      operationId: getHealth
+      summary: Health check
+      security: []
+      responses:
+        "200":
+          description: Service and database are reachable.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    required: [status]
+                    properties:
+                      status:
+                        type: string
+                        enum: [ok]
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+
+  # ------------------------------------------------------------------ Auth
+  /auth/sign-in:
+    post:
+      tags: [Auth]
+      operationId: signIn
+      summary: Sign in or sign up with a Firebase phone-auth ID token
+      description: |
+        The app completes phone OTP with Firebase, then sends the Firebase ID token here.
+        A new phone number creates an account (`is_new_user: true`).
+        If `pin_set` is false, the app must call `POST /auth/pin` next.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignInRequest"
+      responses:
+        "200":
+          description: Signed in.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResultEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      operationId: refreshTokens
+      summary: Rotate the refresh token and get a new access token
+      description: |
+        The old refresh token is revoked. Presenting an already-rotated token revokes
+        every session in its family (`refresh_token_invalid`).
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshRequest"
+      responses:
+        "200":
+          description: New token pair.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenPairEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      operationId: logout
+      summary: Revoke the current session
+      responses:
+        "204":
+          description: Signed out.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /auth/pin:
+    post:
+      tags: [Auth]
+      operationId: setPin
+      summary: Set the app PIN (first time only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetPinRequest"
+      responses:
+        "204":
+          description: PIN set.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+    put:
+      tags: [Auth]
+      operationId: changePin
+      summary: Change the PIN using the current PIN
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePinRequest"
+      responses:
+        "204":
+          description: PIN changed. Other sessions stay signed in.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "423":
+          $ref: "#/components/responses/Locked"
+
+  /auth/pin/verify:
+    post:
+      tags: [Auth]
+      operationId: verifyPin
+      summary: Verify the PIN to unlock the app
+      description: 5 wrong attempts lock PIN entry for 15 minutes (`pin_locked`).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PinRequest"
+      responses:
+        "204":
+          description: PIN correct.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "423":
+          $ref: "#/components/responses/Locked"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+
+  /auth/pin/reset:
+    post:
+      tags: [Auth]
+      operationId: resetPin
+      summary: Reset a forgotten PIN after a fresh OTP
+      description: Signs out every other session.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPinRequest"
+      responses:
+        "204":
+          description: PIN reset.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+
+  /auth/phone:
+    put:
+      tags: [Auth]
+      operationId: changePhone
+      summary: Change phone number (OTP on the old and the new number)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePhoneRequest"
+      responses:
+        "200":
+          description: Phone changed. Other sessions are signed out.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  # ------------------------------------------------------------------ Me
+  /me:
+    get:
+      tags: [Me]
+      operationId: getMe
+      summary: Get my profile
+      responses:
+        "200":
+          description: Profile.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    patch:
+      tags: [Me]
+      operationId: updateMe
+      summary: Update my display name
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateMeRequest"
+      responses:
+        "200":
+          description: Updated profile.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /me/avatar:
+    put:
+      tags: [Me]
+      operationId: uploadAvatar
+      summary: Upload or replace my profile picture
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/ImageUpload"
+      responses:
+        "200":
+          description: Updated profile.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
+    delete:
+      tags: [Me]
+      operationId: deleteAvatar
+      summary: Remove my profile picture
+      responses:
+        "204":
+          description: Removed; initials avatar is shown.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /me/deletion:
+    post:
+      tags: [Me]
+      operationId: deleteAccount
+      summary: Delete my account
+      description: |
+        Requires the PIN. Blocked while the user organizes an active group or has unpaid
+        obligations (`obligations_outstanding`). Personal data is removed; group history
+        keeps the name "Mantan anggota".
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PinRequest"
+      responses:
+        "204":
+          description: Account deleted and every session revoked.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "423":
+          $ref: "#/components/responses/Locked"
+
+  /me/settings:
+    get:
+      tags: [Me]
+      operationId: getSettings
+      summary: Get notification and language settings
+      responses:
+        "200":
+          description: Settings.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserSettingsEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    patch:
+      tags: [Me]
+      operationId: updateSettings
+      summary: Update settings (send only the fields to change)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSettingsRequest"
+      responses:
+        "200":
+          description: Updated settings.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserSettingsEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /me/push-token:
+    put:
+      tags: [Me]
+      operationId: updatePushToken
+      summary: Register or refresh this device's FCM token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PushTokenRequest"
+      responses:
+        "204":
+          description: Saved on the current session.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /me/sessions:
+    get:
+      tags: [Me]
+      operationId: listSessions
+      summary: List my active devices
+      responses:
+        "200":
+          description: Active sessions, current one first.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Session"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /me/sessions/{session_id}:
+    delete:
+      tags: [Me]
+      operationId: revokeSession
+      summary: Sign out another device
+      parameters:
+        - $ref: "#/components/parameters/SessionId"
+      responses:
+        "204":
+          description: Session revoked.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /me/groups:
+    get:
+      tags: [Me]
+      operationId: listMyGroups
+      summary: List groups I organize or belong to
+      parameters:
+        - name: status
+          in: query
+          description: Filter by group status. Default `active` returns draft and active groups.
+          schema:
+            type: string
+            enum: [active, finished, all]
+            default: active
+      responses:
+        "200":
+          description: Groups, soonest due date first.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/GroupSummary"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # ------------------------------------------------------------------ Groups
+  /groups:
+    post:
+      tags: [Groups]
+      operationId: createGroup
+      summary: Create a group
+      description: |
+        The caller becomes the organizer and is assigned slot 1. Slots `1..total_slots`
+        are created. The group stays in `draft` until it is started.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGroupRequest"
+      responses:
+        "201":
+          description: Group created.
+          headers:
+            Location:
+              $ref: "#/components/headers/Location"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GroupEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /groups/{group_id}:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+    get:
+      tags: [Groups]
+      operationId: getGroup
+      summary: Get group details
+      responses:
+        "200":
+          description: Group.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GroupEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      tags: [Groups]
+      operationId: updateGroup
+      summary: Update group settings
+      description: |
+        Organizer or co-organizer. `name` and `reminder_days_before` can change anytime;
+        `amount`, `period_type`, `total_slots`, `start_date` and `draw_method` only while
+        `draft` (`group_not_draft`).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateGroupRequest"
+      responses:
+        "200":
+          description: Updated group.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GroupEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /groups/{group_id}/payment-info:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+    put:
+      tags: [Groups]
+      operationId: setPaymentInfo
+      summary: Set the organizer's bank account
+      description: Organizer only.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentInfoRequest"
+      responses:
+        "200":
+          description: Updated group.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GroupEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /groups/{group_id}/payment-info/qris:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+    put:
+      tags: [Groups]
+      operationId: uploadQris
+      summary: Upload the organizer's QRIS image
+      description: |
+        Organizer only. The server decodes the QR, checks the EMV TLV structure and
+        CRC-16/CCITT, and rejects invalid codes with `validation_error` on field `file`.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/ImageUpload"
+      responses:
+        "200":
+          description: Updated group.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GroupEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+    delete:
+      tags: [Groups]
+      operationId: deleteQris
+      summary: Remove the QRIS image
+      responses:
+        "204":
+          description: Removed.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /groups/{group_id}/fixed-order:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+    put:
+      tags: [Groups]
+      operationId: setFixedOrder
+      summary: Set the winning order for a fixed-order group
+      description: Organizer or co-organizer, while `draft`. Every slot must appear exactly once.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FixedOrderRequest"
+      responses:
+        "200":
+          description: Members with their positions.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Member"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /groups/{group_id}/start:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+    post:
+      tags: [Groups]
+      operationId: startGroup
+      summary: Start the group and open period 1
+      description: |
+        Organizer only. Requires every slot to have a member (`slots_not_filled`),
+        payment info (`payment_info_missing`) and, for fixed-order groups, a full order
+        (`fixed_order_incomplete`). Creates all periods, publishes period 1's seed hash
+        and creates its payment rows.
+      responses:
+        "200":
+          description: Group is active.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GroupEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /groups/{group_id}/close:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+    post:
+      tags: [Groups]
+      operationId: closeGroup
+      summary: Close the group
+      description: Organizer only. The group becomes read-only and stays in history.
+      responses:
+        "200":
+          description: Group closed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GroupEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /groups/{group_id}/invite-code/reset:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+    post:
+      tags: [Members]
+      operationId: resetInviteCode
+      summary: Replace the invite code (old links stop working)
+      responses:
+        "200":
+          description: New invite.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Invite"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # ------------------------------------------------------------------ Members
+  /invites/{invite_code}:
+    parameters:
+      - $ref: "#/components/parameters/InviteCode"
+    get:
+      tags: [Members]
+      operationId: getInvite
+      summary: Preview a group from an invite link
+      responses:
+        "200":
+          description: Group preview.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/InvitePreview"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /invites/{invite_code}/join:
+    parameters:
+      - $ref: "#/components/parameters/InviteCode"
+    post:
+      tags: [Members]
+      operationId: joinGroup
+      summary: Join a group and take the next free slot
+      responses:
+        "201":
+          description: Joined.
+          headers:
+            Location:
+              $ref: "#/components/headers/Location"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /groups/{group_id}/members:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+    get:
+      tags: [Members]
+      operationId: listMembers
+      summary: List members and guests
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, all]
+            default: active
+      responses:
+        "200":
+          description: Members ordered by slot number.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Member"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /groups/{group_id}/guests:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+    post:
+      tags: [Members]
+      operationId: addGuest
+      summary: Add a guest member (no account) to the next free slot
+      description: Organizer or co-organizer.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GuestRequest"
+      responses:
+        "201":
+          description: Guest added.
+          headers:
+            Location:
+              $ref: "#/components/headers/Location"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /groups/{group_id}/members/{member_id}:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/MemberId"
+    get:
+      tags: [Members]
+      operationId: getMember
+      summary: Get one member with payment history in this group
+      responses:
+        "200":
+          description: Member.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      tags: [Members]
+      operationId: updateGuest
+      summary: Edit a guest's name or phone
+      description: Organizer or co-organizer; guests only.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateGuestRequest"
+      responses:
+        "200":
+          description: Updated member.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+    delete:
+      tags: [Members]
+      operationId: removeMember
+      summary: Remove a member
+      description: |
+        Organizer or co-organizer. Allowed only for members who have not won and have no
+        recorded payments in open periods (`obligations_outstanding`).
+      responses:
+        "204":
+          description: Removed; the slot is free again.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /groups/{group_id}/members/{member_id}/claim-link:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/MemberId"
+    post:
+      tags: [Members]
+      operationId: createClaimLink
+      summary: Create a link that lets a guest take over their slot
+      description: Organizer or co-organizer; guests only. Valid for 7 days.
+      responses:
+        "201":
+          description: Claim link.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ClaimLink"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /claims/{claim_token}:
+    parameters:
+      - name: claim_token
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 32
+          maxLength: 64
+    post:
+      tags: [Members]
+      operationId: claimGuestSlot
+      summary: Claim a guest slot with my account
+      description: The guest's payments and history move to the signed-in user.
+      responses:
+        "200":
+          description: Slot claimed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /groups/{group_id}/leave-requests:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+    get:
+      tags: [Members]
+      operationId: listLeaveRequests
+      summary: List leave requests
+      description: Organizers see all; members see their own.
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, approved, rejected, cancelled]
+      responses:
+        "200":
+          description: Leave requests, newest first.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/LeaveRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      tags: [Members]
+      operationId: requestLeave
+      summary: Ask to leave the group
+      description: |
+        Members and co-organizers. Organizers get `organizer_cannot_leave`; past winners
+        with unpaid obligations get `obligations_outstanding`.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeaveRequestCreate"
+      responses:
+        "201":
+          description: Request created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeaveRequestEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /groups/{group_id}/leave-requests/{request_id}/approve:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/RequestId"
+    post:
+      tags: [Members]
+      operationId: approveLeaveRequest
+      summary: Approve a leave request
+      responses:
+        "200":
+          description: Approved; member status becomes `left`.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeaveRequestEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /groups/{group_id}/leave-requests/{request_id}/reject:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/RequestId"
+    post:
+      tags: [Members]
+      operationId: rejectLeaveRequest
+      summary: Reject a leave request
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReasonRequest"
+      responses:
+        "200":
+          description: Rejected.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeaveRequestEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /groups/{group_id}/ownership-transfers:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+    post:
+      tags: [Members]
+      operationId: createOwnershipTransfer
+      summary: Offer the organizer role to another member
+      description: Organizer only. The target must have an account. Expires after 7 days.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OwnershipTransferRequest"
+      responses:
+        "201":
+          description: Transfer offered.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OwnershipTransferEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /groups/{group_id}/ownership-transfers/{transfer_id}/accept:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/TransferId"
+    post:
+      tags: [Members]
+      operationId: acceptOwnershipTransfer
+      summary: Accept the organizer role
+      description: Only the target member. The previous organizer becomes a member.
+      responses:
+        "200":
+          description: Accepted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OwnershipTransferEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /groups/{group_id}/ownership-transfers/{transfer_id}/decline:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/TransferId"
+    post:
+      tags: [Members]
+      operationId: declineOwnershipTransfer
+      summary: Decline the organizer role
+      responses:
+        "200":
+          description: Declined.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OwnershipTransferEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  # ------------------------------------------------------------------ Periods
+  /groups/{group_id}/periods:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+    get:
+      tags: [Periods]
+      operationId: listPeriods
+      summary: List all periods (history and schedule)
+      responses:
+        "200":
+          description: Periods in order.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Period"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /groups/{group_id}/periods/{period_id}:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/PeriodId"
+    get:
+      tags: [Periods]
+      operationId: getPeriod
+      summary: Get one period
+      responses:
+        "200":
+          description: Period.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PeriodEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # ------------------------------------------------------------------ Payments
+  /groups/{group_id}/periods/{period_id}/payments:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/PeriodId"
+    get:
+      tags: [Payments]
+      operationId: getPaymentBoard
+      summary: Payment board for a period
+      description: Every slot's payment, ordered by slot number, with a summary in `meta`.
+      responses:
+        "200":
+          description: Payment board.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Payment"
+                  meta:
+                    type: object
+                    required: [summary]
+                    properties:
+                      summary:
+                        $ref: "#/components/schemas/PaymentSummary"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /groups/{group_id}/payments/{payment_id}:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/PaymentId"
+    get:
+      tags: [Payments]
+      operationId: getPayment
+      summary: Get one payment with all uploaded proofs
+      description: Proof URLs are visible only to the payer and organizers.
+      responses:
+        "200":
+          description: Payment.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentDetailEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /groups/{group_id}/payments/{payment_id}/proofs:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/PaymentId"
+    post:
+      tags: [Payments]
+      operationId: uploadPaymentProof
+      summary: Upload a transfer screenshot
+      description: |
+        The payer only. Allowed when status is `unpaid`, `pending_review` (replaces the
+        current proof) or `rejected`. Status becomes `pending_review` and organizers are notified.
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/ImageUpload"
+      responses:
+        "201":
+          description: Proof uploaded.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /groups/{group_id}/payments/{payment_id}/approve:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/PaymentId"
+    post:
+      tags: [Payments]
+      operationId: approvePayment
+      summary: Approve a pending proof
+      description: Organizer or co-organizer. `pending_review` → `paid`.
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "200":
+          description: Approved.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /groups/{group_id}/payments/{payment_id}/reject:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/PaymentId"
+    post:
+      tags: [Payments]
+      operationId: rejectPayment
+      summary: Reject a pending proof with a reason
+      description: Organizer or co-organizer. `pending_review` → `rejected`.
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RejectPaymentRequest"
+      responses:
+        "200":
+          description: Rejected.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /groups/{group_id}/payments/{payment_id}/mark-paid:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/PaymentId"
+    post:
+      tags: [Payments]
+      operationId: markPaymentPaid
+      summary: Mark a payment as paid without a proof (cash, guests)
+      description: Organizer or co-organizer. `unpaid` or `rejected` → `paid`.
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MarkPaidRequest"
+      responses:
+        "200":
+          description: Marked paid.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  # ------------------------------------------------------------------ Draws
+  /groups/{group_id}/periods/{period_id}/draw:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/PeriodId"
+    get:
+      tags: [Draws]
+      operationId: getDraw
+      summary: Get the draw for a period
+      description: |
+        Before the draw: `seed_hash` only (commitment). After: seed, eligible slots and
+        winner, enough to recompute the result.
+      responses:
+        "200":
+          description: Draw state.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DrawEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      tags: [Draws]
+      operationId: runDraw
+      summary: Run the draw
+      description: |
+        Organizer or co-organizer, on or after `draw_date` (`draw_too_early`).
+        If not every payment is `paid`, the first call returns `409 payments_incomplete`
+        with the counts; send again with `confirm_incomplete: true` to proceed (recorded
+        in the activity log). Random groups reveal the seed; fixed-order groups take the
+        next position. All members get a push.
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RunDrawRequest"
+      responses:
+        "201":
+          description: Draw completed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DrawEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  # ------------------------------------------------------------------ Payouts
+  /groups/{group_id}/periods/{period_id}/payout:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/PeriodId"
+    get:
+      tags: [Payouts]
+      operationId: getPayout
+      summary: Get the payout record for a period
+      responses:
+        "200":
+          description: Payout.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayoutEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    post:
+      tags: [Payouts]
+      operationId: recordPayout
+      summary: Record that the pot was handed to the winner
+      description: Organizer or co-organizer, after the draw. Period status becomes `closed`.
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/RecordPayoutRequest"
+      responses:
+        "201":
+          description: Payout recorded.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayoutEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /groups/{group_id}/periods/{period_id}/payout/confirm:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/PeriodId"
+    post:
+      tags: [Payouts]
+      operationId: confirmPayout
+      summary: Winner confirms the pot was received
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      responses:
+        "200":
+          description: Confirmed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayoutEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  # ------------------------------------------------------------------ Transparency
+  /groups/{group_id}/activity:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+    get:
+      tags: [Transparency]
+      operationId: listActivity
+      summary: Activity log (append-only), newest first
+      parameters:
+        - name: cursor
+          in: query
+          description: Opaque cursor from the previous response's `meta.next_cursor`.
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 30
+      responses:
+        "200":
+          description: Activity entries.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ActivityEntry"
+                  meta:
+                    $ref: "#/components/schemas/CursorMeta"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /groups/{group_id}/obligations:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+    get:
+      tags: [Transparency]
+      operationId: listObligations
+      summary: Remaining obligations of members who already won
+      responses:
+        "200":
+          description: One entry per past winner, most overdue first.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Obligation"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # ------------------------------------------------------------------ Reminders
+  /groups/{group_id}/periods/{period_id}/reminders:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/PeriodId"
+    post:
+      tags: [Reminders]
+      operationId: sendReminders
+      summary: Send push reminders to unpaid members now
+      description: |
+        Organizer or co-organizer. Members without the app or with reminders turned off
+        are skipped and listed so the organizer can use WhatsApp instead. Limited to
+        once per member per period per 6 hours.
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendRemindersRequest"
+      responses:
+        "200":
+          description: Reminder results.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ReminderResult"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+
+  /groups/{group_id}/periods/{period_id}/recap:
+    parameters:
+      - $ref: "#/components/parameters/GroupId"
+      - $ref: "#/components/parameters/PeriodId"
+    get:
+      tags: [Reminders]
+      operationId: getRecap
+      summary: Data for the WhatsApp recap image and reminder messages
+      description: The app renders the image and the WhatsApp text from this data.
+      responses:
+        "200":
+          description: Recap.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Recap"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # ------------------------------------------------------------------ Public
+  /public/draws/{verification_code}:
+    parameters:
+      - name: verification_code
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: "^[A-Z0-9]{10}$"
+    get:
+      tags: [Public]
+      operationId: getPublicDraw
+      summary: Verify a draw from a Bukti Kocok link
+      description: |
+        No account needed. Returns only what is required to verify the draw: no phone
+        numbers, bank details or payment data. The HTML verification page at
+        `https://giliran.monai.my.id/v/{verification_code}` is served from the same data.
+      security: []
+      responses:
+        "200":
+          description: Public draw proof.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/PublicDraw"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Access token from `/auth/sign-in` or `/auth/refresh`. Lifetime 15 minutes.
+
+  headers:
+    Location:
+      description: URL of the created resource.
+      schema:
+        type: string
+    RetryAfter:
+      description: Seconds to wait before retrying.
+      schema:
+        type: integer
+    RequestId:
+      description: Correlation id, also present in error bodies.
+      schema:
+        type: string
+
+  parameters:
+    GroupId:
+      name: group_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    MemberId:
+      name: member_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    PeriodId:
+      name: period_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    PaymentId:
+      name: payment_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    RequestId:
+      name: request_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    TransferId:
+      name: transfer_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    SessionId:
+      name: session_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    InviteCode:
+      name: invite_code
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: "^[A-Z0-9]{8}$"
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: Unique per logical operation (e.g. a UUID generated by the app). Kept for 24 hours.
+      schema:
+        type: string
+        minLength: 8
+        maxLength: 100
+
+  responses:
+    BadRequest:
+      description: Malformed request.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ValidationProblem"
+          example:
+            type: about:blank
+            title: Bad Request
+            status: 400
+            detail: The request could not be parsed.
+            code: bad_request
+            request_id: req_01JB8Z6X4Q
+    Unauthorized:
+      description: Authentication failed.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+          example:
+            type: about:blank
+            title: Unauthorized
+            status: 401
+            detail: Authentication is required.
+            code: unauthorized
+            request_id: req_01JB8Z6X4Q
+    Forbidden:
+      description: Your role in this group does not allow this action.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+          example:
+            type: about:blank
+            title: Forbidden
+            status: 403
+            detail: Only the organizer can do this.
+            code: forbidden_role
+            request_id: req_01JB8Z6X4Q
+    NotFound:
+      description: Resource not found, or you are not a member of the group.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+          example:
+            type: about:blank
+            title: Not Found
+            status: 404
+            detail: The group could not be found.
+            code: group_not_found
+            request_id: req_01JB8Z6X4Q
+    Conflict:
+      description: The request conflicts with the current state. See `code`.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+          examples:
+            invalid_payment_state:
+              value:
+                type: about:blank
+                title: Conflict
+                status: 409
+                detail: This payment has already been approved.
+                code: payment_already_reviewed
+                request_id: req_01JB8Z6X4Q
+            payments_incomplete:
+              value:
+                type: https://api.giliran.monai.my.id/problems/payments-incomplete
+                title: Payments incomplete
+                status: 409
+                detail: 8 of 10 payments are paid. Confirm to draw anyway.
+                code: payments_incomplete
+                paid_count: 8
+                total_count: 10
+                request_id: req_01JB8Z6X4Q
+    ValidationError:
+      description: One or more fields are invalid.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ValidationProblem"
+          example:
+            type: https://api.giliran.monai.my.id/problems/validation-error
+            title: Validation failed
+            status: 422
+            detail: One or more fields are invalid.
+            code: validation_error
+            request_id: req_01JB8Z6X4Q
+            errors:
+              - field: amount
+                code: minimum_value
+                message: Iuran minimal Rp10.000.
+              - field: total_slots
+                code: maximum_value
+                message: Maksimal 50 slot.
+    Locked:
+      description: PIN entry is locked.
+      headers:
+        Retry-After:
+          $ref: "#/components/headers/RetryAfter"
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+          example:
+            type: about:blank
+            title: Locked
+            status: 423
+            detail: Too many wrong PIN attempts. Try again in 15 minutes or reset your PIN.
+            code: pin_locked
+            request_id: req_01JB8Z6X4Q
+    PayloadTooLarge:
+      description: File larger than 5 MB.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+          example:
+            type: about:blank
+            title: Payload Too Large
+            status: 413
+            detail: Files must be 5 MB or smaller.
+            code: file_too_large
+            request_id: req_01JB8Z6X4Q
+    UnsupportedMediaType:
+      description: File type not allowed.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+          example:
+            type: about:blank
+            title: Unsupported Media Type
+            status: 415
+            detail: Upload a JPEG, PNG or WebP image.
+            code: unsupported_media_type
+            request_id: req_01JB8Z6X4Q
+    TooManyRequests:
+      description: Rate limit exceeded.
+      headers:
+        Retry-After:
+          $ref: "#/components/headers/RetryAfter"
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+          example:
+            type: about:blank
+            title: Too Many Requests
+            status: 429
+            detail: Too many requests. Please try again later.
+            code: rate_limit_exceeded
+            request_id: req_01JB8Z6X4Q
+    InternalError:
+      description: Unexpected server error.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+          example:
+            type: about:blank
+            title: Internal Server Error
+            status: 500
+            detail: An unexpected error occurred.
+            code: internal_error
+            request_id: req_01JB8Z6X4Q
+    ServiceUnavailable:
+      description: Service temporarily unavailable.
+      headers:
+        Retry-After:
+          $ref: "#/components/headers/RetryAfter"
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+          example:
+            type: about:blank
+            title: Service Unavailable
+            status: 503
+            detail: The service is temporarily unavailable.
+            code: service_unavailable
+            request_id: req_01JB8Z6X4Q
+
+  schemas:
+    # ---------------------------------------------------------- errors & meta
+    Problem:
+      type: object
+      description: RFC 9457 Problem Details with Giliran extensions (`code`, `request_id`).
+      required: [type, title, status, code]
+      properties:
+        type:
+          type: string
+          description: URI reference identifying the problem type, or `about:blank`.
+        title:
+          type: string
+        status:
+          type: integer
+          description: Matches the HTTP status code.
+        detail:
+          type: string
+          description: Human-readable explanation. Do not parse.
+        instance:
+          type: string
+        code:
+          type: string
+          description: Stable machine-readable error code (see the table in the API description).
+        request_id:
+          type: string
+      additionalProperties: true
+    FieldError:
+      type: object
+      required: [field, code, message]
+      properties:
+        field:
+          type: string
+          description: JSON path of the field, e.g. `amount` or `order[2].position`.
+        code:
+          type: string
+          enum:
+            - required
+            - invalid_format
+            - min_length
+            - max_length
+            - minimum_value
+            - maximum_value
+            - invalid_choice
+            - duplicate
+            - invalid_qris
+            - pin_too_weak
+            - mismatch
+        message:
+          type: string
+          description: Localized message for display.
+    ValidationProblem:
+      allOf:
+        - $ref: "#/components/schemas/Problem"
+        - type: object
+          properties:
+            errors:
+              type: array
+              items:
+                $ref: "#/components/schemas/FieldError"
+    CursorMeta:
+      type: object
+      required: [has_more]
+      properties:
+        next_cursor:
+          type: [string, "null"]
+        has_more:
+          type: boolean
+
+    # ---------------------------------------------------------- shared value types
+    Money:
+      type: integer
+      format: int64
+      minimum: 0
+      description: Integer rupiah. 150000 = Rp150.000.
+      examples: [200000]
+    Phone:
+      type: string
+      pattern: "^\\+62[0-9]{8,13}$"
+      description: E.164 Indonesian number.
+      examples: ["+6281234567890"]
+    UserSummary:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        avatar_url:
+          type: [string, "null"]
+          format: uri
+
+    # ---------------------------------------------------------- auth
+    SignInRequest:
+      type: object
+      required: [firebase_id_token, device_name, device_platform]
+      properties:
+        firebase_id_token:
+          type: string
+        device_name:
+          type: string
+          maxLength: 100
+          examples: ["Samsung Galaxy A54"]
+        device_platform:
+          type: string
+          enum: [android, ios]
+        fcm_token:
+          type: string
+    RefreshRequest:
+      type: object
+      required: [refresh_token]
+      properties:
+        refresh_token:
+          type: string
+    TokenPair:
+      type: object
+      required: [access_token, refresh_token, token_type, expires_in]
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        token_type:
+          type: string
+          enum: [Bearer]
+        expires_in:
+          type: integer
+          description: Access token lifetime in seconds.
+          examples: [900]
+    AuthResult:
+      type: object
+      required: [user, tokens, is_new_user, pin_set]
+      properties:
+        user:
+          $ref: "#/components/schemas/Me"
+        tokens:
+          $ref: "#/components/schemas/TokenPair"
+        is_new_user:
+          type: boolean
+        pin_set:
+          type: boolean
+    Pin:
+      type: string
+      pattern: "^[0-9]{6}$"
+      description: 6 digits. Sequences (123456) and repeats (111111) are rejected with `pin_too_weak`.
+    PinRequest:
+      type: object
+      required: [pin]
+      properties:
+        pin:
+          $ref: "#/components/schemas/Pin"
+    SetPinRequest:
+      type: object
+      required: [pin, pin_confirmation]
+      properties:
+        pin:
+          $ref: "#/components/schemas/Pin"
+        pin_confirmation:
+          $ref: "#/components/schemas/Pin"
+    ChangePinRequest:
+      type: object
+      required: [current_pin, new_pin, new_pin_confirmation]
+      properties:
+        current_pin:
+          $ref: "#/components/schemas/Pin"
+        new_pin:
+          $ref: "#/components/schemas/Pin"
+        new_pin_confirmation:
+          $ref: "#/components/schemas/Pin"
+    ResetPinRequest:
+      type: object
+      required: [firebase_id_token, new_pin, new_pin_confirmation]
+      properties:
+        firebase_id_token:
+          type: string
+          description: Fresh token from an OTP to the registered number.
+        new_pin:
+          $ref: "#/components/schemas/Pin"
+        new_pin_confirmation:
+          $ref: "#/components/schemas/Pin"
+    ChangePhoneRequest:
+      type: object
+      required: [old_firebase_id_token, new_firebase_id_token]
+      properties:
+        old_firebase_id_token:
+          type: string
+          description: Token from an OTP to the current number.
+        new_firebase_id_token:
+          type: string
+          description: Token from an OTP to the new number.
+
+    # ---------------------------------------------------------- me
+    Me:
+      type: object
+      required: [id, phone, name, avatar_url, pin_set, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        phone:
+          $ref: "#/components/schemas/Phone"
+        name:
+          type: [string, "null"]
+          description: Null until set after the first sign-in.
+        avatar_url:
+          type: [string, "null"]
+          format: uri
+        pin_set:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+    UpdateMeRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 50
+    UserSettings:
+      type: object
+      required: [language, notify_payment_reminders, notify_draw_results, notify_group_activity]
+      properties:
+        language:
+          type: string
+          enum: [id, en]
+        notify_payment_reminders:
+          type: boolean
+        notify_draw_results:
+          type: boolean
+        notify_group_activity:
+          type: boolean
+    UpdateSettingsRequest:
+      type: object
+      minProperties: 1
+      properties:
+        language:
+          type: string
+          enum: [id, en]
+        notify_payment_reminders:
+          type: boolean
+        notify_draw_results:
+          type: boolean
+        notify_group_activity:
+          type: boolean
+    PushTokenRequest:
+      type: object
+      required: [fcm_token]
+      properties:
+        fcm_token:
+          type: string
+          maxLength: 4096
+    Session:
+      type: object
+      required: [id, device_name, device_platform, last_active_at, created_at, is_current]
+      properties:
+        id:
+          type: string
+          format: uuid
+        device_name:
+          type: [string, "null"]
+        device_platform:
+          type: string
+          enum: [android, ios]
+        last_active_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        is_current:
+          type: boolean
+    ImageUpload:
+      type: object
+      required: [file]
+      properties:
+        file:
+          type: string
+          contentMediaType: image/*
+          description: JPEG, PNG or WebP, at most 5 MB.
+
+    # ---------------------------------------------------------- groups
+    PeriodType:
+      type: string
+      enum: [weekly, monthly]
+    DrawMethod:
+      type: string
+      enum: [random, fixed_order]
+    GroupStatus:
+      type: string
+      enum: [draft, active, completed, closed]
+    MemberRole:
+      type: string
+      enum: [organizer, co_organizer, member]
+    CreateGroupRequest:
+      type: object
+      required: [name, amount, period_type, total_slots, start_date, draw_method]
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 60
+          examples: ["Arisan RT 05"]
+        amount:
+          allOf:
+            - $ref: "#/components/schemas/Money"
+          minimum: 10000
+          maximum: 100000000
+        period_type:
+          $ref: "#/components/schemas/PeriodType"
+        total_slots:
+          type: integer
+          minimum: 2
+          maximum: 50
+        start_date:
+          type: string
+          format: date
+          description: First due date (Asia/Jakarta). Must be today or later.
+        draw_method:
+          $ref: "#/components/schemas/DrawMethod"
+        reminder_days_before:
+          type: integer
+          minimum: 0
+          maximum: 7
+          default: 2
+    UpdateGroupRequest:
+      type: object
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 60
+        reminder_days_before:
+          type: integer
+          minimum: 0
+          maximum: 7
+        amount:
+          allOf:
+            - $ref: "#/components/schemas/Money"
+          minimum: 10000
+          maximum: 100000000
+          description: Draft only.
+        period_type:
+          allOf:
+            - $ref: "#/components/schemas/PeriodType"
+          description: Draft only.
+        total_slots:
+          type: integer
+          minimum: 2
+          maximum: 50
+          description: Draft only. Cannot go below the number of members.
+        start_date:
+          type: string
+          format: date
+          description: Draft only.
+        draw_method:
+          allOf:
+            - $ref: "#/components/schemas/DrawMethod"
+          description: Draft only.
+    PaymentInfoRequest:
+      type: object
+      required: [bank_name, account_number, account_holder]
+      properties:
+        bank_name:
+          type: string
+          maxLength: 50
+          examples: ["BCA"]
+        account_number:
+          type: string
+          pattern: "^[0-9]{6,20}$"
+        account_holder:
+          type: string
+          maxLength: 100
+    PaymentInfo:
+      type: object
+      required: [bank_name, account_number, account_holder, qris_image_url]
+      properties:
+        bank_name:
+          type: [string, "null"]
+        account_number:
+          type: [string, "null"]
+        account_holder:
+          type: [string, "null"]
+        qris_image_url:
+          type: [string, "null"]
+          format: uri
+          description: Short-lived signed URL.
+        qris_merchant_name:
+          type: [string, "null"]
+          description: Merchant name decoded from the QRIS (tag 59).
+    Invite:
+      type: object
+      required: [invite_code, invite_url]
+      properties:
+        invite_code:
+          type: string
+          pattern: "^[A-Z0-9]{8}$"
+        invite_url:
+          type: string
+          format: uri
+          examples: ["https://giliran.monai.my.id/j/K7P2QX9M"]
+    Group:
+      type: object
+      required:
+        - id
+        - name
+        - amount
+        - pot_amount
+        - period_type
+        - total_slots
+        - filled_slots
+        - draw_method
+        - start_date
+        - reminder_days_before
+        - status
+        - organizer
+        - my_role
+        - my_member_id
+        - payment_info
+        - current_period_id
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        amount:
+          $ref: "#/components/schemas/Money"
+        pot_amount:
+          allOf:
+            - $ref: "#/components/schemas/Money"
+          description: amount × total_slots.
+        period_type:
+          $ref: "#/components/schemas/PeriodType"
+        total_slots:
+          type: integer
+        filled_slots:
+          type: integer
+        draw_method:
+          $ref: "#/components/schemas/DrawMethod"
+        start_date:
+          type: string
+          format: date
+        reminder_days_before:
+          type: integer
+        status:
+          $ref: "#/components/schemas/GroupStatus"
+        organizer:
+          $ref: "#/components/schemas/UserSummary"
+        my_role:
+          $ref: "#/components/schemas/MemberRole"
+        my_member_id:
+          type: string
+          format: uuid
+        invite:
+          description: Present for organizers and co-organizers only.
+          oneOf:
+            - $ref: "#/components/schemas/Invite"
+            - type: "null"
+        payment_info:
+          $ref: "#/components/schemas/PaymentInfo"
+        current_period_id:
+          type: [string, "null"]
+          format: uuid
+        started_at:
+          type: [string, "null"]
+          format: date-time
+        completed_at:
+          type: [string, "null"]
+          format: date-time
+        closed_at:
+          type: [string, "null"]
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    GroupSummary:
+      type: object
+      description: Card on the home screen.
+      required: [id, name, amount, period_type, status, my_role, total_slots, filled_slots]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        amount:
+          $ref: "#/components/schemas/Money"
+        period_type:
+          $ref: "#/components/schemas/PeriodType"
+        status:
+          $ref: "#/components/schemas/GroupStatus"
+        my_role:
+          $ref: "#/components/schemas/MemberRole"
+        total_slots:
+          type: integer
+        filled_slots:
+          type: integer
+        current_period_no:
+          type: [integer, "null"]
+        next_due_date:
+          type: [string, "null"]
+          format: date
+        next_draw_date:
+          type: [string, "null"]
+          format: date
+        my_payment_status:
+          description: My status in the current period; null when no period is open.
+          oneOf:
+            - $ref: "#/components/schemas/PaymentStatus"
+            - type: "null"
+        paid_count:
+          type: [integer, "null"]
+        pending_review_count:
+          type: [integer, "null"]
+          description: Organizers only; proofs waiting for review.
+        i_have_won:
+          type: boolean
+    GroupEnvelope:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/Group"
+    FixedOrderRequest:
+      type: object
+      required: [order]
+      properties:
+        order:
+          type: array
+          minItems: 2
+          maxItems: 50
+          items:
+            type: object
+            required: [slot_id, position]
+            properties:
+              slot_id:
+                type: string
+                format: uuid
+              position:
+                type: integer
+                minimum: 1
+
+    # ---------------------------------------------------------- members
+    Member:
+      type: object
+      required: [id, display_name, is_guest, role, status, slot_id, slot_no, has_won, joined_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        user:
+          description: Null for guests.
+          oneOf:
+            - $ref: "#/components/schemas/UserSummary"
+            - type: "null"
+        display_name:
+          type: string
+          description: User's name, or the guest name.
+        is_guest:
+          type: boolean
+        guest_phone:
+          description: Organizers and co-organizers only.
+          oneOf:
+            - $ref: "#/components/schemas/Phone"
+            - type: "null"
+        role:
+          $ref: "#/components/schemas/MemberRole"
+        status:
+          type: string
+          enum: [active, left, removed]
+        slot_id:
+          type: string
+          format: uuid
+        slot_no:
+          type: integer
+        fixed_order_position:
+          type: [integer, "null"]
+        has_won:
+          type: boolean
+        won_period_no:
+          type: [integer, "null"]
+        joined_at:
+          type: string
+          format: date-time
+    MemberEnvelope:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/Member"
+    InvitePreview:
+      type: object
+      required: [group_id, group_name, organizer, amount, period_type, total_slots, filled_slots, start_date, status, can_join, already_member]
+      properties:
+        group_id:
+          type: string
+          format: uuid
+        group_name:
+          type: string
+        organizer:
+          $ref: "#/components/schemas/UserSummary"
+        amount:
+          $ref: "#/components/schemas/Money"
+        period_type:
+          $ref: "#/components/schemas/PeriodType"
+        total_slots:
+          type: integer
+        filled_slots:
+          type: integer
+        start_date:
+          type: string
+          format: date
+        status:
+          $ref: "#/components/schemas/GroupStatus"
+        can_join:
+          type: boolean
+        already_member:
+          type: boolean
+    GuestRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 50
+        phone:
+          $ref: "#/components/schemas/Phone"
+    UpdateGuestRequest:
+      type: object
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 50
+        phone:
+          oneOf:
+            - $ref: "#/components/schemas/Phone"
+            - type: "null"
+    ClaimLink:
+      type: object
+      required: [claim_url, expires_at]
+      properties:
+        claim_url:
+          type: string
+          format: uri
+          examples: ["https://giliran.monai.my.id/c/3f9a1c..."]
+        expires_at:
+          type: string
+          format: date-time
+    LeaveRequestCreate:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 500
+    ReasonRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 500
+    LeaveRequest:
+      type: object
+      required: [id, member, status, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        member:
+          $ref: "#/components/schemas/MemberRef"
+        reason:
+          type: [string, "null"]
+        status:
+          type: string
+          enum: [pending, approved, rejected, cancelled]
+        reviewed_by:
+          oneOf:
+            - $ref: "#/components/schemas/UserSummary"
+            - type: "null"
+        reviewed_at:
+          type: [string, "null"]
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+    LeaveRequestEnvelope:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/LeaveRequest"
+    OwnershipTransferRequest:
+      type: object
+      required: [to_member_id]
+      properties:
+        to_member_id:
+          type: string
+          format: uuid
+    OwnershipTransfer:
+      type: object
+      required: [id, from_user, to_member, status, expires_at, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        from_user:
+          $ref: "#/components/schemas/UserSummary"
+        to_member:
+          $ref: "#/components/schemas/MemberRef"
+        status:
+          type: string
+          enum: [pending, accepted, declined, cancelled, expired]
+        expires_at:
+          type: string
+          format: date-time
+        responded_at:
+          type: [string, "null"]
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+    OwnershipTransferEnvelope:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/OwnershipTransfer"
+    MemberRef:
+      type: object
+      description: Compact member reference used inside other resources.
+      required: [id, display_name, is_guest, slot_no]
+      properties:
+        id:
+          type: string
+          format: uuid
+        display_name:
+          type: string
+        avatar_url:
+          type: [string, "null"]
+          format: uri
+        is_guest:
+          type: boolean
+        slot_no:
+          type: integer
+
+    # ---------------------------------------------------------- periods
+    PeriodStatus:
+      type: string
+      enum: [upcoming, open, drawn, closed]
+    Period:
+      type: object
+      required: [id, period_no, due_date, draw_date, status, seed_hash, winner, drawn_at, payment_summary, payout_recorded]
+      properties:
+        id:
+          type: string
+          format: uuid
+        period_no:
+          type: integer
+        due_date:
+          type: string
+          format: date
+        draw_date:
+          type: string
+          format: date
+        status:
+          $ref: "#/components/schemas/PeriodStatus"
+        seed_hash:
+          type: [string, "null"]
+          pattern: "^[0-9a-f]{64}$"
+          description: Published commitment (random groups) once the period is open.
+        winner:
+          oneOf:
+            - $ref: "#/components/schemas/MemberRef"
+            - type: "null"
+        drawn_at:
+          type: [string, "null"]
+          format: date-time
+        verification_code:
+          type: [string, "null"]
+        payment_summary:
+          oneOf:
+            - $ref: "#/components/schemas/PaymentSummary"
+            - type: "null"
+        payout_recorded:
+          type: boolean
+        payout_confirmed:
+          type: boolean
+    PeriodEnvelope:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/Period"
+
+    # ---------------------------------------------------------- payments
+    PaymentStatus:
+      type: string
+      enum: [unpaid, pending_review, paid, rejected]
+    PaymentProof:
+      type: object
+      required: [id, url, content_type, uploaded_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        url:
+          type: string
+          format: uri
+          description: Signed URL valid for 10 minutes.
+        content_type:
+          type: string
+          enum: [image/jpeg, image/png, image/webp]
+        uploaded_at:
+          type: string
+          format: date-time
+    Payment:
+      type: object
+      required: [id, period_id, member, amount, status, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        period_id:
+          type: string
+          format: uuid
+        member:
+          $ref: "#/components/schemas/MemberRef"
+        amount:
+          $ref: "#/components/schemas/Money"
+        status:
+          $ref: "#/components/schemas/PaymentStatus"
+        method:
+          type: [string, "null"]
+          enum: [transfer, cash, other, null]
+        current_proof:
+          description: Visible to the payer and organizers only; null for others.
+          oneOf:
+            - $ref: "#/components/schemas/PaymentProof"
+            - type: "null"
+        note:
+          type: [string, "null"]
+        reject_reason:
+          type: [string, "null"]
+        paid_at:
+          type: [string, "null"]
+          format: date-time
+        reviewed_by:
+          oneOf:
+            - $ref: "#/components/schemas/UserSummary"
+            - type: "null"
+        reviewed_at:
+          type: [string, "null"]
+          format: date-time
+        is_mine:
+          type: boolean
+        updated_at:
+          type: string
+          format: date-time
+    PaymentDetail:
+      allOf:
+        - $ref: "#/components/schemas/Payment"
+        - type: object
+          properties:
+            proofs:
+              type: array
+              description: Every uploaded proof, newest first (payer and organizers only).
+              items:
+                $ref: "#/components/schemas/PaymentProof"
+    PaymentEnvelope:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/Payment"
+    PaymentDetailEnvelope:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/PaymentDetail"
+    PaymentSummary:
+      type: object
+      required: [total_count, paid_count, pending_review_count, unpaid_count, rejected_count, collected_amount, expected_amount]
+      properties:
+        total_count:
+          type: integer
+        paid_count:
+          type: integer
+        pending_review_count:
+          type: integer
+        unpaid_count:
+          type: integer
+        rejected_count:
+          type: integer
+        collected_amount:
+          $ref: "#/components/schemas/Money"
+        expected_amount:
+          $ref: "#/components/schemas/Money"
+    RejectPaymentRequest:
+      type: object
+      required: [reason]
+      properties:
+        reason:
+          type: string
+          minLength: 3
+          maxLength: 500
+          examples: ["Nominal transfer Rp150.000, seharusnya Rp200.000."]
+    MarkPaidRequest:
+      type: object
+      required: [method]
+      properties:
+        method:
+          type: string
+          enum: [cash, transfer, other]
+        note:
+          type: string
+          maxLength: 500
+
+    # ---------------------------------------------------------- draws
+    DrawSlot:
+      type: object
+      required: [slot_id, slot_no, display_name]
+      properties:
+        slot_id:
+          type: string
+          format: uuid
+        slot_no:
+          type: integer
+        display_name:
+          type: string
+    Draw:
+      type: object
+      required: [period_id, period_no, method, algorithm, status, seed_hash, seed, eligible_slots, winner, drawn_at, drawn_by, verification_code, verify_url]
+      properties:
+        period_id:
+          type: string
+          format: uuid
+        period_no:
+          type: integer
+        method:
+          $ref: "#/components/schemas/DrawMethod"
+        algorithm:
+          type: string
+          enum: [hmac-sha256-v1, fixed-order-v1]
+          description: |
+            hmac-sha256-v1: index = uint64_be(HMAC-SHA256(key=seed, msg=period_id)[0:8]) mod len(eligible_slots),
+            eligible_slots sorted by slot_no.
+        status:
+          type: string
+          enum: [committed, drawn]
+        seed_hash:
+          type: [string, "null"]
+          pattern: "^[0-9a-f]{64}$"
+        seed:
+          type: [string, "null"]
+          pattern: "^[0-9a-f]{64}$"
+          description: Revealed only after the draw.
+        eligible_slots:
+          type: array
+          description: Slots that had not won yet, sorted by slot_no. Empty before the draw.
+          items:
+            $ref: "#/components/schemas/DrawSlot"
+        winner:
+          oneOf:
+            - $ref: "#/components/schemas/DrawSlot"
+            - type: "null"
+        paid_count_at_draw:
+          type: [integer, "null"]
+        total_count_at_draw:
+          type: [integer, "null"]
+        drawn_at:
+          type: [string, "null"]
+          format: date-time
+        drawn_by:
+          oneOf:
+            - $ref: "#/components/schemas/UserSummary"
+            - type: "null"
+        verification_code:
+          type: [string, "null"]
+          pattern: "^[A-Z0-9]{10}$"
+        verify_url:
+          type: [string, "null"]
+          format: uri
+          examples: ["https://giliran.monai.my.id/v/7H2K9QX4MP"]
+    DrawEnvelope:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/Draw"
+    RunDrawRequest:
+      type: object
+      properties:
+        confirm_incomplete:
+          type: boolean
+          default: false
+          description: Proceed even if not every payment is paid.
+    PublicDraw:
+      type: object
+      required: [group_name, period_no, total_periods, algorithm, seed_hash, seed, period_id, eligible_slots, winner, drawn_at, hash_matches, recomputed_winner_matches]
+      properties:
+        group_name:
+          type: string
+        period_no:
+          type: integer
+        total_periods:
+          type: integer
+        period_id:
+          type: string
+          format: uuid
+          description: HMAC message used by the algorithm.
+        algorithm:
+          type: string
+          enum: [hmac-sha256-v1, fixed-order-v1]
+        seed_hash:
+          type: [string, "null"]
+        seed:
+          type: [string, "null"]
+        seed_hash_published_at:
+          type: [string, "null"]
+          format: date-time
+        eligible_slots:
+          type: array
+          items:
+            $ref: "#/components/schemas/DrawSlot"
+        winner:
+          $ref: "#/components/schemas/DrawSlot"
+        drawn_at:
+          type: string
+          format: date-time
+        hash_matches:
+          type: boolean
+          description: Server-side check that SHA-256(seed) equals seed_hash. Clients should recompute themselves.
+        recomputed_winner_matches:
+          type: boolean
+
+    # ---------------------------------------------------------- payouts
+    RecordPayoutRequest:
+      type: object
+      properties:
+        file:
+          type: string
+          contentMediaType: image/*
+          description: Optional transfer proof, at most 5 MB.
+        note:
+          type: string
+          maxLength: 500
+    Payout:
+      type: object
+      required: [id, period_id, winner, amount, recorded_by, recorded_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        period_id:
+          type: string
+          format: uuid
+        winner:
+          $ref: "#/components/schemas/MemberRef"
+        amount:
+          $ref: "#/components/schemas/Money"
+        proof_url:
+          type: [string, "null"]
+          format: uri
+        note:
+          type: [string, "null"]
+        recorded_by:
+          $ref: "#/components/schemas/UserSummary"
+        recorded_at:
+          type: string
+          format: date-time
+        confirmed_at:
+          type: [string, "null"]
+          format: date-time
+    PayoutEnvelope:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/Payout"
+
+    # ---------------------------------------------------------- transparency
+    ActivityEntry:
+      type: object
+      required: [id, action, entity_type, actor, created_at]
+      properties:
+        id:
+          type: string
+          description: Opaque id (stringified to stay safe in JavaScript clients).
+        action:
+          type: string
+          examples: [payment.approved]
+          description: See the activity action list in the schema design document.
+        entity_type:
+          type: string
+          enum: [group, member, period, payment, payout]
+        entity_id:
+          type: [string, "null"]
+          format: uuid
+        actor:
+          description: Null for system actions.
+          oneOf:
+            - $ref: "#/components/schemas/UserSummary"
+            - type: "null"
+        subject:
+          description: Member affected, when there is one.
+          oneOf:
+            - $ref: "#/components/schemas/MemberRef"
+            - type: "null"
+        before:
+          type: [object, "null"]
+          additionalProperties: true
+        after:
+          type: [object, "null"]
+          additionalProperties: true
+        created_at:
+          type: string
+          format: date-time
+    Obligation:
+      type: object
+      required: [member, won_period_no, remaining_count, remaining_amount, overdue_count, overdue_amount]
+      properties:
+        member:
+          $ref: "#/components/schemas/MemberRef"
+        won_period_no:
+          type: integer
+        remaining_count:
+          type: integer
+          description: Periods after the win still to be paid (including future ones).
+        remaining_amount:
+          $ref: "#/components/schemas/Money"
+        overdue_count:
+          type: integer
+          description: Past due dates not paid.
+        overdue_amount:
+          $ref: "#/components/schemas/Money"
+
+    # ---------------------------------------------------------- reminders
+    SendRemindersRequest:
+      type: object
+      properties:
+        member_ids:
+          type: array
+          description: Omit to remind every unpaid member.
+          items:
+            type: string
+            format: uuid
+    ReminderResult:
+      type: object
+      required: [sent_count, skipped]
+      properties:
+        sent_count:
+          type: integer
+        skipped:
+          type: array
+          items:
+            type: object
+            required: [member, reason]
+            properties:
+              member:
+                $ref: "#/components/schemas/MemberRef"
+              reason:
+                type: string
+                enum: [guest, no_device, notifications_off, recently_reminded, already_paid]
+              whatsapp_phone:
+                oneOf:
+                  - $ref: "#/components/schemas/Phone"
+                  - type: "null"
+    Recap:
+      type: object
+      required: [group_name, period_no, total_periods, due_date, draw_date, amount, paid_count, total_count, collected_amount, expected_amount, unpaid, payment_info]
+      properties:
+        group_name:
+          type: string
+        period_no:
+          type: integer
+        total_periods:
+          type: integer
+        due_date:
+          type: string
+          format: date
+        draw_date:
+          type: string
+          format: date
+        amount:
+          $ref: "#/components/schemas/Money"
+        paid_count:
+          type: integer
+        total_count:
+          type: integer
+        collected_amount:
+          $ref: "#/components/schemas/Money"
+        expected_amount:
+          $ref: "#/components/schemas/Money"
+        unpaid:
+          type: array
+          items:
+            type: object
+            required: [member]
+            properties:
+              member:
+                $ref: "#/components/schemas/MemberRef"
+              whatsapp_phone:
+                description: Organizers only; for one-tap WhatsApp reminders.
+                oneOf:
+                  - $ref: "#/components/schemas/Phone"
+                  - type: "null"
+        last_winner:
+          oneOf:
+            - $ref: "#/components/schemas/MemberRef"
+            - type: "null"
+        payment_info:
+          $ref: "#/components/schemas/PaymentInfo"
+
+    # ---------------------------------------------------------- envelopes
+    AuthResultEnvelope:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/AuthResult"
+    TokenPairEnvelope:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/TokenPair"
+    MeEnvelope:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/Me"
+    UserSettingsEnvelope:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/UserSettings"
