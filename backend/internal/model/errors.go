@@ -29,6 +29,9 @@ type Error struct {
 	Code    string
 	Message string // default human-readable detail; clients must not parse it
 	Fields  []FieldError
+	// Extensions are extra problem members, e.g. paid_count and total_count
+	// on payments_incomplete.
+	Extensions map[string]any
 }
 
 func (e *Error) Error() string {
@@ -47,6 +50,13 @@ func (e *Error) Is(target error) bool {
 func (e *Error) WithDetail(format string, args ...any) *Error {
 	c := *e
 	c.Message = fmt.Sprintf(format, args...)
+	return &c
+}
+
+// WithExtensions returns a copy of e carrying ext as extra problem members.
+func (e *Error) WithExtensions(ext map[string]any) *Error {
+	c := *e
+	c.Extensions = ext
 	return &c
 }
 
@@ -85,53 +95,56 @@ func NewValidationError(fields ...FieldError) *Error {
 
 // Sentinel errors, one per row of the error table in api/api-spec.yaml.
 var (
-	ErrValidation        = &Error{KindInvalid, "validation_error", "Request fields are invalid.", nil}
-	ErrBadRequest        = &Error{KindBadRequest, "bad_request", "The request is malformed.", nil}
-	ErrInvalidPagination = &Error{KindBadRequest, "invalid_pagination", "Pagination parameters are out of range.", nil}
+	ErrValidation        = &Error{Kind: KindInvalid, Code: "validation_error", Message: "Request fields are invalid."}
+	ErrBadRequest        = &Error{Kind: KindBadRequest, Code: "bad_request", Message: "The request is malformed."}
+	ErrInvalidPagination = &Error{Kind: KindBadRequest, Code: "invalid_pagination", Message: "Pagination parameters are out of range."}
 
-	ErrUnauthorized        = &Error{KindUnauthenticated, "unauthorized", "Missing, invalid or expired access token.", nil}
-	ErrOTPInvalid          = &Error{KindUnauthenticated, "otp_invalid", "The Firebase ID token was rejected.", nil}
-	ErrRefreshTokenInvalid = &Error{KindUnauthenticated, "refresh_token_invalid", "Refresh token is unknown, expired or revoked.", nil}
-	ErrPINInvalid          = &Error{KindUnauthenticated, "pin_invalid", "Wrong PIN.", nil}
-	ErrPINNotSet           = &Error{KindConflict, "pin_not_set", "This action requires a PIN that has not been set.", nil}
-	ErrPINLocked           = &Error{KindLocked, "pin_locked", "Too many wrong PIN attempts.", nil}
+	ErrUnauthorized        = &Error{Kind: KindUnauthenticated, Code: "unauthorized", Message: "Missing, invalid or expired access token."}
+	ErrOTPInvalid          = &Error{Kind: KindUnauthenticated, Code: "otp_invalid", Message: "The Firebase ID token was rejected."}
+	ErrRefreshTokenInvalid = &Error{Kind: KindUnauthenticated, Code: "refresh_token_invalid", Message: "Refresh token is unknown, expired or revoked."}
+	ErrPINInvalid          = &Error{Kind: KindUnauthenticated, Code: "pin_invalid", Message: "Wrong PIN."}
+	ErrPINNotSet           = &Error{Kind: KindConflict, Code: "pin_not_set", Message: "This action requires a PIN that has not been set."}
+	ErrPINLocked           = &Error{Kind: KindLocked, Code: "pin_locked", Message: "Too many wrong PIN attempts."}
 
 	// ErrForbiddenRole is only for members whose role cannot do the action.
 	// Non-members get ErrGroupNotFound instead, so group existence never leaks.
-	ErrForbiddenRole = &Error{KindForbidden, "forbidden_role", "Your role in this group cannot do this.", nil}
+	ErrForbiddenRole = &Error{Kind: KindForbidden, Code: "forbidden_role", Message: "Your role in this group cannot do this."}
 
-	ErrUserNotFound    = &Error{KindNotFound, "user_not_found", "User not found.", nil}
-	ErrGroupNotFound   = &Error{KindNotFound, "group_not_found", "Group not found.", nil}
-	ErrMemberNotFound  = &Error{KindNotFound, "member_not_found", "Member not found.", nil}
-	ErrPeriodNotFound  = &Error{KindNotFound, "period_not_found", "Period not found.", nil}
-	ErrPaymentNotFound = &Error{KindNotFound, "payment_not_found", "Payment not found.", nil}
-	ErrInviteNotFound  = &Error{KindNotFound, "invite_not_found", "Invite code is invalid or was reset.", nil}
-	ErrClaimNotFound   = &Error{KindNotFound, "claim_not_found", "Claim link is invalid or expired.", nil}
-	ErrDrawNotFound    = &Error{KindNotFound, "draw_not_found", "Verification code is unknown.", nil}
+	// ErrNotFound is for unknown routes and wrong methods, not domain objects.
+	ErrNotFound = &Error{Kind: KindNotFound, Code: "not_found", Message: "Resource not found."}
 
-	ErrPhoneAlreadyRegistered = &Error{KindConflict, "phone_already_registered", "This phone number already has an account.", nil}
-	ErrGroupFull              = &Error{KindConflict, "group_full", "The group has no free slots.", nil}
-	ErrGroupNotDraft          = &Error{KindConflict, "group_not_draft", "This setting can only change before the group starts.", nil}
-	ErrGroupNotActive         = &Error{KindConflict, "group_not_active", "The group is not running.", nil}
-	ErrAlreadyMember          = &Error{KindConflict, "already_member", "You are already in this group.", nil}
-	ErrFixedOrderIncomplete   = &Error{KindConflict, "fixed_order_incomplete", "Every slot needs a position before start.", nil}
-	ErrSlotsNotFilled         = &Error{KindConflict, "slots_not_filled", "Every slot needs a member before start.", nil}
-	ErrPaymentInfoMissing     = &Error{KindConflict, "payment_info_missing", "Organizer payment info is required before start.", nil}
-	ErrInvalidPaymentState    = &Error{KindConflict, "invalid_payment_state", "This payment status change is not allowed.", nil}
-	ErrPaymentAlreadyReviewed = &Error{KindConflict, "payment_already_reviewed", "The proof was already approved or rejected.", nil}
-	ErrPeriodNotOpen          = &Error{KindConflict, "period_not_open", "The period is not open for this action.", nil}
-	ErrDrawTooEarly           = &Error{KindConflict, "draw_too_early", "The draw date has not arrived.", nil}
-	ErrDrawAlreadyDone        = &Error{KindConflict, "draw_already_done", "This period has already been drawn.", nil}
-	ErrPaymentsIncomplete     = &Error{KindConflict, "payments_incomplete", "Not all payments are in; resend with confirm_incomplete: true.", nil}
-	ErrPayoutAlreadyRecorded  = &Error{KindConflict, "payout_already_recorded", "A payout is already recorded for this period.", nil}
-	ErrObligationsOutstanding = &Error{KindConflict, "obligations_outstanding", "Unpaid obligations block this action.", nil}
-	ErrOrganizerCannotLeave   = &Error{KindConflict, "organizer_cannot_leave", "Transfer ownership or close the group first.", nil}
-	ErrPendingRequestExists   = &Error{KindConflict, "pending_request_exists", "A pending leave request or transfer already exists.", nil}
+	ErrUserNotFound    = &Error{Kind: KindNotFound, Code: "user_not_found", Message: "User not found."}
+	ErrGroupNotFound   = &Error{Kind: KindNotFound, Code: "group_not_found", Message: "Group not found."}
+	ErrMemberNotFound  = &Error{Kind: KindNotFound, Code: "member_not_found", Message: "Member not found."}
+	ErrPeriodNotFound  = &Error{Kind: KindNotFound, Code: "period_not_found", Message: "Period not found."}
+	ErrPaymentNotFound = &Error{Kind: KindNotFound, Code: "payment_not_found", Message: "Payment not found."}
+	ErrInviteNotFound  = &Error{Kind: KindNotFound, Code: "invite_not_found", Message: "Invite code is invalid or was reset."}
+	ErrClaimNotFound   = &Error{Kind: KindNotFound, Code: "claim_not_found", Message: "Claim link is invalid or expired."}
+	ErrDrawNotFound    = &Error{Kind: KindNotFound, Code: "draw_not_found", Message: "Verification code is unknown."}
 
-	ErrIdempotencyKeyReused = &Error{KindInvalid, "idempotency_key_reused", "The same Idempotency-Key was sent with a different request.", nil}
-	ErrFileTooLarge         = &Error{KindTooLarge, "file_too_large", "Upload is over 5 MB.", nil}
-	ErrUnsupportedMediaType = &Error{KindUnsupportedType, "unsupported_media_type", "Upload must be JPEG, PNG or WebP.", nil}
-	ErrRateLimitExceeded    = &Error{KindRateLimited, "rate_limit_exceeded", "Too many requests.", nil}
-	ErrInternal             = &Error{KindInternal, "internal_error", "Unexpected error.", nil}
-	ErrServiceUnavailable   = &Error{KindUnavailable, "service_unavailable", "Temporarily unavailable.", nil}
+	ErrPhoneAlreadyRegistered = &Error{Kind: KindConflict, Code: "phone_already_registered", Message: "This phone number already has an account."}
+	ErrGroupFull              = &Error{Kind: KindConflict, Code: "group_full", Message: "The group has no free slots."}
+	ErrGroupNotDraft          = &Error{Kind: KindConflict, Code: "group_not_draft", Message: "This setting can only change before the group starts."}
+	ErrGroupNotActive         = &Error{Kind: KindConflict, Code: "group_not_active", Message: "The group is not running."}
+	ErrAlreadyMember          = &Error{Kind: KindConflict, Code: "already_member", Message: "You are already in this group."}
+	ErrFixedOrderIncomplete   = &Error{Kind: KindConflict, Code: "fixed_order_incomplete", Message: "Every slot needs a position before start."}
+	ErrSlotsNotFilled         = &Error{Kind: KindConflict, Code: "slots_not_filled", Message: "Every slot needs a member before start."}
+	ErrPaymentInfoMissing     = &Error{Kind: KindConflict, Code: "payment_info_missing", Message: "Organizer payment info is required before start."}
+	ErrInvalidPaymentState    = &Error{Kind: KindConflict, Code: "invalid_payment_state", Message: "This payment status change is not allowed."}
+	ErrPaymentAlreadyReviewed = &Error{Kind: KindConflict, Code: "payment_already_reviewed", Message: "The proof was already approved or rejected."}
+	ErrPeriodNotOpen          = &Error{Kind: KindConflict, Code: "period_not_open", Message: "The period is not open for this action."}
+	ErrDrawTooEarly           = &Error{Kind: KindConflict, Code: "draw_too_early", Message: "The draw date has not arrived."}
+	ErrDrawAlreadyDone        = &Error{Kind: KindConflict, Code: "draw_already_done", Message: "This period has already been drawn."}
+	ErrPaymentsIncomplete     = &Error{Kind: KindConflict, Code: "payments_incomplete", Message: "Not all payments are in; resend with confirm_incomplete: true."}
+	ErrPayoutAlreadyRecorded  = &Error{Kind: KindConflict, Code: "payout_already_recorded", Message: "A payout is already recorded for this period."}
+	ErrObligationsOutstanding = &Error{Kind: KindConflict, Code: "obligations_outstanding", Message: "Unpaid obligations block this action."}
+	ErrOrganizerCannotLeave   = &Error{Kind: KindConflict, Code: "organizer_cannot_leave", Message: "Transfer ownership or close the group first."}
+	ErrPendingRequestExists   = &Error{Kind: KindConflict, Code: "pending_request_exists", Message: "A pending leave request or transfer already exists."}
+
+	ErrIdempotencyKeyReused = &Error{Kind: KindInvalid, Code: "idempotency_key_reused", Message: "The same Idempotency-Key was sent with a different request."}
+	ErrFileTooLarge         = &Error{Kind: KindTooLarge, Code: "file_too_large", Message: "Upload is over 5 MB."}
+	ErrUnsupportedMediaType = &Error{Kind: KindUnsupportedType, Code: "unsupported_media_type", Message: "Upload must be JPEG, PNG or WebP."}
+	ErrRateLimitExceeded    = &Error{Kind: KindRateLimited, Code: "rate_limit_exceeded", Message: "Too many requests."}
+	ErrInternal             = &Error{Kind: KindInternal, Code: "internal_error", Message: "Unexpected error."}
+	ErrServiceUnavailable   = &Error{Kind: KindUnavailable, Code: "service_unavailable", Message: "Temporarily unavailable."}
 )

@@ -54,6 +54,25 @@ func TestErrorWithDetailLeavesSentinelUnchanged(t *testing.T) {
 	}
 }
 
+func TestErrorWithExtensionsLeavesSentinelUnchanged(t *testing.T) {
+	// Arrange
+	ext := map[string]any{"paid_count": 8, "total_count": 10}
+
+	// Act
+	got := ErrPaymentsIncomplete.WithExtensions(ext)
+
+	// Assert
+	if got.Extensions["paid_count"] != 8 || got.Extensions["total_count"] != 10 {
+		t.Errorf("got extensions %+v", got.Extensions)
+	}
+	if !errors.Is(got, ErrPaymentsIncomplete) {
+		t.Errorf("copy no longer matches its sentinel")
+	}
+	if ErrPaymentsIncomplete.Extensions != nil {
+		t.Errorf("sentinel mutated: %+v", ErrPaymentsIncomplete.Extensions)
+	}
+}
+
 func TestNewValidationError(t *testing.T) {
 	// Arrange
 	fields := []FieldError{
