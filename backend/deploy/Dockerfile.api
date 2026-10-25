@@ -1,0 +1,18 @@
+# syntax=docker/dockerfile:1
+# Build from backend/: docker build -f deploy/Dockerfile.api .
+
+FROM golang:1.27.3-alpine3.24 AS build
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN --mount=type=cache,target=/go/pkg/mod go mod download
+COPY . .
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/api ./cmd/api
+
+# Static, shell-less and non-root. CA certificates are included; time zone
+# data is embedded in the binary by pkg/config.
+FROM gcr.io/distroless/static-debian13:nonroot
+COPY --from=build /out/api /api
+EXPOSE 8080
+ENTRYPOINT ["/api"]

@@ -1,0 +1,10 @@
+.git
+.env
+.env.*
+secrets/
+docs/
+deploy/
+test/
+**/*_test.go
+*.md
+.DS_Store
