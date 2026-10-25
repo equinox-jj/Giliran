@@ -10,6 +10,7 @@ import (
 	"github.com/equinox-jj/Giliran/backend/internal/controller"
 	"github.com/equinox-jj/Giliran/backend/internal/repository"
 	"github.com/equinox-jj/Giliran/backend/internal/routes"
+	"github.com/equinox-jj/Giliran/backend/pkg/clock"
 	"github.com/equinox-jj/Giliran/backend/pkg/config"
 	"github.com/equinox-jj/Giliran/backend/pkg/logger"
 	"github.com/equinox-jj/Giliran/backend/pkg/security"
@@ -23,6 +24,7 @@ func main() {
 func options() fx.Option {
 	return fx.Options(
 		config.Module,
+		clock.Module,
 		logger.Module,
 		repository.Module,
 		security.Module,

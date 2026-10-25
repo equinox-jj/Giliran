@@ -13,6 +13,7 @@ import (
 	"github.com/equinox-jj/Giliran/backend/pkg/config"
 	"github.com/equinox-jj/Giliran/backend/pkg/middleware"
 	"github.com/equinox-jj/Giliran/backend/pkg/response"
+	"github.com/equinox-jj/Giliran/backend/pkg/validation"
 )
 
 // newFiberApp builds the app with the global middleware; routes are added
@@ -25,6 +26,8 @@ func newFiberApp(cfg *config.Config, log *slog.Logger) *fiber.App {
 		WriteTimeout: cfg.HTTP.WriteTimeout,
 		IdleTimeout:  cfg.HTTP.IdleTimeout,
 		ErrorHandler: response.ErrorHandler(log),
+		// c.Bind() runs it after decoding; failures render as 422 validation_error.
+		StructValidator: validation.New(),
 	}
 	if len(cfg.HTTP.TrustedProxies) > 0 {
 		fc.TrustProxy = true

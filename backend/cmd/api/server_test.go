@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/gofiber/fiber/v3"
@@ -24,11 +25,23 @@ func testConfig() *config.Config {
 	}
 }
 
-// newTestApp is the production app plus a /panic route.
+// testBody is a request DTO for the /bind route.
+type testBody struct {
+	Name string `json:"name" validate:"required,min=3"`
+}
+
+// newTestApp is the production app plus /panic and /bind routes.
 func newTestApp() *fiber.App {
 	app := newFiberApp(testConfig(), slog.New(slog.NewTextHandler(io.Discard, nil)))
 	routes.Register(app, controller.NewHealthController())
 	app.Get("/panic", func(fiber.Ctx) error { panic("boom") })
+	app.Post("/bind", func(c fiber.Ctx) error {
+		var body testBody
+		if err := c.Bind().Body(&body); err != nil {
+			return err
+		}
+		return c.SendStatus(fiber.StatusNoContent)
+	})
 	return app
 }
 
@@ -88,6 +101,26 @@ func TestServerResponses(t *testing.T) {
 				t.Errorf("request_id %v, header %q", body["request_id"], rid)
 			}
 		})
+	}
+}
+
+func TestServerBindValidates(t *testing.T) {
+	// Arrange
+	app := newTestApp()
+	req := httptest.NewRequest(http.MethodPost, "/bind", strings.NewReader(`{"name":"ab"}`))
+	req.Header.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSON)
+
+	// Act
+	resp, body := do(t, app, req)
+
+	// Assert
+	if resp.StatusCode != 422 || body["code"] != "validation_error" {
+		t.Fatalf("status %d, body %v", resp.StatusCode, body)
+	}
+	errs, _ := body["errors"].([]any)
+	first, _ := errs[0].(map[string]any)
+	if len(errs) != 1 || first["field"] != "name" || first["code"] != "min_length" {
+		t.Errorf("errors %v, want one name/min_length", errs)
 	}
 }
 
