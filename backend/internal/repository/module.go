@@ -9,6 +9,6 @@ import (
 // the pool even before anything depends on it, so startup pings the database
 // and fails fast when it is unreachable.
 var Module = fx.Module("repository",
-	fx.Provide(newPool, NewTxManager),
+	fx.Provide(newPool, NewTxManager, NewUserRepository, NewSessionRepository),
 	fx.Invoke(func(*pgxpool.Pool) {}),
 )

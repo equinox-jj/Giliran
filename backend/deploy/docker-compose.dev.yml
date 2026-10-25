@@ -26,6 +26,9 @@ services:
     env_file: ../.env
     environment:
       MINIO_ENDPOINT: minio:9000
+      FIREBASE_CREDENTIALS_FILE: /secrets/firebase-service-account.json
+    volumes:
+      - ../secrets:/secrets:ro
     entrypoint:
       - sh
       - -c

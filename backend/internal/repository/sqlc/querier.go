@@ -11,8 +11,18 @@ import (
 )
 
 type Querier interface {
+	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	CreateUserSettings(ctx context.Context, userID uuid.UUID) error
+	// Locks the row so two refreshes of one token serialize.
+	GetSessionByRefreshTokenHashForUpdate(ctx context.Context, refreshTokenHash string) (Session, error)
+	GetUserByFirebaseUID(ctx context.Context, firebaseUid *string) (User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
+	GetUserByPhone(ctx context.Context, phone *string) (User, error)
+	RevokeSessionFamily(ctx context.Context, arg RevokeSessionFamilyParams) (int64, error)
+	RevokeUserSession(ctx context.Context, arg RevokeUserSessionParams) (int64, error)
+	RotateSession(ctx context.Context, arg RotateSessionParams) error
+	SetUserFirebaseUID(ctx context.Context, arg SetUserFirebaseUIDParams) (User, error)
 }
 
 var _ Querier = (*Queries)(nil)

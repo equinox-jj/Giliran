@@ -106,8 +106,8 @@ type PIN struct {
 	LockoutDuration   time.Duration `koanf:"pin_lockout_duration"`
 }
 
-// Firebase is not validated yet; the Firebase client will check it when it
-// lands.
+// Firebase is checked by internal/clients/firebase at startup, which fails
+// when the credentials file is missing.
 type Firebase struct {
 	ProjectID       string `koanf:"firebase_project_id"`
 	CredentialsFile string `koanf:"firebase_credentials_file"`

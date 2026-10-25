@@ -3,12 +3,38 @@ package routes
 
 import (
 	"github.com/gofiber/fiber/v3"
+	"go.uber.org/fx"
 
 	"github.com/equinox-jj/Giliran/backend/internal/controller"
+	"github.com/equinox-jj/Giliran/backend/pkg/config"
+	"github.com/equinox-jj/Giliran/backend/pkg/middleware"
+	"github.com/equinox-jj/Giliran/backend/pkg/security"
 )
 
-// Register adds every route to app.
-func Register(app *fiber.App, health *controller.HealthController) {
-	v1 := app.Group("/api/v1")
-	v1.Get("/health", health.Get)
+// Params are the controllers and settings the routes need.
+type Params struct {
+	fx.In
+
+	App    *fiber.App
+	Config *config.Config
+	Tokens *security.TokenIssuer
+	Health *controller.HealthController
+	Auth   *controller.AuthController
+}
+
+// Register adds every route to p.App.
+func Register(p Params) {
+	v1 := p.App.Group("/api/v1")
+	v1.Get("/health", p.Health.Get)
+
+	requireAuth := middleware.Auth(p.Tokens)
+	rl := p.Config.RateLimit
+
+	// Handlers run in order, so middleware goes before the controller.
+	auth := v1.Group("/auth")
+	auth.Post("/sign-in", middleware.RateLimit(rl.OTPMax, rl.OTPWindow), p.Auth.SignIn)
+	// Every device refreshes about once per access-token lifetime, and a
+	// household shares one IP, so refresh gets the looser write limit.
+	auth.Post("/refresh", middleware.RateLimit(rl.WriteMax, rl.WriteWindow), p.Auth.Refresh)
+	auth.Post("/logout", requireAuth, p.Auth.Logout)
 }

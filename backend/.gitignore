@@ -1,2 +1,5 @@
 # Air build output
 tmp/
+
+# Firebase service-account key and other credentials
+secrets/

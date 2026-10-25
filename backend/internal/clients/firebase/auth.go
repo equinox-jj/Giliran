@@ -1,0 +1,83 @@
+// Package firebase verifies Firebase phone-auth ID tokens with the Firebase
+// Admin SDK. The app does the OTP with Firebase; the backend only checks the
+// resulting token and then issues its own tokens.
+package firebase
+
+import (
+	"context"
+	"fmt"
+	"os"
+
+	fb "firebase.google.com/go/v4"
+	"firebase.google.com/go/v4/auth"
+	"google.golang.org/api/option"
+
+	"github.com/equinox-jj/Giliran/backend/internal/model"
+	"github.com/equinox-jj/Giliran/backend/pkg/config"
+)
+
+// Identity is who a verified ID token belongs to.
+type Identity struct {
+	UID   string // Firebase user ID
+	Phone string // E.164, as Firebase reports it
+}
+
+// AuthVerifier checks a Firebase ID token. Services depend on this interface
+// so tests can use a fake.
+type AuthVerifier interface {
+	// Verify returns model.ErrOTPInvalid for a token that is invalid, expired,
+	// revoked or carries no phone number.
+	Verify(ctx context.Context, idToken string) (Identity, error)
+}
+
+// Verifier is the Firebase Admin SDK implementation of AuthVerifier.
+type Verifier struct {
+	client *auth.Client
+}
+
+// NewVerifier builds the Admin SDK client from FIREBASE_CREDENTIALS_FILE (a
+// service-account JSON) and, if set, FIREBASE_PROJECT_ID. It fails when the
+// credentials file is missing, so the API refuses to start without it.
+func NewVerifier(ctx context.Context, cfg config.Firebase) (*Verifier, error) {
+	if _, err := os.Stat(cfg.CredentialsFile); err != nil {
+		return nil, fmt.Errorf("FIREBASE_CREDENTIALS_FILE %q: %w (download a service-account key from the Firebase console)", cfg.CredentialsFile, err)
+	}
+	var fc *fb.Config
+	if cfg.ProjectID != "" {
+		fc = &fb.Config{ProjectID: cfg.ProjectID}
+	}
+	app, err := fb.NewApp(ctx, fc, option.WithAuthCredentialsFile(option.ServiceAccount, cfg.CredentialsFile))
+	if err != nil {
+		return nil, fmt.Errorf("firebase app: %w", err)
+	}
+	client, err := app.Auth(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("firebase auth client: %w", err)
+	}
+	return &Verifier{client: client}, nil
+}
+
+func (v *Verifier) Verify(ctx context.Context, idToken string) (Identity, error) {
+	token, err := v.client.VerifyIDToken(ctx, idToken)
+	if err != nil {
+		if auth.IsIDTokenInvalid(err) || auth.IsIDTokenExpired(err) {
+			return Identity{}, model.ErrOTPInvalid
+		}
+		// Anything else (fetching Google's public keys, for one) is our
+		// problem, not the client's.
+		return Identity{}, fmt.Errorf("verify firebase id token: %w", err)
+	}
+	return identityFrom(token)
+}
+
+// identityFrom extracts the identity from a verified token. Only phone sign-in
+// is supported, so a token without a phone number is rejected.
+func identityFrom(token *auth.Token) (Identity, error) {
+	phone, _ := token.Claims["phone_number"].(string)
+	if phone == "" || token.UID == "" {
+		return Identity{}, model.ErrOTPInvalid.WithDetail("The Firebase ID token has no phone number.")
+	}
+	return Identity{UID: token.UID, Phone: phone}, nil
+}
+
+var _ AuthVerifier = (*Verifier)(nil)

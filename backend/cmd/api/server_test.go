@@ -8,13 +8,16 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gofiber/fiber/v3"
 	"go.uber.org/fx"
 
 	"github.com/equinox-jj/Giliran/backend/internal/controller"
 	"github.com/equinox-jj/Giliran/backend/internal/routes"
+	"github.com/equinox-jj/Giliran/backend/pkg/clock"
 	"github.com/equinox-jj/Giliran/backend/pkg/config"
+	"github.com/equinox-jj/Giliran/backend/pkg/security"
 	"github.com/equinox-jj/Giliran/backend/test/contract"
 )
 
@@ -23,6 +26,7 @@ func testConfig() *config.Config {
 	return &config.Config{
 		App:  config.App{Name: "giliran-test", Env: config.EnvDevelopment},
 		HTTP: config.HTTP{BodyLimit: 1 << 20, CORSAllowOrigins: []string{"http://localhost:3000"}},
+		JWT:  config.JWT{Secret: strings.Repeat("s", 32), Issuer: "giliran-test", Audience: "giliran-test", AccessTTL: 15 * time.Minute},
 	}
 }
 
@@ -33,8 +37,15 @@ type testBody struct {
 
 // newTestApp is the production app plus /panic and /bind routes.
 func newTestApp() *fiber.App {
-	app := newFiberApp(testConfig(), slog.New(slog.NewTextHandler(io.Discard, nil)))
-	routes.Register(app, controller.NewHealthController())
+	cfg := testConfig()
+	app := newFiberApp(cfg, slog.New(slog.NewTextHandler(io.Discard, nil)))
+	routes.Register(routes.Params{
+		App:    app,
+		Config: cfg,
+		Tokens: security.NewTokenIssuer(cfg, clock.System{}),
+		Health: controller.NewHealthController(),
+		Auth:   controller.NewAuthController(nil), // auth routes are tested in internal/controller
+	})
 	app.Get("/panic", func(fiber.Ctx) error { panic("boom") })
 	app.Post("/bind", func(c fiber.Ctx) error {
 		var body testBody

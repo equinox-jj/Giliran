@@ -42,6 +42,30 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	return i, err
 }
 
+const getUserByFirebaseUID = `-- name: GetUserByFirebaseUID :one
+SELECT id, phone, firebase_uid, name, avatar_key, pin_hash, pin_failed_count, pin_locked_until, created_at, updated_at, deleted_at FROM users
+WHERE firebase_uid = $1 AND deleted_at IS NULL
+`
+
+func (q *Queries) GetUserByFirebaseUID(ctx context.Context, firebaseUid *string) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByFirebaseUID, firebaseUid)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Phone,
+		&i.FirebaseUID,
+		&i.Name,
+		&i.AvatarKey,
+		&i.PINHash,
+		&i.PINFailedCount,
+		&i.PINLockedUntil,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
 const getUserByID = `-- name: GetUserByID :one
 SELECT id, phone, firebase_uid, name, avatar_key, pin_hash, pin_failed_count, pin_locked_until, created_at, updated_at, deleted_at FROM users
 WHERE id = $1 AND deleted_at IS NULL
@@ -49,6 +73,60 @@ WHERE id = $1 AND deleted_at IS NULL
 
 func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
 	row := q.db.QueryRow(ctx, getUserByID, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Phone,
+		&i.FirebaseUID,
+		&i.Name,
+		&i.AvatarKey,
+		&i.PINHash,
+		&i.PINFailedCount,
+		&i.PINLockedUntil,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
+const getUserByPhone = `-- name: GetUserByPhone :one
+SELECT id, phone, firebase_uid, name, avatar_key, pin_hash, pin_failed_count, pin_locked_until, created_at, updated_at, deleted_at FROM users
+WHERE phone = $1 AND deleted_at IS NULL
+`
+
+func (q *Queries) GetUserByPhone(ctx context.Context, phone *string) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByPhone, phone)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Phone,
+		&i.FirebaseUID,
+		&i.Name,
+		&i.AvatarKey,
+		&i.PINHash,
+		&i.PINFailedCount,
+		&i.PINLockedUntil,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
+const setUserFirebaseUID = `-- name: SetUserFirebaseUID :one
+UPDATE users SET firebase_uid = $2
+WHERE id = $1 AND deleted_at IS NULL
+RETURNING id, phone, firebase_uid, name, avatar_key, pin_hash, pin_failed_count, pin_locked_until, created_at, updated_at, deleted_at
+`
+
+type SetUserFirebaseUIDParams struct {
+	ID          uuid.UUID
+	FirebaseUID *string
+}
+
+func (q *Queries) SetUserFirebaseUID(ctx context.Context, arg SetUserFirebaseUIDParams) (User, error) {
+	row := q.db.QueryRow(ctx, setUserFirebaseUID, arg.ID, arg.FirebaseUID)
 	var i User
 	err := row.Scan(
 		&i.ID,

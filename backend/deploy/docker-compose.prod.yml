@@ -19,6 +19,11 @@ services:
     image: giliran-api:local
     restart: unless-stopped
     env_file: ../.env
+    environment:
+      FIREBASE_CREDENTIALS_FILE: /secrets/firebase-service-account.json
+    volumes:
+      # the image runs as uid 65532 (distroless nonroot); the key must be readable by it
+      - ../secrets:/secrets:ro
     ports:
       - "127.0.0.1:8080:8080"
     depends_on:

@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/equinox-jj/Giliran/backend/internal/model"
+	"github.com/equinox-jj/Giliran/backend/pkg/clock"
 	"github.com/equinox-jj/Giliran/backend/pkg/config"
 )
 
@@ -18,8 +19,10 @@ type Claims struct {
 }
 
 // TokenIssuer issues and parses HS256 access tokens. Access tokens are
-// stateless; revocation happens on the refresh token (FR-AUTH-07).
+// stateless; revocation happens on the refresh token (FR-AUTH-07). Issuing
+// and checking expiry both read the same Clock, so tests can move time.
 type TokenIssuer struct {
+	clock    clock.Clock
 	secret   []byte
 	issuer   string
 	audience string
@@ -28,9 +31,10 @@ type TokenIssuer struct {
 }
 
 // NewTokenIssuer builds a TokenIssuer from the JWT_* settings.
-func NewTokenIssuer(cfg *config.Config) *TokenIssuer {
+func NewTokenIssuer(cfg *config.Config, clk clock.Clock) *TokenIssuer {
 	j := cfg.JWT
 	return &TokenIssuer{
+		clock:    clk,
 		secret:   []byte(j.Secret),
 		issuer:   j.Issuer,
 		audience: j.Audience,
@@ -41,6 +45,7 @@ func NewTokenIssuer(cfg *config.Config) *TokenIssuer {
 			jwt.WithAudience(j.Audience),
 			jwt.WithExpirationRequired(),
 			jwt.WithIssuedAt(),
+			jwt.WithTimeFunc(clk.Now),
 		),
 	}
 }
@@ -51,7 +56,8 @@ func (t *TokenIssuer) TTL() time.Duration {
 }
 
 // Issue signs an access token for the user's session, valid from now.
-func (t *TokenIssuer) Issue(userID, sessionID uuid.UUID, now time.Time) (string, time.Time, error) {
+func (t *TokenIssuer) Issue(userID, sessionID uuid.UUID) (string, time.Time, error) {
+	now := t.clock.Now()
 	jti, err := uuid.NewV7()
 	if err != nil {
 		return "", time.Time{}, fmt.Errorf("security: token id: %w", err)

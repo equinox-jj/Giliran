@@ -7,9 +7,11 @@ import (
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
 
+	"github.com/equinox-jj/Giliran/backend/internal/clients/firebase"
 	"github.com/equinox-jj/Giliran/backend/internal/controller"
 	"github.com/equinox-jj/Giliran/backend/internal/repository"
 	"github.com/equinox-jj/Giliran/backend/internal/routes"
+	"github.com/equinox-jj/Giliran/backend/internal/service"
 	"github.com/equinox-jj/Giliran/backend/pkg/clock"
 	"github.com/equinox-jj/Giliran/backend/pkg/config"
 	"github.com/equinox-jj/Giliran/backend/pkg/logger"
@@ -28,6 +30,8 @@ func options() fx.Option {
 		logger.Module,
 		repository.Module,
 		security.Module,
+		firebase.Module,
+		service.Module,
 		controller.Module,
 		fx.Provide(newServer),
 		routes.Module,
