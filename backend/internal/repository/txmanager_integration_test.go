@@ -17,7 +17,8 @@ import (
 // createUser inserts a user through whatever Queries(ctx) returns.
 func createUser(ctx context.Context, m *TxManager) (uuid.UUID, error) {
 	id := uuid.Must(uuid.NewV7())
-	_, err := m.Queries(ctx).CreateUser(ctx, sqlc.CreateUserParams{ID: id, Phone: "+6281234567890"})
+	phone := "+6281234567890"
+	_, err := m.Queries(ctx).CreateUser(ctx, sqlc.CreateUserParams{ID: id, Phone: &phone})
 	return id, err
 }
 

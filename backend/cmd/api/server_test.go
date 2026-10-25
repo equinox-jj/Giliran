@@ -15,6 +15,7 @@ import (
 	"github.com/equinox-jj/Giliran/backend/internal/controller"
 	"github.com/equinox-jj/Giliran/backend/internal/routes"
 	"github.com/equinox-jj/Giliran/backend/pkg/config"
+	"github.com/equinox-jj/Giliran/backend/test/contract"
 )
 
 // testConfig is a valid config without loading files or the environment.
@@ -127,11 +128,21 @@ func TestServerBindValidates(t *testing.T) {
 func TestServerHealth(t *testing.T) {
 	// Arrange
 	app := newTestApp()
+	spec := contract.Load(t)
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/health", nil)
 
 	// Act
-	resp, body := do(t, app, httptest.NewRequest(http.MethodGet, "/api/v1/health", nil))
+	resp, err := app.Test(req)
 
 	// Assert
+	if err != nil {
+		t.Fatalf("app.Test: %v", err)
+	}
+	spec.AssertResponse(t, req, resp)
+	var body map[string]any
+	if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
+		t.Fatalf("decode body: %v", err)
+	}
 	if resp.StatusCode != 200 {
 		t.Errorf("status %d, want 200", resp.StatusCode)
 	}

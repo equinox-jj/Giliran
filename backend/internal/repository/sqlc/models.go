@@ -194,7 +194,7 @@ type SlotMember struct {
 
 type User struct {
 	ID             uuid.UUID
-	Phone          string
+	Phone          *string
 	FirebaseUID    *string
 	Name           *string
 	AvatarKey      *string

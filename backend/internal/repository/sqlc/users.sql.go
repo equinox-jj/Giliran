@@ -19,7 +19,7 @@ RETURNING id, phone, firebase_uid, name, avatar_key, pin_hash, pin_failed_count,
 
 type CreateUserParams struct {
 	ID          uuid.UUID
-	Phone       string
+	Phone       *string
 	FirebaseUID *string
 }
 
