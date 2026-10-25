@@ -7,6 +7,7 @@ package sqlc
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -90,6 +91,32 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
 	return i, err
 }
 
+const getUserByIDForUpdate = `-- name: GetUserByIDForUpdate :one
+SELECT id, phone, firebase_uid, name, avatar_key, pin_hash, pin_failed_count, pin_locked_until, created_at, updated_at, deleted_at FROM users
+WHERE id = $1 AND deleted_at IS NULL
+FOR UPDATE
+`
+
+// Locks the row so concurrent PIN attempts count correctly.
+func (q *Queries) GetUserByIDForUpdate(ctx context.Context, id uuid.UUID) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByIDForUpdate, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Phone,
+		&i.FirebaseUID,
+		&i.Name,
+		&i.AvatarKey,
+		&i.PINHash,
+		&i.PINFailedCount,
+		&i.PINLockedUntil,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
 const getUserByPhone = `-- name: GetUserByPhone :one
 SELECT id, phone, firebase_uid, name, avatar_key, pin_hash, pin_failed_count, pin_locked_until, created_at, updated_at, deleted_at FROM users
 WHERE phone = $1 AND deleted_at IS NULL
@@ -142,4 +169,38 @@ func (q *Queries) SetUserFirebaseUID(ctx context.Context, arg SetUserFirebaseUID
 		&i.DeletedAt,
 	)
 	return i, err
+}
+
+const setUserPIN = `-- name: SetUserPIN :exec
+UPDATE users
+SET pin_hash = $2, pin_failed_count = 0, pin_locked_until = NULL
+WHERE id = $1
+`
+
+type SetUserPINParams struct {
+	ID      uuid.UUID
+	PINHash *string
+}
+
+// Stores a new PIN hash and clears failed attempts and any lock.
+func (q *Queries) SetUserPIN(ctx context.Context, arg SetUserPINParams) error {
+	_, err := q.db.Exec(ctx, setUserPIN, arg.ID, arg.PINHash)
+	return err
+}
+
+const setUserPINAttempts = `-- name: SetUserPINAttempts :exec
+UPDATE users
+SET pin_failed_count = $2, pin_locked_until = $3
+WHERE id = $1
+`
+
+type SetUserPINAttemptsParams struct {
+	ID             uuid.UUID
+	PINFailedCount int16
+	PINLockedUntil *time.Time
+}
+
+func (q *Queries) SetUserPINAttempts(ctx context.Context, arg SetUserPINAttemptsParams) error {
+	_, err := q.db.Exec(ctx, setUserPINAttempts, arg.ID, arg.PINFailedCount, arg.PINLockedUntil)
+	return err
 }

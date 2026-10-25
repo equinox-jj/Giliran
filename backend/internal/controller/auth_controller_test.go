@@ -57,11 +57,15 @@ var testTokens = security.NewTokenIssuer(&config.Config{JWT: config.JWT{
 	Secret: strings.Repeat("s", 32), Issuer: "test", Audience: "test", AccessTTL: 15 * time.Minute,
 }}, clock.System{})
 
+func discardLogger() *slog.Logger {
+	return slog.New(slog.NewTextHandler(io.Discard, nil))
+}
+
 // newAuthApp mounts the auth routes as routes.Register does, minus rate
 // limits, with the production error handler and validator.
 func newAuthApp(auth AuthService) *fiber.App {
 	app := fiber.New(fiber.Config{
-		ErrorHandler:    response.ErrorHandler(slog.New(slog.NewTextHandler(io.Discard, nil))),
+		ErrorHandler:    response.ErrorHandler(discardLogger()),
 		StructValidator: validation.New(),
 	})
 	app.Use(middleware.RequestID())

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -45,6 +46,24 @@ func (r *UserRepository) Create(ctx context.Context, id uuid.UUID, phone, fireba
 func (r *UserRepository) SetFirebaseUID(ctx context.Context, id uuid.UUID, uid string) (model.User, error) {
 	row, err := r.tx.Queries(ctx).SetUserFirebaseUID(ctx, sqlc.SetUserFirebaseUIDParams{ID: id, FirebaseUID: &uid})
 	return toUser(row), mapErr(err)
+}
+
+// GetByIDForUpdate loads and row-locks a user. Call it inside WithTx.
+func (r *UserRepository) GetByIDForUpdate(ctx context.Context, id uuid.UUID) (model.User, error) {
+	row, err := r.tx.Queries(ctx).GetUserByIDForUpdate(ctx, id)
+	return toUser(row), mapErr(err)
+}
+
+// SetPIN stores a new PIN hash and clears failed attempts and any lock.
+func (r *UserRepository) SetPIN(ctx context.Context, id uuid.UUID, pinHash string) error {
+	return mapErr(r.tx.Queries(ctx).SetUserPIN(ctx, sqlc.SetUserPINParams{ID: id, PINHash: &pinHash}))
+}
+
+// SetPINAttempts records the failed-attempt count and lock expiry.
+func (r *UserRepository) SetPINAttempts(ctx context.Context, id uuid.UUID, failed int16, lockedUntil *time.Time) error {
+	return mapErr(r.tx.Queries(ctx).SetUserPINAttempts(ctx, sqlc.SetUserPINAttemptsParams{
+		ID: id, PINFailedCount: failed, PINLockedUntil: lockedUntil,
+	}))
 }
 
 // CreateSettings inserts the user's settings row with the defaults.

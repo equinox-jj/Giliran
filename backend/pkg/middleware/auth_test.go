@@ -128,3 +128,33 @@ func TestRateLimit(t *testing.T) {
 		t.Error("no Retry-After header")
 	}
 }
+
+func TestRateLimitByUser(t *testing.T) {
+	// Arrange
+	tokens := testTokens()
+	app := newApp()
+	app.Post("/pin/verify", Auth(tokens), RateLimitByUser(1, time.Minute), func(c fiber.Ctx) error {
+		return c.SendStatus(fiber.StatusNoContent)
+	})
+	request := func(t *testing.T) *http.Request {
+		t.Helper()
+		token, _, err := tokens.Issue(uuid.Must(uuid.NewV7()), uuid.Must(uuid.NewV7()))
+		if err != nil {
+			t.Fatalf("Issue: %v", err)
+		}
+		req := httptest.NewRequest(http.MethodPost, "/pin/verify", nil)
+		req.Header.Set(fiber.HeaderAuthorization, "Bearer "+token)
+		return req
+	}
+	if resp, _ := send(t, app, request(t)); resp.StatusCode != 204 {
+		t.Fatalf("first user: status %d, want 204", resp.StatusCode)
+	}
+
+	// Act
+	resp, _ := send(t, app, request(t)) // a different user, same IP
+
+	// Assert
+	if resp.StatusCode != 204 {
+		t.Errorf("second user: status %d, want 204 (separate budget)", resp.StatusCode)
+	}
+}

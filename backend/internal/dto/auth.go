@@ -57,3 +57,30 @@ type AuthResult struct {
 	IsNewUser bool      `json:"is_new_user"`
 	PINSet    bool      `json:"pin_set"`
 }
+
+// PinRequest is the body of POST /auth/pin/verify. The PIN is not
+// format-checked: anything that is not the PIN is simply wrong.
+type PinRequest struct {
+	PIN string `json:"pin"`
+}
+
+// SetPinRequest is the body of POST /auth/pin. Strength rules are checked by
+// the service (pin_too_weak).
+type SetPinRequest struct {
+	PIN             string `json:"pin" validate:"required"`
+	PINConfirmation string `json:"pin_confirmation" validate:"required,eqfield=PIN"`
+}
+
+// ChangePinRequest is the body of PUT /auth/pin.
+type ChangePinRequest struct {
+	CurrentPIN         string `json:"current_pin" validate:"required"`
+	NewPIN             string `json:"new_pin" validate:"required"`
+	NewPINConfirmation string `json:"new_pin_confirmation" validate:"required,eqfield=NewPIN"`
+}
+
+// ResetPinRequest is the body of POST /auth/pin/reset.
+type ResetPinRequest struct {
+	FirebaseIDToken    string `json:"firebase_id_token" validate:"required"`
+	NewPIN             string `json:"new_pin" validate:"required"`
+	NewPINConfirmation string `json:"new_pin_confirmation" validate:"required,eqfield=NewPIN"`
+}

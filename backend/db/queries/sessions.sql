@@ -28,3 +28,9 @@ WHERE family_id = sqlc.arg(family_id) AND revoked_at IS NULL;
 UPDATE sessions
 SET revoked_at = sqlc.arg(now)::timestamptz, revoked_reason = sqlc.arg(reason)::text
 WHERE id = sqlc.arg(id) AND user_id = sqlc.arg(user_id) AND revoked_at IS NULL;
+
+-- name: RevokeOtherUserSessions :execrows
+-- Signs the user out everywhere except the current session.
+UPDATE sessions
+SET revoked_at = sqlc.arg(now)::timestamptz, revoked_reason = sqlc.arg(reason)::text
+WHERE user_id = sqlc.arg(user_id) AND id <> sqlc.arg(except_id) AND revoked_at IS NULL;

@@ -44,7 +44,8 @@ func newTestApp() *fiber.App {
 		Config: cfg,
 		Tokens: security.NewTokenIssuer(cfg, clock.System{}),
 		Health: controller.NewHealthController(),
-		Auth:   controller.NewAuthController(nil), // auth routes are tested in internal/controller
+		Auth:   controller.NewAuthController(nil), // auth and PIN routes are tested in internal/controller
+		PIN:    controller.NewPINController(nil),
 	})
 	app.Get("/panic", func(fiber.Ctx) error { panic("boom") })
 	app.Post("/bind", func(c fiber.Ctx) error {

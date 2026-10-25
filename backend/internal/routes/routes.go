@@ -20,6 +20,7 @@ type Params struct {
 	Tokens *security.TokenIssuer
 	Health *controller.HealthController
 	Auth   *controller.AuthController
+	PIN    *controller.PINController
 }
 
 // Register adds every route to p.App.
@@ -37,4 +38,11 @@ func Register(p Params) {
 	// household shares one IP, so refresh gets the looser write limit.
 	auth.Post("/refresh", middleware.RateLimit(rl.WriteMax, rl.WriteWindow), p.Auth.Refresh)
 	auth.Post("/logout", requireAuth, p.Auth.Logout)
+
+	// One per-user budget shared by every PIN check, on top of the lockout.
+	pinLimit := middleware.RateLimitByUser(rl.PINMax, rl.PINWindow)
+	auth.Post("/pin", requireAuth, pinLimit, p.PIN.Set)
+	auth.Put("/pin", requireAuth, pinLimit, p.PIN.Change)
+	auth.Post("/pin/verify", requireAuth, pinLimit, p.PIN.Verify)
+	auth.Post("/pin/reset", requireAuth, middleware.RateLimitByUser(rl.OTPMax, rl.OTPWindow), p.PIN.Reset)
 }

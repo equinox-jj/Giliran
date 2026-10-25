@@ -11,6 +11,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/requestid"
@@ -125,6 +126,36 @@ func TestErrorHandler(t *testing.T) {
 			}
 			if _, ok := body["errors"]; ok {
 				t.Errorf("unexpected errors[]: %v", body["errors"])
+			}
+		})
+	}
+}
+
+func TestErrorHandlerRetryAfter(t *testing.T) {
+	// Arrange
+	tests := []struct {
+		name string
+		err  error
+		want string
+	}{
+		{"rounds up to whole seconds", model.ErrPINLocked.WithRetryAfter(90*time.Second + time.Millisecond), "91"},
+		{"absent when zero", model.ErrPINLocked, ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Arrange
+			app := newErrorApp(tt.err, io.Discard)
+
+			// Act
+			resp, err := app.Test(httptest.NewRequest(http.MethodGet, "/fail", nil))
+
+			// Assert
+			if err != nil {
+				t.Fatalf("app.Test: %v", err)
+			}
+			if got := resp.Header.Get(fiber.HeaderRetryAfter); got != tt.want {
+				t.Errorf("Retry-After %q, want %q", got, tt.want)
 			}
 		})
 	}

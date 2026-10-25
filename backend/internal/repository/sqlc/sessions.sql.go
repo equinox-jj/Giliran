@@ -94,6 +94,33 @@ func (q *Queries) GetSessionByRefreshTokenHashForUpdate(ctx context.Context, ref
 	return i, err
 }
 
+const revokeOtherUserSessions = `-- name: RevokeOtherUserSessions :execrows
+UPDATE sessions
+SET revoked_at = $1::timestamptz, revoked_reason = $2::text
+WHERE user_id = $3 AND id <> $4 AND revoked_at IS NULL
+`
+
+type RevokeOtherUserSessionsParams struct {
+	Now      time.Time
+	Reason   string
+	UserID   uuid.UUID
+	ExceptID uuid.UUID
+}
+
+// Signs the user out everywhere except the current session.
+func (q *Queries) RevokeOtherUserSessions(ctx context.Context, arg RevokeOtherUserSessionsParams) (int64, error) {
+	result, err := q.db.Exec(ctx, revokeOtherUserSessions,
+		arg.Now,
+		arg.Reason,
+		arg.UserID,
+		arg.ExceptID,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const revokeSessionFamily = `-- name: RevokeSessionFamily :execrows
 UPDATE sessions
 SET revoked_at = $1::timestamptz, revoked_reason = $2::text

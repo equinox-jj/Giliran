@@ -18,11 +18,18 @@ type Querier interface {
 	GetSessionByRefreshTokenHashForUpdate(ctx context.Context, refreshTokenHash string) (Session, error)
 	GetUserByFirebaseUID(ctx context.Context, firebaseUid *string) (User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
+	// Locks the row so concurrent PIN attempts count correctly.
+	GetUserByIDForUpdate(ctx context.Context, id uuid.UUID) (User, error)
 	GetUserByPhone(ctx context.Context, phone *string) (User, error)
+	// Signs the user out everywhere except the current session.
+	RevokeOtherUserSessions(ctx context.Context, arg RevokeOtherUserSessionsParams) (int64, error)
 	RevokeSessionFamily(ctx context.Context, arg RevokeSessionFamilyParams) (int64, error)
 	RevokeUserSession(ctx context.Context, arg RevokeUserSessionParams) (int64, error)
 	RotateSession(ctx context.Context, arg RotateSessionParams) error
 	SetUserFirebaseUID(ctx context.Context, arg SetUserFirebaseUIDParams) (User, error)
+	// Stores a new PIN hash and clears failed attempts and any lock.
+	SetUserPIN(ctx context.Context, arg SetUserPINParams) error
+	SetUserPINAttempts(ctx context.Context, arg SetUserPINAttemptsParams) error
 }
 
 var _ Querier = (*Queries)(nil)

@@ -60,6 +60,14 @@ func (r *SessionRepository) RevokeForUser(ctx context.Context, id, userID uuid.U
 	return n > 0, mapErr(err)
 }
 
+// RevokeOthers revokes every active session of userID except exceptID.
+func (r *SessionRepository) RevokeOthers(ctx context.Context, userID, exceptID uuid.UUID, reason model.RevokedReason, now time.Time) (int64, error) {
+	n, err := r.tx.Queries(ctx).RevokeOtherUserSessions(ctx, sqlc.RevokeOtherUserSessionsParams{
+		UserID: userID, ExceptID: exceptID, Reason: string(reason), Now: now,
+	})
+	return n, mapErr(err)
+}
+
 func toSession(row sqlc.Session) model.Session {
 	s := model.Session{
 		ID:               row.ID,

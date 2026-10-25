@@ -5,7 +5,9 @@ import (
 	"errors"
 	"log/slog"
 	"maps"
+	"math"
 	"net/http"
+	"strconv"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/requestid"
@@ -159,6 +161,9 @@ func ErrorHandler(log *slog.Logger) fiber.ErrorHandler {
 				"method", c.Method(), "path", c.Path())
 		}
 
+		if me.RetryAfter > 0 {
+			c.Set(fiber.HeaderRetryAfter, strconv.FormatInt(int64(math.Ceil(me.RetryAfter.Seconds())), 10))
+		}
 		p := newProblem(me, rid)
 		return c.Status(p.Status).JSON(p, problemContentType)
 	}

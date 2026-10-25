@@ -1,6 +1,9 @@
 package model
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 // ErrorKind classifies a domain error. pkg/response maps each kind to one HTTP
 // status, so this package never imports net/http.
@@ -32,6 +35,9 @@ type Error struct {
 	// Extensions are extra problem members, e.g. paid_count and total_count
 	// on payments_incomplete.
 	Extensions map[string]any
+	// RetryAfter, when positive, is sent as the Retry-After header (whole
+	// seconds, rounded up), e.g. until a PIN lock expires.
+	RetryAfter time.Duration
 }
 
 func (e *Error) Error() string {
@@ -50,6 +56,13 @@ func (e *Error) Is(target error) bool {
 func (e *Error) WithDetail(format string, args ...any) *Error {
 	c := *e
 	c.Message = fmt.Sprintf(format, args...)
+	return &c
+}
+
+// WithRetryAfter returns a copy of e that tells the client to wait d.
+func (e *Error) WithRetryAfter(d time.Duration) *Error {
+	c := *e
+	c.RetryAfter = d
 	return &c
 }
 
@@ -105,6 +118,7 @@ var (
 	ErrPINInvalid          = &Error{Kind: KindUnauthenticated, Code: "pin_invalid", Message: "Wrong PIN."}
 	ErrPINNotSet           = &Error{Kind: KindConflict, Code: "pin_not_set", Message: "This action requires a PIN that has not been set."}
 	ErrPINLocked           = &Error{Kind: KindLocked, Code: "pin_locked", Message: "Too many wrong PIN attempts."}
+	ErrPINAlreadySet       = &Error{Kind: KindConflict, Code: "pin_already_set", Message: "A PIN is already set; change it instead."}
 
 	// ErrForbiddenRole is only for members whose role cannot do the action.
 	// Non-members get ErrGroupNotFound instead, so group existence never leaks.

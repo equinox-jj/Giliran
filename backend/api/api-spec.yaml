@@ -35,6 +35,7 @@ info:
     | `refresh_token_invalid` | 401 | Refresh token unknown, expired or revoked |
     | `pin_invalid` | 401 | Wrong PIN |
     | `pin_not_set` | 409 | Action requires a PIN that has not been set |
+    | `pin_already_set` | 409 | A PIN is already set; use change PIN |
     | `pin_locked` | 423 | Too many wrong PIN attempts |
     | `forbidden_role` | 403 | Your role in this group cannot do this |
     | `not_found` | 404 | Unknown route or method |

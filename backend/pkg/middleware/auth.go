@@ -49,13 +49,25 @@ func SessionID(c fiber.Ctx) uuid.UUID {
 	return id
 }
 
-// RateLimit allows limit requests per client IP in each window. Over the limit
-// it answers 429 rate_limit_exceeded with Retry-After. Counters live in
+// RateLimit allows limit requests per client IP in each window. Over the
+// limit it answers 429 rate_limit_exceeded with Retry-After. Counters live in
 // memory, so each API instance limits on its own.
 func RateLimit(limit int, window time.Duration) fiber.Handler {
+	return rateLimit(limit, window, func(c fiber.Ctx) string { return c.IP() })
+}
+
+// RateLimitByUser is RateLimit keyed by the signed-in user instead of the IP,
+// so one account cannot dodge it by switching networks. Register it after
+// Auth. One handler shares its counters across every route it is used on.
+func RateLimitByUser(limit int, window time.Duration) fiber.Handler {
+	return rateLimit(limit, window, func(c fiber.Ctx) string { return UserID(c).String() })
+}
+
+func rateLimit(limit int, window time.Duration, key func(fiber.Ctx) string) fiber.Handler {
 	return limiter.New(limiter.Config{
-		Max:        limit,
-		Expiration: window,
+		Max:          limit,
+		Expiration:   window,
+		KeyGenerator: key,
 		LimitReached: func(fiber.Ctx) error {
 			return model.ErrRateLimitExceeded // Retry-After is already set
 		},
