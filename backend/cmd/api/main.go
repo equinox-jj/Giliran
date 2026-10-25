@@ -12,6 +12,7 @@ import (
 	"github.com/equinox-jj/Giliran/backend/internal/routes"
 	"github.com/equinox-jj/Giliran/backend/pkg/config"
 	"github.com/equinox-jj/Giliran/backend/pkg/logger"
+	"github.com/equinox-jj/Giliran/backend/pkg/security"
 )
 
 func main() {
@@ -24,6 +25,7 @@ func options() fx.Option {
 		config.Module,
 		logger.Module,
 		repository.Module,
+		security.Module,
 		controller.Module,
 		fx.Provide(newServer),
 		routes.Module,
