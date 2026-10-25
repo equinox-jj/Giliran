@@ -72,11 +72,6 @@ type Period struct {
 	UpdatedAt        time.Time    `db:"updated_at"`
 }
 
-// TableName is the PostgreSQL table that stores periods.
-func (Period) TableName() string {
-	return "periods"
-}
-
 // IsOpen reports whether the period is taking payments.
 func (p *Period) IsOpen() bool {
 	return p.Status == PeriodStatusOpen

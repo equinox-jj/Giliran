@@ -55,11 +55,6 @@ type LeaveRequest struct {
 	CreatedAt  time.Time          `db:"created_at"`
 }
 
-// TableName is the PostgreSQL table that stores leave requests.
-func (LeaveRequest) TableName() string {
-	return "leave_requests"
-}
-
 // IsPending reports whether the request is waiting for the organizer.
 func (r *LeaveRequest) IsPending() bool {
 	return r.Status == LeaveRequestStatusPending

@@ -31,11 +31,6 @@ type User struct {
 	DeletedAt      *time.Time `db:"deleted_at"`
 }
 
-// TableName is the PostgreSQL table that stores users.
-func (User) TableName() string {
-	return "users"
-}
-
 // IsDeleted reports whether the account has been soft-deleted.
 func (u *User) IsDeleted() bool {
 	return u.DeletedAt != nil

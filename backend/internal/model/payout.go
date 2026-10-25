@@ -21,11 +21,6 @@ type Payout struct {
 	ConfirmedAt    *time.Time `db:"confirmed_at"`
 }
 
-// TableName is the PostgreSQL table that stores payouts.
-func (Payout) TableName() string {
-	return "payouts"
-}
-
 // IsConfirmed reports whether the winner has confirmed receiving the pot.
 func (p *Payout) IsConfirmed() bool {
 	return p.ConfirmedAt != nil

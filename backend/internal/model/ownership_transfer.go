@@ -61,11 +61,6 @@ type OwnershipTransfer struct {
 	CreatedAt   time.Time               `db:"created_at"`
 }
 
-// TableName is the PostgreSQL table that stores ownership transfers.
-func (OwnershipTransfer) TableName() string {
-	return "ownership_transfers"
-}
-
 // IsPending reports whether the transfer is waiting for a response.
 func (t *OwnershipTransfer) IsPending() bool {
 	return t.Status == OwnershipTransferStatusPending

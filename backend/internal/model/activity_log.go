@@ -80,11 +80,6 @@ type ActivityLog struct {
 	CreatedAt   time.Time       `db:"created_at"`
 }
 
-// TableName is the PostgreSQL table that stores activity log entries.
-func (ActivityLog) TableName() string {
-	return "activity_logs"
-}
-
 // IsSystem reports whether a background job wrote the entry.
 func (l *ActivityLog) IsSystem() bool {
 	return l.ActorType == ActorTypeSystem

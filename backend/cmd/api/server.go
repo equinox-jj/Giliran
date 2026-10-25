@@ -46,9 +46,9 @@ func newServer(lc fx.Lifecycle, cfg *config.Config, log *slog.Logger) *fiber.App
 	app := newFiberApp(cfg, log)
 
 	lc.Append(fx.Hook{
-		OnStart: func(context.Context) error {
+		OnStart: func(ctx context.Context) error {
 			// Bind here so a busy port fails startup instead of a goroutine.
-			ln, err := net.Listen("tcp", cfg.HTTP.Addr())
+			ln, err := (&net.ListenConfig{}).Listen(ctx, "tcp", cfg.HTTP.Addr())
 			if err != nil {
 				return fmt.Errorf("listen on %s: %w", cfg.HTTP.Addr(), err)
 			}

@@ -86,11 +86,6 @@ type Payment struct {
 	UpdatedAt      time.Time      `db:"updated_at"`
 }
 
-// TableName is the PostgreSQL table that stores payments.
-func (Payment) TableName() string {
-	return "payments"
-}
-
 // IsPaid reports whether the payment has been approved or marked paid.
 func (p *Payment) IsPaid() bool {
 	return p.Status == PaymentStatusPaid

@@ -40,8 +40,3 @@ type PaymentProof struct {
 	UploadedBy  uuid.UUID        `db:"uploaded_by"`
 	CreatedAt   time.Time        `db:"created_at"`
 }
-
-// TableName is the PostgreSQL table that stores payment proofs.
-func (PaymentProof) TableName() string {
-	return "payment_proofs"
-}

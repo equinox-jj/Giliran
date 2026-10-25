@@ -21,11 +21,6 @@ type SlotMember struct {
 	CreatedAt           time.Time `db:"created_at"`
 }
 
-// TableName is the PostgreSQL table that stores slot members.
-func (SlotMember) TableName() string {
-	return "slot_members"
-}
-
 // NewSlotMember returns a full-share link, the table default.
 func NewSlotMember(slotID, memberID uuid.UUID) SlotMember {
 	return SlotMember{

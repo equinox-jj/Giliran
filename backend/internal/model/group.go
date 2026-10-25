@@ -118,11 +118,6 @@ type Group struct {
 	UpdatedAt          time.Time   `db:"updated_at"`
 }
 
-// TableName is the PostgreSQL table that stores groups.
-func (Group) TableName() string {
-	return "groups"
-}
-
 // IsDraft reports whether the group is still taking members and editable.
 func (g *Group) IsDraft() bool {
 	return g.Status == GroupStatusDraft

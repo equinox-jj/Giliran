@@ -8,6 +8,7 @@ import (
 	"go.uber.org/fx/fxevent"
 
 	"github.com/equinox-jj/Giliran/backend/internal/controller"
+	"github.com/equinox-jj/Giliran/backend/internal/repository"
 	"github.com/equinox-jj/Giliran/backend/internal/routes"
 	"github.com/equinox-jj/Giliran/backend/pkg/config"
 	"github.com/equinox-jj/Giliran/backend/pkg/logger"
@@ -22,6 +23,7 @@ func options() fx.Option {
 	return fx.Options(
 		config.Module,
 		logger.Module,
+		repository.Module,
 		controller.Module,
 		fx.Provide(newServer),
 		routes.Module,

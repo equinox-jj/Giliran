@@ -70,11 +70,6 @@ type GroupMember struct {
 	UpdatedAt           time.Time    `db:"updated_at"`
 }
 
-// TableName is the PostgreSQL table that stores group members.
-func (GroupMember) TableName() string {
-	return "group_members"
-}
-
 // IsGuest reports whether the member has no account.
 func (m *GroupMember) IsGuest() bool {
 	return m.UserID == nil

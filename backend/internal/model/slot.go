@@ -17,11 +17,6 @@ type Slot struct {
 	CreatedAt          time.Time `db:"created_at"`
 }
 
-// TableName is the PostgreSQL table that stores slots.
-func (Slot) TableName() string {
-	return "slots"
-}
-
 // HasFixedOrderPosition reports whether the slot has a payout position, which
 // fixed-order groups need before they start.
 func (s *Slot) HasFixedOrderPosition() bool {

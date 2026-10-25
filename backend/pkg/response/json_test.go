@@ -71,7 +71,7 @@ func TestCreated(t *testing.T) {
 
 func TestNoContent(t *testing.T) {
 	// Arrange
-	app := newApp(func(c fiber.Ctx) error { return NoContent(c) })
+	app := newApp(NoContent)
 
 	// Act
 	resp, got := body(t, app)

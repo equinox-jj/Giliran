@@ -31,11 +31,6 @@ type IdempotencyKey struct {
 	ExpiresAt      time.Time       `db:"expires_at"` // cleaned up by a River job
 }
 
-// TableName is the PostgreSQL table that stores idempotency keys.
-func (IdempotencyKey) TableName() string {
-	return "idempotency_keys"
-}
-
 // IsExpired reports whether the stored response can no longer be replayed at
 // the given time.
 func (k *IdempotencyKey) IsExpired(now time.Time) bool {

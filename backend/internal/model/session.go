@@ -74,11 +74,6 @@ type Session struct {
 	CreatedAt        time.Time      `db:"created_at"`
 }
 
-// TableName is the PostgreSQL table that stores sessions.
-func (Session) TableName() string {
-	return "sessions"
-}
-
 // IsRevoked reports whether the session has been revoked.
 func (s *Session) IsRevoked() bool {
 	return s.RevokedAt != nil

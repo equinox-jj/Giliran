@@ -36,11 +36,6 @@ type UserSettings struct {
 	UpdatedAt              time.Time `db:"updated_at"`
 }
 
-// TableName is the PostgreSQL table that stores user settings.
-func (UserSettings) TableName() string {
-	return "user_settings"
-}
-
 // NewUserSettings returns the defaults the table applies (Indonesian, every
 // notification on), for creating the row alongside a new user.
 func NewUserSettings(userID uuid.UUID) UserSettings {

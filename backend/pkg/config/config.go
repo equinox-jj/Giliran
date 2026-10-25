@@ -213,20 +213,19 @@ func Load() (*Config, error) {
 // load is Load with the file path and environment injectable for tests.
 func load(path string, environ func() []string) (*Config, error) {
 	k := koanf.New(".")
-	lower := func(s string) string { return strings.ToLower(s) }
 
 	if err := k.Load(confmap.Provider(defaults, "."), nil); err != nil {
 		return nil, fmt.Errorf("config: load defaults: %w", err)
 	}
 	if _, err := os.Stat(path); err == nil {
-		if err := k.Load(file.Provider(path), dotenv.ParserEnv("", ".", lower)); err != nil {
+		if err := k.Load(file.Provider(path), dotenv.ParserEnv("", ".", strings.ToLower)); err != nil {
 			return nil, fmt.Errorf("config: load %s: %w", path, err)
 		}
 	} else if !errors.Is(err, os.ErrNotExist) {
 		return nil, fmt.Errorf("config: stat %s: %w", path, err)
 	}
 	envOpt := env.Opt{
-		TransformFunc: func(k, v string) (string, any) { return lower(k), v },
+		TransformFunc: func(k, v string) (string, any) { return strings.ToLower(k), v },
 		EnvironFunc:   environ,
 	}
 	if err := k.Load(env.Provider(".", envOpt), nil); err != nil {
