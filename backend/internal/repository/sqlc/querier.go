@@ -11,6 +11,9 @@ import (
 )
 
 type Querier interface {
+	// Account deletion (DB_SCHEME §10): personal data goes, the row stays so
+	// group history and totals keep pointing at "Mantan anggota".
+	AnonymizeUser(ctx context.Context, arg AnonymizeUserParams) (int64, error)
 	AssignSlot(ctx context.Context, arg AssignSlotParams) error
 	// A NULL member_id cancels every pending request in the group.
 	CancelPendingLeaveRequests(ctx context.Context, arg CancelPendingLeaveRequestsParams) error
@@ -99,6 +102,10 @@ type Querier interface {
 	ListActiveHoldersAbove(ctx context.Context, arg ListActiveHoldersAboveParams) ([]ListActiveHoldersAboveRow, error)
 	// The user's signed-in devices, the current one first.
 	ListActiveUserSessions(ctx context.Context, arg ListActiveUserSessionsParams) ([]Session, error)
+	// A page of the group's log, newest first (DB_SCHEME §8). A NULL before_id
+	// starts at the newest entry; the caller asks for one row more than it shows
+	// to learn whether another page exists.
+	ListActivity(ctx context.Context, arg ListActivityParams) ([]ActivityLog, error)
 	// Active guest rows in running groups whose phone matches, skipping groups
 	// the user is already in (FR-MEM-04 auto-claim at sign-in).
 	ListClaimableGuestsByPhone(ctx context.Context, arg ListClaimableGuestsByPhoneParams) ([]GroupMember, error)
@@ -113,19 +120,35 @@ type Querier interface {
 	// The user's groups with the current period's progress, soonest due date
 	// first. Period columns are NULL while no period is open.
 	ListMyGroups(ctx context.Context, arg ListMyGroupsParams) ([]ListMyGroupsRow, error)
+	// Per past winner of the group (DB_SCHEME §8): the period won and the later
+	// periods not yet paid. Open, drawn and closed periods have a payment row;
+	// upcoming ones do not yet, so they are counted separately and priced at the
+	// member's share by the caller.
+	ListObligations(ctx context.Context, arg ListObligationsParams) ([]ListObligationsRow, error)
+	// The member each payment belongs to, for the activity log's subject.
+	ListPaymentMembers(ctx context.Context, ids []uuid.UUID) ([]ListPaymentMembersRow, error)
 	ListPaymentProofs(ctx context.Context, paymentID uuid.UUID) ([]PaymentProof, error)
+	// The winner each payout went to, for the activity log's subject.
+	ListPayoutMembers(ctx context.Context, ids []uuid.UUID) ([]ListPayoutMembersRow, error)
 	// A period's payments by slot number (ListPaymentBoard in DB_SCHEME §8),
 	// with the current proof.
 	ListPeriodPayments(ctx context.Context, periodID uuid.UUID) ([]ListPeriodPaymentsRow, error)
 	// The group's periods with the winner's slot and payout state, in order.
 	ListPeriodViews(ctx context.Context, groupID uuid.UUID) ([]ListPeriodViewsRow, error)
+	// A period's payments with what decides whether a push reminder can reach
+	// the payer: account, phone, notification setting and a device token.
+	ListReminderTargets(ctx context.Context, arg ListReminderTargetsParams) ([]ListReminderTargetsRow, error)
 	// Active members holding a slot of the group, with their share in basis
 	// points (share_pct 100.00 → 10000), by slot number.
 	ListSlotHolders(ctx context.Context, groupID uuid.UUID) ([]ListSlotHoldersRow, error)
 	ListSlots(ctx context.Context, groupID uuid.UUID) ([]Slot, error)
+	// The user's active memberships with their group's status, for account
+	// deletion.
+	ListUserMemberships(ctx context.Context, userID *uuid.UUID) ([]ListUserMembershipsRow, error)
 	// The lowest slot with no active holder that has not won yet. Lock the group
 	// first so two joins never pick the same slot.
 	LowestFreeSlot(ctx context.Context, groupID uuid.UUID) (Slot, error)
+	MarkPaymentsReminded(ctx context.Context, arg MarkPaymentsRemindedParams) error
 	// A past winner who still owes a payment in some period of the group,
 	// including periods that have not opened yet (FR-MEM-05).
 	MemberHasOutstandingObligations(ctx context.Context, arg MemberHasOutstandingObligationsParams) (bool, error)
@@ -143,6 +166,7 @@ type Querier interface {
 	RejectPayment(ctx context.Context, arg RejectPaymentParams) (Payment, error)
 	RespondOwnershipTransfer(ctx context.Context, arg RespondOwnershipTransferParams) (OwnershipTransfer, error)
 	ReviewLeaveRequest(ctx context.Context, arg ReviewLeaveRequestParams) (LeaveRequest, error)
+	RevokeAllUserSessions(ctx context.Context, arg RevokeAllUserSessionsParams) (int64, error)
 	// Signs the user out everywhere except the current session.
 	RevokeOtherUserSessions(ctx context.Context, arg RevokeOtherUserSessionsParams) (int64, error)
 	RevokeSessionFamily(ctx context.Context, arg RevokeSessionFamilyParams) (int64, error)

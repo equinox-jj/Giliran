@@ -12,6 +12,29 @@ import (
 	"github.com/google/uuid"
 )
 
+const anonymizeUser = `-- name: AnonymizeUser :execrows
+UPDATE users
+SET phone = NULL, firebase_uid = NULL, avatar_key = NULL, pin_hash = NULL,
+    pin_failed_count = 0, pin_locked_until = NULL,
+    name = 'Mantan anggota', deleted_at = $1::timestamptz
+WHERE id = $2 AND deleted_at IS NULL
+`
+
+type AnonymizeUserParams struct {
+	Now time.Time
+	ID  uuid.UUID
+}
+
+// Account deletion (DB_SCHEME §10): personal data goes, the row stays so
+// group history and totals keep pointing at "Mantan anggota".
+func (q *Queries) AnonymizeUser(ctx context.Context, arg AnonymizeUserParams) (int64, error) {
+	result, err := q.db.Exec(ctx, anonymizeUser, arg.Now, arg.ID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (id, phone, firebase_uid)
 VALUES ($1, $2, $3)

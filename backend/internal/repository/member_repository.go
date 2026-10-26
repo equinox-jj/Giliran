@@ -197,3 +197,22 @@ func toGroupMember(row sqlc.GroupMember) model.GroupMember {
 		UpdatedAt:           row.UpdatedAt,
 	}
 }
+
+// Membership is an active membership of a user with its group's status.
+type Membership struct {
+	Member      model.GroupMember
+	GroupStatus model.GroupStatus
+}
+
+// ListUserMemberships returns userID's active memberships, oldest first.
+func (r *MemberRepository) ListUserMemberships(ctx context.Context, userID uuid.UUID) ([]Membership, error) {
+	rows, err := r.tx.Queries(ctx).ListUserMemberships(ctx, &userID)
+	if err != nil {
+		return nil, mapErr(err)
+	}
+	out := make([]Membership, len(rows))
+	for i, row := range rows {
+		out[i] = Membership{Member: toGroupMember(row.GroupMember), GroupStatus: model.GroupStatus(row.GroupStatus)}
+	}
+	return out, nil
+}

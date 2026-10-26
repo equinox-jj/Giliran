@@ -29,6 +29,9 @@ type Params struct {
 	Payments *controller.PaymentController
 	Draws    *controller.DrawController
 	Payouts  *controller.PayoutController
+	// Transparency serves the activity log and obligations.
+	Transparency *controller.TransparencyController
+	Reminders    *controller.ReminderController
 	// Idempotency guards the writes that need an Idempotency-Key.
 	Idempotency *controller.Idempotency
 }
@@ -69,6 +72,7 @@ func Register(p Params) {
 	me.Get("/sessions", p.Me.ListSessions)
 	me.Delete("/sessions/:session_id", writeLimit, p.Me.RevokeSession)
 	me.Get("/groups", p.Groups.ListMine)
+	me.Post("/deletion", pinLimit, p.Me.DeleteAccount)
 
 	v1.Post("/groups", requireAuth, writeLimit, p.Groups.Create)
 	g := v1.Group("/groups/:group_id", requireAuth)
@@ -110,6 +114,10 @@ func Register(p Params) {
 	g.Get("/periods/:period_id/payout", p.Payouts.Get)
 	g.Post("/periods/:period_id/payout", writeLimit, idem, p.Payouts.Record)
 	g.Post("/periods/:period_id/payout/confirm", writeLimit, idem, p.Payouts.Confirm)
+	g.Post("/periods/:period_id/reminders", writeLimit, idem, p.Reminders.Send)
+	g.Get("/periods/:period_id/recap", p.Reminders.Recap)
+	g.Get("/activity", p.Transparency.Activity)
+	g.Get("/obligations", p.Transparency.Obligations)
 
 	// Invite codes and claim tokens are the secret in a link; a per-user
 	// limit slows anyone guessing them.

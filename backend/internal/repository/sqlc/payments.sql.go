@@ -90,7 +90,7 @@ func (q *Queries) CreatePayments(ctx context.Context, arg CreatePaymentsParams) 
 
 const getPayment = `-- name: GetPayment :one
 SELECT
-    pay.id, pay.group_id, pay.period_id, pay.slot_id, pay.member_id, pay.amount, pay.status, pay.method, pay.current_proof_id, pay.note, pay.reject_reason, pay.paid_at, pay.reviewed_by, pay.reviewed_at, pay.created_at, pay.updated_at,
+    pay.id, pay.group_id, pay.period_id, pay.slot_id, pay.member_id, pay.amount, pay.status, pay.method, pay.current_proof_id, pay.note, pay.reject_reason, pay.paid_at, pay.reviewed_by, pay.reviewed_at, pay.created_at, pay.updated_at, pay.last_reminded_at,
     pr.object_key AS proof_object_key,
     pr.content_type AS proof_content_type,
     pr.created_at AS proof_created_at
@@ -131,6 +131,7 @@ func (q *Queries) GetPayment(ctx context.Context, arg GetPaymentParams) (GetPaym
 		&i.Payment.ReviewedAt,
 		&i.Payment.CreatedAt,
 		&i.Payment.UpdatedAt,
+		&i.Payment.LastRemindedAt,
 		&i.ProofObjectKey,
 		&i.ProofContentType,
 		&i.ProofCreatedAt,
@@ -139,7 +140,7 @@ func (q *Queries) GetPayment(ctx context.Context, arg GetPaymentParams) (GetPaym
 }
 
 const getPaymentForUpdate = `-- name: GetPaymentForUpdate :one
-SELECT id, group_id, period_id, slot_id, member_id, amount, status, method, current_proof_id, note, reject_reason, paid_at, reviewed_by, reviewed_at, created_at, updated_at FROM payments
+SELECT id, group_id, period_id, slot_id, member_id, amount, status, method, current_proof_id, note, reject_reason, paid_at, reviewed_by, reviewed_at, created_at, updated_at, last_reminded_at FROM payments
 WHERE id = $1 AND group_id = $2
 FOR UPDATE
 `
@@ -169,6 +170,7 @@ func (q *Queries) GetPaymentForUpdate(ctx context.Context, arg GetPaymentForUpda
 		&i.ReviewedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LastRemindedAt,
 	)
 	return i, err
 }
@@ -211,6 +213,81 @@ func (q *Queries) GetPaymentSummary(ctx context.Context, periodID uuid.UUID) (Ge
 	return i, err
 }
 
+const listObligations = `-- name: ListObligations :many
+WITH winners AS (
+    SELECT sm.member_id, (sm.share_pct * 100)::int AS share_basis_points, p.period_no AS won_period_no
+    FROM periods p
+    JOIN slot_members sm ON sm.slot_id = p.winner_slot_id
+    WHERE p.group_id = $2
+)
+SELECT
+    w.member_id,
+    w.won_period_no::smallint AS won_period_no,
+    w.share_basis_points::int AS share_basis_points,
+    count(pay.id) FILTER (WHERE pay.status <> 'paid')::int AS unpaid_count,
+    COALESCE(sum(pay.amount) FILTER (WHERE pay.status <> 'paid'), 0)::bigint AS unpaid_amount,
+    count(pay.id) FILTER (WHERE pay.status <> 'paid' AND lp.due_date < $1::date)::int AS overdue_unpaid_count,
+    COALESCE(sum(pay.amount) FILTER (WHERE pay.status <> 'paid' AND lp.due_date < $1::date), 0)::bigint AS overdue_unpaid_amount,
+    count(lp.id) FILTER (WHERE lp.status = 'upcoming' AND pay.id IS NULL)::int AS upcoming_count,
+    count(lp.id) FILTER (WHERE lp.status = 'upcoming' AND pay.id IS NULL AND lp.due_date < $1::date)::int AS overdue_upcoming_count
+FROM winners w
+LEFT JOIN periods lp ON lp.group_id = $2 AND lp.period_no > w.won_period_no
+LEFT JOIN payments pay ON pay.period_id = lp.id AND pay.member_id = w.member_id
+GROUP BY w.member_id, w.won_period_no, w.share_basis_points
+ORDER BY w.won_period_no
+`
+
+type ListObligationsParams struct {
+	Today   time.Time
+	GroupID uuid.UUID
+}
+
+type ListObligationsRow struct {
+	MemberID             uuid.UUID
+	WonPeriodNo          int16
+	ShareBasisPoints     int32
+	UnpaidCount          int32
+	UnpaidAmount         int64
+	OverdueUnpaidCount   int32
+	OverdueUnpaidAmount  int64
+	UpcomingCount        int32
+	OverdueUpcomingCount int32
+}
+
+// Per past winner of the group (DB_SCHEME §8): the period won and the later
+// periods not yet paid. Open, drawn and closed periods have a payment row;
+// upcoming ones do not yet, so they are counted separately and priced at the
+// member's share by the caller.
+func (q *Queries) ListObligations(ctx context.Context, arg ListObligationsParams) ([]ListObligationsRow, error) {
+	rows, err := q.db.Query(ctx, listObligations, arg.Today, arg.GroupID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListObligationsRow{}
+	for rows.Next() {
+		var i ListObligationsRow
+		if err := rows.Scan(
+			&i.MemberID,
+			&i.WonPeriodNo,
+			&i.ShareBasisPoints,
+			&i.UnpaidCount,
+			&i.UnpaidAmount,
+			&i.OverdueUnpaidCount,
+			&i.OverdueUnpaidAmount,
+			&i.UpcomingCount,
+			&i.OverdueUpcomingCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listPaymentProofs = `-- name: ListPaymentProofs :many
 SELECT id, payment_id, object_key, content_type, size_bytes, image_phash, uploaded_by, created_at FROM payment_proofs
 WHERE payment_id = $1
@@ -248,7 +325,7 @@ func (q *Queries) ListPaymentProofs(ctx context.Context, paymentID uuid.UUID) ([
 
 const listPeriodPayments = `-- name: ListPeriodPayments :many
 SELECT
-    pay.id, pay.group_id, pay.period_id, pay.slot_id, pay.member_id, pay.amount, pay.status, pay.method, pay.current_proof_id, pay.note, pay.reject_reason, pay.paid_at, pay.reviewed_by, pay.reviewed_at, pay.created_at, pay.updated_at,
+    pay.id, pay.group_id, pay.period_id, pay.slot_id, pay.member_id, pay.amount, pay.status, pay.method, pay.current_proof_id, pay.note, pay.reject_reason, pay.paid_at, pay.reviewed_by, pay.reviewed_at, pay.created_at, pay.updated_at, pay.last_reminded_at,
     pr.object_key AS proof_object_key,
     pr.content_type AS proof_content_type,
     pr.created_at AS proof_created_at
@@ -295,9 +372,83 @@ func (q *Queries) ListPeriodPayments(ctx context.Context, periodID uuid.UUID) ([
 			&i.Payment.ReviewedAt,
 			&i.Payment.CreatedAt,
 			&i.Payment.UpdatedAt,
+			&i.Payment.LastRemindedAt,
 			&i.ProofObjectKey,
 			&i.ProofContentType,
 			&i.ProofCreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listReminderTargets = `-- name: ListReminderTargets :many
+SELECT
+    pay.id AS payment_id,
+    pay.member_id,
+    pay.status,
+    pay.last_reminded_at,
+    gm.user_id,
+    gm.guest_phone,
+    u.phone AS user_phone,
+    COALESCE(us.notify_payment_reminders, false)::bool AS notify_payment_reminders,
+    EXISTS (
+        SELECT 1 FROM sessions se
+        WHERE se.user_id = gm.user_id AND se.revoked_at IS NULL
+          AND se.expires_at > $1::timestamptz AND se.fcm_token IS NOT NULL
+    )::bool AS has_device
+FROM payments pay
+JOIN group_members gm ON gm.id = pay.member_id
+JOIN slots s ON s.id = pay.slot_id
+LEFT JOIN users u ON u.id = gm.user_id AND u.deleted_at IS NULL
+LEFT JOIN user_settings us ON us.user_id = u.id
+WHERE pay.period_id = $2
+ORDER BY s.slot_no, gm.joined_at
+`
+
+type ListReminderTargetsParams struct {
+	Now      time.Time
+	PeriodID uuid.UUID
+}
+
+type ListReminderTargetsRow struct {
+	PaymentID              uuid.UUID
+	MemberID               uuid.UUID
+	Status                 string
+	LastRemindedAt         *time.Time
+	UserID                 *uuid.UUID
+	GuestPhone             *string
+	UserPhone              *string
+	NotifyPaymentReminders bool
+	HasDevice              bool
+}
+
+// A period's payments with what decides whether a push reminder can reach
+// the payer: account, phone, notification setting and a device token.
+func (q *Queries) ListReminderTargets(ctx context.Context, arg ListReminderTargetsParams) ([]ListReminderTargetsRow, error) {
+	rows, err := q.db.Query(ctx, listReminderTargets, arg.Now, arg.PeriodID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListReminderTargetsRow{}
+	for rows.Next() {
+		var i ListReminderTargetsRow
+		if err := rows.Scan(
+			&i.PaymentID,
+			&i.MemberID,
+			&i.Status,
+			&i.LastRemindedAt,
+			&i.UserID,
+			&i.GuestPhone,
+			&i.UserPhone,
+			&i.NotifyPaymentReminders,
+			&i.HasDevice,
 		); err != nil {
 			return nil, err
 		}
@@ -346,12 +497,27 @@ func (q *Queries) ListSlotHolders(ctx context.Context, groupID uuid.UUID) ([]Lis
 	return items, nil
 }
 
+const markPaymentsReminded = `-- name: MarkPaymentsReminded :exec
+UPDATE payments SET last_reminded_at = $1::timestamptz
+WHERE id = ANY($2::uuid[])
+`
+
+type MarkPaymentsRemindedParams struct {
+	Now time.Time
+	Ids []uuid.UUID
+}
+
+func (q *Queries) MarkPaymentsReminded(ctx context.Context, arg MarkPaymentsRemindedParams) error {
+	_, err := q.db.Exec(ctx, markPaymentsReminded, arg.Now, arg.Ids)
+	return err
+}
+
 const rejectPayment = `-- name: RejectPayment :one
 UPDATE payments
 SET status = 'rejected', reject_reason = $1,
     reviewed_by = $2, reviewed_at = $3::timestamptz
 WHERE id = $4
-RETURNING id, group_id, period_id, slot_id, member_id, amount, status, method, current_proof_id, note, reject_reason, paid_at, reviewed_by, reviewed_at, created_at, updated_at
+RETURNING id, group_id, period_id, slot_id, member_id, amount, status, method, current_proof_id, note, reject_reason, paid_at, reviewed_by, reviewed_at, created_at, updated_at, last_reminded_at
 `
 
 type RejectPaymentParams struct {
@@ -386,6 +552,7 @@ func (q *Queries) RejectPayment(ctx context.Context, arg RejectPaymentParams) (P
 		&i.ReviewedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LastRemindedAt,
 	)
 	return i, err
 }
@@ -396,7 +563,7 @@ SET status = 'paid', method = $1, note = $2,
     paid_at = $3::timestamptz, reviewed_by = $4, reviewed_at = $3::timestamptz,
     reject_reason = NULL
 WHERE id = $5
-RETURNING id, group_id, period_id, slot_id, member_id, amount, status, method, current_proof_id, note, reject_reason, paid_at, reviewed_by, reviewed_at, created_at, updated_at
+RETURNING id, group_id, period_id, slot_id, member_id, amount, status, method, current_proof_id, note, reject_reason, paid_at, reviewed_by, reviewed_at, created_at, updated_at, last_reminded_at
 `
 
 type SetPaymentPaidParams struct {
@@ -434,6 +601,7 @@ func (q *Queries) SetPaymentPaid(ctx context.Context, arg SetPaymentPaidParams) 
 		&i.ReviewedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LastRemindedAt,
 	)
 	return i, err
 }
@@ -443,7 +611,7 @@ UPDATE payments
 SET status = 'pending_review', current_proof_id = $1, reject_reason = NULL,
     reviewed_by = NULL, reviewed_at = NULL
 WHERE id = $2
-RETURNING id, group_id, period_id, slot_id, member_id, amount, status, method, current_proof_id, note, reject_reason, paid_at, reviewed_by, reviewed_at, created_at, updated_at
+RETURNING id, group_id, period_id, slot_id, member_id, amount, status, method, current_proof_id, note, reject_reason, paid_at, reviewed_by, reviewed_at, created_at, updated_at, last_reminded_at
 `
 
 type SetPaymentProofParams struct {
@@ -471,6 +639,7 @@ func (q *Queries) SetPaymentProof(ctx context.Context, arg SetPaymentProofParams
 		&i.ReviewedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LastRemindedAt,
 	)
 	return i, err
 }

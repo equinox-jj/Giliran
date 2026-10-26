@@ -69,3 +69,113 @@ func (q *Queries) InsertActivityLog(ctx context.Context, arg InsertActivityLogPa
 	)
 	return err
 }
+
+const listActivity = `-- name: ListActivity :many
+SELECT id, group_id, actor_type, actor_user_id, action, entity_type, entity_id, before, after, created_at FROM activity_logs
+WHERE group_id = $1
+  AND ($2::bigint IS NULL OR id < $2::bigint)
+ORDER BY id DESC
+LIMIT $3
+`
+
+type ListActivityParams struct {
+	GroupID  uuid.UUID
+	BeforeID *int64
+	RowLimit int32
+}
+
+// A page of the group's log, newest first (DB_SCHEME §8). A NULL before_id
+// starts at the newest entry; the caller asks for one row more than it shows
+// to learn whether another page exists.
+func (q *Queries) ListActivity(ctx context.Context, arg ListActivityParams) ([]ActivityLog, error) {
+	rows, err := q.db.Query(ctx, listActivity, arg.GroupID, arg.BeforeID, arg.RowLimit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ActivityLog{}
+	for rows.Next() {
+		var i ActivityLog
+		if err := rows.Scan(
+			&i.ID,
+			&i.GroupID,
+			&i.ActorType,
+			&i.ActorUserID,
+			&i.Action,
+			&i.EntityType,
+			&i.EntityID,
+			&i.Before,
+			&i.After,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listPaymentMembers = `-- name: ListPaymentMembers :many
+SELECT id, member_id FROM payments
+WHERE id = ANY($1::uuid[])
+`
+
+type ListPaymentMembersRow struct {
+	ID       uuid.UUID
+	MemberID uuid.UUID
+}
+
+// The member each payment belongs to, for the activity log's subject.
+func (q *Queries) ListPaymentMembers(ctx context.Context, ids []uuid.UUID) ([]ListPaymentMembersRow, error) {
+	rows, err := q.db.Query(ctx, listPaymentMembers, ids)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListPaymentMembersRow{}
+	for rows.Next() {
+		var i ListPaymentMembersRow
+		if err := rows.Scan(&i.ID, &i.MemberID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listPayoutMembers = `-- name: ListPayoutMembers :many
+SELECT id, winner_member_id FROM payouts
+WHERE id = ANY($1::uuid[])
+`
+
+type ListPayoutMembersRow struct {
+	ID             uuid.UUID
+	WinnerMemberID uuid.UUID
+}
+
+// The winner each payout went to, for the activity log's subject.
+func (q *Queries) ListPayoutMembers(ctx context.Context, ids []uuid.UUID) ([]ListPayoutMembersRow, error) {
+	rows, err := q.db.Query(ctx, listPayoutMembers, ids)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListPayoutMembersRow{}
+	for rows.Next() {
+		var i ListPayoutMembersRow
+		if err := rows.Scan(&i.ID, &i.WinnerMemberID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

@@ -391,6 +391,56 @@ func (q *Queries) ListMemberViews(ctx context.Context, arg ListMemberViewsParams
 	return items, nil
 }
 
+const listUserMemberships = `-- name: ListUserMemberships :many
+SELECT gm.id, gm.group_id, gm.user_id, gm.guest_name, gm.guest_phone, gm.role, gm.status, gm.claim_token_hash, gm.claim_token_expires_at, gm.joined_at, gm.left_at, gm.created_at, gm.updated_at, g.status AS group_status
+FROM group_members gm
+JOIN groups g ON g.id = gm.group_id
+WHERE gm.user_id = $1 AND gm.status = 'active'
+ORDER BY gm.joined_at
+`
+
+type ListUserMembershipsRow struct {
+	GroupMember GroupMember
+	GroupStatus string
+}
+
+// The user's active memberships with their group's status, for account
+// deletion.
+func (q *Queries) ListUserMemberships(ctx context.Context, userID *uuid.UUID) ([]ListUserMembershipsRow, error) {
+	rows, err := q.db.Query(ctx, listUserMemberships, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListUserMembershipsRow{}
+	for rows.Next() {
+		var i ListUserMembershipsRow
+		if err := rows.Scan(
+			&i.GroupMember.ID,
+			&i.GroupMember.GroupID,
+			&i.GroupMember.UserID,
+			&i.GroupMember.GuestName,
+			&i.GroupMember.GuestPhone,
+			&i.GroupMember.Role,
+			&i.GroupMember.Status,
+			&i.GroupMember.ClaimTokenHash,
+			&i.GroupMember.ClaimTokenExpiresAt,
+			&i.GroupMember.JoinedAt,
+			&i.GroupMember.LeftAt,
+			&i.GroupMember.CreatedAt,
+			&i.GroupMember.UpdatedAt,
+			&i.GroupStatus,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const memberHasOutstandingObligations = `-- name: MemberHasOutstandingObligations :one
 SELECT (
     EXISTS (

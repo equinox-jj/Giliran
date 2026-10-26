@@ -44,3 +44,8 @@ ORDER BY id = sqlc.arg(current_id)::uuid DESC, last_active_at DESC, created_at D
 -- name: SetSessionFCMToken :execrows
 UPDATE sessions SET fcm_token = sqlc.arg(fcm_token)::text
 WHERE id = sqlc.arg(id) AND user_id = sqlc.arg(user_id) AND revoked_at IS NULL;
+
+-- name: RevokeAllUserSessions :execrows
+UPDATE sessions
+SET revoked_at = sqlc.arg(now)::timestamptz, revoked_reason = sqlc.arg(reason)::text
+WHERE user_id = sqlc.arg(user_id) AND revoked_at IS NULL;

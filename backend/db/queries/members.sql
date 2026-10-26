@@ -140,3 +140,12 @@ SELECT EXISTS (
     JOIN periods p ON p.id = pay.period_id
     WHERE pay.member_id = $1 AND p.status = 'open' AND pay.status <> 'unpaid'
 )::bool;
+
+-- name: ListUserMemberships :many
+-- The user's active memberships with their group's status, for account
+-- deletion.
+SELECT sqlc.embed(gm), g.status AS group_status
+FROM group_members gm
+JOIN groups g ON g.id = gm.group_id
+WHERE gm.user_id = $1 AND gm.status = 'active'
+ORDER BY gm.joined_at;

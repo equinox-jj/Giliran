@@ -141,6 +141,26 @@ func (q *Queries) ListActiveUserSessions(ctx context.Context, arg ListActiveUser
 	return items, nil
 }
 
+const revokeAllUserSessions = `-- name: RevokeAllUserSessions :execrows
+UPDATE sessions
+SET revoked_at = $1::timestamptz, revoked_reason = $2::text
+WHERE user_id = $3 AND revoked_at IS NULL
+`
+
+type RevokeAllUserSessionsParams struct {
+	Now    time.Time
+	Reason string
+	UserID uuid.UUID
+}
+
+func (q *Queries) RevokeAllUserSessions(ctx context.Context, arg RevokeAllUserSessionsParams) (int64, error) {
+	result, err := q.db.Exec(ctx, revokeAllUserSessions, arg.Now, arg.Reason, arg.UserID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const revokeOtherUserSessions = `-- name: RevokeOtherUserSessions :execrows
 UPDATE sessions
 SET revoked_at = $1::timestamptz, revoked_reason = $2::text

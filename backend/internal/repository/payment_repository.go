@@ -210,3 +210,89 @@ func toPaymentProof(row sqlc.PaymentProof) model.PaymentProof {
 		CreatedAt:   row.CreatedAt,
 	}
 }
+
+// Obligation is what a past winner still owes after the period they won.
+// Unpaid and OverdueUnpaid cover periods that have a payment row; Upcoming
+// periods have none yet and cost the member's share of the group amount.
+type Obligation struct {
+	MemberID             uuid.UUID
+	WonPeriodNo          int16
+	ShareBasisPoints     int32
+	UnpaidCount          int
+	UnpaidAmount         int64
+	OverdueUnpaidCount   int
+	OverdueUnpaidAmount  int64
+	UpcomingCount        int
+	OverdueUpcomingCount int
+}
+
+// ListObligations returns one row per past winner of the group, by the period
+// won. Due dates before today are overdue.
+func (r *PaymentRepository) ListObligations(ctx context.Context, groupID uuid.UUID, today time.Time) ([]Obligation, error) {
+	rows, err := r.tx.Queries(ctx).ListObligations(ctx, sqlc.ListObligationsParams{GroupID: groupID, Today: today})
+	if err != nil {
+		return nil, mapErr(err)
+	}
+	out := make([]Obligation, len(rows))
+	for i, row := range rows {
+		out[i] = Obligation{
+			MemberID:             row.MemberID,
+			WonPeriodNo:          row.WonPeriodNo,
+			ShareBasisPoints:     row.ShareBasisPoints,
+			UnpaidCount:          int(row.UnpaidCount),
+			UnpaidAmount:         row.UnpaidAmount,
+			OverdueUnpaidCount:   int(row.OverdueUnpaidCount),
+			OverdueUnpaidAmount:  row.OverdueUnpaidAmount,
+			UpcomingCount:        int(row.UpcomingCount),
+			OverdueUpcomingCount: int(row.OverdueUpcomingCount),
+		}
+	}
+	return out, nil
+}
+
+// ReminderTarget is one payment of a period with what decides whether a push
+// reminder reaches the payer. UserID is nil for guests; UserPhone is nil for
+// guests and deleted accounts.
+type ReminderTarget struct {
+	PaymentID              uuid.UUID
+	MemberID               uuid.UUID
+	Status                 model.PaymentStatus
+	LastRemindedAt         *time.Time
+	UserID                 *uuid.UUID
+	GuestPhone             *string
+	UserPhone              *string
+	NotifyPaymentReminders bool
+	HasDevice              bool
+}
+
+// ListReminderTargets returns the period's payments by slot number. A device
+// counts when it has an active, unexpired session at now with a push token.
+func (r *PaymentRepository) ListReminderTargets(ctx context.Context, periodID uuid.UUID, now time.Time) ([]ReminderTarget, error) {
+	rows, err := r.tx.Queries(ctx).ListReminderTargets(ctx, sqlc.ListReminderTargetsParams{PeriodID: periodID, Now: now})
+	if err != nil {
+		return nil, mapErr(err)
+	}
+	out := make([]ReminderTarget, len(rows))
+	for i, row := range rows {
+		out[i] = ReminderTarget{
+			PaymentID:              row.PaymentID,
+			MemberID:               row.MemberID,
+			Status:                 model.PaymentStatus(row.Status),
+			LastRemindedAt:         row.LastRemindedAt,
+			UserID:                 row.UserID,
+			GuestPhone:             row.GuestPhone,
+			UserPhone:              row.UserPhone,
+			NotifyPaymentReminders: row.NotifyPaymentReminders,
+			HasDevice:              row.HasDevice,
+		}
+	}
+	return out, nil
+}
+
+// MarkReminded records that the payments' payers were reminded at now.
+func (r *PaymentRepository) MarkReminded(ctx context.Context, ids []uuid.UUID, now time.Time) error {
+	if len(ids) == 0 {
+		return nil
+	}
+	return mapErr(r.tx.Queries(ctx).MarkPaymentsReminded(ctx, sqlc.MarkPaymentsRemindedParams{Ids: ids, Now: now}))
+}

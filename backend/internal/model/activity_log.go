@@ -68,6 +68,7 @@ const (
 	ActionOwnershipOffered        Action = "ownership.transfer_offered"
 	ActionOwnershipDeclined       Action = "ownership.transfer_declined"
 	ActionOwnershipTransferred    Action = "ownership.transferred"
+	ActionReminderSent            Action = "reminder.sent"
 )
 
 // ActivityLog is one entry in a group's audit trail, mirroring the

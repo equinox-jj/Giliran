@@ -53,3 +53,12 @@ RETURNING *;
 UPDATE users SET avatar_key = sqlc.narg(avatar_key)
 WHERE id = sqlc.arg(id) AND deleted_at IS NULL
 RETURNING *;
+
+-- name: AnonymizeUser :execrows
+-- Account deletion (DB_SCHEME §10): personal data goes, the row stays so
+-- group history and totals keep pointing at "Mantan anggota".
+UPDATE users
+SET phone = NULL, firebase_uid = NULL, avatar_key = NULL, pin_hash = NULL,
+    pin_failed_count = 0, pin_locked_until = NULL,
+    name = 'Mantan anggota', deleted_at = sqlc.arg(now)::timestamptz
+WHERE id = sqlc.arg(id) AND deleted_at IS NULL;

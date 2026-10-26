@@ -94,3 +94,59 @@ RETURNING *;
 SELECT * FROM payment_proofs
 WHERE payment_id = $1
 ORDER BY created_at DESC, id DESC;
+
+-- name: ListObligations :many
+-- Per past winner of the group (DB_SCHEME §8): the period won and the later
+-- periods not yet paid. Open, drawn and closed periods have a payment row;
+-- upcoming ones do not yet, so they are counted separately and priced at the
+-- member's share by the caller.
+WITH winners AS (
+    SELECT sm.member_id, (sm.share_pct * 100)::int AS share_basis_points, p.period_no AS won_period_no
+    FROM periods p
+    JOIN slot_members sm ON sm.slot_id = p.winner_slot_id
+    WHERE p.group_id = sqlc.arg(group_id)
+)
+SELECT
+    w.member_id,
+    w.won_period_no::smallint AS won_period_no,
+    w.share_basis_points::int AS share_basis_points,
+    count(pay.id) FILTER (WHERE pay.status <> 'paid')::int AS unpaid_count,
+    COALESCE(sum(pay.amount) FILTER (WHERE pay.status <> 'paid'), 0)::bigint AS unpaid_amount,
+    count(pay.id) FILTER (WHERE pay.status <> 'paid' AND lp.due_date < sqlc.arg(today)::date)::int AS overdue_unpaid_count,
+    COALESCE(sum(pay.amount) FILTER (WHERE pay.status <> 'paid' AND lp.due_date < sqlc.arg(today)::date), 0)::bigint AS overdue_unpaid_amount,
+    count(lp.id) FILTER (WHERE lp.status = 'upcoming' AND pay.id IS NULL)::int AS upcoming_count,
+    count(lp.id) FILTER (WHERE lp.status = 'upcoming' AND pay.id IS NULL AND lp.due_date < sqlc.arg(today)::date)::int AS overdue_upcoming_count
+FROM winners w
+LEFT JOIN periods lp ON lp.group_id = sqlc.arg(group_id) AND lp.period_no > w.won_period_no
+LEFT JOIN payments pay ON pay.period_id = lp.id AND pay.member_id = w.member_id
+GROUP BY w.member_id, w.won_period_no, w.share_basis_points
+ORDER BY w.won_period_no;
+
+-- name: ListReminderTargets :many
+-- A period's payments with what decides whether a push reminder can reach
+-- the payer: account, phone, notification setting and a device token.
+SELECT
+    pay.id AS payment_id,
+    pay.member_id,
+    pay.status,
+    pay.last_reminded_at,
+    gm.user_id,
+    gm.guest_phone,
+    u.phone AS user_phone,
+    COALESCE(us.notify_payment_reminders, false)::bool AS notify_payment_reminders,
+    EXISTS (
+        SELECT 1 FROM sessions se
+        WHERE se.user_id = gm.user_id AND se.revoked_at IS NULL
+          AND se.expires_at > sqlc.arg(now)::timestamptz AND se.fcm_token IS NOT NULL
+    )::bool AS has_device
+FROM payments pay
+JOIN group_members gm ON gm.id = pay.member_id
+JOIN slots s ON s.id = pay.slot_id
+LEFT JOIN users u ON u.id = gm.user_id AND u.deleted_at IS NULL
+LEFT JOIN user_settings us ON us.user_id = u.id
+WHERE pay.period_id = sqlc.arg(period_id)
+ORDER BY s.slot_no, gm.joined_at;
+
+-- name: MarkPaymentsReminded :exec
+UPDATE payments SET last_reminded_at = sqlc.arg(now)::timestamptz
+WHERE id = ANY(sqlc.arg(ids)::uuid[]);

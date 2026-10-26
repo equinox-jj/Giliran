@@ -148,3 +148,16 @@ func toUserSettings(row sqlc.UserSetting) model.UserSettings {
 		UpdatedAt:              row.UpdatedAt,
 	}
 }
+
+// Anonymize soft-deletes the user and clears their personal data. An
+// already deleted user is ErrNotFound.
+func (r *UserRepository) Anonymize(ctx context.Context, id uuid.UUID, now time.Time) error {
+	n, err := r.tx.Queries(ctx).AnonymizeUser(ctx, sqlc.AnonymizeUserParams{ID: id, Now: now})
+	if err != nil {
+		return mapErr(err)
+	}
+	if n == 0 {
+		return ErrNotFound
+	}
+	return nil
+}

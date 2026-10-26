@@ -49,3 +49,64 @@ func (r *ActivityRepository) DrawCounts(ctx context.Context, periodID uuid.UUID)
 	row, err := r.tx.Queries(ctx).GetDrawCounts(ctx, periodID)
 	return int(row.PaidCount), int(row.TotalCount), mapErr(err)
 }
+
+// List returns up to limit entries of the group older than beforeID, newest
+// first; a nil beforeID starts at the newest entry.
+func (r *ActivityRepository) List(ctx context.Context, groupID uuid.UUID, beforeID *int64, limit int32) ([]model.ActivityLog, error) {
+	rows, err := r.tx.Queries(ctx).ListActivity(ctx, sqlc.ListActivityParams{GroupID: groupID, BeforeID: beforeID, RowLimit: limit})
+	if err != nil {
+		return nil, mapErr(err)
+	}
+	out := make([]model.ActivityLog, len(rows))
+	for i, row := range rows {
+		out[i] = toActivityLog(row)
+	}
+	return out, nil
+}
+
+// PaymentMembers maps each of the payment IDs to the member who owes it.
+func (r *ActivityRepository) PaymentMembers(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]uuid.UUID, error) {
+	out := map[uuid.UUID]uuid.UUID{}
+	if len(ids) == 0 {
+		return out, nil
+	}
+	rows, err := r.tx.Queries(ctx).ListPaymentMembers(ctx, ids)
+	if err != nil {
+		return nil, mapErr(err)
+	}
+	for _, row := range rows {
+		out[row.ID] = row.MemberID
+	}
+	return out, nil
+}
+
+// PayoutMembers maps each of the payout IDs to the winner it went to.
+func (r *ActivityRepository) PayoutMembers(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]uuid.UUID, error) {
+	out := map[uuid.UUID]uuid.UUID{}
+	if len(ids) == 0 {
+		return out, nil
+	}
+	rows, err := r.tx.Queries(ctx).ListPayoutMembers(ctx, ids)
+	if err != nil {
+		return nil, mapErr(err)
+	}
+	for _, row := range rows {
+		out[row.ID] = row.WinnerMemberID
+	}
+	return out, nil
+}
+
+func toActivityLog(row sqlc.ActivityLog) model.ActivityLog {
+	return model.ActivityLog{
+		ID:          row.ID,
+		GroupID:     row.GroupID,
+		ActorType:   model.ActorType(row.ActorType),
+		ActorUserID: row.ActorUserID,
+		Action:      model.Action(row.Action),
+		EntityType:  model.EntityType(row.EntityType),
+		EntityID:    row.EntityID,
+		Before:      row.Before,
+		After:       row.After,
+		CreatedAt:   row.CreatedAt,
+	}
+}

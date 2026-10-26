@@ -115,6 +115,7 @@ type Payment struct {
 	ReviewedAt     *time.Time
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
+	LastRemindedAt *time.Time
 }
 
 type PaymentProof struct {

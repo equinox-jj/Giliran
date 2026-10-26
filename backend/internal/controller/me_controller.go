@@ -27,15 +27,21 @@ type ProfileService interface {
 	RevokeSession(ctx context.Context, userID, sessionID uuid.UUID) error
 }
 
-// MeController serves /me, /me/avatar, /me/settings, /me/push-token and
-// /me/sessions.
+// AccountService is what MeController needs from service.AccountService.
+type AccountService interface {
+	Delete(ctx context.Context, userID uuid.UUID, pin string) error
+}
+
+// MeController serves /me, /me/avatar, /me/settings, /me/push-token,
+// /me/sessions and /me/deletion.
 // Every route is behind middleware.Auth.
 type MeController struct {
 	profile ProfileService
+	account AccountService
 }
 
-func NewMeController(profile *service.ProfileService) *MeController {
-	return &MeController{profile: profile}
+func NewMeController(profile *service.ProfileService, account *service.AccountService) *MeController {
+	return &MeController{profile: profile, account: account}
 }
 
 // Get handles GET /me.
@@ -145,6 +151,18 @@ func (h *MeController) RevokeSession(c fiber.Ctx) error {
 		return model.ErrNotFound.WithDetail("Session not found.")
 	}
 	if err := h.profile.RevokeSession(c.Context(), middleware.UserID(c), id); err != nil {
+		return err
+	}
+	return response.NoContent(c)
+}
+
+// DeleteAccount handles POST /me/deletion.
+func (h *MeController) DeleteAccount(c fiber.Ctx) error {
+	var req dto.PinRequest
+	if err := c.Bind().Body(&req); err != nil {
+		return err
+	}
+	if err := h.account.Delete(c.Context(), middleware.UserID(c), req.PIN); err != nil {
 		return err
 	}
 	return response.NoContent(c)

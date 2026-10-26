@@ -110,3 +110,9 @@ func toSession(row sqlc.Session) model.Session {
 	}
 	return s
 }
+
+// RevokeAll revokes every active session of userID.
+func (r *SessionRepository) RevokeAll(ctx context.Context, userID uuid.UUID, reason model.RevokedReason, now time.Time) (int64, error) {
+	n, err := r.tx.Queries(ctx).RevokeAllUserSessions(ctx, sqlc.RevokeAllUserSessionsParams{UserID: userID, Reason: string(reason), Now: now})
+	return n, mapErr(err)
+}

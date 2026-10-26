@@ -6,6 +6,6 @@ import "go.uber.org/fx"
 var Module = fx.Module("controller", fx.Provide(
 	NewHealthController, NewAuthController, NewPINController, NewMeController,
 	NewGroupController, NewMemberController, NewPeriodController, NewPaymentController,
-	NewDrawController, NewPayoutController,
+	NewDrawController, NewPayoutController, NewTransparencyController, NewReminderController,
 	NewIdempotency,
 ))
