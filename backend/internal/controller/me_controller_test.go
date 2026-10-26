@@ -150,8 +150,12 @@ func avatarRequest(t *testing.T, field string, data []byte) (*http.Request, uuid
 	if err != nil {
 		t.Fatalf("CreateFormFile: %v", err)
 	}
-	part.Write(data)
-	w.Close()
+	if _, err := part.Write(data); err != nil {
+		t.Fatalf("Write: %v", err)
+	}
+	if err := w.Close(); err != nil {
+		t.Fatalf("Close: %v", err)
+	}
 	userID, sessionID := uuid.Must(uuid.NewV7()), uuid.Must(uuid.NewV7())
 	token, _, err := testTokens.Issue(userID, sessionID)
 	if err != nil {

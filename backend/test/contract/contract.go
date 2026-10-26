@@ -44,7 +44,7 @@ func Load(t testing.TB) *Spec {
 func load() (*Spec, error) {
 	_, file, _, _ := runtime.Caller(0)
 	path := filepath.Join(filepath.Dir(file), "..", "..", "api", "api-spec.yaml")
-	raw, err := os.ReadFile(path)
+	raw, err := os.ReadFile(path) //nolint:gosec // path is the spec file in this repo
 	if err != nil {
 		return nil, fmt.Errorf("read spec: %w", err)
 	}

@@ -22,6 +22,10 @@ const PINLength = 6
 // errMalformedHash is returned by Verify for a stored hash it cannot parse.
 var errMalformedHash = errors.New("security: malformed argon2id hash")
 
+// maxKeyLength caps the key length Verify accepts from a stored hash, far
+// above any configured Argon2KeyLength.
+const maxKeyLength = 1024
+
 // PINHasher hashes PINs with argon2id. Hashes are stored in the PHC string
 // format, so they carry their own parameters and keep verifying after the
 // configured parameters change.
@@ -82,10 +86,10 @@ func (h *PINHasher) Verify(pin, encoded string) (bool, error) {
 		return false, errMalformedHash
 	}
 	want, err := b64.DecodeString(parts[5])
-	if err != nil || len(want) == 0 {
+	if err != nil || len(want) == 0 || len(want) > maxKeyLength {
 		return false, errMalformedHash
 	}
-	got := argon2.IDKey([]byte(pin), salt, iterations, memory, parallelism, uint32(len(want)))
+	got := argon2.IDKey([]byte(pin), salt, iterations, memory, parallelism, uint32(len(want))) //nolint:gosec // bounded by maxKeyLength
 	return subtle.ConstantTimeCompare(got, want) == 1, nil
 }
 

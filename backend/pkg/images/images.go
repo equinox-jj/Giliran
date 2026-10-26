@@ -58,14 +58,14 @@ func Avatar(data []byte) ([]byte, error) {
 	}
 	cfg, _, err := image.DecodeConfig(bytes.NewReader(data))
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrUnsupported, err)
+		return nil, fmt.Errorf("%w: %w", ErrUnsupported, err)
 	}
 	if cfg.Width <= 0 || cfg.Height <= 0 || cfg.Width*cfg.Height > maxPixels {
 		return nil, fmt.Errorf("%w: %dx%d pixels", ErrUnsupported, cfg.Width, cfg.Height)
 	}
 	img, err := imaging.Decode(bytes.NewReader(data), imaging.AutoOrientation(true))
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrUnsupported, err)
+		return nil, fmt.Errorf("%w: %w", ErrUnsupported, err)
 	}
 	b := img.Bounds()
 	if b.Dx() > AvatarSize || b.Dy() > AvatarSize {
