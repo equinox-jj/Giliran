@@ -13,7 +13,7 @@ var Module = fx.Module("repository",
 		newPool, NewTxManager, NewUserRepository, NewSessionRepository,
 		NewGroupRepository, NewMemberRepository, NewLeaveRequestRepository,
 		NewOwnershipTransferRepository, NewActivityRepository, NewPeriodRepository,
-		NewPaymentRepository, NewIdempotencyRepository,
+		NewPaymentRepository, NewIdempotencyRepository, NewPayoutRepository,
 	),
 	fx.Invoke(func(*pgxpool.Pool) {}),
 )

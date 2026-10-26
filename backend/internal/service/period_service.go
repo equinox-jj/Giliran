@@ -2,16 +2,15 @@ package service
 
 import (
 	"context"
-	"encoding/hex"
 	"errors"
 	"time"
 
 	"github.com/google/uuid"
 
 	"github.com/equinox-jj/Giliran/backend/internal/clients/storage"
+	"github.com/equinox-jj/Giliran/backend/internal/draw"
 	"github.com/equinox-jj/Giliran/backend/internal/model"
 	"github.com/equinox-jj/Giliran/backend/internal/repository"
-	"github.com/equinox-jj/Giliran/backend/pkg/security"
 )
 
 // PeriodDetail is a period as members see it. Summary is nil for periods
@@ -138,7 +137,7 @@ func (s *PeriodService) detail(ctx context.Context, v repository.PeriodView, win
 }
 
 // periodOpener opens periods: starting a group opens period 1, and recording
-// a payout opens the next one (Phase 5).
+// a payout opens the next one.
 type periodOpener struct {
 	periods  *repository.PeriodRepository
 	payments *repository.PaymentRepository
@@ -155,12 +154,11 @@ func (o periodOpener) open(ctx context.Context, g model.Group, p model.Period, a
 	var seedHash *string
 	var seedHex string
 	if g.UsesSeed() {
-		seed, err := security.Seed()
+		seed, h, err := draw.Commit()
 		if err != nil {
 			return model.Period{}, err
 		}
-		h := security.SHA256Hex(seed)
-		seedHash, seedHex = &h, hex.EncodeToString(seed)
+		seedHash, seedHex = &h, seed
 	}
 	opened, err := o.periods.Open(ctx, p.ID, seedHash)
 	if errors.Is(err, repository.ErrNotFound) {

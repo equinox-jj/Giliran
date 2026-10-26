@@ -61,3 +61,11 @@ UPDATE slots s
 SET fixed_order_position = t.position
 FROM (SELECT unnest(sqlc.arg(slot_ids)::uuid[]) AS slot_id, unnest(sqlc.arg(positions)::smallint[]) AS position) AS t
 WHERE s.id = t.slot_id AND s.group_id = sqlc.arg(group_id);
+
+-- name: ListEligibleSlots :many
+-- Slots of the group that have not won, by slot number: the draw's eligible
+-- list (DB_SCHEME §5 step 2).
+SELECT s.* FROM slots s
+WHERE s.group_id = $1
+  AND NOT EXISTS (SELECT 1 FROM periods p WHERE p.winner_slot_id = s.id)
+ORDER BY s.slot_no;

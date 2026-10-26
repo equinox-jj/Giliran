@@ -132,6 +132,42 @@ func (q *Queries) ListActiveHoldersAbove(ctx context.Context, arg ListActiveHold
 	return items, nil
 }
 
+const listEligibleSlots = `-- name: ListEligibleSlots :many
+SELECT s.id, s.group_id, s.slot_no, s.fixed_order_position, s.label, s.created_at FROM slots s
+WHERE s.group_id = $1
+  AND NOT EXISTS (SELECT 1 FROM periods p WHERE p.winner_slot_id = s.id)
+ORDER BY s.slot_no
+`
+
+// Slots of the group that have not won, by slot number: the draw's eligible
+// list (DB_SCHEME §5 step 2).
+func (q *Queries) ListEligibleSlots(ctx context.Context, groupID uuid.UUID) ([]Slot, error) {
+	rows, err := q.db.Query(ctx, listEligibleSlots, groupID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Slot{}
+	for rows.Next() {
+		var i Slot
+		if err := rows.Scan(
+			&i.ID,
+			&i.GroupID,
+			&i.SlotNo,
+			&i.FixedOrderPosition,
+			&i.Label,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listSlots = `-- name: ListSlots :many
 SELECT id, group_id, slot_no, fixed_order_position, label, created_at FROM slots
 WHERE group_id = $1

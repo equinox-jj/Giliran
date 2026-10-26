@@ -145,6 +145,14 @@ func (g *Group) UsesSeed() bool {
 	return g.DrawMethod == DrawMethodRandom
 }
 
+// DrawAlgorithm returns the algorithm the group's periods are drawn with.
+func (g *Group) DrawAlgorithm() string {
+	if g.UsesSeed() {
+		return DrawAlgorithmHMACSHA256V1
+	}
+	return DrawAlgorithmFixedOrderV1
+}
+
 // HasBankAccount reports whether the organizer has set a bank account for
 // payments.
 func (g *Group) HasBankAccount() bool {

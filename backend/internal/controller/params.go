@@ -35,15 +35,40 @@ func paymentID(c fiber.Ctx) (uuid.UUID, error) {
 	return pathID(c, "payment_id", model.ErrPaymentNotFound)
 }
 
+// verificationCode checks the verification_code path parameter. A code
+// that cannot exist gets draw_not_found like an unknown one.
+func verificationCode(c fiber.Ctx) (string, error) {
+	code := c.Params("verification_code")
+	if len(code) != model.VerificationCodeLength {
+		return "", model.ErrDrawNotFound
+	}
+	for _, r := range code {
+		if (r < 'A' || r > 'Z') && (r < '0' || r > '9') {
+			return "", model.ErrDrawNotFound
+		}
+	}
+	return code, nil
+}
+
 // readUpload reads the multipart field "file". Services check the type by
 // content; the declared type is ignored.
 func readUpload(c fiber.Ctx) ([]byte, error) {
+	data, err := readOptionalUpload(c)
+	if err == nil && data == nil {
+		return nil, model.NewValidationError(model.FieldError{Field: "file", Code: model.FieldRequired, Message: "This field is required."})
+	}
+	return data, err
+}
+
+// readOptionalUpload reads the multipart field "file", returning nil when
+// the form has none.
+func readOptionalUpload(c fiber.Ctx) ([]byte, error) {
 	if !strings.HasPrefix(string(c.Request().Header.ContentType()), fiber.MIMEMultipartForm) {
 		return nil, model.ErrUnsupportedMediaType.WithDetail("Send the image as multipart/form-data in the field \"file\".")
 	}
 	fh, err := c.FormFile("file")
 	if err != nil {
-		return nil, model.NewValidationError(model.FieldError{Field: "file", Code: model.FieldRequired, Message: "This field is required."})
+		return nil, nil
 	}
 	f, err := fh.Open()
 	if err != nil {

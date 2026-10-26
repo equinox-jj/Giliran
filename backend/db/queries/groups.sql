@@ -125,3 +125,10 @@ UPDATE groups
 SET status = 'active', started_at = sqlc.arg(now)::timestamptz
 WHERE id = sqlc.arg(id)
 RETURNING *;
+
+-- name: CompleteGroup :one
+-- The last period's payout completes the cycle.
+UPDATE groups
+SET status = 'completed', completed_at = sqlc.arg(now)::timestamptz
+WHERE id = sqlc.arg(id) AND status = 'active'
+RETURNING *;

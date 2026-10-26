@@ -27,9 +27,10 @@ type NewPeriod struct {
 	DrawDate time.Time
 }
 
-// CreateAll inserts periods for groupID, all upcoming.
-func (r *PeriodRepository) CreateAll(ctx context.Context, groupID uuid.UUID, periods []NewPeriod, now time.Time) error {
-	arg := sqlc.CreatePeriodsParams{GroupID: groupID, Now: now}
+// CreateAll inserts periods for groupID, all upcoming and drawn with
+// algorithm.
+func (r *PeriodRepository) CreateAll(ctx context.Context, groupID uuid.UUID, algorithm string, periods []NewPeriod, now time.Time) error {
+	arg := sqlc.CreatePeriodsParams{GroupID: groupID, DrawAlgorithm: algorithm, Now: now}
 	for _, p := range periods {
 		arg.Ids = append(arg.Ids, uuid.Must(uuid.NewV7()))
 		arg.PeriodNos = append(arg.PeriodNos, p.PeriodNo)
@@ -69,6 +70,74 @@ func (r *PeriodRepository) Open(ctx context.Context, id uuid.UUID, seedHash *str
 // reveals it. A period has one seed; a second is ErrDuplicate.
 func (r *PeriodRepository) SealSeed(ctx context.Context, periodID uuid.UUID, seedHex string, now time.Time) error {
 	return mapErr(r.tx.Queries(ctx).CreatePeriodSeed(ctx, sqlc.CreatePeriodSeedParams{PeriodID: periodID, Seed: seedHex, Now: now}))
+}
+
+// GetSeed returns the sealed seed behind a period's hash and when it was
+// stored, which is when the hash was published.
+func (r *PeriodRepository) GetSeed(ctx context.Context, periodID uuid.UUID) (string, time.Time, error) {
+	row, err := r.tx.Queries(ctx).GetPeriodSeed(ctx, periodID)
+	return row.Seed, row.CreatedAt, mapErr(err)
+}
+
+// DrawResult is what a draw stores on its period.
+type DrawResult struct {
+	Seed             *string // revealed seed; nil for fixed-order groups
+	EligibleSlotIDs  []uuid.UUID
+	WinnerSlotID     uuid.UUID
+	VerificationCode string
+	DrawnBy          uuid.UUID
+	DrawnAt          time.Time
+}
+
+// RecordDraw stores res on an open period and moves it to drawn. A period
+// that is not open is ErrNotFound.
+func (r *PeriodRepository) RecordDraw(ctx context.Context, id uuid.UUID, res DrawResult) (model.Period, error) {
+	row, err := r.tx.Queries(ctx).RecordDraw(ctx, sqlc.RecordDrawParams{
+		ID:               id,
+		Seed:             res.Seed,
+		EligibleSlotIds:  res.EligibleSlotIDs,
+		WinnerSlotID:     &res.WinnerSlotID,
+		VerificationCode: &res.VerificationCode,
+		DrawnAt:          &res.DrawnAt,
+		DrawnBy:          &res.DrawnBy,
+	})
+	return toPeriod(row), mapErr(err)
+}
+
+// Close moves a drawn period to closed. A period that is not drawn is
+// ErrNotFound.
+func (r *PeriodRepository) Close(ctx context.Context, id uuid.UUID) (model.Period, error) {
+	row, err := r.tx.Queries(ctx).ClosePeriod(ctx, id)
+	return toPeriod(row), mapErr(err)
+}
+
+// VerificationCodeExists reports whether some period already uses code.
+func (r *PeriodRepository) VerificationCodeExists(ctx context.Context, code string) (bool, error) {
+	ok, err := r.tx.Queries(ctx).VerificationCodeExists(ctx, &code)
+	return ok, mapErr(err)
+}
+
+// PublicDraw is a drawn period found by its verification code, with its
+// group's name and size.
+type PublicDraw struct {
+	Period              model.Period
+	GroupName           string
+	TotalPeriods        int16
+	SeedHashPublishedAt *time.Time // nil for fixed-order groups
+}
+
+// GetByCode returns the drawn period whose verification code is code.
+func (r *PeriodRepository) GetByCode(ctx context.Context, code string) (PublicDraw, error) {
+	row, err := r.tx.Queries(ctx).GetDrawByCode(ctx, &code)
+	if err != nil {
+		return PublicDraw{}, mapErr(err)
+	}
+	return PublicDraw{
+		Period:              toPeriod(row.Period),
+		GroupName:           row.GroupName,
+		TotalPeriods:        row.TotalSlots,
+		SeedHashPublishedAt: row.SeedHashPublishedAt,
+	}, nil
 }
 
 // PeriodView is a period with its winner's slot number and payout state.

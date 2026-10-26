@@ -5,6 +5,8 @@ import (
 	"errors"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/equinox-jj/Giliran/backend/internal/model"
 	"github.com/equinox-jj/Giliran/backend/internal/repository/sqlc"
 )
@@ -39,4 +41,11 @@ func (r *ActivityRepository) Insert(ctx context.Context, l model.ActivityLog, no
 		After:       l.After,
 		Now:         now,
 	}))
+}
+
+// DrawCounts returns the paid and total payment counts recorded when the
+// period was drawn, or ErrNotFound before the draw.
+func (r *ActivityRepository) DrawCounts(ctx context.Context, periodID uuid.UUID) (paid, total int, err error) {
+	row, err := r.tx.Queries(ctx).GetDrawCounts(ctx, periodID)
+	return int(row.PaidCount), int(row.TotalCount), mapErr(err)
 }

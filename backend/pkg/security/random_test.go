@@ -79,16 +79,3 @@ func TestRandomToken(t *testing.T) {
 		break
 	}
 }
-
-func TestSeed(t *testing.T) {
-	// Act
-	seed, err := Seed()
-
-	// Assert
-	if err != nil {
-		t.Fatalf("Seed: %v", err)
-	}
-	if len(seed) != SeedLength {
-		t.Errorf("got %d bytes, want %d", len(seed), SeedLength)
-	}
-}

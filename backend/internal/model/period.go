@@ -10,6 +10,9 @@ const (
 	// DrawAlgorithmHMACSHA256V1 is the commit-reveal draw in DB_SCHEME §5.
 	// Its steps must never change, so published draws stay verifiable.
 	DrawAlgorithmHMACSHA256V1 = "hmac-sha256-v1"
+	// DrawAlgorithmFixedOrderV1 pays slots out by fixed_order_position, with
+	// no seed.
+	DrawAlgorithmFixedOrderV1 = "fixed-order-v1"
 	// VerificationCodeLength is the length of a public draw verification code
 	// (^[A-Z0-9]{10}$).
 	VerificationCodeLength = 10

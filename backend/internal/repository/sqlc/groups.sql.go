@@ -53,6 +53,48 @@ func (q *Queries) CloseGroup(ctx context.Context, arg CloseGroupParams) (Group, 
 	return i, err
 }
 
+const completeGroup = `-- name: CompleteGroup :one
+UPDATE groups
+SET status = 'completed', completed_at = $1::timestamptz
+WHERE id = $2 AND status = 'active'
+RETURNING id, organizer_id, name, amount, period_type, total_slots, draw_method, start_date, reminder_days_before, status, invite_code, bank_name, bank_account_number, bank_account_holder, qris_payload, qris_image_key, started_at, completed_at, closed_at, created_at, updated_at
+`
+
+type CompleteGroupParams struct {
+	Now time.Time
+	ID  uuid.UUID
+}
+
+// The last period's payout completes the cycle.
+func (q *Queries) CompleteGroup(ctx context.Context, arg CompleteGroupParams) (Group, error) {
+	row := q.db.QueryRow(ctx, completeGroup, arg.Now, arg.ID)
+	var i Group
+	err := row.Scan(
+		&i.ID,
+		&i.OrganizerID,
+		&i.Name,
+		&i.Amount,
+		&i.PeriodType,
+		&i.TotalSlots,
+		&i.DrawMethod,
+		&i.StartDate,
+		&i.ReminderDaysBefore,
+		&i.Status,
+		&i.InviteCode,
+		&i.BankName,
+		&i.BankAccountNumber,
+		&i.BankAccountHolder,
+		&i.QRISPayload,
+		&i.QRISImageKey,
+		&i.StartedAt,
+		&i.CompletedAt,
+		&i.ClosedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const createGroup = `-- name: CreateGroup :one
 INSERT INTO groups (
     id, organizer_id, name, amount, period_type, total_slots, draw_method,

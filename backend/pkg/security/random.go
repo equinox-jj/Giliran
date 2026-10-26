@@ -6,9 +6,6 @@ import (
 	"fmt"
 )
 
-// SeedLength is the size in bytes of a draw seed (DB_SCHEME §5).
-const SeedLength = 32
-
 // codeAlphabet matches the [A-Z0-9] CHECK on invite and verification codes.
 const codeAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
@@ -41,13 +38,4 @@ func RandomCode(n int) (string, error) {
 		}
 	}
 	return string(out), nil
-}
-
-// Seed returns a fresh draw seed. Publish only SHA256Hex(seed) until the draw.
-func Seed() ([]byte, error) {
-	seed := make([]byte, SeedLength)
-	if _, err := rand.Read(seed); err != nil {
-		return nil, fmt.Errorf("security: read seed: %w", err)
-	}
-	return seed, nil
 }

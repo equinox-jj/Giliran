@@ -12,6 +12,38 @@ import (
 	"github.com/google/uuid"
 )
 
+const closePeriod = `-- name: ClosePeriod :one
+UPDATE periods
+SET status = 'closed'
+WHERE id = $1 AND status = 'drawn'
+RETURNING id, group_id, period_no, due_date, draw_date, status, seed_hash, seed, draw_algorithm, eligible_slot_ids, winner_slot_id, verification_code, drawn_at, drawn_by, created_at, updated_at
+`
+
+// Recording the payout closes a drawn period.
+func (q *Queries) ClosePeriod(ctx context.Context, id uuid.UUID) (Period, error) {
+	row := q.db.QueryRow(ctx, closePeriod, id)
+	var i Period
+	err := row.Scan(
+		&i.ID,
+		&i.GroupID,
+		&i.PeriodNo,
+		&i.DueDate,
+		&i.DrawDate,
+		&i.Status,
+		&i.SeedHash,
+		&i.Seed,
+		&i.DrawAlgorithm,
+		&i.EligibleSlotIds,
+		&i.WinnerSlotID,
+		&i.VerificationCode,
+		&i.DrawnAt,
+		&i.DrawnBy,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const createPeriodSeed = `-- name: CreatePeriodSeed :exec
 INSERT INTO period_seeds (period_id, seed, created_at)
 VALUES ($1, $2, $3)
@@ -29,24 +61,26 @@ func (q *Queries) CreatePeriodSeed(ctx context.Context, arg CreatePeriodSeedPara
 }
 
 const createPeriods = `-- name: CreatePeriods :exec
-INSERT INTO periods (id, group_id, period_no, due_date, draw_date, created_at, updated_at)
+INSERT INTO periods (id, group_id, period_no, due_date, draw_date, draw_algorithm, created_at, updated_at)
 SELECT
     unnest($1::uuid[]),
     $2::uuid,
     unnest($3::smallint[]),
     unnest($4::date[]),
     unnest($5::date[]),
-    $6::timestamptz,
-    $6::timestamptz
+    $6::text,
+    $7::timestamptz,
+    $7::timestamptz
 `
 
 type CreatePeriodsParams struct {
-	Ids       []uuid.UUID
-	GroupID   uuid.UUID
-	PeriodNos []int16
-	DueDates  []time.Time
-	DrawDates []time.Time
-	Now       time.Time
+	Ids           []uuid.UUID
+	GroupID       uuid.UUID
+	PeriodNos     []int16
+	DueDates      []time.Time
+	DrawDates     []time.Time
+	DrawAlgorithm string
+	Now           time.Time
 }
 
 // Every period of a starting group, all upcoming.
@@ -57,9 +91,58 @@ func (q *Queries) CreatePeriods(ctx context.Context, arg CreatePeriodsParams) er
 		arg.PeriodNos,
 		arg.DueDates,
 		arg.DrawDates,
+		arg.DrawAlgorithm,
 		arg.Now,
 	)
 	return err
+}
+
+const getDrawByCode = `-- name: GetDrawByCode :one
+SELECT
+    p.id, p.group_id, p.period_no, p.due_date, p.draw_date, p.status, p.seed_hash, p.seed, p.draw_algorithm, p.eligible_slot_ids, p.winner_slot_id, p.verification_code, p.drawn_at, p.drawn_by, p.created_at, p.updated_at,
+    g.name AS group_name,
+    g.total_slots,
+    ps.created_at AS seed_hash_published_at
+FROM periods p
+JOIN groups g ON g.id = p.group_id
+LEFT JOIN period_seeds ps ON ps.period_id = p.id
+WHERE p.verification_code = $1 AND p.winner_slot_id IS NOT NULL
+`
+
+type GetDrawByCodeRow struct {
+	Period              Period
+	GroupName           string
+	TotalSlots          int16
+	SeedHashPublishedAt *time.Time
+}
+
+// A drawn period by its public verification code (GetDrawByCode in
+// DB_SCHEME §8), with what the public page shows about its group.
+func (q *Queries) GetDrawByCode(ctx context.Context, verificationCode *string) (GetDrawByCodeRow, error) {
+	row := q.db.QueryRow(ctx, getDrawByCode, verificationCode)
+	var i GetDrawByCodeRow
+	err := row.Scan(
+		&i.Period.ID,
+		&i.Period.GroupID,
+		&i.Period.PeriodNo,
+		&i.Period.DueDate,
+		&i.Period.DrawDate,
+		&i.Period.Status,
+		&i.Period.SeedHash,
+		&i.Period.Seed,
+		&i.Period.DrawAlgorithm,
+		&i.Period.EligibleSlotIds,
+		&i.Period.WinnerSlotID,
+		&i.Period.VerificationCode,
+		&i.Period.DrawnAt,
+		&i.Period.DrawnBy,
+		&i.Period.CreatedAt,
+		&i.Period.UpdatedAt,
+		&i.GroupName,
+		&i.TotalSlots,
+		&i.SeedHashPublishedAt,
+	)
+	return i, err
 }
 
 const getPeriod = `-- name: GetPeriod :one
@@ -162,6 +245,18 @@ func (q *Queries) GetPeriodForUpdate(ctx context.Context, arg GetPeriodForUpdate
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
+	return i, err
+}
+
+const getPeriodSeed = `-- name: GetPeriodSeed :one
+SELECT period_id, seed, created_at FROM period_seeds
+WHERE period_id = $1
+`
+
+func (q *Queries) GetPeriodSeed(ctx context.Context, periodID uuid.UUID) (PeriodSeed, error) {
+	row := q.db.QueryRow(ctx, getPeriodSeed, periodID)
+	var i PeriodSeed
+	err := row.Scan(&i.PeriodID, &i.Seed, &i.CreatedAt)
 	return i, err
 }
 
@@ -313,4 +408,72 @@ func (q *Queries) OpenPeriod(ctx context.Context, arg OpenPeriodParams) (Period,
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const recordDraw = `-- name: RecordDraw :one
+UPDATE periods
+SET status = 'drawn',
+    seed = $1,
+    eligible_slot_ids = $2::uuid[],
+    winner_slot_id = $3,
+    verification_code = $4,
+    drawn_at = $5,
+    drawn_by = $6
+WHERE id = $7 AND status = 'open'
+RETURNING id, group_id, period_no, due_date, draw_date, status, seed_hash, seed, draw_algorithm, eligible_slot_ids, winner_slot_id, verification_code, drawn_at, drawn_by, created_at, updated_at
+`
+
+type RecordDrawParams struct {
+	Seed             *string
+	EligibleSlotIds  []uuid.UUID
+	WinnerSlotID     *uuid.UUID
+	VerificationCode *string
+	DrawnAt          *time.Time
+	DrawnBy          *uuid.UUID
+	ID               uuid.UUID
+}
+
+// Stores the result and reveals the seed (NULL for fixed-order groups). Only
+// an open period is drawn; the guard trigger freezes the result afterwards.
+func (q *Queries) RecordDraw(ctx context.Context, arg RecordDrawParams) (Period, error) {
+	row := q.db.QueryRow(ctx, recordDraw,
+		arg.Seed,
+		arg.EligibleSlotIds,
+		arg.WinnerSlotID,
+		arg.VerificationCode,
+		arg.DrawnAt,
+		arg.DrawnBy,
+		arg.ID,
+	)
+	var i Period
+	err := row.Scan(
+		&i.ID,
+		&i.GroupID,
+		&i.PeriodNo,
+		&i.DueDate,
+		&i.DrawDate,
+		&i.Status,
+		&i.SeedHash,
+		&i.Seed,
+		&i.DrawAlgorithm,
+		&i.EligibleSlotIds,
+		&i.WinnerSlotID,
+		&i.VerificationCode,
+		&i.DrawnAt,
+		&i.DrawnBy,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const verificationCodeExists = `-- name: VerificationCodeExists :one
+SELECT EXISTS (SELECT 1 FROM periods WHERE verification_code = $1)::bool
+`
+
+func (q *Queries) VerificationCodeExists(ctx context.Context, verificationCode *string) (bool, error) {
+	row := q.db.QueryRow(ctx, verificationCodeExists, verificationCode)
+	var column_1 bool
+	err := row.Scan(&column_1)
+	return column_1, err
 }

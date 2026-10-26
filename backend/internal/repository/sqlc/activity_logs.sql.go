@@ -12,6 +12,29 @@ import (
 	"github.com/google/uuid"
 )
 
+const getDrawCounts = `-- name: GetDrawCounts :one
+SELECT
+    (after ->> 'paid_count')::int AS paid_count,
+    (after ->> 'total_count')::int AS total_count
+FROM activity_logs
+WHERE entity_type = 'period' AND entity_id = $1::uuid AND action = 'draw.completed'
+ORDER BY id DESC
+LIMIT 1
+`
+
+type GetDrawCountsRow struct {
+	PaidCount  int32
+	TotalCount int32
+}
+
+// The paid and total payment counts recorded with a period's draw.
+func (q *Queries) GetDrawCounts(ctx context.Context, periodID uuid.UUID) (GetDrawCountsRow, error) {
+	row := q.db.QueryRow(ctx, getDrawCounts, periodID)
+	var i GetDrawCountsRow
+	err := row.Scan(&i.PaidCount, &i.TotalCount)
+	return i, err
+}
+
 const insertActivityLog = `-- name: InsertActivityLog :exec
 INSERT INTO activity_logs (
     group_id, actor_type, actor_user_id, action, entity_type, entity_id, before, after, created_at

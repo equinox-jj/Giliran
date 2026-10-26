@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Bukti Kocok · {{.GroupName}} · Periode {{.PeriodNo}}</title>
+<style>
+  :root { --bg: #f7f7f5; --card: #fff; --text: #1d1d1b; --muted: #6b6b66; --line: #e4e4df; --ok: #1e7a46; --bad: #b3261e; --accent: #0b6e69; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #151514; --card: #1f1f1d; --text: #ecece8; --muted: #a3a39c; --line: #33332f; --ok: #5cc98a; --bad: #f2867d; --accent: #4fc2bb; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 680px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 1.4rem; margin: 0 0 4px; }
+  h2 { font-size: 1rem; margin: 0 0 12px; }
+  .muted { color: var(--muted); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-top: 16px; }
+  .winner { font-size: 1.25rem; font-weight: 600; }
+  .check { display: flex; gap: 8px; align-items: baseline; margin: 6px 0; }
+  .ok { color: var(--ok); font-weight: 600; }
+  .bad { color: var(--bad); font-weight: 600; }
+  code { font: 0.85rem/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; word-break: break-all; }
+  dl { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 6px 12px; }
+  dt { color: var(--muted); }
+  dd { margin: 0; min-width: 0; }
+  ol { margin: 0; padding-left: 1.4rem; }
+  li.win { color: var(--accent); font-weight: 600; }
+  a { color: var(--accent); }
+  @media (max-width: 480px) { dl { grid-template-columns: 1fr; } dt { margin-top: 6px; } }
+</style>
+</head>
+<body>
+<main>
+  <p class="muted">Bukti Kocok · Giliran</p>
+  <h1>{{.GroupName}}</h1>
+  <p class="muted">Periode {{.PeriodNo}} dari {{.TotalPeriods}} · dikocok {{jakarta .DrawnAt}}</p>
+
+  <section class="card">
+    <h2>Pemenang</h2>
+    <p class="winner">Nomor {{.Winner.SlotNo}} · {{.Winner.DisplayName}}</p>
+  </section>
+
+  <section class="card">
+    <h2>Hasil pemeriksaan server</h2>
+    {{if .IsRandom}}
+    <p class="check">{{if .HashMatches}}<span class="ok">✓ Cocok</span>{{else}}<span class="bad">✗ Tidak cocok</span>{{end}} SHA-256(seed) sama dengan hash yang diumumkan sebelum kocokan.</p>
+    {{end}}
+    <p class="check">{{if .WinnerMatches}}<span class="ok">✓ Cocok</span>{{else}}<span class="bad">✗ Tidak cocok</span>{{end}} Pemenang yang dihitung ulang sama dengan pemenang yang tersimpan.</p>
+    <p class="muted">Jangan hanya percaya server: Anda bisa menghitung ulang sendiri dengan data di bawah.</p>
+  </section>
+
+  <section class="card">
+    <h2>Data kocokan</h2>
+    <dl>
+      <dt>Algoritma</dt><dd><code>{{.Algorithm}}</code></dd>
+      <dt>ID periode</dt><dd><code>{{.PeriodID}}</code></dd>
+      {{if .IsRandom}}
+      <dt>Hash seed</dt><dd><code>{{.SeedHash}}</code>{{with .SeedHashPublishedAt}}<br><span class="muted">diumumkan {{jakarta .}}</span>{{end}}</dd>
+      <dt>Seed</dt><dd><code>{{.Seed}}</code></dd>
+      {{end}}
+    </dl>
+  </section>
+
+  <section class="card">
+    <h2>Nomor yang ikut kocokan ({{len .EligibleSlots}})</h2>
+    <ol start="0">
+      {{range .EligibleSlots}}<li{{if .IsWinner}} class="win"{{end}}>Nomor {{.SlotNo}} · {{.DisplayName}} <span class="muted"><code>{{.SlotID}}</code></span></li>
+      {{end}}
+    </ol>
+  </section>
+
+  <section class="card">
+    <h2>Cara memeriksa</h2>
+    {{if .IsRandom}}
+    <ol>
+      <li>Hitung SHA-256 dari byte seed (64 karakter hex di atas, diubah ke 32 byte). Hasilnya harus sama dengan hash seed.</li>
+      <li>Hitung HMAC-SHA256 dengan kunci = byte seed dan pesan = ID periode (huruf kecil).</li>
+      <li>Ambil 8 byte pertama sebagai bilangan bulat big-endian, lalu modulo jumlah nomor yang ikut kocokan.</li>
+      <li>Hasilnya adalah urutan pemenang dalam daftar di atas (mulai dari 0).</li>
+    </ol>
+    {{else}}
+    <p>Grup ini memakai urutan tetap: pemenangnya adalah nomor yang belum menang dengan posisi urutan terkecil. Tidak ada seed.</p>
+    {{end}}
+    <p class="muted">Data mentah: <a href="{{.JSONURL}}">JSON</a></p>
+  </section>
+</main>
+</body>
+</html>

@@ -1,4 +1,5 @@
-// Package routes maps URLs to controllers. Everything lives under /api/v1.
+// Package routes maps URLs to controllers. Everything lives under /api/v1,
+// except the public draw verification page at /v/{code}.
 package routes
 
 import (
@@ -26,6 +27,8 @@ type Params struct {
 	Members  *controller.MemberController
 	Periods  *controller.PeriodController
 	Payments *controller.PaymentController
+	Draws    *controller.DrawController
+	Payouts  *controller.PayoutController
 	// Idempotency guards the writes that need an Idempotency-Key.
 	Idempotency *controller.Idempotency
 }
@@ -102,6 +105,11 @@ func Register(p Params) {
 	g.Post("/payments/:payment_id/approve", writeLimit, idem, p.Payments.Approve)
 	g.Post("/payments/:payment_id/reject", writeLimit, idem, p.Payments.Reject)
 	g.Post("/payments/:payment_id/mark-paid", writeLimit, idem, p.Payments.MarkPaid)
+	g.Get("/periods/:period_id/draw", p.Draws.Get)
+	g.Post("/periods/:period_id/draw", writeLimit, idem, p.Draws.Run)
+	g.Get("/periods/:period_id/payout", p.Payouts.Get)
+	g.Post("/periods/:period_id/payout", writeLimit, idem, p.Payouts.Record)
+	g.Post("/periods/:period_id/payout/confirm", writeLimit, idem, p.Payouts.Confirm)
 
 	// Invite codes and claim tokens are the secret in a link; a per-user
 	// limit slows anyone guessing them.
@@ -109,4 +117,10 @@ func Register(p Params) {
 	v1.Get("/invites/:invite_code", requireAuth, inviteLimit, p.Members.PreviewInvite)
 	v1.Post("/invites/:invite_code/join", requireAuth, inviteLimit, p.Members.Join)
 	v1.Post("/claims/:claim_token", requireAuth, inviteLimit, p.Members.Claim)
+
+	// Bukti Kocok links are public; a per-IP limit slows code guessing. The
+	// HTML page lives outside /api/v1 at APP_PUBLIC_BASE_URL/v/{code}.
+	publicLimit := middleware.RateLimit(rl.PublicMax, rl.PublicWindow)
+	v1.Get("/public/draws/:verification_code", publicLimit, p.Draws.Public)
+	p.App.Get("/v/:verification_code", publicLimit, p.Draws.Page)
 }

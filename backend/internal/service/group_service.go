@@ -753,7 +753,7 @@ func (s *GroupService) Start(ctx context.Context, groupID, userID uuid.UUID) (Gr
 			// The draw happens on the due date; no setting moves it yet.
 			periods[i] = repository.NewPeriod{PeriodNo: int16(i + 1), DueDate: due, DrawDate: due}
 		}
-		if err := s.periods.CreateAll(ctx, g.ID, periods, now); err != nil {
+		if err := s.periods.CreateAll(ctx, g.ID, g.DrawAlgorithm(), periods, now); err != nil {
 			return err
 		}
 		first, err := s.periods.GetByNo(ctx, g.ID, 1)

@@ -64,6 +64,7 @@ func (s *flowStore) PresignGet(_ context.Context, key string) (string, error) {
 type paymentFlow struct {
 	app       *fiber.App
 	pool      *pgxpool.Pool
+	clock     *clock.Fake
 	groupID   uuid.UUID
 	rina      uuid.UUID
 	budi      uuid.UUID
@@ -98,9 +99,12 @@ func newPaymentFlow(t *testing.T) paymentFlow {
 	groupSvc := service.NewGroupService(tx, groups, members, leaves, transfers, periods, payments, users, authz, activity, store, clk, log, cfg)
 	memberSvc := service.NewMemberService(tx, groups, members, leaves, transfers, users, authz, activity, store, clk, cfg)
 	paymentSvc := service.NewPaymentService(tx, periods, payments, members, users, authz, activity, store, clk, log, cfg)
+	logs := repository.NewActivityRepository(tx)
+	drawSvc := service.NewDrawService(tx, groups, periods, payments, members, logs, users, authz, activity, store, clk, cfg)
+	payoutSvc := service.NewPayoutService(tx, groups, periods, payments, repository.NewPayoutRepository(tx), members, users, authz, activity, store, clk, log, cfg)
 	idem := service.NewIdempotencyService(tx, repository.NewIdempotencyRepository(tx), clk)
 
-	f := paymentFlow{pool: pool, rina: uuid.Must(uuid.NewV7()), budi: uuid.Must(uuid.NewV7())}
+	f := paymentFlow{pool: pool, clock: clk, rina: uuid.Must(uuid.NewV7()), budi: uuid.Must(uuid.NewV7())}
 	for id, phone := range map[uuid.UUID]string{f.rina: "+6281234567890", f.budi: "+6281298765432"} {
 		if _, err := pool.Exec(ctx, `INSERT INTO users (id, phone, name) VALUES ($1, $2, 'Anggota')`, id, phone); err != nil {
 			t.Fatalf("insert user: %v", err)
@@ -143,6 +147,16 @@ func newPaymentFlow(t *testing.T) paymentFlow {
 	g.Post("/payments/:payment_id/proofs", guard, h.UploadProof)
 	g.Post("/payments/:payment_id/approve", guard, h.Approve)
 	g.Post("/payments/:payment_id/reject", guard, h.Reject)
+	g.Post("/payments/:payment_id/mark-paid", guard, h.MarkPaid)
+	draws := &DrawController{draws: drawSvc}
+	payouts := &PayoutController{payouts: payoutSvc}
+	g.Get("/periods/:period_id/draw", draws.Get)
+	g.Post("/periods/:period_id/draw", guard, draws.Run)
+	g.Get("/periods/:period_id/payout", payouts.Get)
+	g.Post("/periods/:period_id/payout", guard, payouts.Record)
+	g.Post("/periods/:period_id/payout/confirm", guard, payouts.Confirm)
+	f.app.Get("/api/v1/public/draws/:verification_code", draws.Public)
+	f.app.Get("/v/:verification_code", draws.Page)
 	return f
 }
 

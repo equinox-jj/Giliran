@@ -128,6 +128,13 @@ func (r *GroupRepository) Start(ctx context.Context, id uuid.UUID, now time.Time
 	return toGroup(row), mapErr(err)
 }
 
+// Complete marks an active group completed at now. A group that is not
+// active is ErrNotFound.
+func (r *GroupRepository) Complete(ctx context.Context, id uuid.UUID, now time.Time) (model.Group, error) {
+	row, err := r.tx.Queries(ctx).CompleteGroup(ctx, sqlc.CompleteGroupParams{ID: id, Now: now})
+	return toGroup(row), mapErr(err)
+}
+
 // SetOrganizer points groups.organizer_id at the new organizer.
 func (r *GroupRepository) SetOrganizer(ctx context.Context, id, userID uuid.UUID) error {
 	return mapErr(r.tx.Queries(ctx).SetGroupOrganizer(ctx, sqlc.SetGroupOrganizerParams{ID: id, OrganizerID: userID}))
@@ -224,6 +231,20 @@ func (r *GroupRepository) CreateSlots(ctx context.Context, groupID uuid.UUID, fr
 // ListSlots returns the group's slots by slot number.
 func (r *GroupRepository) ListSlots(ctx context.Context, groupID uuid.UUID) ([]model.Slot, error) {
 	rows, err := r.tx.Queries(ctx).ListSlots(ctx, groupID)
+	if err != nil {
+		return nil, mapErr(err)
+	}
+	out := make([]model.Slot, len(rows))
+	for i, row := range rows {
+		out[i] = toSlot(row)
+	}
+	return out, nil
+}
+
+// ListEligibleSlots returns the group's slots that have not won, by slot
+// number: the draw's eligible list.
+func (r *GroupRepository) ListEligibleSlots(ctx context.Context, groupID uuid.UUID) ([]model.Slot, error) {
+	rows, err := r.tx.Queries(ctx).ListEligibleSlots(ctx, groupID)
 	if err != nil {
 		return nil, mapErr(err)
 	}

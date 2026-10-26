@@ -25,6 +25,12 @@ type Querier interface {
 	ClaimIdempotencyKey(ctx context.Context, arg ClaimIdempotencyKeyParams) (int64, error)
 	ClearFixedOrder(ctx context.Context, groupID uuid.UUID) error
 	CloseGroup(ctx context.Context, arg CloseGroupParams) (Group, error)
+	// Recording the payout closes a drawn period.
+	ClosePeriod(ctx context.Context, id uuid.UUID) (Period, error)
+	// The last period's payout completes the cycle.
+	CompleteGroup(ctx context.Context, arg CompleteGroupParams) (Group, error)
+	// The winner confirms receipt once.
+	ConfirmPayout(ctx context.Context, arg ConfirmPayoutParams) (Payout, error)
 	CountActiveMembers(ctx context.Context, groupID uuid.UUID) (int32, error)
 	CountFilledSlots(ctx context.Context, groupID uuid.UUID) (int32, error)
 	// A taken invite code inserts nothing and returns no rows, so the caller can
@@ -35,6 +41,7 @@ type Querier interface {
 	CreateOwnershipTransfer(ctx context.Context, arg CreateOwnershipTransferParams) (OwnershipTransfer, error)
 	CreatePaymentProof(ctx context.Context, arg CreatePaymentProofParams) (PaymentProof, error)
 	CreatePayments(ctx context.Context, arg CreatePaymentsParams) error
+	CreatePayout(ctx context.Context, arg CreatePayoutParams) (Payout, error)
 	CreatePeriodSeed(ctx context.Context, arg CreatePeriodSeedParams) error
 	// Every period of a starting group, all upcoming.
 	CreatePeriods(ctx context.Context, arg CreatePeriodsParams) error
@@ -50,6 +57,11 @@ type Querier interface {
 	ExpireOwnershipTransfers(ctx context.Context, arg ExpireOwnershipTransfersParams) error
 	// The period being collected or waiting for its payout.
 	GetCurrentPeriodID(ctx context.Context, groupID uuid.UUID) (uuid.UUID, error)
+	// A drawn period by its public verification code (GetDrawByCode in
+	// DB_SCHEME §8), with what the public page shows about its group.
+	GetDrawByCode(ctx context.Context, verificationCode *string) (GetDrawByCodeRow, error)
+	// The paid and total payment counts recorded with a period's draw.
+	GetDrawCounts(ctx context.Context, periodID uuid.UUID) (GetDrawCountsRow, error)
 	GetGroupByID(ctx context.Context, id uuid.UUID) (Group, error)
 	GetGroupByInviteCode(ctx context.Context, inviteCode string) (Group, error)
 	// Locks the group so slot assignment, role changes and status changes
@@ -67,9 +79,11 @@ type Querier interface {
 	GetPayment(ctx context.Context, arg GetPaymentParams) (GetPaymentRow, error)
 	GetPaymentForUpdate(ctx context.Context, arg GetPaymentForUpdateParams) (Payment, error)
 	GetPaymentSummary(ctx context.Context, periodID uuid.UUID) (GetPaymentSummaryRow, error)
+	GetPayoutByPeriod(ctx context.Context, periodID uuid.UUID) (Payout, error)
 	GetPeriod(ctx context.Context, arg GetPeriodParams) (Period, error)
 	GetPeriodByNo(ctx context.Context, arg GetPeriodByNoParams) (Period, error)
 	GetPeriodForUpdate(ctx context.Context, arg GetPeriodForUpdateParams) (Period, error)
+	GetPeriodSeed(ctx context.Context, periodID uuid.UUID) (PeriodSeed, error)
 	GetPeriodView(ctx context.Context, arg GetPeriodViewParams) (GetPeriodViewRow, error)
 	// Locks the row so two refreshes of one token serialize.
 	GetSessionByRefreshTokenHashForUpdate(ctx context.Context, refreshTokenHash string) (Session, error)
@@ -88,6 +102,9 @@ type Querier interface {
 	// Active guest rows in running groups whose phone matches, skipping groups
 	// the user is already in (FR-MEM-04 auto-claim at sign-in).
 	ListClaimableGuestsByPhone(ctx context.Context, arg ListClaimableGuestsByPhoneParams) ([]GroupMember, error)
+	// Slots of the group that have not won, by slot number: the draw's eligible
+	// list (DB_SCHEME §5 step 2).
+	ListEligibleSlots(ctx context.Context, groupID uuid.UUID) ([]Slot, error)
 	// Newest first. A NULL member_id or status matches every row.
 	ListLeaveRequests(ctx context.Context, arg ListLeaveRequestsParams) ([]LeaveRequest, error)
 	// Members with their slot, account and win, ordered by slot number. Members
@@ -120,6 +137,9 @@ type Querier interface {
 	// Publishes the seed hash (NULL for fixed-order groups). Only an upcoming
 	// period opens.
 	OpenPeriod(ctx context.Context, arg OpenPeriodParams) (Period, error)
+	// Stores the result and reveals the seed (NULL for fixed-order groups). Only
+	// an open period is drawn; the guard trigger freezes the result afterwards.
+	RecordDraw(ctx context.Context, arg RecordDrawParams) (Period, error)
 	RejectPayment(ctx context.Context, arg RejectPaymentParams) (Payment, error)
 	RespondOwnershipTransfer(ctx context.Context, arg RespondOwnershipTransferParams) (OwnershipTransfer, error)
 	ReviewLeaveRequest(ctx context.Context, arg ReviewLeaveRequestParams) (LeaveRequest, error)
@@ -161,6 +181,7 @@ type Querier interface {
 	UpdateUserPhone(ctx context.Context, arg UpdateUserPhoneParams) (User, error)
 	// Changes only the columns whose argument is not NULL.
 	UpdateUserSettings(ctx context.Context, arg UpdateUserSettingsParams) (UserSetting, error)
+	VerificationCodeExists(ctx context.Context, verificationCode *string) (bool, error)
 }
 
 var _ Querier = (*Queries)(nil)
