@@ -154,6 +154,7 @@ var (
 	ErrObligationsOutstanding = &Error{Kind: KindConflict, Code: "obligations_outstanding", Message: "Unpaid obligations block this action."}
 	ErrOrganizerCannotLeave   = &Error{Kind: KindConflict, Code: "organizer_cannot_leave", Message: "Transfer ownership or close the group first."}
 	ErrPendingRequestExists   = &Error{Kind: KindConflict, Code: "pending_request_exists", Message: "A pending leave request or transfer already exists."}
+	ErrRequestNotPending      = &Error{Kind: KindConflict, Code: "request_not_pending", Message: "The leave request or transfer is no longer pending."}
 
 	ErrIdempotencyKeyReused = &Error{Kind: KindInvalid, Code: "idempotency_key_reused", Message: "The same Idempotency-Key was sent with a different request."}
 	ErrFileTooLarge         = &Error{Kind: KindTooLarge, Code: "file_too_large", Message: "Upload is over 5 MB."}

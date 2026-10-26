@@ -6,6 +6,9 @@ import (
 	"github.com/google/uuid"
 )
 
+// ClaimLinkTTL is how long a guest's claim link stays valid.
+const ClaimLinkTTL = 7 * 24 * time.Hour
+
 // MemberRole is a member's role in a group, stored in group_members.role.
 type MemberRole string
 

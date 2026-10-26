@@ -39,8 +39,8 @@ type Group struct {
 	BankName           *string
 	BankAccountNumber  *string
 	BankAccountHolder  *string
-	QrisPayload        *string
-	QrisImageKey       *string
+	QRISPayload        *string
+	QRISImageKey       *string
 	StartedAt          *time.Time
 	CompletedAt        *time.Time
 	ClosedAt           *time.Time

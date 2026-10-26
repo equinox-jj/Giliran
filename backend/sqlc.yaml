@@ -42,3 +42,5 @@ sql:
           pin_hash: PINHash
           pin_failed_count: PINFailedCount
           pin_locked_until: PINLockedUntil
+          qris_payload: QRISPayload
+          qris_image_key: QRISImageKey

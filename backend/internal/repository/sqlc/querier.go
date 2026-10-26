@@ -11,9 +11,48 @@ import (
 )
 
 type Querier interface {
+	AssignSlot(ctx context.Context, arg AssignSlotParams) error
+	// A NULL member_id cancels every pending request in the group.
+	CancelPendingLeaveRequests(ctx context.Context, arg CancelPendingLeaveRequestsParams) error
+	// A NULL to_member_id cancels the group's pending transfer whoever it targets.
+	CancelPendingOwnershipTransfers(ctx context.Context, arg CancelPendingOwnershipTransfersParams) error
+	// The account takes over the guest row, so the slot keeps its history. The
+	// guest-only fields are cleared (an account row has no guest name).
+	ClaimGuest(ctx context.Context, arg ClaimGuestParams) (GroupMember, error)
+	ClearFixedOrder(ctx context.Context, groupID uuid.UUID) error
+	CloseGroup(ctx context.Context, arg CloseGroupParams) (Group, error)
+	CountActiveMembers(ctx context.Context, groupID uuid.UUID) (int32, error)
+	CountFilledSlots(ctx context.Context, groupID uuid.UUID) (int32, error)
+	// A taken invite code inserts nothing and returns no rows, so the caller can
+	// retry with another code without aborting its transaction.
+	CreateGroup(ctx context.Context, arg CreateGroupParams) (Group, error)
+	CreateLeaveRequest(ctx context.Context, arg CreateLeaveRequestParams) (LeaveRequest, error)
+	CreateMember(ctx context.Context, arg CreateMemberParams) (GroupMember, error)
+	CreateOwnershipTransfer(ctx context.Context, arg CreateOwnershipTransferParams) (OwnershipTransfer, error)
 	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
+	CreateSlots(ctx context.Context, arg CreateSlotsParams) error
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	CreateUserSettings(ctx context.Context, userID uuid.UUID) error
+	// Drops slots of a draft group; their slot_members rows cascade.
+	DeleteSlotsAbove(ctx context.Context, arg DeleteSlotsAboveParams) error
+	// Marks the group's pending transfers past their deadline as expired, so a
+	// new offer is not blocked by one nobody can accept any more.
+	ExpireOwnershipTransfers(ctx context.Context, arg ExpireOwnershipTransfersParams) error
+	// The period being collected or waiting for its payout.
+	GetCurrentPeriodID(ctx context.Context, groupID uuid.UUID) (uuid.UUID, error)
+	GetGroupByID(ctx context.Context, id uuid.UUID) (Group, error)
+	GetGroupByInviteCode(ctx context.Context, inviteCode string) (Group, error)
+	// Locks the group so slot assignment, role changes and status changes
+	// serialize.
+	GetGroupForUpdate(ctx context.Context, id uuid.UUID) (Group, error)
+	GetLeaveRequestForUpdate(ctx context.Context, arg GetLeaveRequestForUpdateParams) (LeaveRequest, error)
+	GetMemberByClaimTokenHashForUpdate(ctx context.Context, claimTokenHash *string) (GroupMember, error)
+	GetMemberForUpdate(ctx context.Context, arg GetMemberForUpdateParams) (GroupMember, error)
+	GetMemberView(ctx context.Context, arg GetMemberViewParams) (GetMemberViewRow, error)
+	// The caller's active membership: every permission check (GetMemberRole in
+	// DB_SCHEME §8) starts here.
+	GetMembership(ctx context.Context, arg GetMembershipParams) (GroupMember, error)
+	GetOwnershipTransferForUpdate(ctx context.Context, arg GetOwnershipTransferForUpdateParams) (OwnershipTransfer, error)
 	// Locks the row so two refreshes of one token serialize.
 	GetSessionByRefreshTokenHashForUpdate(ctx context.Context, refreshTokenHash string) (Session, error)
 	GetUserByFirebaseUID(ctx context.Context, firebaseUid *string) (User, error)
@@ -22,13 +61,55 @@ type Querier interface {
 	GetUserByIDForUpdate(ctx context.Context, id uuid.UUID) (User, error)
 	GetUserByPhone(ctx context.Context, phone *string) (User, error)
 	GetUserSettings(ctx context.Context, userID uuid.UUID) (UserSetting, error)
+	InsertActivityLog(ctx context.Context, arg InsertActivityLogParams) error
+	// Active members holding a slot numbered above slot_no, for shrinking a
+	// draft group.
+	ListActiveHoldersAbove(ctx context.Context, arg ListActiveHoldersAboveParams) ([]ListActiveHoldersAboveRow, error)
 	// The user's signed-in devices, the current one first.
 	ListActiveUserSessions(ctx context.Context, arg ListActiveUserSessionsParams) ([]Session, error)
+	// Active guest rows in running groups whose phone matches, skipping groups
+	// the user is already in (FR-MEM-04 auto-claim at sign-in).
+	ListClaimableGuestsByPhone(ctx context.Context, arg ListClaimableGuestsByPhoneParams) ([]GroupMember, error)
+	// Newest first. A NULL member_id or status matches every row.
+	ListLeaveRequests(ctx context.Context, arg ListLeaveRequestsParams) ([]LeaveRequest, error)
+	// Members with their slot, account and win, ordered by slot number. Members
+	// whose slot was dropped (a draft group shrinking) are left out.
+	ListMemberViews(ctx context.Context, arg ListMemberViewsParams) ([]ListMemberViewsRow, error)
+	// The user's groups with the current period's progress, soonest due date
+	// first. Period columns are NULL while no period is open.
+	ListMyGroups(ctx context.Context, arg ListMyGroupsParams) ([]ListMyGroupsRow, error)
+	ListSlots(ctx context.Context, groupID uuid.UUID) ([]Slot, error)
+	// The lowest slot with no active holder that has not won yet. Lock the group
+	// first so two joins never pick the same slot.
+	LowestFreeSlot(ctx context.Context, groupID uuid.UUID) (Slot, error)
+	// A past winner who still owes a payment in some period of the group,
+	// including periods that have not opened yet (FR-MEM-05).
+	MemberHasOutstandingObligations(ctx context.Context, arg MemberHasOutstandingObligationsParams) (bool, error)
+	// Whether the member has a payment past unpaid in an open period, which
+	// blocks removal (FR-MEM-06).
+	MemberHasPaymentsInOpenPeriods(ctx context.Context, memberID uuid.UUID) (bool, error)
+	MemberHasWon(ctx context.Context, memberID uuid.UUID) (bool, error)
+	MoveSlotMember(ctx context.Context, arg MoveSlotMemberParams) error
+	RespondOwnershipTransfer(ctx context.Context, arg RespondOwnershipTransferParams) (OwnershipTransfer, error)
+	ReviewLeaveRequest(ctx context.Context, arg ReviewLeaveRequestParams) (LeaveRequest, error)
 	// Signs the user out everywhere except the current session.
 	RevokeOtherUserSessions(ctx context.Context, arg RevokeOtherUserSessionsParams) (int64, error)
 	RevokeSessionFamily(ctx context.Context, arg RevokeSessionFamilyParams) (int64, error)
 	RevokeUserSession(ctx context.Context, arg RevokeUserSessionParams) (int64, error)
 	RotateSession(ctx context.Context, arg RotateSessionParams) error
+	// Clear the order first: the (group_id, fixed_order_position) index is not
+	// deferrable.
+	SetFixedOrderPositions(ctx context.Context, arg SetFixedOrderPositionsParams) error
+	// Returns no rows when another group already has the code, so the caller can
+	// retry without aborting its transaction.
+	SetGroupInviteCode(ctx context.Context, arg SetGroupInviteCodeParams) (Group, error)
+	SetGroupOrganizer(ctx context.Context, arg SetGroupOrganizerParams) error
+	SetGroupPaymentInfo(ctx context.Context, arg SetGroupPaymentInfoParams) (Group, error)
+	// NULLs remove the QRIS.
+	SetGroupQRIS(ctx context.Context, arg SetGroupQRISParams) (Group, error)
+	SetMemberClaimToken(ctx context.Context, arg SetMemberClaimTokenParams) error
+	SetMemberRole(ctx context.Context, arg SetMemberRoleParams) error
+	SetMemberStatus(ctx context.Context, arg SetMemberStatusParams) (GroupMember, error)
 	SetSessionFCMToken(ctx context.Context, arg SetSessionFCMTokenParams) (int64, error)
 	// NULL removes the avatar.
 	SetUserAvatarKey(ctx context.Context, arg SetUserAvatarKeyParams) (User, error)
@@ -36,6 +117,9 @@ type Querier interface {
 	// Stores a new PIN hash and clears failed attempts and any lock.
 	SetUserPIN(ctx context.Context, arg SetUserPINParams) error
 	SetUserPINAttempts(ctx context.Context, arg SetUserPINAttemptsParams) error
+	// NULL arguments keep the current value.
+	UpdateGroupSettings(ctx context.Context, arg UpdateGroupSettingsParams) (Group, error)
+	UpdateGuest(ctx context.Context, arg UpdateGuestParams) (GroupMember, error)
 	UpdateUserName(ctx context.Context, arg UpdateUserNameParams) (User, error)
 	// Moves the account to a new number and the Firebase account that verified it.
 	UpdateUserPhone(ctx context.Context, arg UpdateUserPhoneParams) (User, error)
