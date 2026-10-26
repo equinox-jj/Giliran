@@ -343,6 +343,7 @@ func toGroup(row sqlc.Group) model.Group {
 		StartedAt:          row.StartedAt,
 		CompletedAt:        row.CompletedAt,
 		ClosedAt:           row.ClosedAt,
+		ProofsPurgedAt:     row.ProofsPurgedAt,
 		CreatedAt:          row.CreatedAt,
 		UpdatedAt:          row.UpdatedAt,
 	}
@@ -357,4 +358,23 @@ func toSlot(row sqlc.Slot) model.Slot {
 		Label:              row.Label,
 		CreatedAt:          row.CreatedAt,
 	}
+}
+
+// ListDueProofPurge returns up to limit completed or closed groups that
+// ended before cutoff and still have their proof images.
+func (r *GroupRepository) ListDueProofPurge(ctx context.Context, cutoff time.Time, limit int32) ([]uuid.UUID, error) {
+	ids, err := r.tx.Queries(ctx).ListGroupsDueProofPurge(ctx, sqlc.ListGroupsDueProofPurgeParams{Cutoff: cutoff, MaxGroups: limit})
+	return ids, mapErr(err)
+}
+
+// ListProofKeys returns the object keys of every payment and payout proof
+// of the group.
+func (r *GroupRepository) ListProofKeys(ctx context.Context, groupID uuid.UUID) ([]string, error) {
+	keys, err := r.tx.Queries(ctx).ListGroupProofKeys(ctx, groupID)
+	return keys, mapErr(err)
+}
+
+// MarkProofsPurged records that the group's proof images were deleted.
+func (r *GroupRepository) MarkProofsPurged(ctx context.Context, groupID uuid.UUID, now time.Time) error {
+	return mapErr(r.tx.Queries(ctx).MarkGroupProofsPurged(ctx, sqlc.MarkGroupProofsPurgedParams{ID: groupID, Now: now}))
 }

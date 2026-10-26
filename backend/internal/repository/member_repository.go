@@ -216,3 +216,15 @@ func (r *MemberRepository) ListUserMemberships(ctx context.Context, userID uuid.
 	}
 	return out, nil
 }
+
+// ListActiveUserIDs returns the accounts of the group's active members, or
+// only those with one of roles when given. Guests and deleted accounts are
+// left out.
+func (r *MemberRepository) ListActiveUserIDs(ctx context.Context, groupID uuid.UUID, roles ...model.MemberRole) ([]uuid.UUID, error) {
+	rs := make([]string, len(roles))
+	for i, role := range roles {
+		rs[i] = string(role)
+	}
+	ids, err := r.tx.Queries(ctx).ListActiveMemberUserIDs(ctx, sqlc.ListActiveMemberUserIDsParams{GroupID: groupID, Roles: rs})
+	return ids, mapErr(err)
+}

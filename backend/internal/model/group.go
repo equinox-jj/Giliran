@@ -109,11 +109,12 @@ type Group struct {
 	BankName           *string     `db:"bank_name"`
 	BankAccountNumber  *string     `db:"bank_account_number"` // visible to group members only
 	BankAccountHolder  *string     `db:"bank_account_holder"`
-	QRISPayload        *string     `db:"qris_payload"`   // decoded EMV string, TLV + CRC-16 validated
-	QRISImageKey       *string     `db:"qris_image_key"` // MinIO object key
-	StartedAt          *time.Time  `db:"started_at"`     // when period 1 opened
-	CompletedAt        *time.Time  `db:"completed_at"`   // when the last period closed
-	ClosedAt           *time.Time  `db:"closed_at"`      // closed early by the organizer
+	QRISPayload        *string     `db:"qris_payload"`     // decoded EMV string, TLV + CRC-16 validated
+	QRISImageKey       *string     `db:"qris_image_key"`   // MinIO object key
+	StartedAt          *time.Time  `db:"started_at"`       // when period 1 opened
+	CompletedAt        *time.Time  `db:"completed_at"`     // when the last period closed
+	ClosedAt           *time.Time  `db:"closed_at"`        // closed early by the organizer
+	ProofsPurgedAt     *time.Time  `db:"proofs_purged_at"` // proof images deleted by the cleanup job
 	CreatedAt          time.Time   `db:"created_at"`
 	UpdatedAt          time.Time   `db:"updated_at"`
 }

@@ -149,3 +149,13 @@ FROM group_members gm
 JOIN groups g ON g.id = gm.group_id
 WHERE gm.user_id = $1 AND gm.status = 'active'
 ORDER BY gm.joined_at;
+
+-- name: ListActiveMemberUserIDs :many
+-- The accounts of the group's active members, for push notifications. An
+-- empty roles list means every role; guests and deleted accounts have none.
+SELECT DISTINCT gm.user_id::uuid AS user_id
+FROM group_members gm
+JOIN users u ON u.id = gm.user_id AND u.deleted_at IS NULL
+WHERE gm.group_id = sqlc.arg(group_id) AND gm.status = 'active'
+  AND (cardinality(sqlc.arg(roles)::text[]) = 0 OR gm.role = ANY(sqlc.arg(roles)::text[]))
+ORDER BY 1;

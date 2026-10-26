@@ -62,3 +62,9 @@ func (r *IdempotencyRepository) SaveResponse(ctx context.Context, userID uuid.UU
 func (r *IdempotencyRepository) Delete(ctx context.Context, userID uuid.UUID, key string) error {
 	return mapErr(r.tx.Queries(ctx).DeleteIdempotencyKey(ctx, sqlc.DeleteIdempotencyKeyParams{UserID: userID, Key: key}))
 }
+
+// DeleteExpired deletes the keys that expired by now.
+func (r *IdempotencyRepository) DeleteExpired(ctx context.Context, now time.Time) (int64, error) {
+	n, err := r.tx.Queries(ctx).DeleteExpiredIdempotencyKeys(ctx, now)
+	return n, mapErr(err)
+}

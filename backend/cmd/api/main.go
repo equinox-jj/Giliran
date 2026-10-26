@@ -10,6 +10,7 @@ import (
 	"github.com/equinox-jj/Giliran/backend/internal/clients/firebase"
 	"github.com/equinox-jj/Giliran/backend/internal/clients/storage"
 	"github.com/equinox-jj/Giliran/backend/internal/controller"
+	"github.com/equinox-jj/Giliran/backend/internal/jobs"
 	"github.com/equinox-jj/Giliran/backend/internal/repository"
 	"github.com/equinox-jj/Giliran/backend/internal/routes"
 	"github.com/equinox-jj/Giliran/backend/internal/service"
@@ -31,6 +32,7 @@ func options() fx.Option {
 		logger.Module,
 		repository.Module,
 		security.Module,
+		jobs.Module,
 		firebase.Module,
 		storage.Module,
 		service.Module,

@@ -69,3 +69,10 @@ func toOwnershipTransfer(row sqlc.OwnershipTransfer) model.OwnershipTransfer {
 		CreatedAt:   row.CreatedAt,
 	}
 }
+
+// ExpireAllOverdue marks every pending transfer past its deadline at now as
+// expired, in all groups.
+func (r *OwnershipTransferRepository) ExpireAllOverdue(ctx context.Context, now time.Time) (int64, error) {
+	n, err := r.tx.Queries(ctx).ExpireAllOwnershipTransfers(ctx, now)
+	return n, mapErr(err)
+}

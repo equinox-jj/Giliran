@@ -116,3 +116,26 @@ func (r *SessionRepository) RevokeAll(ctx context.Context, userID uuid.UUID, rea
 	n, err := r.tx.Queries(ctx).RevokeAllUserSessions(ctx, sqlc.RevokeAllUserSessionsParams{UserID: userID, Reason: string(reason), Now: now})
 	return n, mapErr(err)
 }
+
+// ListPushTokens returns the push tokens of the user's signed-in devices
+// that have not expired at now.
+func (r *SessionRepository) ListPushTokens(ctx context.Context, userID uuid.UUID, now time.Time) ([]string, error) {
+	tokens, err := r.tx.Queries(ctx).ListUserPushTokens(ctx, sqlc.ListUserPushTokensParams{UserID: userID, Now: now})
+	return tokens, mapErr(err)
+}
+
+// ClearPushTokens removes tokens that FCM no longer accepts from every
+// session holding them.
+func (r *SessionRepository) ClearPushTokens(ctx context.Context, tokens []string) (int64, error) {
+	if len(tokens) == 0 {
+		return 0, nil
+	}
+	n, err := r.tx.Queries(ctx).ClearPushTokens(ctx, tokens)
+	return n, mapErr(err)
+}
+
+// DeleteStale deletes the sessions revoked or expired before cutoff.
+func (r *SessionRepository) DeleteStale(ctx context.Context, cutoff time.Time) (int64, error) {
+	n, err := r.tx.Queries(ctx).DeleteStaleSessions(ctx, cutoff)
+	return n, mapErr(err)
+}

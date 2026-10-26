@@ -1,4 +1,4 @@
-# Production stack: API, PostgreSQL and MinIO on one host (Dokploy).
+# Production stack: API, worker, PostgreSQL and MinIO on one host (Dokploy).
 #
 #   docker compose -f deploy/docker-compose.prod.yml up -d --build
 #
@@ -12,7 +12,7 @@
 # ingress) to minio:9000 without rewriting the Host header.
 #
 # Only the API is published, on 127.0.0.1:8080 for the Cloudflare Tunnel.
-# PostgreSQL and MinIO are reachable from this network only.
+# PostgreSQL, MinIO and the worker are reachable from this network only.
 name: giliran
 
 services:
@@ -31,9 +31,40 @@ services:
     ports:
       - "127.0.0.1:8080:8080"
     depends_on:
-      migrate:
+      river-migrate:
         condition: service_completed_successfully
       minio-init:
+        condition: service_completed_successfully
+
+  # Runs River's jobs: pushes, reminders, alerts, expiry and cleanup.
+  worker:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.worker
+    image: giliran-worker:local
+    restart: unless-stopped
+    env_file: ../.env
+    environment:
+      FIREBASE_CREDENTIALS_FILE: /secrets/firebase-service-account.json
+    volumes:
+      - ../secrets:/secrets:ro
+    depends_on:
+      river-migrate:
+        condition: service_completed_successfully
+      minio-init:
+        condition: service_completed_successfully
+
+  # Creates or upgrades River's job tables, then exits. The API enqueues
+  # jobs, so it waits for this too.
+  river-migrate:
+    image: giliran-worker:local
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.worker
+    env_file: ../.env
+    command: ["migrate"]
+    depends_on:
+      migrate:
         condition: service_completed_successfully
 
   postgres:

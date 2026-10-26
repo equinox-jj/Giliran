@@ -28,3 +28,9 @@ SET status = 'cancelled'
 WHERE group_id = sqlc.arg(group_id)
   AND (sqlc.narg(to_member_id)::uuid IS NULL OR to_member_id = sqlc.narg(to_member_id))
   AND status = 'pending';
+
+-- name: ExpireAllOwnershipTransfers :execrows
+-- ExpireOwnershipTransfers across every group, for the worker.
+UPDATE ownership_transfers
+SET status = 'expired'
+WHERE status = 'pending' AND expires_at <= sqlc.arg(now)::timestamptz;

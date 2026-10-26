@@ -129,6 +129,7 @@ SELECT
     pay.id AS payment_id,
     pay.member_id,
     pay.status,
+    pay.amount,
     pay.last_reminded_at,
     gm.user_id,
     gm.guest_phone,
@@ -150,3 +151,55 @@ ORDER BY s.slot_no, gm.joined_at;
 -- name: MarkPaymentsReminded :exec
 UPDATE payments SET last_reminded_at = sqlc.arg(now)::timestamptz
 WHERE id = ANY(sqlc.arg(ids)::uuid[]);
+
+-- name: ListDueReminders :many
+-- Payments still owed in running periods whose payer gets the automatic
+-- reminder today: reminder_days_before the due date, and on it (FR-REM-01).
+-- Only active account members with payment reminders on (DB_SCHEME §8).
+SELECT
+    pay.id AS payment_id,
+    gm.user_id::uuid AS user_id,
+    g.id AS group_id,
+    g.name AS group_name,
+    p.id AS period_id,
+    p.period_no,
+    p.due_date,
+    pay.amount
+FROM payments pay
+JOIN periods p ON p.id = pay.period_id
+JOIN groups g ON g.id = p.group_id
+JOIN group_members gm ON gm.id = pay.member_id
+JOIN users u ON u.id = gm.user_id AND u.deleted_at IS NULL
+JOIN user_settings us ON us.user_id = u.id
+WHERE g.status = 'active'
+  AND p.status IN ('open', 'drawn')
+  AND pay.status IN ('unpaid', 'rejected')
+  AND gm.status = 'active'
+  AND us.notify_payment_reminders
+  AND (p.due_date = sqlc.arg(today)::date
+    OR p.due_date - g.reminder_days_before::int = sqlc.arg(today)::date)
+ORDER BY g.id, p.period_no, pay.id;
+
+-- name: ListMissedWinnerPayments :many
+-- Payments of past winners still owed after a due date: unpaid or rejected
+-- in a period due on due_date, whose slot won an earlier period (feature 30).
+SELECT
+    g.id AS group_id,
+    g.name AS group_name,
+    p.id AS period_id,
+    p.period_no,
+    pay.member_id,
+    COALESCE(u.name, gm.guest_name, '')::text AS member_name
+FROM payments pay
+JOIN periods p ON p.id = pay.period_id
+JOIN groups g ON g.id = p.group_id
+JOIN group_members gm ON gm.id = pay.member_id
+JOIN slots s ON s.id = pay.slot_id
+LEFT JOIN users u ON u.id = gm.user_id
+WHERE g.status = 'active'
+  AND pay.status IN ('unpaid', 'rejected')
+  AND p.due_date = sqlc.arg(due_date)::date
+  AND EXISTS (
+      SELECT 1 FROM periods wp
+      WHERE wp.winner_slot_id = pay.slot_id AND wp.period_no < p.period_no)
+ORDER BY g.id, p.period_no, s.slot_no, gm.joined_at;

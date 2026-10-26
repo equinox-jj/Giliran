@@ -103,3 +103,10 @@ func InTx(ctx context.Context) bool {
 	_, ok := ctx.Value(txKey{}).(pgx.Tx)
 	return ok
 }
+
+// Tx returns the transaction ctx carries, if any. River inserts jobs with it,
+// so a job commits or rolls back with the write that enqueued it.
+func Tx(ctx context.Context) (pgx.Tx, bool) {
+	tx, ok := ctx.Value(txKey{}).(pgx.Tx)
+	return tx, ok
+}

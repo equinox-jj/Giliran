@@ -46,6 +46,7 @@ type Group struct {
 	ClosedAt           *time.Time
 	CreatedAt          time.Time
 	UpdatedAt          time.Time
+	ProofsPurgedAt     *time.Time
 }
 
 type GroupMember struct {

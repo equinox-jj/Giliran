@@ -6,8 +6,11 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/riverqueue/river"
 
 	"github.com/equinox-jj/Giliran/backend/internal/clients/storage"
+	"github.com/equinox-jj/Giliran/backend/internal/jobs"
+	"github.com/equinox-jj/Giliran/backend/internal/jobs/notify"
 	"github.com/equinox-jj/Giliran/backend/internal/model"
 	"github.com/equinox-jj/Giliran/backend/internal/repository"
 	"github.com/equinox-jj/Giliran/backend/pkg/clock"
@@ -72,6 +75,7 @@ type ReminderService struct {
 	members  *repository.MemberRepository
 	authz    *Authz
 	activity *Activity
+	enqueuer *jobs.Enqueuer
 	refs     refs
 	clock    clock.Clock
 }
@@ -85,12 +89,13 @@ func NewReminderService(
 	users *repository.UserRepository,
 	authz *Authz,
 	activity *Activity,
+	enqueuer *jobs.Enqueuer,
 	store storage.Storage,
 	clk clock.Clock,
 ) *ReminderService {
 	return &ReminderService{
 		tx: tx, groups: groups, periods: periods, payments: payments, members: members, authz: authz, activity: activity,
-		refs: refs{users: users, store: store}, clock: clk,
+		enqueuer: enqueuer, refs: refs{users: users, store: store}, clock: clk,
 	}
 }
 
@@ -134,10 +139,15 @@ func (s *ReminderService) Send(ctx context.Context, groupID, periodID, userID uu
 
 		res.Skipped = []ReminderSkip{}
 		var sent []uuid.UUID
+		var pushes []river.InsertManyParams
 		for _, t := range targets {
 			reason, skip := skipReason(t, now)
 			if !skip {
 				sent = append(sent, t.PaymentID)
+				// skipReason left out guests, so UserID is set.
+				pushes = append(pushes, jobs.Push(*t.UserID, notify.KindPaymentReminder,
+					notify.Params{Group: g.Name, PeriodNo: p.PeriodNo, Amount: t.Amount, DueDate: p.DueDate.Format(time.DateOnly)},
+					pushData(groupID, p.ID, "payment_id", t.PaymentID.String())))
 				continue
 			}
 			m, err := s.refs.member(ctx, members[t.MemberID], false)
@@ -153,7 +163,9 @@ func (s *ReminderService) Send(ctx context.Context, groupID, periodID, userID uu
 		if err := s.payments.MarkReminded(ctx, sent, now); err != nil {
 			return err
 		}
-		// TODO(phase 7): enqueue push.send to each reminded payer (FR-REM-01).
+		if err := s.enqueuer.Enqueue(ctx, pushes...); err != nil {
+			return err
+		}
 		return s.activity.Record(ctx, Entry{
 			GroupID: groupID, Actor: &userID, Action: model.ActionReminderSent,
 			EntityType: model.EntityTypePeriod, EntityID: p.ID,

@@ -1,0 +1,19 @@
+# syntax=docker/dockerfile:1
+# Build from backend/: docker build -f deploy/Dockerfile.worker .
+# The same image runs the jobs (no arguments) and `worker migrate`, which
+# creates River's tables before the API and the worker start.
+
+FROM golang:1.27.3-alpine3.24 AS build
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN --mount=type=cache,target=/go/pkg/mod go mod download
+COPY . .
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/worker ./cmd/worker
+
+# Static, shell-less and non-root. CA certificates are included (FCM and
+# Firebase Auth are HTTPS); time zone data is embedded by pkg/config.
+FROM gcr.io/distroless/static-debian13:nonroot
+COPY --from=build /out/worker /worker
+ENTRYPOINT ["/worker"]

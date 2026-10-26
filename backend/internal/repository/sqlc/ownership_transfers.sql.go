@@ -69,6 +69,21 @@ func (q *Queries) CreateOwnershipTransfer(ctx context.Context, arg CreateOwnersh
 	return i, err
 }
 
+const expireAllOwnershipTransfers = `-- name: ExpireAllOwnershipTransfers :execrows
+UPDATE ownership_transfers
+SET status = 'expired'
+WHERE status = 'pending' AND expires_at <= $1::timestamptz
+`
+
+// ExpireOwnershipTransfers across every group, for the worker.
+func (q *Queries) ExpireAllOwnershipTransfers(ctx context.Context, now time.Time) (int64, error) {
+	result, err := q.db.Exec(ctx, expireAllOwnershipTransfers, now)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const expireOwnershipTransfers = `-- name: ExpireOwnershipTransfers :exec
 UPDATE ownership_transfers
 SET status = 'expired'

@@ -260,6 +260,42 @@ func (q *Queries) GetMembership(ctx context.Context, arg GetMembershipParams) (G
 	return i, err
 }
 
+const listActiveMemberUserIDs = `-- name: ListActiveMemberUserIDs :many
+SELECT DISTINCT gm.user_id::uuid AS user_id
+FROM group_members gm
+JOIN users u ON u.id = gm.user_id AND u.deleted_at IS NULL
+WHERE gm.group_id = $1 AND gm.status = 'active'
+  AND (cardinality($2::text[]) = 0 OR gm.role = ANY($2::text[]))
+ORDER BY 1
+`
+
+type ListActiveMemberUserIDsParams struct {
+	GroupID uuid.UUID
+	Roles   []string
+}
+
+// The accounts of the group's active members, for push notifications. An
+// empty roles list means every role; guests and deleted accounts have none.
+func (q *Queries) ListActiveMemberUserIDs(ctx context.Context, arg ListActiveMemberUserIDsParams) ([]uuid.UUID, error) {
+	rows, err := q.db.Query(ctx, listActiveMemberUserIDs, arg.GroupID, arg.Roles)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []uuid.UUID{}
+	for rows.Next() {
+		var user_id uuid.UUID
+		if err := rows.Scan(&user_id); err != nil {
+			return nil, err
+		}
+		items = append(items, user_id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listClaimableGuestsByPhone = `-- name: ListClaimableGuestsByPhone :many
 SELECT gm.id, gm.group_id, gm.user_id, gm.guest_name, gm.guest_phone, gm.role, gm.status, gm.claim_token_hash, gm.claim_token_expires_at, gm.joined_at, gm.left_at, gm.created_at, gm.updated_at FROM group_members gm
 JOIN groups g ON g.id = gm.group_id

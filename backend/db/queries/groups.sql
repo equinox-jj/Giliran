@@ -132,3 +132,29 @@ UPDATE groups
 SET status = 'completed', completed_at = sqlc.arg(now)::timestamptz
 WHERE id = sqlc.arg(id) AND status = 'active'
 RETURNING *;
+
+-- name: ListGroupsDueProofPurge :many
+-- Completed or closed groups whose proof images have outlived the cutoff
+-- and are still stored (DB_SCHEME §10).
+SELECT id FROM groups
+WHERE proofs_purged_at IS NULL
+  AND ((status = 'completed' AND completed_at < sqlc.arg(cutoff)::timestamptz)
+    OR (status = 'closed' AND closed_at < sqlc.arg(cutoff)::timestamptz))
+ORDER BY id
+LIMIT sqlc.arg(max_groups);
+
+-- name: ListGroupProofKeys :many
+-- Every stored payment and payout proof object of the group.
+SELECT pr.object_key::text AS object_key
+FROM payment_proofs pr
+JOIN payments pay ON pay.id = pr.payment_id
+WHERE pay.group_id = sqlc.arg(group_id)
+UNION
+SELECT po.proof_key::text
+FROM payouts po
+JOIN periods p ON p.id = po.period_id
+WHERE p.group_id = sqlc.arg(group_id) AND po.proof_key IS NOT NULL;
+
+-- name: MarkGroupProofsPurged :exec
+UPDATE groups SET proofs_purged_at = sqlc.arg(now)::timestamptz
+WHERE id = sqlc.arg(id) AND proofs_purged_at IS NULL;

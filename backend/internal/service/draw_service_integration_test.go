@@ -49,9 +49,9 @@ func newDrawEnv(t *testing.T) drawEnv {
 	log := slog.New(slog.NewTextHandler(io.Discard, nil))
 	return drawEnv{
 		paymentEnv: p,
-		draws:      NewDrawService(tx, groups, periods, payments, members, logs, users, authz, activity, p.store, p.clock, cfg),
+		draws:      NewDrawService(tx, groups, periods, payments, members, logs, users, authz, activity, p.jobs, p.store, p.clock, cfg),
 		payouts: NewPayoutService(tx, groups, periods, payments, repository.NewPayoutRepository(tx), members, users,
-			authz, activity, p.store, p.clock, log, cfg),
+			authz, activity, p.jobs, p.store, p.clock, log, cfg),
 	}
 }
 

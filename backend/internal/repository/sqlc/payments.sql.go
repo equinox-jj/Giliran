@@ -213,6 +213,136 @@ func (q *Queries) GetPaymentSummary(ctx context.Context, periodID uuid.UUID) (Ge
 	return i, err
 }
 
+const listDueReminders = `-- name: ListDueReminders :many
+SELECT
+    pay.id AS payment_id,
+    gm.user_id::uuid AS user_id,
+    g.id AS group_id,
+    g.name AS group_name,
+    p.id AS period_id,
+    p.period_no,
+    p.due_date,
+    pay.amount
+FROM payments pay
+JOIN periods p ON p.id = pay.period_id
+JOIN groups g ON g.id = p.group_id
+JOIN group_members gm ON gm.id = pay.member_id
+JOIN users u ON u.id = gm.user_id AND u.deleted_at IS NULL
+JOIN user_settings us ON us.user_id = u.id
+WHERE g.status = 'active'
+  AND p.status IN ('open', 'drawn')
+  AND pay.status IN ('unpaid', 'rejected')
+  AND gm.status = 'active'
+  AND us.notify_payment_reminders
+  AND (p.due_date = $1::date
+    OR p.due_date - g.reminder_days_before::int = $1::date)
+ORDER BY g.id, p.period_no, pay.id
+`
+
+type ListDueRemindersRow struct {
+	PaymentID uuid.UUID
+	UserID    uuid.UUID
+	GroupID   uuid.UUID
+	GroupName string
+	PeriodID  uuid.UUID
+	PeriodNo  int16
+	DueDate   time.Time
+	Amount    int64
+}
+
+// Payments still owed in running periods whose payer gets the automatic
+// reminder today: reminder_days_before the due date, and on it (FR-REM-01).
+// Only active account members with payment reminders on (DB_SCHEME §8).
+func (q *Queries) ListDueReminders(ctx context.Context, today time.Time) ([]ListDueRemindersRow, error) {
+	rows, err := q.db.Query(ctx, listDueReminders, today)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListDueRemindersRow{}
+	for rows.Next() {
+		var i ListDueRemindersRow
+		if err := rows.Scan(
+			&i.PaymentID,
+			&i.UserID,
+			&i.GroupID,
+			&i.GroupName,
+			&i.PeriodID,
+			&i.PeriodNo,
+			&i.DueDate,
+			&i.Amount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listMissedWinnerPayments = `-- name: ListMissedWinnerPayments :many
+SELECT
+    g.id AS group_id,
+    g.name AS group_name,
+    p.id AS period_id,
+    p.period_no,
+    pay.member_id,
+    COALESCE(u.name, gm.guest_name, '')::text AS member_name
+FROM payments pay
+JOIN periods p ON p.id = pay.period_id
+JOIN groups g ON g.id = p.group_id
+JOIN group_members gm ON gm.id = pay.member_id
+JOIN slots s ON s.id = pay.slot_id
+LEFT JOIN users u ON u.id = gm.user_id
+WHERE g.status = 'active'
+  AND pay.status IN ('unpaid', 'rejected')
+  AND p.due_date = $1::date
+  AND EXISTS (
+      SELECT 1 FROM periods wp
+      WHERE wp.winner_slot_id = pay.slot_id AND wp.period_no < p.period_no)
+ORDER BY g.id, p.period_no, s.slot_no, gm.joined_at
+`
+
+type ListMissedWinnerPaymentsRow struct {
+	GroupID    uuid.UUID
+	GroupName  string
+	PeriodID   uuid.UUID
+	PeriodNo   int16
+	MemberID   uuid.UUID
+	MemberName string
+}
+
+// Payments of past winners still owed after a due date: unpaid or rejected
+// in a period due on due_date, whose slot won an earlier period (feature 30).
+func (q *Queries) ListMissedWinnerPayments(ctx context.Context, dueDate time.Time) ([]ListMissedWinnerPaymentsRow, error) {
+	rows, err := q.db.Query(ctx, listMissedWinnerPayments, dueDate)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListMissedWinnerPaymentsRow{}
+	for rows.Next() {
+		var i ListMissedWinnerPaymentsRow
+		if err := rows.Scan(
+			&i.GroupID,
+			&i.GroupName,
+			&i.PeriodID,
+			&i.PeriodNo,
+			&i.MemberID,
+			&i.MemberName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listObligations = `-- name: ListObligations :many
 WITH winners AS (
     SELECT sm.member_id, (sm.share_pct * 100)::int AS share_basis_points, p.period_no AS won_period_no
@@ -392,6 +522,7 @@ SELECT
     pay.id AS payment_id,
     pay.member_id,
     pay.status,
+    pay.amount,
     pay.last_reminded_at,
     gm.user_id,
     gm.guest_phone,
@@ -420,6 +551,7 @@ type ListReminderTargetsRow struct {
 	PaymentID              uuid.UUID
 	MemberID               uuid.UUID
 	Status                 string
+	Amount                 int64
 	LastRemindedAt         *time.Time
 	UserID                 *uuid.UUID
 	GuestPhone             *string
@@ -443,6 +575,7 @@ func (q *Queries) ListReminderTargets(ctx context.Context, arg ListReminderTarge
 			&i.PaymentID,
 			&i.MemberID,
 			&i.Status,
+			&i.Amount,
 			&i.LastRemindedAt,
 			&i.UserID,
 			&i.GuestPhone,

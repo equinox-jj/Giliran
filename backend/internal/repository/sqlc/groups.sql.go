@@ -16,7 +16,7 @@ const closeGroup = `-- name: CloseGroup :one
 UPDATE groups
 SET status = 'closed', closed_at = $1::timestamptz
 WHERE id = $2
-RETURNING id, organizer_id, name, amount, period_type, total_slots, draw_method, start_date, reminder_days_before, status, invite_code, bank_name, bank_account_number, bank_account_holder, qris_payload, qris_image_key, started_at, completed_at, closed_at, created_at, updated_at
+RETURNING id, organizer_id, name, amount, period_type, total_slots, draw_method, start_date, reminder_days_before, status, invite_code, bank_name, bank_account_number, bank_account_holder, qris_payload, qris_image_key, started_at, completed_at, closed_at, created_at, updated_at, proofs_purged_at
 `
 
 type CloseGroupParams struct {
@@ -49,6 +49,7 @@ func (q *Queries) CloseGroup(ctx context.Context, arg CloseGroupParams) (Group, 
 		&i.ClosedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ProofsPurgedAt,
 	)
 	return i, err
 }
@@ -57,7 +58,7 @@ const completeGroup = `-- name: CompleteGroup :one
 UPDATE groups
 SET status = 'completed', completed_at = $1::timestamptz
 WHERE id = $2 AND status = 'active'
-RETURNING id, organizer_id, name, amount, period_type, total_slots, draw_method, start_date, reminder_days_before, status, invite_code, bank_name, bank_account_number, bank_account_holder, qris_payload, qris_image_key, started_at, completed_at, closed_at, created_at, updated_at
+RETURNING id, organizer_id, name, amount, period_type, total_slots, draw_method, start_date, reminder_days_before, status, invite_code, bank_name, bank_account_number, bank_account_holder, qris_payload, qris_image_key, started_at, completed_at, closed_at, created_at, updated_at, proofs_purged_at
 `
 
 type CompleteGroupParams struct {
@@ -91,6 +92,7 @@ func (q *Queries) CompleteGroup(ctx context.Context, arg CompleteGroupParams) (G
 		&i.ClosedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ProofsPurgedAt,
 	)
 	return i, err
 }
@@ -104,7 +106,7 @@ INSERT INTO groups (
     $8, $9, $10, $11, $11
 )
 ON CONFLICT (invite_code) DO NOTHING
-RETURNING id, organizer_id, name, amount, period_type, total_slots, draw_method, start_date, reminder_days_before, status, invite_code, bank_name, bank_account_number, bank_account_holder, qris_payload, qris_image_key, started_at, completed_at, closed_at, created_at, updated_at
+RETURNING id, organizer_id, name, amount, period_type, total_slots, draw_method, start_date, reminder_days_before, status, invite_code, bank_name, bank_account_number, bank_account_holder, qris_payload, qris_image_key, started_at, completed_at, closed_at, created_at, updated_at, proofs_purged_at
 `
 
 type CreateGroupParams struct {
@@ -160,6 +162,7 @@ func (q *Queries) CreateGroup(ctx context.Context, arg CreateGroupParams) (Group
 		&i.ClosedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ProofsPurgedAt,
 	)
 	return i, err
 }
@@ -180,7 +183,7 @@ func (q *Queries) GetCurrentPeriodID(ctx context.Context, groupID uuid.UUID) (uu
 }
 
 const getGroupByID = `-- name: GetGroupByID :one
-SELECT id, organizer_id, name, amount, period_type, total_slots, draw_method, start_date, reminder_days_before, status, invite_code, bank_name, bank_account_number, bank_account_holder, qris_payload, qris_image_key, started_at, completed_at, closed_at, created_at, updated_at FROM groups
+SELECT id, organizer_id, name, amount, period_type, total_slots, draw_method, start_date, reminder_days_before, status, invite_code, bank_name, bank_account_number, bank_account_holder, qris_payload, qris_image_key, started_at, completed_at, closed_at, created_at, updated_at, proofs_purged_at FROM groups
 WHERE id = $1
 `
 
@@ -209,12 +212,13 @@ func (q *Queries) GetGroupByID(ctx context.Context, id uuid.UUID) (Group, error)
 		&i.ClosedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ProofsPurgedAt,
 	)
 	return i, err
 }
 
 const getGroupByInviteCode = `-- name: GetGroupByInviteCode :one
-SELECT id, organizer_id, name, amount, period_type, total_slots, draw_method, start_date, reminder_days_before, status, invite_code, bank_name, bank_account_number, bank_account_holder, qris_payload, qris_image_key, started_at, completed_at, closed_at, created_at, updated_at FROM groups
+SELECT id, organizer_id, name, amount, period_type, total_slots, draw_method, start_date, reminder_days_before, status, invite_code, bank_name, bank_account_number, bank_account_holder, qris_payload, qris_image_key, started_at, completed_at, closed_at, created_at, updated_at, proofs_purged_at FROM groups
 WHERE invite_code = $1
 `
 
@@ -243,12 +247,13 @@ func (q *Queries) GetGroupByInviteCode(ctx context.Context, inviteCode string) (
 		&i.ClosedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ProofsPurgedAt,
 	)
 	return i, err
 }
 
 const getGroupForUpdate = `-- name: GetGroupForUpdate :one
-SELECT id, organizer_id, name, amount, period_type, total_slots, draw_method, start_date, reminder_days_before, status, invite_code, bank_name, bank_account_number, bank_account_holder, qris_payload, qris_image_key, started_at, completed_at, closed_at, created_at, updated_at FROM groups
+SELECT id, organizer_id, name, amount, period_type, total_slots, draw_method, start_date, reminder_days_before, status, invite_code, bank_name, bank_account_number, bank_account_holder, qris_payload, qris_image_key, started_at, completed_at, closed_at, created_at, updated_at, proofs_purged_at FROM groups
 WHERE id = $1
 FOR UPDATE
 `
@@ -280,8 +285,78 @@ func (q *Queries) GetGroupForUpdate(ctx context.Context, id uuid.UUID) (Group, e
 		&i.ClosedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ProofsPurgedAt,
 	)
 	return i, err
+}
+
+const listGroupProofKeys = `-- name: ListGroupProofKeys :many
+SELECT pr.object_key::text AS object_key
+FROM payment_proofs pr
+JOIN payments pay ON pay.id = pr.payment_id
+WHERE pay.group_id = $1
+UNION
+SELECT po.proof_key::text
+FROM payouts po
+JOIN periods p ON p.id = po.period_id
+WHERE p.group_id = $1 AND po.proof_key IS NOT NULL
+`
+
+// Every stored payment and payout proof object of the group.
+func (q *Queries) ListGroupProofKeys(ctx context.Context, groupID uuid.UUID) ([]string, error) {
+	rows, err := q.db.Query(ctx, listGroupProofKeys, groupID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []string{}
+	for rows.Next() {
+		var object_key string
+		if err := rows.Scan(&object_key); err != nil {
+			return nil, err
+		}
+		items = append(items, object_key)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listGroupsDueProofPurge = `-- name: ListGroupsDueProofPurge :many
+SELECT id FROM groups
+WHERE proofs_purged_at IS NULL
+  AND ((status = 'completed' AND completed_at < $1::timestamptz)
+    OR (status = 'closed' AND closed_at < $1::timestamptz))
+ORDER BY id
+LIMIT $2
+`
+
+type ListGroupsDueProofPurgeParams struct {
+	Cutoff    time.Time
+	MaxGroups int32
+}
+
+// Completed or closed groups whose proof images have outlived the cutoff
+// and are still stored (DB_SCHEME §10).
+func (q *Queries) ListGroupsDueProofPurge(ctx context.Context, arg ListGroupsDueProofPurgeParams) ([]uuid.UUID, error) {
+	rows, err := q.db.Query(ctx, listGroupsDueProofPurge, arg.Cutoff, arg.MaxGroups)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []uuid.UUID{}
+	for rows.Next() {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listMyGroups = `-- name: ListMyGroups :many
@@ -389,12 +464,27 @@ func (q *Queries) ListMyGroups(ctx context.Context, arg ListMyGroupsParams) ([]L
 	return items, nil
 }
 
+const markGroupProofsPurged = `-- name: MarkGroupProofsPurged :exec
+UPDATE groups SET proofs_purged_at = $1::timestamptz
+WHERE id = $2 AND proofs_purged_at IS NULL
+`
+
+type MarkGroupProofsPurgedParams struct {
+	Now time.Time
+	ID  uuid.UUID
+}
+
+func (q *Queries) MarkGroupProofsPurged(ctx context.Context, arg MarkGroupProofsPurgedParams) error {
+	_, err := q.db.Exec(ctx, markGroupProofsPurged, arg.Now, arg.ID)
+	return err
+}
+
 const setGroupInviteCode = `-- name: SetGroupInviteCode :one
 UPDATE groups
 SET invite_code = $1
 WHERE groups.id = $2
   AND NOT EXISTS (SELECT 1 FROM groups other WHERE other.invite_code = $1)
-RETURNING id, organizer_id, name, amount, period_type, total_slots, draw_method, start_date, reminder_days_before, status, invite_code, bank_name, bank_account_number, bank_account_holder, qris_payload, qris_image_key, started_at, completed_at, closed_at, created_at, updated_at
+RETURNING id, organizer_id, name, amount, period_type, total_slots, draw_method, start_date, reminder_days_before, status, invite_code, bank_name, bank_account_number, bank_account_holder, qris_payload, qris_image_key, started_at, completed_at, closed_at, created_at, updated_at, proofs_purged_at
 `
 
 type SetGroupInviteCodeParams struct {
@@ -429,6 +519,7 @@ func (q *Queries) SetGroupInviteCode(ctx context.Context, arg SetGroupInviteCode
 		&i.ClosedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ProofsPurgedAt,
 	)
 	return i, err
 }
@@ -453,7 +544,7 @@ const setGroupPaymentInfo = `-- name: SetGroupPaymentInfo :one
 UPDATE groups
 SET bank_name = $2, bank_account_number = $3, bank_account_holder = $4
 WHERE id = $1
-RETURNING id, organizer_id, name, amount, period_type, total_slots, draw_method, start_date, reminder_days_before, status, invite_code, bank_name, bank_account_number, bank_account_holder, qris_payload, qris_image_key, started_at, completed_at, closed_at, created_at, updated_at
+RETURNING id, organizer_id, name, amount, period_type, total_slots, draw_method, start_date, reminder_days_before, status, invite_code, bank_name, bank_account_number, bank_account_holder, qris_payload, qris_image_key, started_at, completed_at, closed_at, created_at, updated_at, proofs_purged_at
 `
 
 type SetGroupPaymentInfoParams struct {
@@ -493,6 +584,7 @@ func (q *Queries) SetGroupPaymentInfo(ctx context.Context, arg SetGroupPaymentIn
 		&i.ClosedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ProofsPurgedAt,
 	)
 	return i, err
 }
@@ -501,7 +593,7 @@ const setGroupQRIS = `-- name: SetGroupQRIS :one
 UPDATE groups
 SET qris_payload = $1, qris_image_key = $2
 WHERE id = $3
-RETURNING id, organizer_id, name, amount, period_type, total_slots, draw_method, start_date, reminder_days_before, status, invite_code, bank_name, bank_account_number, bank_account_holder, qris_payload, qris_image_key, started_at, completed_at, closed_at, created_at, updated_at
+RETURNING id, organizer_id, name, amount, period_type, total_slots, draw_method, start_date, reminder_days_before, status, invite_code, bank_name, bank_account_number, bank_account_holder, qris_payload, qris_image_key, started_at, completed_at, closed_at, created_at, updated_at, proofs_purged_at
 `
 
 type SetGroupQRISParams struct {
@@ -536,6 +628,7 @@ func (q *Queries) SetGroupQRIS(ctx context.Context, arg SetGroupQRISParams) (Gro
 		&i.ClosedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ProofsPurgedAt,
 	)
 	return i, err
 }
@@ -544,7 +637,7 @@ const startGroup = `-- name: StartGroup :one
 UPDATE groups
 SET status = 'active', started_at = $1::timestamptz
 WHERE id = $2
-RETURNING id, organizer_id, name, amount, period_type, total_slots, draw_method, start_date, reminder_days_before, status, invite_code, bank_name, bank_account_number, bank_account_holder, qris_payload, qris_image_key, started_at, completed_at, closed_at, created_at, updated_at
+RETURNING id, organizer_id, name, amount, period_type, total_slots, draw_method, start_date, reminder_days_before, status, invite_code, bank_name, bank_account_number, bank_account_holder, qris_payload, qris_image_key, started_at, completed_at, closed_at, created_at, updated_at, proofs_purged_at
 `
 
 type StartGroupParams struct {
@@ -577,6 +670,7 @@ func (q *Queries) StartGroup(ctx context.Context, arg StartGroupParams) (Group, 
 		&i.ClosedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ProofsPurgedAt,
 	)
 	return i, err
 }
@@ -591,7 +685,7 @@ SET name                 = COALESCE($1, name),
     start_date           = COALESCE($6, start_date),
     draw_method          = COALESCE($7, draw_method)
 WHERE id = $8
-RETURNING id, organizer_id, name, amount, period_type, total_slots, draw_method, start_date, reminder_days_before, status, invite_code, bank_name, bank_account_number, bank_account_holder, qris_payload, qris_image_key, started_at, completed_at, closed_at, created_at, updated_at
+RETURNING id, organizer_id, name, amount, period_type, total_slots, draw_method, start_date, reminder_days_before, status, invite_code, bank_name, bank_account_number, bank_account_holder, qris_payload, qris_image_key, started_at, completed_at, closed_at, created_at, updated_at, proofs_purged_at
 `
 
 type UpdateGroupSettingsParams struct {
@@ -640,6 +734,7 @@ func (q *Queries) UpdateGroupSettings(ctx context.Context, arg UpdateGroupSettin
 		&i.ClosedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ProofsPurgedAt,
 	)
 	return i, err
 }

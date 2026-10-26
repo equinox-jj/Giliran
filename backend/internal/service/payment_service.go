@@ -11,6 +11,8 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/equinox-jj/Giliran/backend/internal/clients/storage"
+	"github.com/equinox-jj/Giliran/backend/internal/jobs"
+	"github.com/equinox-jj/Giliran/backend/internal/jobs/notify"
 	"github.com/equinox-jj/Giliran/backend/internal/model"
 	"github.com/equinox-jj/Giliran/backend/internal/repository"
 	"github.com/equinox-jj/Giliran/backend/pkg/clock"
@@ -45,11 +47,13 @@ type PaymentDetail struct {
 // (features 21–24, BR-07).
 type PaymentService struct {
 	tx        *repository.TxManager
+	groups    *repository.GroupRepository
 	periods   *repository.PeriodRepository
 	payments  *repository.PaymentRepository
 	members   *repository.MemberRepository
 	authz     *Authz
 	activity  *Activity
+	notify    notifier
 	refs      refs
 	store     storage.Storage
 	clock     clock.Clock
@@ -59,20 +63,23 @@ type PaymentService struct {
 
 func NewPaymentService(
 	tx *repository.TxManager,
+	groups *repository.GroupRepository,
 	periods *repository.PeriodRepository,
 	payments *repository.PaymentRepository,
 	members *repository.MemberRepository,
 	users *repository.UserRepository,
 	authz *Authz,
 	activity *Activity,
+	enqueuer *jobs.Enqueuer,
 	store storage.Storage,
 	clk clock.Clock,
 	log *slog.Logger,
 	cfg *config.Config,
 ) *PaymentService {
 	return &PaymentService{
-		tx: tx, periods: periods, payments: payments, members: members, authz: authz, activity: activity,
-		refs: refs{users: users, store: store}, store: store, clock: clk, log: log, maxUpload: cfg.MinIO.UploadMaxBytes,
+		tx: tx, groups: groups, periods: periods, payments: payments, members: members, authz: authz, activity: activity,
+		notify: notifier{jobs: enqueuer, members: members},
+		refs:   refs{users: users, store: store}, store: store, clock: clk, log: log, maxUpload: cfg.MinIO.UploadMaxBytes,
 	}
 }
 
@@ -178,7 +185,16 @@ func (s *PaymentService) UploadProof(ctx context.Context, groupID, paymentID, us
 			return model.Payment{}, Entry{}, err
 		}
 		p, err := s.payments.SetProof(ctx, paymentID, proof.ID)
-		// TODO(phase 7): enqueue push.send to the organizers.
+		if err != nil {
+			return model.Payment{}, Entry{}, err
+		}
+		payer, err := s.members.GetView(ctx, groupID, w.me.ID)
+		if err != nil {
+			return model.Payment{}, Entry{}, err
+		}
+		err = s.notify.toGroup(ctx, groupID, &userID, notify.KindProofUploaded,
+			notify.Params{Group: w.group.Name, PeriodNo: w.period.PeriodNo, Member: Member{MemberView: payer}.DisplayName()},
+			pushData(groupID, w.period.ID, "payment_id", paymentID.String()), managers...)
 		return p, Entry{
 			Action: model.ActionPaymentProofUploaded,
 			Before: map[string]any{"status": w.payment.Status},
@@ -197,7 +213,10 @@ func (s *PaymentService) UploadProof(ctx context.Context, groupID, paymentID, us
 func (s *PaymentService) Approve(ctx context.Context, groupID, paymentID, userID uuid.UUID) (PaymentView, error) {
 	return s.review(ctx, groupID, paymentID, userID, func(ctx context.Context, w paymentWrite) (model.Payment, Entry, error) {
 		p, err := s.payments.SetPaid(ctx, paymentID, model.PaymentMethodTransfer, nil, userID, w.now)
-		// TODO(phase 7): enqueue push.send to the payer.
+		if err != nil {
+			return model.Payment{}, Entry{}, err
+		}
+		err = s.notifyPayer(ctx, w, p, userID, notify.KindPaymentApproved, "")
 		return p, Entry{
 			Action: model.ActionPaymentApproved,
 			Before: map[string]any{"status": w.payment.Status},
@@ -215,7 +234,10 @@ func (s *PaymentService) Reject(ctx context.Context, groupID, paymentID, userID 
 	}
 	return s.review(ctx, groupID, paymentID, userID, func(ctx context.Context, w paymentWrite) (model.Payment, Entry, error) {
 		p, err := s.payments.Reject(ctx, paymentID, reason, userID, w.now)
-		// TODO(phase 7): enqueue push.send to the payer.
+		if err != nil {
+			return model.Payment{}, Entry{}, err
+		}
+		err = s.notifyPayer(ctx, w, p, userID, notify.KindPaymentRejected, reason)
 		return p, Entry{
 			Action: model.ActionPaymentRejected,
 			Before: map[string]any{"status": w.payment.Status},
@@ -273,11 +295,14 @@ func (s *PaymentService) MarkPaid(ctx context.Context, groupID, paymentID, userI
 			return model.Payment{}, Entry{}, model.ErrInvalidPaymentState.WithDetail("A %s payment cannot be marked paid.", w.payment.Status)
 		}
 		p, err := s.payments.SetPaid(ctx, paymentID, method, note, userID, w.now)
+		if err != nil {
+			return model.Payment{}, Entry{}, err
+		}
 		after := map[string]any{"status": p.Status, "method": method}
 		if note != nil {
 			after["note"] = *note
 		}
-		// TODO(phase 7): enqueue push.send to the payer.
+		err = s.notifyPayer(ctx, w, p, userID, notify.KindPaymentMarked, "")
 		return p, Entry{
 			Action: model.ActionPaymentMarkedPaid,
 			Before: map[string]any{"status": w.payment.Status},
@@ -288,6 +313,21 @@ func (s *PaymentService) MarkPaid(ctx context.Context, groupID, paymentID, userI
 		return PaymentView{}, err
 	}
 	return s.viewOf(ctx, groupID, paymentID, me)
+}
+
+// notifyPayer queues a push about p to its payer's account, unless the
+// payer is the actor or a guest.
+func (s *PaymentService) notifyPayer(ctx context.Context, w paymentWrite, p model.Payment, actor uuid.UUID, kind notify.Kind, reason string) error {
+	payer, err := s.members.GetView(ctx, w.group.ID, p.MemberID)
+	if err != nil {
+		return err
+	}
+	if payer.Member.UserID != nil && *payer.Member.UserID == actor {
+		return nil
+	}
+	return s.notify.toMember(ctx, payer.Member, kind,
+		notify.Params{Group: w.group.Name, PeriodNo: w.period.PeriodNo, Amount: p.Amount, Reason: reason},
+		pushData(w.group.ID, w.period.ID, "payment_id", p.ID.String()))
 }
 
 // paymentWrite is what a payment change sees inside its transaction.
@@ -384,16 +424,24 @@ func (s *PaymentService) detail(ctx context.Context, groupID, paymentID uuid.UUI
 type paymentBuilder struct {
 	refs      refs
 	me        model.GroupMember
+	purged    bool // the cleanup job deleted the group's proof images
 	members   map[uuid.UUID]Member
 	reviewers map[uuid.UUID]UserRef
 }
 
 func (s *PaymentService) newBuilder(ctx context.Context, groupID uuid.UUID, me model.GroupMember) (*paymentBuilder, error) {
+	g, err := s.groups.GetByID(ctx, groupID)
+	if err != nil {
+		return nil, err
+	}
 	views, err := s.members.ListViews(ctx, groupID, true)
 	if err != nil {
 		return nil, err
 	}
-	b := &paymentBuilder{refs: s.refs, me: me, members: make(map[uuid.UUID]Member, len(views)), reviewers: map[uuid.UUID]UserRef{}}
+	b := &paymentBuilder{
+		refs: s.refs, me: me, purged: g.ProofsPurgedAt != nil,
+		members: make(map[uuid.UUID]Member, len(views)), reviewers: map[uuid.UUID]UserRef{},
+	}
 	for _, v := range views {
 		m, err := s.refs.member(ctx, v, false)
 		if err != nil {
@@ -405,9 +453,9 @@ func (s *PaymentService) newBuilder(ctx context.Context, groupID uuid.UUID, me m
 }
 
 // canSeeProofs reports whether the caller may open p's proofs: the payer and
-// organizers only.
+// organizers only, and only while the images are kept (DB_SCHEME §10).
 func (b *paymentBuilder) canSeeProofs(p model.Payment) bool {
-	return p.MemberID == b.me.ID || b.me.Role.CanManageGroup()
+	return !b.purged && (p.MemberID == b.me.ID || b.me.Role.CanManageGroup())
 }
 
 func (b *paymentBuilder) view(ctx context.Context, r repository.PaymentView) (PaymentView, error) {

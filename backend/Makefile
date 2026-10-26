@@ -25,6 +25,10 @@ build: ## Build every package
 run: ## Run the API on the host (reads .env); start deps with `make deps-up`
 	go run ./cmd/api
 
+.PHONY: run-worker
+run-worker: ## Run the worker on the host (reads .env); start deps with `make deps-up`
+	go run ./cmd/worker
+
 .PHONY: dev
 dev: ## Run the API with live reload (Air)
 	air
@@ -46,11 +50,11 @@ test-integration: ## Unit and integration tests (needs Docker)
 	go test -tags integration -count=1 ./...
 
 .PHONY: deps-up
-deps-up: ## Start Postgres and MinIO, migrate, create the bucket
-	$(COMPOSE) up -d migrate minio-init
+deps-up: ## Start Postgres and MinIO, migrate (River too), create the bucket
+	$(COMPOSE) up -d migrate river-migrate minio-init
 
 .PHONY: up
-up: ## Start the whole dev stack, API included
+up: ## Start the whole dev stack, API and worker included
 	$(COMPOSE) up -d --build
 
 .PHONY: down

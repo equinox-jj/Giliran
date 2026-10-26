@@ -18,6 +18,8 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/riverqueue/river/riverdriver/riverpgxv5"
+	"github.com/riverqueue/river/rivermigrate"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 )
 
@@ -101,7 +103,27 @@ func setup() error {
 	}
 	// Clones need the template to have no open connections.
 	defer conn.Close(ctx)
-	return migrate(ctx, conn)
+	if err := migrate(ctx, conn); err != nil {
+		return err
+	}
+	return migrateRiver(ctx)
+}
+
+// migrateRiver creates River's job tables in the template, as `worker
+// migrate` does, so services can enqueue jobs. Its pool is closed before the
+// template is cloned.
+func migrateRiver(ctx context.Context) error {
+	pool, err := pgxpool.New(ctx, dbURL(templateDB))
+	if err != nil {
+		return err
+	}
+	defer pool.Close()
+	m, err := rivermigrate.New(riverpgxv5.New(pool), nil)
+	if err != nil {
+		return err
+	}
+	_, err = m.Migrate(ctx, rivermigrate.DirectionUp, nil)
+	return err
 }
 
 // migrate applies the up migrations in order, as golang-migrate would.

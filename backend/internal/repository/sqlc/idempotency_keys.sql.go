@@ -47,6 +47,19 @@ func (q *Queries) ClaimIdempotencyKey(ctx context.Context, arg ClaimIdempotencyK
 	return result.RowsAffected(), nil
 }
 
+const deleteExpiredIdempotencyKeys = `-- name: DeleteExpiredIdempotencyKeys :execrows
+DELETE FROM idempotency_keys
+WHERE expires_at <= $1::timestamptz
+`
+
+func (q *Queries) DeleteExpiredIdempotencyKeys(ctx context.Context, now time.Time) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteExpiredIdempotencyKeys, now)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const deleteIdempotencyKey = `-- name: DeleteIdempotencyKey :exec
 DELETE FROM idempotency_keys
 WHERE user_id = $1 AND key = $2

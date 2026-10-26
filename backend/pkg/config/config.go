@@ -145,11 +145,14 @@ type Idempotency struct {
 	TTL time.Duration `koanf:"idempotency_ttl"`
 }
 
-// Worker cron specs are parsed by River when cmd/worker lands.
+// Worker holds cmd/worker's settings. The crons are standard five-field
+// specs evaluated in APP_TIMEZONE.
 type Worker struct {
-	MaxWorkers   int    `koanf:"worker_max_workers"`
-	ReminderCron string `koanf:"worker_reminder_cron"`
-	CleanupCron  string `koanf:"worker_cleanup_cron"`
+	MaxWorkers         int    `koanf:"worker_max_workers"`
+	ReminderCron       string `koanf:"worker_reminder_cron"`
+	MissedAlertCron    string `koanf:"worker_missed_alert_cron"`
+	TransferExpiryCron string `koanf:"worker_transfer_expiry_cron"`
+	CleanupCron        string `koanf:"worker_cleanup_cron"`
 }
 
 type Retention struct {
@@ -202,7 +205,9 @@ var defaults = map[string]any{
 	"rate_limit_public_window":    "1m",
 	"idempotency_ttl":             "24h",
 	"worker_max_workers":          10,
-	"worker_reminder_cron":        "0 9 * * *",
+	"worker_reminder_cron":        "0 8 * * *",
+	"worker_missed_alert_cron":    "0 10 * * *",
+	"worker_transfer_expiry_cron": "0 * * * *",
 	"worker_cleanup_cron":         "0 3 * * *",
 	"retention_revoked_sessions":  "720h",
 	"retention_payment_proofs":    "2160h",

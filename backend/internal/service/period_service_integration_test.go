@@ -45,7 +45,7 @@ func newPaymentEnv(t *testing.T) paymentEnv {
 	return paymentEnv{
 		groupEnv: g,
 		periods:  NewPeriodService(periods, payments, members, users, authz, g.store),
-		payments: NewPaymentService(tx, periods, payments, members, users, authz, activity, g.store, g.clock, slog.New(slog.NewTextHandler(io.Discard, nil)), cfg),
+		payments: NewPaymentService(tx, groups, periods, payments, members, users, authz, activity, g.jobs, g.store, g.clock, slog.New(slog.NewTextHandler(io.Discard, nil)), cfg),
 		idem:     NewIdempotencyService(tx, repository.NewIdempotencyRepository(tx), g.clock),
 	}
 }

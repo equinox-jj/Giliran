@@ -49,3 +49,20 @@ WHERE id = sqlc.arg(id) AND user_id = sqlc.arg(user_id) AND revoked_at IS NULL;
 UPDATE sessions
 SET revoked_at = sqlc.arg(now)::timestamptz, revoked_reason = sqlc.arg(reason)::text
 WHERE user_id = sqlc.arg(user_id) AND revoked_at IS NULL;
+
+-- name: ListUserPushTokens :many
+-- The push tokens of the user's signed-in, unexpired devices.
+SELECT DISTINCT fcm_token::text AS fcm_token FROM sessions
+WHERE user_id = sqlc.arg(user_id) AND revoked_at IS NULL
+  AND expires_at > sqlc.arg(now)::timestamptz AND fcm_token IS NOT NULL
+ORDER BY 1;
+
+-- name: ClearPushTokens :execrows
+-- Drops tokens FCM reported as no longer registered, on every session.
+UPDATE sessions SET fcm_token = NULL
+WHERE fcm_token = ANY(sqlc.arg(tokens)::text[]);
+
+-- name: DeleteStaleSessions :execrows
+-- Sessions revoked or expired before the cutoff (DB_SCHEME §10).
+DELETE FROM sessions
+WHERE revoked_at < sqlc.arg(cutoff)::timestamptz OR expires_at < sqlc.arg(cutoff)::timestamptz;

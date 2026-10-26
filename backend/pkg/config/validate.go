@@ -7,6 +7,8 @@ import (
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/robfig/cron/v3"
 )
 
 // minJWTSecretBytes is the shortest HS256 secret accepted (RFC 7518 §3.2).
@@ -43,6 +45,18 @@ func (v *validator) positive(key string, d time.Duration) {
 func (v *validator) atLeast(key string, n, minimum int64) {
 	if n < minimum {
 		v.fail(key, "must be at least %d, got %d", minimum, n)
+	}
+}
+
+// cron checks a standard five-field cron spec. The time zone comes from
+// APP_TIMEZONE, so a CRON_TZ prefix is refused.
+func (v *validator) cron(key, spec string) {
+	if strings.Contains(spec, "TZ=") {
+		v.fail(key, "must not set a time zone; APP_TIMEZONE applies")
+		return
+	}
+	if _, err := cron.ParseStandard(spec); err != nil {
+		v.fail(key, "must be a five-field cron spec: %v", err)
 	}
 }
 
@@ -144,8 +158,10 @@ func (c *Config) validate() error {
 	v.positive("IDEMPOTENCY_TTL", c.Idempotency.TTL)
 
 	v.atLeast("WORKER_MAX_WORKERS", int64(c.Worker.MaxWorkers), 1)
-	v.required("WORKER_REMINDER_CRON", c.Worker.ReminderCron)
-	v.required("WORKER_CLEANUP_CRON", c.Worker.CleanupCron)
+	v.cron("WORKER_REMINDER_CRON", c.Worker.ReminderCron)
+	v.cron("WORKER_MISSED_ALERT_CRON", c.Worker.MissedAlertCron)
+	v.cron("WORKER_TRANSFER_EXPIRY_CRON", c.Worker.TransferExpiryCron)
+	v.cron("WORKER_CLEANUP_CRON", c.Worker.CleanupCron)
 
 	v.positive("RETENTION_REVOKED_SESSIONS", c.Retention.RevokedSessions)
 	v.positive("RETENTION_PAYMENT_PROOFS", c.Retention.PaymentProofs)

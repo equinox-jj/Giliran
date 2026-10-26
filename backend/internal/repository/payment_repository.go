@@ -257,6 +257,7 @@ type ReminderTarget struct {
 	PaymentID              uuid.UUID
 	MemberID               uuid.UUID
 	Status                 model.PaymentStatus
+	Amount                 int64
 	LastRemindedAt         *time.Time
 	UserID                 *uuid.UUID
 	GuestPhone             *string
@@ -278,6 +279,7 @@ func (r *PaymentRepository) ListReminderTargets(ctx context.Context, periodID uu
 			PaymentID:              row.PaymentID,
 			MemberID:               row.MemberID,
 			Status:                 model.PaymentStatus(row.Status),
+			Amount:                 row.Amount,
 			LastRemindedAt:         row.LastRemindedAt,
 			UserID:                 row.UserID,
 			GuestPhone:             row.GuestPhone,
@@ -295,4 +297,56 @@ func (r *PaymentRepository) MarkReminded(ctx context.Context, ids []uuid.UUID, n
 		return nil
 	}
 	return mapErr(r.tx.Queries(ctx).MarkPaymentsReminded(ctx, sqlc.MarkPaymentsRemindedParams{Ids: ids, Now: now}))
+}
+
+// DueReminder is a payment whose payer gets the automatic reminder today.
+type DueReminder struct {
+	PaymentID uuid.UUID
+	UserID    uuid.UUID
+	GroupID   uuid.UUID
+	GroupName string
+	PeriodID  uuid.UUID
+	PeriodNo  int16
+	DueDate   time.Time
+	Amount    int64
+}
+
+// ListDueReminders returns the payments owed in running periods whose due
+// date is today or reminder_days_before after it, for active account members
+// with payment reminders on.
+func (r *PaymentRepository) ListDueReminders(ctx context.Context, today time.Time) ([]DueReminder, error) {
+	rows, err := r.tx.Queries(ctx).ListDueReminders(ctx, today)
+	if err != nil {
+		return nil, mapErr(err)
+	}
+	out := make([]DueReminder, len(rows))
+	for i, row := range rows {
+		out[i] = DueReminder(row)
+	}
+	return out, nil
+}
+
+// MissedPayment is a past winner's payment still owed after its due date.
+type MissedPayment struct {
+	GroupID    uuid.UUID
+	GroupName  string
+	PeriodID   uuid.UUID
+	PeriodNo   int16
+	MemberID   uuid.UUID
+	MemberName string
+}
+
+// ListMissedWinnerPayments returns the unpaid or rejected payments of past
+// winners in active groups' periods due on dueDate, by group, period and
+// slot.
+func (r *PaymentRepository) ListMissedWinnerPayments(ctx context.Context, dueDate time.Time) ([]MissedPayment, error) {
+	rows, err := r.tx.Queries(ctx).ListMissedWinnerPayments(ctx, dueDate)
+	if err != nil {
+		return nil, mapErr(err)
+	}
+	out := make([]MissedPayment, len(rows))
+	for i, row := range rows {
+		out[i] = MissedPayment(row)
+	}
+	return out, nil
 }

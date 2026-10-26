@@ -86,7 +86,7 @@ func TestLoadPrecedence(t *testing.T) {
 		"HTTP_PORT=9090",
 		"LOG_LEVEL=debug",
 		"HTTP_CORS_ALLOW_ORIGINS=http://a.test, http://b.test",
-		`WORKER_REMINDER_CRON="0 8 * * *"`,
+		`WORKER_REMINDER_CRON="30 7 * * *"`,
 	}, "\n"))
 
 	// Act
@@ -105,7 +105,7 @@ func TestLoadPrecedence(t *testing.T) {
 	if got := strings.Join(cfg.HTTP.CORSAllowOrigins, "|"); got != "http://a.test|http://b.test" {
 		t.Errorf("origins %q", got)
 	}
-	if cfg.Worker.ReminderCron != "0 8 * * *" {
+	if cfg.Worker.ReminderCron != "30 7 * * *" {
 		t.Errorf("cron %q", cfg.Worker.ReminderCron)
 	}
 	if cfg.Log.Format != "json" {
@@ -134,6 +134,8 @@ func TestLoadInvalid(t *testing.T) {
 		{"refresh not longer than access", map[string]string{"JWT_REFRESH_TTL": "15m"}, "JWT_REFRESH_TTL: must be longer"},
 		{"min conns over max", map[string]string{"DATABASE_MIN_CONNS": "30"}, "DATABASE_MIN_CONNS: must not exceed"},
 		{"placeholder in production", map[string]string{"APP_ENV": "production"}, "MINIO_SECRET_KEY: still contains the CHANGE_ME placeholder"},
+		{"bad cron", map[string]string{"WORKER_CLEANUP_CRON": "every night"}, "WORKER_CLEANUP_CRON: must be a five-field cron spec"},
+		{"cron with time zone", map[string]string{"WORKER_REMINDER_CRON": "CRON_TZ=UTC 0 8 * * *"}, "WORKER_REMINDER_CRON: must not set a time zone"},
 		{"cors wildcard in production", map[string]string{"APP_ENV": "production", "HTTP_CORS_ALLOW_ORIGINS": "*"}, "HTTP_CORS_ALLOW_ORIGINS: must not be * in production"},
 	}
 	missing := filepath.Join(t.TempDir(), ".env")

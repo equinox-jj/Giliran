@@ -40,12 +40,12 @@ func TestIdentityFrom(t *testing.T) {
 	}
 }
 
-func TestNewVerifierMissingCredentials(t *testing.T) {
+func TestNewAppMissingCredentials(t *testing.T) {
 	// Arrange
 	cfg := config.Firebase{CredentialsFile: t.TempDir() + "/missing.json"}
 
 	// Act
-	_, err := NewVerifier(t.Context(), cfg)
+	_, err := NewApp(t.Context(), cfg)
 
 	// Assert
 	if err == nil {

@@ -10,6 +10,8 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/equinox-jj/Giliran/backend/internal/clients/storage"
+	"github.com/equinox-jj/Giliran/backend/internal/jobs"
+	"github.com/equinox-jj/Giliran/backend/internal/jobs/notify"
 	"github.com/equinox-jj/Giliran/backend/internal/model"
 	"github.com/equinox-jj/Giliran/backend/internal/repository"
 	"github.com/equinox-jj/Giliran/backend/pkg/clock"
@@ -41,6 +43,7 @@ type PayoutService struct {
 	members   *repository.MemberRepository
 	authz     *Authz
 	activity  *Activity
+	notify    notifier
 	opener    periodOpener
 	refs      refs
 	store     storage.Storage
@@ -59,6 +62,7 @@ func NewPayoutService(
 	users *repository.UserRepository,
 	authz *Authz,
 	activity *Activity,
+	enqueuer *jobs.Enqueuer,
 	store storage.Storage,
 	clk clock.Clock,
 	log *slog.Logger,
@@ -66,6 +70,7 @@ func NewPayoutService(
 ) *PayoutService {
 	return &PayoutService{
 		tx: tx, groups: groups, periods: periods, payouts: payouts, members: members, authz: authz, activity: activity,
+		notify: notifier{jobs: enqueuer, members: members},
 		opener: periodOpener{periods: periods, payments: payments, activity: activity},
 		refs:   refs{users: users, store: store}, store: store, clock: clk, log: log, maxUpload: cfg.MinIO.UploadMaxBytes,
 	}
@@ -184,7 +189,13 @@ func (s *PayoutService) Record(ctx context.Context, groupID, periodID, userID uu
 			}
 			after["group_status"] = completed.Status
 		}
-		// TODO(phase 7): enqueue push.send to the winner.
+		if winner.UserID == nil || *winner.UserID != userID {
+			if err := s.notify.toMember(ctx, winner, notify.KindPayoutRecorded,
+				notify.Params{Group: g.Name, PeriodNo: period.PeriodNo, Amount: p.Amount},
+				pushData(groupID, period.ID, "payout_id", p.ID.String())); err != nil {
+				return err
+			}
+		}
 		if err := s.activity.Record(ctx, Entry{
 			GroupID: groupID, Actor: &userID, Action: model.ActionPayoutRecorded,
 			EntityType: model.EntityTypePayout, EntityID: p.ID,
@@ -306,8 +317,13 @@ func (s *PayoutService) view(ctx context.Context, groupID uuid.UUID, p model.Pay
 	if err != nil {
 		return PayoutView{}, err
 	}
+	g, err := s.groups.GetByID(ctx, groupID)
+	if err != nil {
+		return PayoutView{}, err
+	}
 	v := PayoutView{Payout: p, Winner: winner, RecordedBy: by}
-	if p.WinnerMemberID == me.ID || me.Role.CanManageGroup() {
+	// Like payment proofs, gone once the cleanup job purged the group's.
+	if g.ProofsPurgedAt == nil && (p.WinnerMemberID == me.ID || me.Role.CanManageGroup()) {
 		if v.ProofURL, err = s.refs.presign(ctx, p.ProofKey); err != nil {
 			return PayoutView{}, err
 		}

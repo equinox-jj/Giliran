@@ -12,6 +12,20 @@ import (
 	"github.com/google/uuid"
 )
 
+const clearPushTokens = `-- name: ClearPushTokens :execrows
+UPDATE sessions SET fcm_token = NULL
+WHERE fcm_token = ANY($1::text[])
+`
+
+// Drops tokens FCM reported as no longer registered, on every session.
+func (q *Queries) ClearPushTokens(ctx context.Context, tokens []string) (int64, error) {
+	result, err := q.db.Exec(ctx, clearPushTokens, tokens)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const createSession = `-- name: CreateSession :one
 INSERT INTO sessions (
     id, user_id, family_id, refresh_token_hash,
@@ -64,6 +78,20 @@ func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) (S
 		&i.CreatedAt,
 	)
 	return i, err
+}
+
+const deleteStaleSessions = `-- name: DeleteStaleSessions :execrows
+DELETE FROM sessions
+WHERE revoked_at < $1::timestamptz OR expires_at < $1::timestamptz
+`
+
+// Sessions revoked or expired before the cutoff (DB_SCHEME §10).
+func (q *Queries) DeleteStaleSessions(ctx context.Context, cutoff time.Time) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteStaleSessions, cutoff)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const getSessionByRefreshTokenHashForUpdate = `-- name: GetSessionByRefreshTokenHashForUpdate :one
@@ -134,6 +162,39 @@ func (q *Queries) ListActiveUserSessions(ctx context.Context, arg ListActiveUser
 			return nil, err
 		}
 		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUserPushTokens = `-- name: ListUserPushTokens :many
+SELECT DISTINCT fcm_token::text AS fcm_token FROM sessions
+WHERE user_id = $1 AND revoked_at IS NULL
+  AND expires_at > $2::timestamptz AND fcm_token IS NOT NULL
+ORDER BY 1
+`
+
+type ListUserPushTokensParams struct {
+	UserID uuid.UUID
+	Now    time.Time
+}
+
+// The push tokens of the user's signed-in, unexpired devices.
+func (q *Queries) ListUserPushTokens(ctx context.Context, arg ListUserPushTokensParams) ([]string, error) {
+	rows, err := q.db.Query(ctx, listUserPushTokens, arg.UserID, arg.Now)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []string{}
+	for rows.Next() {
+		var fcm_token string
+		if err := rows.Scan(&fcm_token); err != nil {
+			return nil, err
+		}
+		items = append(items, fcm_token)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

@@ -19,6 +19,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/equinox-jj/Giliran/backend/internal/jobs"
 	"github.com/equinox-jj/Giliran/backend/internal/model"
 	"github.com/equinox-jj/Giliran/backend/internal/repository"
 	"github.com/equinox-jj/Giliran/backend/internal/service"
@@ -98,10 +99,14 @@ func newPaymentFlow(t *testing.T) paymentFlow {
 	activity := service.NewActivity(repository.NewActivityRepository(tx), clk)
 	groupSvc := service.NewGroupService(tx, groups, members, leaves, transfers, periods, payments, users, authz, activity, store, clk, log, cfg)
 	memberSvc := service.NewMemberService(tx, groups, members, leaves, transfers, users, authz, activity, store, clk, cfg)
-	paymentSvc := service.NewPaymentService(tx, periods, payments, members, users, authz, activity, store, clk, log, cfg)
+	enqueuer, err := jobs.NewEnqueuer(pool, log)
+	if err != nil {
+		t.Fatalf("NewEnqueuer: %v", err)
+	}
+	paymentSvc := service.NewPaymentService(tx, groups, periods, payments, members, users, authz, activity, enqueuer, store, clk, log, cfg)
 	logs := repository.NewActivityRepository(tx)
-	drawSvc := service.NewDrawService(tx, groups, periods, payments, members, logs, users, authz, activity, store, clk, cfg)
-	payoutSvc := service.NewPayoutService(tx, groups, periods, payments, repository.NewPayoutRepository(tx), members, users, authz, activity, store, clk, log, cfg)
+	drawSvc := service.NewDrawService(tx, groups, periods, payments, members, logs, users, authz, activity, enqueuer, store, clk, cfg)
+	payoutSvc := service.NewPayoutService(tx, groups, periods, payments, repository.NewPayoutRepository(tx), members, users, authz, activity, enqueuer, store, clk, log, cfg)
 	idem := service.NewIdempotencyService(tx, repository.NewIdempotencyRepository(tx), clk)
 
 	f := paymentFlow{pool: pool, clock: clk, rina: uuid.Must(uuid.NewV7()), budi: uuid.Must(uuid.NewV7())}

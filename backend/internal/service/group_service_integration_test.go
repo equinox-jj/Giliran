@@ -21,6 +21,7 @@ import (
 	"github.com/makiuchi-d/gozxing/qrcode"
 
 	"github.com/equinox-jj/Giliran/backend/internal/clients/firebase"
+	"github.com/equinox-jj/Giliran/backend/internal/jobs"
 	"github.com/equinox-jj/Giliran/backend/internal/model"
 	"github.com/equinox-jj/Giliran/backend/internal/repository"
 	"github.com/equinox-jj/Giliran/backend/pkg/config"
@@ -41,6 +42,7 @@ type groupEnv struct {
 	leaves    *LeaveService
 	ownership *OwnershipService
 	store     *memStore
+	jobs      *jobs.Enqueuer
 }
 
 func newGroupEnv(t *testing.T) groupEnv {
@@ -68,6 +70,7 @@ func newGroupEnv(t *testing.T) groupEnv {
 	log := slog.New(slog.NewTextHandler(io.Discard, nil))
 	return groupEnv{
 		authEnv:   auth,
+		jobs:      newTestEnqueuer(t, auth.pool),
 		groups:    NewGroupService(tx, groups, members, leaves, transfers, periods, payments, users, authz, activity, store, auth.clock, log, cfg),
 		members:   NewMemberService(tx, groups, members, leaves, transfers, users, authz, activity, store, auth.clock, cfg),
 		leaves:    NewLeaveService(tx, members, leaves, transfers, users, authz, activity, store, auth.clock),

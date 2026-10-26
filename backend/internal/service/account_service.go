@@ -2,12 +2,11 @@ package service
 
 import (
 	"context"
-	"log/slog"
 
 	"github.com/google/uuid"
+	"github.com/riverqueue/river"
 
-	"github.com/equinox-jj/Giliran/backend/internal/clients/firebase"
-	"github.com/equinox-jj/Giliran/backend/internal/clients/storage"
+	"github.com/equinox-jj/Giliran/backend/internal/jobs"
 	"github.com/equinox-jj/Giliran/backend/internal/model"
 	"github.com/equinox-jj/Giliran/backend/internal/repository"
 	"github.com/equinox-jj/Giliran/backend/pkg/clock"
@@ -23,10 +22,8 @@ type AccountService struct {
 	leaves    *repository.LeaveRequestRepository
 	transfers *repository.OwnershipTransferRepository
 	activity  *Activity
-	store     storage.Storage
-	firebase  firebase.UserDeleter
+	enqueuer  *jobs.Enqueuer
 	clock     clock.Clock
-	log       *slog.Logger
 }
 
 func NewAccountService(
@@ -38,14 +35,12 @@ func NewAccountService(
 	leaves *repository.LeaveRequestRepository,
 	transfers *repository.OwnershipTransferRepository,
 	activity *Activity,
-	store storage.Storage,
-	fb firebase.UserDeleter,
+	enqueuer *jobs.Enqueuer,
 	clk clock.Clock,
-	log *slog.Logger,
 ) *AccountService {
 	return &AccountService{
 		pins: pins, groups: groups, users: users, sessions: sessions, members: members,
-		leaves: leaves, transfers: transfers, activity: activity, store: store, firebase: fb, clock: clk, log: log,
+		leaves: leaves, transfers: transfers, activity: activity, enqueuer: enqueuer, clock: clk,
 	}
 }
 
@@ -57,18 +52,16 @@ func NewAccountService(
 // payments and draws, so they leave through a leave request first.
 // Memberships of draft groups end and free their slots; completed and
 // closed groups keep the history under "Mantan anggota". Personal data is
-// cleared (DB_SCHEME §10), every session is revoked, and after the commit
-// the avatar object and the Firebase user are deleted. Those two only log a
-// failure: the account is already gone, and a leftover is cleaned up later.
+// cleared (DB_SCHEME §10) and every session is revoked. The avatar object
+// and the Firebase user are deleted by an account.purge job queued in the
+// same transaction, which retries until both are gone.
 func (s *AccountService) Delete(ctx context.Context, userID uuid.UUID, pin string) error {
 	now := s.clock.Now()
-	var avatarKey, firebaseUID *string
-	err := s.pins.checkPIN(ctx, userID, pin, func(ctx context.Context) error {
+	return s.pins.checkPIN(ctx, userID, pin, func(ctx context.Context) error {
 		user, err := currentUser(s.users.GetByIDForUpdate(ctx, userID))
 		if err != nil {
 			return err
 		}
-		avatarKey, firebaseUID = user.AvatarKey, user.FirebaseUID
 		memberships, err := s.members.ListUserMemberships(ctx, userID)
 		if err != nil {
 			return err
@@ -94,25 +87,16 @@ func (s *AccountService) Delete(ctx context.Context, userID uuid.UUID, pin strin
 		if err := s.users.Anonymize(ctx, userID, now); err != nil {
 			return err
 		}
-		_, err = s.sessions.RevokeAll(ctx, userID, model.RevokedReasonAccountDeleted, now)
-		return err
+		if _, err := s.sessions.RevokeAll(ctx, userID, model.RevokedReasonAccountDeleted, now); err != nil {
+			return err
+		}
+		if user.AvatarKey == nil && user.FirebaseUID == nil {
+			return nil
+		}
+		return s.enqueuer.Enqueue(ctx, river.InsertManyParams{
+			Args: jobs.AccountPurgeArgs{FirebaseUID: user.FirebaseUID, AvatarKey: user.AvatarKey},
+		})
 	})
-	if err != nil {
-		return err
-	}
-	ctx = context.WithoutCancel(ctx)
-	if avatarKey != nil {
-		if err := s.store.Delete(ctx, *avatarKey); err != nil {
-			s.log.WarnContext(ctx, "orphaned storage object", "key", *avatarKey, "error", err)
-		}
-	}
-	if firebaseUID != nil {
-		// TODO(phase 7): retry from a worker job instead of only logging.
-		if err := s.firebase.DeleteUser(ctx, *firebaseUID); err != nil {
-			s.log.WarnContext(ctx, "orphaned firebase user", "firebase_uid", *firebaseUID, "error", err)
-		}
-	}
-	return nil
 }
 
 // checkDeletable refuses deletion while m ties the user to a running group.

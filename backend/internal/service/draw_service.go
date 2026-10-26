@@ -11,6 +11,8 @@ import (
 
 	"github.com/equinox-jj/Giliran/backend/internal/clients/storage"
 	"github.com/equinox-jj/Giliran/backend/internal/draw"
+	"github.com/equinox-jj/Giliran/backend/internal/jobs"
+	"github.com/equinox-jj/Giliran/backend/internal/jobs/notify"
 	"github.com/equinox-jj/Giliran/backend/internal/model"
 	"github.com/equinox-jj/Giliran/backend/internal/repository"
 	"github.com/equinox-jj/Giliran/backend/pkg/clock"
@@ -74,6 +76,7 @@ type DrawService struct {
 	logs     *repository.ActivityRepository
 	authz    *Authz
 	activity *Activity
+	notify   notifier
 	refs     refs
 	clock    clock.Clock
 	loc      *time.Location
@@ -90,13 +93,14 @@ func NewDrawService(
 	users *repository.UserRepository,
 	authz *Authz,
 	activity *Activity,
+	enqueuer *jobs.Enqueuer,
 	store storage.Storage,
 	clk clock.Clock,
 	cfg *config.Config,
 ) *DrawService {
 	return &DrawService{
 		tx: tx, groups: groups, periods: periods, payments: payments, members: members, logs: logs,
-		authz: authz, activity: activity, refs: refs{users: users, store: store},
+		authz: authz, activity: activity, notify: notifier{jobs: enqueuer, members: members}, refs: refs{users: users, store: store},
 		clock: clk, loc: cfg.App.Location, baseURL: strings.TrimRight(cfg.App.PublicBaseURL, "/"),
 	}
 }
@@ -176,7 +180,17 @@ func (s *DrawService) Run(ctx context.Context, groupID, periodID, userID uuid.UU
 		if p, err = s.periods.RecordDraw(ctx, open.ID, res); err != nil {
 			return err
 		}
-		// TODO(phase 7): enqueue push.send with the winner to every member (FR-DRW-05).
+		views, err := s.members.ListViews(ctx, groupID, true)
+		if err != nil {
+			return err
+		}
+		winner := Member{MemberView: slotHolders(views)[res.WinnerSlotID]}
+		// FR-DRW-05: every member, the organizer who drew included.
+		if err := s.notify.toGroup(ctx, groupID, nil, notify.KindDrawCompleted,
+			notify.Params{Group: g.Name, PeriodNo: p.PeriodNo, Winner: winner.DisplayName(), SlotNo: winnerNo},
+			pushData(groupID, p.ID)); err != nil {
+			return err
+		}
 		return s.activity.Record(ctx, Entry{
 			GroupID: groupID, Actor: &userID, Action: model.ActionDrawCompleted,
 			EntityType: model.EntityTypePeriod, EntityID: p.ID,

@@ -6,6 +6,7 @@ package sqlc
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -27,6 +28,8 @@ type Querier interface {
 	// same key waits for it to commit and then claims nothing.
 	ClaimIdempotencyKey(ctx context.Context, arg ClaimIdempotencyKeyParams) (int64, error)
 	ClearFixedOrder(ctx context.Context, groupID uuid.UUID) error
+	// Drops tokens FCM reported as no longer registered, on every session.
+	ClearPushTokens(ctx context.Context, tokens []string) (int64, error)
 	CloseGroup(ctx context.Context, arg CloseGroupParams) (Group, error)
 	// Recording the payout closes a drawn period.
 	ClosePeriod(ctx context.Context, id uuid.UUID) (Period, error)
@@ -52,9 +55,14 @@ type Querier interface {
 	CreateSlots(ctx context.Context, arg CreateSlotsParams) error
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	CreateUserSettings(ctx context.Context, userID uuid.UUID) error
+	DeleteExpiredIdempotencyKeys(ctx context.Context, now time.Time) (int64, error)
 	DeleteIdempotencyKey(ctx context.Context, arg DeleteIdempotencyKeyParams) error
 	// Drops slots of a draft group; their slot_members rows cascade.
 	DeleteSlotsAbove(ctx context.Context, arg DeleteSlotsAboveParams) error
+	// Sessions revoked or expired before the cutoff (DB_SCHEME §10).
+	DeleteStaleSessions(ctx context.Context, cutoff time.Time) (int64, error)
+	// ExpireOwnershipTransfers across every group, for the worker.
+	ExpireAllOwnershipTransfers(ctx context.Context, now time.Time) (int64, error)
 	// Marks the group's pending transfers past their deadline as expired, so a
 	// new offer is not blocked by one nobody can accept any more.
 	ExpireOwnershipTransfers(ctx context.Context, arg ExpireOwnershipTransfersParams) error
@@ -100,6 +108,9 @@ type Querier interface {
 	// Active members holding a slot numbered above slot_no, for shrinking a
 	// draft group.
 	ListActiveHoldersAbove(ctx context.Context, arg ListActiveHoldersAboveParams) ([]ListActiveHoldersAboveRow, error)
+	// The accounts of the group's active members, for push notifications. An
+	// empty roles list means every role; guests and deleted accounts have none.
+	ListActiveMemberUserIDs(ctx context.Context, arg ListActiveMemberUserIDsParams) ([]uuid.UUID, error)
 	// The user's signed-in devices, the current one first.
 	ListActiveUserSessions(ctx context.Context, arg ListActiveUserSessionsParams) ([]Session, error)
 	// A page of the group's log, newest first (DB_SCHEME §8). A NULL before_id
@@ -109,14 +120,26 @@ type Querier interface {
 	// Active guest rows in running groups whose phone matches, skipping groups
 	// the user is already in (FR-MEM-04 auto-claim at sign-in).
 	ListClaimableGuestsByPhone(ctx context.Context, arg ListClaimableGuestsByPhoneParams) ([]GroupMember, error)
+	// Payments still owed in running periods whose payer gets the automatic
+	// reminder today: reminder_days_before the due date, and on it (FR-REM-01).
+	// Only active account members with payment reminders on (DB_SCHEME §8).
+	ListDueReminders(ctx context.Context, today time.Time) ([]ListDueRemindersRow, error)
 	// Slots of the group that have not won, by slot number: the draw's eligible
 	// list (DB_SCHEME §5 step 2).
 	ListEligibleSlots(ctx context.Context, groupID uuid.UUID) ([]Slot, error)
+	// Every stored payment and payout proof object of the group.
+	ListGroupProofKeys(ctx context.Context, groupID uuid.UUID) ([]string, error)
+	// Completed or closed groups whose proof images have outlived the cutoff
+	// and are still stored (DB_SCHEME §10).
+	ListGroupsDueProofPurge(ctx context.Context, arg ListGroupsDueProofPurgeParams) ([]uuid.UUID, error)
 	// Newest first. A NULL member_id or status matches every row.
 	ListLeaveRequests(ctx context.Context, arg ListLeaveRequestsParams) ([]LeaveRequest, error)
 	// Members with their slot, account and win, ordered by slot number. Members
 	// whose slot was dropped (a draft group shrinking) are left out.
 	ListMemberViews(ctx context.Context, arg ListMemberViewsParams) ([]ListMemberViewsRow, error)
+	// Payments of past winners still owed after a due date: unpaid or rejected
+	// in a period due on due_date, whose slot won an earlier period (feature 30).
+	ListMissedWinnerPayments(ctx context.Context, dueDate time.Time) ([]ListMissedWinnerPaymentsRow, error)
 	// The user's groups with the current period's progress, soonest due date
 	// first. Period columns are NULL while no period is open.
 	ListMyGroups(ctx context.Context, arg ListMyGroupsParams) ([]ListMyGroupsRow, error)
@@ -145,9 +168,12 @@ type Querier interface {
 	// The user's active memberships with their group's status, for account
 	// deletion.
 	ListUserMemberships(ctx context.Context, userID *uuid.UUID) ([]ListUserMembershipsRow, error)
+	// The push tokens of the user's signed-in, unexpired devices.
+	ListUserPushTokens(ctx context.Context, arg ListUserPushTokensParams) ([]string, error)
 	// The lowest slot with no active holder that has not won yet. Lock the group
 	// first so two joins never pick the same slot.
 	LowestFreeSlot(ctx context.Context, groupID uuid.UUID) (Slot, error)
+	MarkGroupProofsPurged(ctx context.Context, arg MarkGroupProofsPurgedParams) error
 	MarkPaymentsReminded(ctx context.Context, arg MarkPaymentsRemindedParams) error
 	// A past winner who still owes a payment in some period of the group,
 	// including periods that have not opened yet (FR-MEM-05).

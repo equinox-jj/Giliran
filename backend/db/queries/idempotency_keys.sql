@@ -18,3 +18,7 @@ WHERE user_id = $1 AND key = $2;
 -- name: DeleteIdempotencyKey :exec
 DELETE FROM idempotency_keys
 WHERE user_id = $1 AND key = $2;
+
+-- name: DeleteExpiredIdempotencyKeys :execrows
+DELETE FROM idempotency_keys
+WHERE expires_at <= sqlc.arg(now)::timestamptz;

@@ -1,20 +1,18 @@
 // Package firebase verifies Firebase phone-auth ID tokens with the Firebase
 // Admin SDK. The app does the OTP with Firebase; the backend only checks the
 // resulting token and then issues its own tokens. It also deletes the
-// Firebase user when an account is deleted.
+// Firebase user when an account is deleted, and sends push notifications
+// through FCM.
 package firebase
 
 import (
 	"context"
 	"fmt"
-	"os"
 
 	fb "firebase.google.com/go/v4"
 	"firebase.google.com/go/v4/auth"
-	"google.golang.org/api/option"
 
 	"github.com/equinox-jj/Giliran/backend/internal/model"
-	"github.com/equinox-jj/Giliran/backend/pkg/config"
 )
 
 // Identity is who a verified ID token belongs to.
@@ -45,21 +43,8 @@ type Verifier struct {
 	client *auth.Client
 }
 
-// NewVerifier builds the Admin SDK client from FIREBASE_CREDENTIALS_FILE (a
-// service-account JSON) and, if set, FIREBASE_PROJECT_ID. It fails when the
-// credentials file is missing, so the API refuses to start without it.
-func NewVerifier(ctx context.Context, cfg config.Firebase) (*Verifier, error) {
-	if _, err := os.Stat(cfg.CredentialsFile); err != nil {
-		return nil, fmt.Errorf("FIREBASE_CREDENTIALS_FILE %q: %w (download a service-account key from the Firebase console)", cfg.CredentialsFile, err)
-	}
-	var fc *fb.Config
-	if cfg.ProjectID != "" {
-		fc = &fb.Config{ProjectID: cfg.ProjectID}
-	}
-	app, err := fb.NewApp(ctx, fc, option.WithAuthCredentialsFile(option.ServiceAccount, cfg.CredentialsFile))
-	if err != nil {
-		return nil, fmt.Errorf("firebase app: %w", err)
-	}
+// NewVerifier builds the Auth client from app.
+func NewVerifier(ctx context.Context, app *fb.App) (*Verifier, error) {
 	client, err := app.Auth(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("firebase auth client: %w", err)
