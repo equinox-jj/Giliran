@@ -25,12 +25,13 @@ type GroupService interface {
 	UploadQRIS(ctx context.Context, groupID, userID uuid.UUID, data []byte) (service.GroupDetail, error)
 	DeleteQRIS(ctx context.Context, groupID, userID uuid.UUID) error
 	SetFixedOrder(ctx context.Context, groupID, userID uuid.UUID, order []service.SlotPosition) ([]service.Member, error)
+	Start(ctx context.Context, groupID, userID uuid.UUID) (service.GroupDetail, error)
 	Close(ctx context.Context, groupID, userID uuid.UUID) (service.GroupDetail, error)
 	ResetInvite(ctx context.Context, groupID, userID uuid.UUID) (service.Invite, error)
 }
 
 // GroupController serves /me/groups and /groups/{group_id} with its payment
-// info, fixed order, close and invite reset. Every route is behind
+// info, fixed order, start, close and invite reset. Every route is behind
 // middleware.Auth.
 type GroupController struct {
 	groups GroupService
@@ -179,6 +180,19 @@ func (h *GroupController) SetFixedOrder(c fiber.Ctx) error {
 		return err
 	}
 	return response.List(c, dto.NewMembers(members), nil)
+}
+
+// Start handles POST /groups/{group_id}/start.
+func (h *GroupController) Start(c fiber.Ctx) error {
+	id, err := groupID(c)
+	if err != nil {
+		return err
+	}
+	d, err := h.groups.Start(c.Context(), id, middleware.UserID(c))
+	if err != nil {
+		return err
+	}
+	return response.OK(c, dto.NewGroup(d))
 }
 
 // Close handles POST /groups/{group_id}/close.

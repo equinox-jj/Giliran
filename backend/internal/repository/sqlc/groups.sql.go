@@ -498,6 +498,47 @@ func (q *Queries) SetGroupQRIS(ctx context.Context, arg SetGroupQRISParams) (Gro
 	return i, err
 }
 
+const startGroup = `-- name: StartGroup :one
+UPDATE groups
+SET status = 'active', started_at = $1::timestamptz
+WHERE id = $2
+RETURNING id, organizer_id, name, amount, period_type, total_slots, draw_method, start_date, reminder_days_before, status, invite_code, bank_name, bank_account_number, bank_account_holder, qris_payload, qris_image_key, started_at, completed_at, closed_at, created_at, updated_at
+`
+
+type StartGroupParams struct {
+	Now time.Time
+	ID  uuid.UUID
+}
+
+func (q *Queries) StartGroup(ctx context.Context, arg StartGroupParams) (Group, error) {
+	row := q.db.QueryRow(ctx, startGroup, arg.Now, arg.ID)
+	var i Group
+	err := row.Scan(
+		&i.ID,
+		&i.OrganizerID,
+		&i.Name,
+		&i.Amount,
+		&i.PeriodType,
+		&i.TotalSlots,
+		&i.DrawMethod,
+		&i.StartDate,
+		&i.ReminderDaysBefore,
+		&i.Status,
+		&i.InviteCode,
+		&i.BankName,
+		&i.BankAccountNumber,
+		&i.BankAccountHolder,
+		&i.QRISPayload,
+		&i.QRISImageKey,
+		&i.StartedAt,
+		&i.CompletedAt,
+		&i.ClosedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const updateGroupSettings = `-- name: UpdateGroupSettings :one
 UPDATE groups
 SET name                 = COALESCE($1, name),

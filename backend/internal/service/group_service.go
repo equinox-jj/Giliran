@@ -94,6 +94,8 @@ type GroupService struct {
 	members   *repository.MemberRepository
 	leaves    *repository.LeaveRequestRepository
 	transfers *repository.OwnershipTransferRepository
+	periods   *repository.PeriodRepository
+	opener    periodOpener
 	authz     *Authz
 	activity  *Activity
 	refs      refs
@@ -111,6 +113,8 @@ func NewGroupService(
 	members *repository.MemberRepository,
 	leaves *repository.LeaveRequestRepository,
 	transfers *repository.OwnershipTransferRepository,
+	periods *repository.PeriodRepository,
+	payments *repository.PaymentRepository,
 	users *repository.UserRepository,
 	authz *Authz,
 	activity *Activity,
@@ -121,6 +125,7 @@ func NewGroupService(
 ) *GroupService {
 	return &GroupService{
 		tx: tx, groups: groups, members: members, leaves: leaves, transfers: transfers,
+		periods: periods, opener: periodOpener{periods: periods, payments: payments, activity: activity},
 		authz: authz, activity: activity, refs: refs{users: users, store: store}, store: store,
 		clock: clk, log: log, loc: cfg.App.Location, baseURL: strings.TrimRight(cfg.App.PublicBaseURL, "/"),
 		maxUpload: cfg.MinIO.UploadMaxBytes,
@@ -543,11 +548,16 @@ func (s *GroupService) swapQRIS(ctx context.Context, groupID, userID uuid.UUID, 
 	return g, me, old, err
 }
 
-// deleteObject removes an object nothing points at any more. A failure only
-// leaves an orphan behind, so it is logged rather than returned.
+// deleteObject removes an object nothing points at any more.
 func (s *GroupService) deleteObject(ctx context.Context, key string) {
-	if err := s.store.Delete(context.WithoutCancel(ctx), key); err != nil {
-		s.log.WarnContext(ctx, "orphaned storage object", "key", key, "error", err)
+	deleteOrphan(ctx, s.store, s.log, key)
+}
+
+// deleteOrphan removes an object nothing points at any more. A failure only
+// leaves an orphan behind, so it is logged rather than returned.
+func deleteOrphan(ctx context.Context, store storage.Storage, log *slog.Logger, key string) {
+	if err := store.Delete(context.WithoutCancel(ctx), key); err != nil {
+		log.WarnContext(ctx, "orphaned storage object", "key", key, "error", err)
 	}
 }
 
@@ -712,6 +722,89 @@ func (s *GroupService) Close(ctx context.Context, groupID, userID uuid.UUID) (Gr
 		return GroupDetail{}, err
 	}
 	return s.detail(ctx, g, me)
+}
+
+// Start runs the group: it needs every slot filled, payment info and, for
+// fixed-order groups, a full order. It creates all periods with their BR-06
+// due dates, opens period 1 (publishing its seed hash and creating its
+// payments), and marks the group active, in one transaction.
+func (s *GroupService) Start(ctx context.Context, groupID, userID uuid.UUID) (GroupDetail, error) {
+	now := s.clock.Now()
+	var g model.Group
+	var me model.GroupMember
+	err := s.tx.WithTx(ctx, func(ctx context.Context) error {
+		var err error
+		if g, me, err = s.authz.LockGroup(ctx, groupID, userID, organizerOnly...); err != nil {
+			return err
+		}
+		if err := requireRunning(g); err != nil {
+			return err
+		}
+		if !g.IsDraft() {
+			return model.ErrGroupNotDraft.WithDetail("The group has already started.")
+		}
+		if err := s.checkReady(ctx, g); err != nil {
+			return err
+		}
+
+		periods := make([]repository.NewPeriod, g.TotalSlots)
+		for i := range periods {
+			due := utils.DueDate(g.StartDate, g.PeriodType, i+1)
+			// The draw happens on the due date; no setting moves it yet.
+			periods[i] = repository.NewPeriod{PeriodNo: int16(i + 1), DueDate: due, DrawDate: due}
+		}
+		if err := s.periods.CreateAll(ctx, g.ID, periods, now); err != nil {
+			return err
+		}
+		first, err := s.periods.GetByNo(ctx, g.ID, 1)
+		if err != nil {
+			return err
+		}
+		if _, err := s.opener.open(ctx, g, first, &userID, now); err != nil {
+			return err
+		}
+		before := g.Status
+		if g, err = s.groups.Start(ctx, g.ID, now); err != nil {
+			return err
+		}
+		return s.activity.Record(ctx, Entry{
+			GroupID: g.ID, Actor: &userID, Action: model.ActionGroupStarted,
+			EntityType: model.EntityTypeGroup, EntityID: g.ID,
+			Before: map[string]any{"status": before},
+			After:  map[string]any{"status": g.Status, "period_count": len(periods)},
+		})
+	})
+	if err != nil {
+		return GroupDetail{}, err
+	}
+	return s.detail(ctx, g, me)
+}
+
+// checkReady returns the first reason g cannot start yet.
+func (s *GroupService) checkReady(ctx context.Context, g model.Group) error {
+	filled, err := s.groups.CountFilledSlots(ctx, g.ID)
+	if err != nil {
+		return err
+	}
+	if filled < int(g.TotalSlots) {
+		return model.ErrSlotsNotFilled.WithDetail("%d of %d slots have a member.", filled, g.TotalSlots)
+	}
+	if !g.HasBankAccount() && !g.HasQRIS() {
+		return model.ErrPaymentInfoMissing
+	}
+	if g.DrawMethod != model.DrawMethodFixedOrder {
+		return nil
+	}
+	slots, err := s.groups.ListSlots(ctx, g.ID)
+	if err != nil {
+		return err
+	}
+	for _, sl := range slots {
+		if sl.FixedOrderPosition == nil {
+			return model.ErrFixedOrderIncomplete.WithDetail("Slot %d has no position.", sl.SlotNo)
+		}
+	}
+	return nil
 }
 
 // ResetInvite replaces the invite code, so old links stop working

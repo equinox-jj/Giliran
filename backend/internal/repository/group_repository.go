@@ -122,6 +122,12 @@ func (r *GroupRepository) Close(ctx context.Context, id uuid.UUID, now time.Time
 	return toGroup(row), mapErr(err)
 }
 
+// Start marks the group active, started at now.
+func (r *GroupRepository) Start(ctx context.Context, id uuid.UUID, now time.Time) (model.Group, error) {
+	row, err := r.tx.Queries(ctx).StartGroup(ctx, sqlc.StartGroupParams{ID: id, Now: now})
+	return toGroup(row), mapErr(err)
+}
+
 // SetOrganizer points groups.organizer_id at the new organizer.
 func (r *GroupRepository) SetOrganizer(ctx context.Context, id, userID uuid.UUID) error {
 	return mapErr(r.tx.Queries(ctx).SetGroupOrganizer(ctx, sqlc.SetGroupOrganizerParams{ID: id, OrganizerID: userID}))

@@ -79,6 +79,11 @@ func (f *fakeGroups) SetFixedOrder(_ context.Context, groupID, userID uuid.UUID,
 	return f.members, f.err
 }
 
+func (f *fakeGroups) Start(_ context.Context, groupID, userID uuid.UUID) (service.GroupDetail, error) {
+	f.called, f.gotGroup, f.gotUser = "start", groupID, userID
+	return f.detail, f.err
+}
+
 func (f *fakeGroups) Close(_ context.Context, groupID, userID uuid.UUID) (service.GroupDetail, error) {
 	f.called, f.gotGroup, f.gotUser = "close", groupID, userID
 	return f.detail, f.err
@@ -108,6 +113,7 @@ func newGroupApp(groups GroupService) *fiber.App {
 	g.Put("/payment-info/qris", h.UploadQRIS)
 	g.Delete("/payment-info/qris", h.DeleteQRIS)
 	g.Put("/fixed-order", h.SetFixedOrder)
+	g.Post("/start", h.Start)
 	g.Post("/close", h.Close)
 	g.Post("/invite-code/reset", h.ResetInvite)
 	return app
@@ -553,5 +559,56 @@ func TestGroupListMineRejectsUnknownStatus(t *testing.T) {
 	// Assert
 	if resp.StatusCode != 422 || fake.called != "" || body["errors"].([]any)[0].(map[string]any)["field"] != "status" {
 		t.Errorf("status %d, errors %v, service called %q", resp.StatusCode, body["errors"], fake.called)
+	}
+}
+
+func TestGroupStart(t *testing.T) {
+	// Arrange
+	fake := &fakeGroups{detail: testGroupDetail(true)}
+	fake.detail.Group.Status = model.GroupStatusActive
+	periodID := uuid.Must(uuid.NewV7())
+	fake.detail.CurrentPeriodID = &periodID
+	req, userID, _ := authed(t, http.MethodPost, "/api/v1/groups/"+fake.detail.Group.ID.String()+"/start", "")
+
+	// Act
+	resp, body := call(t, newGroupApp(fake), req)
+
+	// Assert
+	if resp.StatusCode != 200 || fake.called != "start" || fake.gotUser != userID {
+		t.Fatalf("status %d, service got %s for %s", resp.StatusCode, fake.called, fake.gotUser)
+	}
+	if data := body["data"].(map[string]any); data["status"] != "active" || data["current_period_id"] != periodID.String() {
+		t.Errorf("data %v", data)
+	}
+}
+
+func TestGroupStartErrors(t *testing.T) {
+	// Arrange
+	tests := []struct {
+		name       string
+		serviceErr error
+		wantStatus int
+		wantCode   string
+	}{
+		{"slots not filled", model.ErrSlotsNotFilled, 409, "slots_not_filled"},
+		{"payment info missing", model.ErrPaymentInfoMissing, 409, "payment_info_missing"},
+		{"fixed order incomplete", model.ErrFixedOrderIncomplete, 409, "fixed_order_incomplete"},
+		{"already started", model.ErrGroupNotDraft, 409, "group_not_draft"},
+		{"member", model.ErrForbiddenRole, 403, "forbidden_role"},
+		{"non-member", model.ErrGroupNotFound, 404, "group_not_found"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fake := &fakeGroups{err: tt.serviceErr}
+			req, _, _ := authed(t, http.MethodPost, "/api/v1/groups/"+uuid.Must(uuid.NewV7()).String()+"/start", "")
+
+			// Act
+			resp, body := call(t, newGroupApp(fake), req)
+
+			// Assert
+			if resp.StatusCode != tt.wantStatus || body["code"] != tt.wantCode {
+				t.Errorf("status %d code %v, want %d %s", resp.StatusCode, body["code"], tt.wantStatus, tt.wantCode)
+			}
+		})
 	}
 }

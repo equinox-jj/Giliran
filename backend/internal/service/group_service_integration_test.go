@@ -60,13 +60,15 @@ func newGroupEnv(t *testing.T) groupEnv {
 	members := repository.NewMemberRepository(tx)
 	leaves := repository.NewLeaveRequestRepository(tx)
 	transfers := repository.NewOwnershipTransferRepository(tx)
+	periods := repository.NewPeriodRepository(tx)
+	payments := repository.NewPaymentRepository(tx)
 	authz := NewAuthz(groups, members)
 	activity := NewActivity(repository.NewActivityRepository(tx), auth.clock)
 	store := newMemStore()
 	log := slog.New(slog.NewTextHandler(io.Discard, nil))
 	return groupEnv{
 		authEnv:   auth,
-		groups:    NewGroupService(tx, groups, members, leaves, transfers, users, authz, activity, store, auth.clock, log, cfg),
+		groups:    NewGroupService(tx, groups, members, leaves, transfers, periods, payments, users, authz, activity, store, auth.clock, log, cfg),
 		members:   NewMemberService(tx, groups, members, leaves, transfers, users, authz, activity, store, auth.clock, cfg),
 		leaves:    NewLeaveService(tx, members, leaves, transfers, users, authz, activity, store, auth.clock),
 		ownership: NewOwnershipService(tx, groups, members, leaves, transfers, users, authz, activity, store, auth.clock),
@@ -147,7 +149,8 @@ func (e groupEnv) lastLog(t *testing.T, groupID uuid.UUID) (string, string) {
 	return deref(before), deref(after)
 }
 
-// activate marks a group as started, as Phase 4's start will.
+// activate marks a group as started without opening any period, for tests
+// that only need an active group.
 func (e groupEnv) activate(t *testing.T, groupID uuid.UUID) {
 	t.Helper()
 	if _, err := e.pool.Exec(context.Background(), `UPDATE groups SET status = 'active', started_at = now() WHERE id = $1`, groupID); err != nil {

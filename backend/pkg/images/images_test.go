@@ -150,3 +150,65 @@ func TestAvatarRejects(t *testing.T) {
 		})
 	}
 }
+
+// withExif inserts an APP1 Exif segment (an empty TIFF directory) after the
+// JPEG's start-of-image marker.
+func withExif(jpg []byte) []byte {
+	payload := append([]byte("Exif\x00\x00"), []byte("II*\x00\x08\x00\x00\x00\x00\x00\x00\x00\x00\x00")...)
+	n := len(payload) + 2
+	seg := append([]byte{0xFF, 0xE1, byte(n >> 8), byte(n)}, payload...)
+	out := append([]byte{}, jpg[:2]...)
+	out = append(out, seg...)
+	return append(out, jpg[2:]...)
+}
+
+func TestProofShrinksToFit(t *testing.T) {
+	// Arrange
+	data := encodeJPEG(t, 4096, 1024)
+
+	// Act
+	out, err := Proof(data)
+
+	// Assert
+	if err != nil {
+		t.Fatalf("Proof: %v", err)
+	}
+	if b := decodeJPEG(t, out).Bounds(); b.Dx() != ProofMaxSide || b.Dy() != ProofMaxSide/4 {
+		t.Errorf("size %dx%d, want %dx%d", b.Dx(), b.Dy(), ProofMaxSide, ProofMaxSide/4)
+	}
+}
+
+func TestProofKeepsReadableSize(t *testing.T) {
+	// Arrange
+	data := encodePNG(t, 1080, 1920, color.White)
+
+	// Act
+	out, err := Proof(data)
+
+	// Assert
+	if err != nil {
+		t.Fatalf("Proof: %v", err)
+	}
+	if b := decodeJPEG(t, out).Bounds(); b.Dx() != 1080 || b.Dy() != 1920 {
+		t.Errorf("size %dx%d, want 1080x1920", b.Dx(), b.Dy())
+	}
+}
+
+func TestProofStripsMetadata(t *testing.T) {
+	// Arrange
+	data := withExif(encodeJPEG(t, 64, 64))
+	if !bytes.Contains(data, []byte("Exif")) {
+		t.Fatal("test image has no Exif segment")
+	}
+
+	// Act
+	out, err := Proof(data)
+
+	// Assert
+	if err != nil {
+		t.Fatalf("Proof: %v", err)
+	}
+	if bytes.Contains(out, []byte("Exif")) {
+		t.Error("output still carries an Exif segment")
+	}
+}

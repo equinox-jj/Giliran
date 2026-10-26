@@ -19,6 +19,10 @@ type Querier interface {
 	// The account takes over the guest row, so the slot keeps its history. The
 	// guest-only fields are cleared (an account row has no guest name).
 	ClaimGuest(ctx context.Context, arg ClaimGuestParams) (GroupMember, error)
+	// Claims the key for a request about to run. response_status 0 is a
+	// placeholder that only this transaction ever sees; a concurrent claim of the
+	// same key waits for it to commit and then claims nothing.
+	ClaimIdempotencyKey(ctx context.Context, arg ClaimIdempotencyKeyParams) (int64, error)
 	ClearFixedOrder(ctx context.Context, groupID uuid.UUID) error
 	CloseGroup(ctx context.Context, arg CloseGroupParams) (Group, error)
 	CountActiveMembers(ctx context.Context, groupID uuid.UUID) (int32, error)
@@ -29,10 +33,16 @@ type Querier interface {
 	CreateLeaveRequest(ctx context.Context, arg CreateLeaveRequestParams) (LeaveRequest, error)
 	CreateMember(ctx context.Context, arg CreateMemberParams) (GroupMember, error)
 	CreateOwnershipTransfer(ctx context.Context, arg CreateOwnershipTransferParams) (OwnershipTransfer, error)
+	CreatePaymentProof(ctx context.Context, arg CreatePaymentProofParams) (PaymentProof, error)
+	CreatePayments(ctx context.Context, arg CreatePaymentsParams) error
+	CreatePeriodSeed(ctx context.Context, arg CreatePeriodSeedParams) error
+	// Every period of a starting group, all upcoming.
+	CreatePeriods(ctx context.Context, arg CreatePeriodsParams) error
 	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateSlots(ctx context.Context, arg CreateSlotsParams) error
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	CreateUserSettings(ctx context.Context, userID uuid.UUID) error
+	DeleteIdempotencyKey(ctx context.Context, arg DeleteIdempotencyKeyParams) error
 	// Drops slots of a draft group; their slot_members rows cascade.
 	DeleteSlotsAbove(ctx context.Context, arg DeleteSlotsAboveParams) error
 	// Marks the group's pending transfers past their deadline as expired, so a
@@ -45,6 +55,7 @@ type Querier interface {
 	// Locks the group so slot assignment, role changes and status changes
 	// serialize.
 	GetGroupForUpdate(ctx context.Context, id uuid.UUID) (Group, error)
+	GetIdempotencyKey(ctx context.Context, arg GetIdempotencyKeyParams) (IdempotencyKey, error)
 	GetLeaveRequestForUpdate(ctx context.Context, arg GetLeaveRequestForUpdateParams) (LeaveRequest, error)
 	GetMemberByClaimTokenHashForUpdate(ctx context.Context, claimTokenHash *string) (GroupMember, error)
 	GetMemberForUpdate(ctx context.Context, arg GetMemberForUpdateParams) (GroupMember, error)
@@ -53,6 +64,13 @@ type Querier interface {
 	// DB_SCHEME §8) starts here.
 	GetMembership(ctx context.Context, arg GetMembershipParams) (GroupMember, error)
 	GetOwnershipTransferForUpdate(ctx context.Context, arg GetOwnershipTransferForUpdateParams) (OwnershipTransfer, error)
+	GetPayment(ctx context.Context, arg GetPaymentParams) (GetPaymentRow, error)
+	GetPaymentForUpdate(ctx context.Context, arg GetPaymentForUpdateParams) (Payment, error)
+	GetPaymentSummary(ctx context.Context, periodID uuid.UUID) (GetPaymentSummaryRow, error)
+	GetPeriod(ctx context.Context, arg GetPeriodParams) (Period, error)
+	GetPeriodByNo(ctx context.Context, arg GetPeriodByNoParams) (Period, error)
+	GetPeriodForUpdate(ctx context.Context, arg GetPeriodForUpdateParams) (Period, error)
+	GetPeriodView(ctx context.Context, arg GetPeriodViewParams) (GetPeriodViewRow, error)
 	// Locks the row so two refreshes of one token serialize.
 	GetSessionByRefreshTokenHashForUpdate(ctx context.Context, refreshTokenHash string) (Session, error)
 	GetUserByFirebaseUID(ctx context.Context, firebaseUid *string) (User, error)
@@ -78,6 +96,15 @@ type Querier interface {
 	// The user's groups with the current period's progress, soonest due date
 	// first. Period columns are NULL while no period is open.
 	ListMyGroups(ctx context.Context, arg ListMyGroupsParams) ([]ListMyGroupsRow, error)
+	ListPaymentProofs(ctx context.Context, paymentID uuid.UUID) ([]PaymentProof, error)
+	// A period's payments by slot number (ListPaymentBoard in DB_SCHEME §8),
+	// with the current proof.
+	ListPeriodPayments(ctx context.Context, periodID uuid.UUID) ([]ListPeriodPaymentsRow, error)
+	// The group's periods with the winner's slot and payout state, in order.
+	ListPeriodViews(ctx context.Context, groupID uuid.UUID) ([]ListPeriodViewsRow, error)
+	// Active members holding a slot of the group, with their share in basis
+	// points (share_pct 100.00 → 10000), by slot number.
+	ListSlotHolders(ctx context.Context, groupID uuid.UUID) ([]ListSlotHoldersRow, error)
 	ListSlots(ctx context.Context, groupID uuid.UUID) ([]Slot, error)
 	// The lowest slot with no active holder that has not won yet. Lock the group
 	// first so two joins never pick the same slot.
@@ -90,6 +117,10 @@ type Querier interface {
 	MemberHasPaymentsInOpenPeriods(ctx context.Context, memberID uuid.UUID) (bool, error)
 	MemberHasWon(ctx context.Context, memberID uuid.UUID) (bool, error)
 	MoveSlotMember(ctx context.Context, arg MoveSlotMemberParams) error
+	// Publishes the seed hash (NULL for fixed-order groups). Only an upcoming
+	// period opens.
+	OpenPeriod(ctx context.Context, arg OpenPeriodParams) (Period, error)
+	RejectPayment(ctx context.Context, arg RejectPaymentParams) (Payment, error)
 	RespondOwnershipTransfer(ctx context.Context, arg RespondOwnershipTransferParams) (OwnershipTransfer, error)
 	ReviewLeaveRequest(ctx context.Context, arg ReviewLeaveRequestParams) (LeaveRequest, error)
 	// Signs the user out everywhere except the current session.
@@ -97,6 +128,7 @@ type Querier interface {
 	RevokeSessionFamily(ctx context.Context, arg RevokeSessionFamilyParams) (int64, error)
 	RevokeUserSession(ctx context.Context, arg RevokeUserSessionParams) (int64, error)
 	RotateSession(ctx context.Context, arg RotateSessionParams) error
+	SaveIdempotencyResponse(ctx context.Context, arg SaveIdempotencyResponseParams) error
 	// Clear the order first: the (group_id, fixed_order_position) index is not
 	// deferrable.
 	SetFixedOrderPositions(ctx context.Context, arg SetFixedOrderPositionsParams) error
@@ -110,6 +142,9 @@ type Querier interface {
 	SetMemberClaimToken(ctx context.Context, arg SetMemberClaimTokenParams) error
 	SetMemberRole(ctx context.Context, arg SetMemberRoleParams) error
 	SetMemberStatus(ctx context.Context, arg SetMemberStatusParams) (GroupMember, error)
+	// Approve (method transfer) or mark paid directly (any method, with a note).
+	SetPaymentPaid(ctx context.Context, arg SetPaymentPaidParams) (Payment, error)
+	SetPaymentProof(ctx context.Context, arg SetPaymentProofParams) (Payment, error)
 	SetSessionFCMToken(ctx context.Context, arg SetSessionFCMTokenParams) (int64, error)
 	// NULL removes the avatar.
 	SetUserAvatarKey(ctx context.Context, arg SetUserAvatarKeyParams) (User, error)
@@ -117,6 +152,7 @@ type Querier interface {
 	// Stores a new PIN hash and clears failed attempts and any lock.
 	SetUserPIN(ctx context.Context, arg SetUserPINParams) error
 	SetUserPINAttempts(ctx context.Context, arg SetUserPINAttemptsParams) error
+	StartGroup(ctx context.Context, arg StartGroupParams) (Group, error)
 	// NULL arguments keep the current value.
 	UpdateGroupSettings(ctx context.Context, arg UpdateGroupSettingsParams) (Group, error)
 	UpdateGuest(ctx context.Context, arg UpdateGuestParams) (GroupMember, error)

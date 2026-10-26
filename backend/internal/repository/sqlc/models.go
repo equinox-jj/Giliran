@@ -160,6 +160,12 @@ type Period struct {
 	UpdatedAt        time.Time
 }
 
+type PeriodSeed struct {
+	PeriodID  uuid.UUID
+	Seed      string
+	CreatedAt time.Time
+}
+
 type Session struct {
 	ID               uuid.UUID
 	UserID           uuid.UUID

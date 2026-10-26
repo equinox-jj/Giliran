@@ -10,6 +10,10 @@ import (
 // leave requests.
 const MaxNoteLength = 500
 
+// MinRejectReasonLength is the shortest reason accepted when rejecting a
+// proof, so the member learns what to fix.
+const MinRejectReasonLength = 3
+
 // PaymentStatus is a payment's review state, stored in payments.status
 // (DB_SCHEME §4.3, BR-07).
 type PaymentStatus string

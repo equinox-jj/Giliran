@@ -119,3 +119,9 @@ WHERE gm.user_id = sqlc.arg(user_id)
   AND gm.status = 'active'
   AND g.status = ANY (sqlc.arg(statuses)::text[])
 ORDER BY cp.due_date NULLS LAST, g.created_at DESC;
+
+-- name: StartGroup :one
+UPDATE groups
+SET status = 'active', started_at = sqlc.arg(now)::timestamptz
+WHERE id = sqlc.arg(id)
+RETURNING *;

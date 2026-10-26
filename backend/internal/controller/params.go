@@ -25,6 +25,16 @@ func groupID(c fiber.Ctx) (uuid.UUID, error) {
 	return pathID(c, "group_id", model.ErrGroupNotFound)
 }
 
+// periodID parses the period_id path parameter.
+func periodID(c fiber.Ctx) (uuid.UUID, error) {
+	return pathID(c, "period_id", model.ErrPeriodNotFound)
+}
+
+// paymentID parses the payment_id path parameter.
+func paymentID(c fiber.Ctx) (uuid.UUID, error) {
+	return pathID(c, "payment_id", model.ErrPaymentNotFound)
+}
+
 // readUpload reads the multipart field "file". Services check the type by
 // content; the declared type is ignored.
 func readUpload(c fiber.Ctx) ([]byte, error) {

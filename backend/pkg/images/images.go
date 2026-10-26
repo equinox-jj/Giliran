@@ -33,7 +33,11 @@ const maxPixels = 40_000_000
 // AvatarSize is the longest side of a stored avatar, in pixels.
 const AvatarSize = 512
 
-const avatarQuality = 85
+// ProofMaxSide is the longest side of a stored payment proof, in pixels:
+// enough to read a transfer screenshot, small enough to keep storage modest.
+const ProofMaxSide = 2048
+
+const jpegQuality = 85
 
 // ErrUnsupported means the data is not a JPEG, PNG or WebP image, or cannot
 // be decoded as one.
@@ -53,6 +57,19 @@ func Sniff(data []byte) (string, error) {
 // shrinks it to fit AvatarSize × AvatarSize without cropping or upscaling,
 // and re-encodes it as JPEG. Re-encoding drops EXIF and any other metadata.
 func Avatar(data []byte) ([]byte, error) {
+	return reencode(data, AvatarSize)
+}
+
+// Proof prepares a payment proof the same way as Avatar, fitting it within
+// ProofMaxSide. Dropping the metadata keeps a photo's location out of what
+// other organizers can open (UU PDP).
+func Proof(data []byte) ([]byte, error) {
+	return reencode(data, ProofMaxSide)
+}
+
+// reencode decodes data, applies its EXIF orientation, shrinks it to fit
+// maxSide × maxSide without cropping or upscaling, and encodes it as JPEG.
+func reencode(data []byte, maxSide int) ([]byte, error) {
 	if _, err := Sniff(data); err != nil {
 		return nil, err
 	}
@@ -68,15 +85,15 @@ func Avatar(data []byte) ([]byte, error) {
 		return nil, fmt.Errorf("%w: %w", ErrUnsupported, err)
 	}
 	b := img.Bounds()
-	if b.Dx() > AvatarSize || b.Dy() > AvatarSize {
-		img = imaging.Fit(img, AvatarSize, AvatarSize, imaging.Lanczos)
+	if b.Dx() > maxSide || b.Dy() > maxSide {
+		img = imaging.Fit(img, maxSide, maxSide, imaging.Lanczos)
 	}
 	// JPEG has no alpha; put transparent pixels on white rather than black.
 	flat := imaging.New(img.Bounds().Dx(), img.Bounds().Dy(), image.White)
 	flat = imaging.Overlay(flat, img, image.Point{}, 1)
 	var out bytes.Buffer
-	if err := jpeg.Encode(&out, flat, &jpeg.Options{Quality: avatarQuality}); err != nil {
-		return nil, fmt.Errorf("images: encode avatar: %w", err)
+	if err := jpeg.Encode(&out, flat, &jpeg.Options{Quality: jpegQuality}); err != nil {
+		return nil, fmt.Errorf("images: encode jpeg: %w", err)
 	}
 	return out.Bytes(), nil
 }

@@ -15,15 +15,19 @@ import (
 type Params struct {
 	fx.In
 
-	App     *fiber.App
-	Config  *config.Config
-	Tokens  *security.TokenIssuer
-	Health  *controller.HealthController
-	Auth    *controller.AuthController
-	PIN     *controller.PINController
-	Me      *controller.MeController
-	Groups  *controller.GroupController
-	Members *controller.MemberController
+	App      *fiber.App
+	Config   *config.Config
+	Tokens   *security.TokenIssuer
+	Health   *controller.HealthController
+	Auth     *controller.AuthController
+	PIN      *controller.PINController
+	Me       *controller.MeController
+	Groups   *controller.GroupController
+	Members  *controller.MemberController
+	Periods  *controller.PeriodController
+	Payments *controller.PaymentController
+	// Idempotency guards the writes that need an Idempotency-Key.
+	Idempotency *controller.Idempotency
 }
 
 // Register adds every route to p.App.
@@ -71,6 +75,7 @@ func Register(p Params) {
 	g.Put("/payment-info/qris", writeLimit, p.Groups.UploadQRIS)
 	g.Delete("/payment-info/qris", writeLimit, p.Groups.DeleteQRIS)
 	g.Put("/fixed-order", writeLimit, p.Groups.SetFixedOrder)
+	g.Post("/start", writeLimit, p.Groups.Start)
 	g.Post("/close", writeLimit, p.Groups.Close)
 	g.Post("/invite-code/reset", writeLimit, p.Groups.ResetInvite)
 
@@ -87,6 +92,16 @@ func Register(p Params) {
 	g.Post("/ownership-transfers", writeLimit, p.Members.OfferOwnership)
 	g.Post("/ownership-transfers/:transfer_id/accept", writeLimit, p.Members.AcceptOwnership)
 	g.Post("/ownership-transfers/:transfer_id/decline", writeLimit, p.Members.DeclineOwnership)
+
+	g.Get("/periods", p.Periods.List)
+	g.Get("/periods/:period_id", p.Periods.Get)
+	g.Get("/periods/:period_id/payments", p.Payments.Board)
+	g.Get("/payments/:payment_id", p.Payments.Get)
+	idem := p.Idempotency.Handle
+	g.Post("/payments/:payment_id/proofs", writeLimit, idem, p.Payments.UploadProof)
+	g.Post("/payments/:payment_id/approve", writeLimit, idem, p.Payments.Approve)
+	g.Post("/payments/:payment_id/reject", writeLimit, idem, p.Payments.Reject)
+	g.Post("/payments/:payment_id/mark-paid", writeLimit, idem, p.Payments.MarkPaid)
 
 	// Invite codes and claim tokens are the secret in a link; a per-user
 	// limit slows anyone guessing them.
