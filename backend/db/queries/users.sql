@@ -36,3 +36,14 @@ WHERE id = $1;
 UPDATE users
 SET pin_failed_count = $2, pin_locked_until = $3
 WHERE id = $1;
+
+-- name: UpdateUserName :one
+UPDATE users SET name = $2
+WHERE id = $1 AND deleted_at IS NULL
+RETURNING *;
+
+-- name: UpdateUserPhone :one
+-- Moves the account to a new number and the Firebase account that verified it.
+UPDATE users SET phone = $2, firebase_uid = $3
+WHERE id = $1 AND deleted_at IS NULL
+RETURNING *;

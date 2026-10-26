@@ -208,6 +208,57 @@ func (s *AuthService) Logout(ctx context.Context, userID, sessionID uuid.UUID) e
 	return err
 }
 
+// ChangePhone moves the account to a new number (FR-AUTH-06). oldToken must
+// come from an OTP to the current number and newToken from an OTP to the new
+// one; a number that already has an account is phone_already_registered.
+// Every session except sessionID is signed out.
+func (s *AuthService) ChangePhone(ctx context.Context, userID, sessionID uuid.UUID, oldToken, newToken string) (model.User, error) {
+	oldID, err := s.verifier.Verify(ctx, oldToken)
+	if err != nil {
+		return model.User{}, err
+	}
+	newID, err := s.verifier.Verify(ctx, newToken)
+	if err != nil {
+		return model.User{}, err
+	}
+	newPhone, err := utils.NormalizePhone("new_firebase_id_token", newID.Phone)
+	if err != nil {
+		return model.User{}, model.ErrOTPInvalid.WithDetail("Only Indonesian mobile numbers can be used.")
+	}
+
+	var user model.User
+	err = s.tx.WithTx(ctx, func(ctx context.Context) error {
+		current, err := currentUser(s.users.GetByIDForUpdate(ctx, userID))
+		if err != nil {
+			return err
+		}
+		if !ownsIdentity(current, oldID) {
+			return model.ErrOTPInvalid.WithDetail("The first OTP was not sent to this account's phone number.")
+		}
+		if newPhone == current.Phone {
+			return model.NewValidationError(model.FieldError{
+				Field: "new_firebase_id_token", Code: model.FieldInvalidFormat,
+				Message: "The new number is the same as the current one.",
+			})
+		}
+		if _, err := s.users.GetByPhone(ctx, newPhone); err == nil {
+			return model.ErrPhoneAlreadyRegistered
+		} else if !errors.Is(err, repository.ErrNotFound) {
+			return err
+		}
+		if user, err = s.users.UpdatePhone(ctx, userID, newPhone, newID.UID); err != nil {
+			return err
+		}
+		_, err = s.sessions.RevokeOthers(ctx, userID, sessionID, model.RevokedReasonPhoneChanged, s.clock.Now())
+		return err
+	})
+	if errors.Is(err, repository.ErrDuplicate) {
+		// The number or its Firebase account was claimed after our lookup.
+		return model.User{}, model.ErrPhoneAlreadyRegistered
+	}
+	return user, err
+}
+
 // createSession inserts a session with a fresh refresh token and returns the
 // token; only its hash is stored.
 func (s *AuthService) createSession(ctx context.Context, userID, familyID uuid.UUID, device Device, now time.Time) (model.Session, string, error) {

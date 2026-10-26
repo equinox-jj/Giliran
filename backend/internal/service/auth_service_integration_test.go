@@ -364,3 +364,72 @@ func TestLogoutIgnoresOtherUsersSession(t *testing.T) {
 		t.Errorf("another user's session was revoked (%s)", got)
 	}
 }
+
+var budi = firebase.Identity{UID: "uid-budi", Phone: "+6281299998888"}
+
+func TestChangePhoneMovesAccountAndSignsOutOthers(t *testing.T) {
+	// Arrange
+	t.Parallel()
+	newRina := firebase.Identity{UID: "uid-rina-new", Phone: "081311112222"}
+	env := newAuthEnv(t, fakeVerifier{"tok": rina, "new": newRina})
+	current := env.signIn(t, "tok")
+	other := env.signIn(t, "tok")
+	_, sessionID, _ := env.tokens.Parse(current.Tokens.AccessToken)
+
+	// Act
+	user, err := env.svc.ChangePhone(context.Background(), current.User.ID, sessionID, "tok", "new")
+
+	// Assert
+	if err != nil {
+		t.Fatalf("ChangePhone: %v", err)
+	}
+	if user.Phone != "+6281311112222" || user.FirebaseUID == nil || *user.FirebaseUID != newRina.UID {
+		t.Errorf("user %+v", user)
+	}
+	if got := env.revokedReason(t, other.Tokens.RefreshToken); got != "phone_changed" {
+		t.Errorf("other session revoked as %q, want phone_changed", got)
+	}
+	if got := env.revokedReason(t, current.Tokens.RefreshToken); got != "" {
+		t.Errorf("current session revoked as %q, want active", got)
+	}
+}
+
+func TestChangePhoneRejects(t *testing.T) {
+	// Arrange
+	t.Parallel()
+	tests := []struct {
+		name     string
+		oldToken string
+		newToken string
+		wantCode string
+	}{
+		{"old otp for another number", "budi", "fresh", "otp_invalid"},
+		{"new number has an account", "tok", "budi", "phone_already_registered"},
+		{"new number is the current one", "tok", "tok", "validation_error"},
+		{"rejected token", "tok", "unknown", "otp_invalid"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Arrange
+			t.Parallel()
+			fresh := firebase.Identity{UID: "uid-fresh", Phone: "+6281355556666"}
+			env := newAuthEnv(t, fakeVerifier{"tok": rina, "budi": budi, "fresh": fresh})
+			res := env.signIn(t, "tok")
+			env.signIn(t, "budi")
+			_, sessionID, _ := env.tokens.Parse(res.Tokens.AccessToken)
+
+			// Act
+			_, err := env.svc.ChangePhone(context.Background(), res.User.ID, sessionID, tt.oldToken, tt.newToken)
+
+			// Assert
+			var merr *model.Error
+			if !errors.As(err, &merr) || merr.Code != tt.wantCode {
+				t.Fatalf("err %v, want %s", err, tt.wantCode)
+			}
+			if n := env.count(t, `SELECT count(*) FROM users WHERE id = $1 AND phone = $2`, res.User.ID, rina.Phone); n != 1 {
+				t.Error("phone changed despite the error")
+			}
+		})
+	}
+}

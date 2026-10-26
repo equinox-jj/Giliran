@@ -94,6 +94,53 @@ func (q *Queries) GetSessionByRefreshTokenHashForUpdate(ctx context.Context, ref
 	return i, err
 }
 
+const listActiveUserSessions = `-- name: ListActiveUserSessions :many
+SELECT id, user_id, family_id, refresh_token_hash, replaced_by_id, device_name, device_platform, fcm_token, last_active_at, expires_at, revoked_at, revoked_reason, created_at FROM sessions
+WHERE user_id = $1 AND revoked_at IS NULL AND expires_at > $2::timestamptz
+ORDER BY id = $3::uuid DESC, last_active_at DESC, created_at DESC
+`
+
+type ListActiveUserSessionsParams struct {
+	UserID    uuid.UUID
+	Now       time.Time
+	CurrentID uuid.UUID
+}
+
+// The user's signed-in devices, the current one first.
+func (q *Queries) ListActiveUserSessions(ctx context.Context, arg ListActiveUserSessionsParams) ([]Session, error) {
+	rows, err := q.db.Query(ctx, listActiveUserSessions, arg.UserID, arg.Now, arg.CurrentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Session{}
+	for rows.Next() {
+		var i Session
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.FamilyID,
+			&i.RefreshTokenHash,
+			&i.ReplacedByID,
+			&i.DeviceName,
+			&i.DevicePlatform,
+			&i.FcmToken,
+			&i.LastActiveAt,
+			&i.ExpiresAt,
+			&i.RevokedAt,
+			&i.RevokedReason,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const revokeOtherUserSessions = `-- name: RevokeOtherUserSessions :execrows
 UPDATE sessions
 SET revoked_at = $1::timestamptz, revoked_reason = $2::text
@@ -182,4 +229,23 @@ type RotateSessionParams struct {
 func (q *Queries) RotateSession(ctx context.Context, arg RotateSessionParams) error {
 	_, err := q.db.Exec(ctx, rotateSession, arg.Now, arg.ReplacedByID, arg.ID)
 	return err
+}
+
+const setSessionFCMToken = `-- name: SetSessionFCMToken :execrows
+UPDATE sessions SET fcm_token = $1::text
+WHERE id = $2 AND user_id = $3 AND revoked_at IS NULL
+`
+
+type SetSessionFCMTokenParams struct {
+	FcmToken string
+	ID       uuid.UUID
+	UserID   uuid.UUID
+}
+
+func (q *Queries) SetSessionFCMToken(ctx context.Context, arg SetSessionFCMTokenParams) (int64, error) {
+	result, err := q.db.Exec(ctx, setSessionFCMToken, arg.FcmToken, arg.ID, arg.UserID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }

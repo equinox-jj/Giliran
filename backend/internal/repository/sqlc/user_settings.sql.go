@@ -20,3 +20,61 @@ func (q *Queries) CreateUserSettings(ctx context.Context, userID uuid.UUID) erro
 	_, err := q.db.Exec(ctx, createUserSettings, userID)
 	return err
 }
+
+const getUserSettings = `-- name: GetUserSettings :one
+SELECT user_id, language, notify_payment_reminders, notify_draw_results, notify_group_activity, updated_at FROM user_settings
+WHERE user_id = $1
+`
+
+func (q *Queries) GetUserSettings(ctx context.Context, userID uuid.UUID) (UserSetting, error) {
+	row := q.db.QueryRow(ctx, getUserSettings, userID)
+	var i UserSetting
+	err := row.Scan(
+		&i.UserID,
+		&i.Language,
+		&i.NotifyPaymentReminders,
+		&i.NotifyDrawResults,
+		&i.NotifyGroupActivity,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateUserSettings = `-- name: UpdateUserSettings :one
+UPDATE user_settings
+SET language                 = COALESCE($1, language),
+    notify_payment_reminders = COALESCE($2, notify_payment_reminders),
+    notify_draw_results      = COALESCE($3, notify_draw_results),
+    notify_group_activity    = COALESCE($4, notify_group_activity)
+WHERE user_id = $5
+RETURNING user_id, language, notify_payment_reminders, notify_draw_results, notify_group_activity, updated_at
+`
+
+type UpdateUserSettingsParams struct {
+	Language               *string
+	NotifyPaymentReminders *bool
+	NotifyDrawResults      *bool
+	NotifyGroupActivity    *bool
+	UserID                 uuid.UUID
+}
+
+// Changes only the columns whose argument is not NULL.
+func (q *Queries) UpdateUserSettings(ctx context.Context, arg UpdateUserSettingsParams) (UserSetting, error) {
+	row := q.db.QueryRow(ctx, updateUserSettings,
+		arg.Language,
+		arg.NotifyPaymentReminders,
+		arg.NotifyDrawResults,
+		arg.NotifyGroupActivity,
+		arg.UserID,
+	)
+	var i UserSetting
+	err := row.Scan(
+		&i.UserID,
+		&i.Language,
+		&i.NotifyPaymentReminders,
+		&i.NotifyDrawResults,
+		&i.NotifyGroupActivity,
+		&i.UpdatedAt,
+	)
+	return i, err
+}

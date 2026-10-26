@@ -71,6 +71,48 @@ func (r *UserRepository) CreateSettings(ctx context.Context, userID uuid.UUID) e
 	return mapErr(r.tx.Queries(ctx).CreateUserSettings(ctx, userID))
 }
 
+// UpdateName sets the display name.
+func (r *UserRepository) UpdateName(ctx context.Context, id uuid.UUID, name string) (model.User, error) {
+	row, err := r.tx.Queries(ctx).UpdateUserName(ctx, sqlc.UpdateUserNameParams{ID: id, Name: &name})
+	return toUser(row), mapErr(err)
+}
+
+// UpdatePhone moves the user to a new phone number and Firebase account. A
+// number already used by another active user is ErrDuplicate.
+func (r *UserRepository) UpdatePhone(ctx context.Context, id uuid.UUID, phone, firebaseUID string) (model.User, error) {
+	row, err := r.tx.Queries(ctx).UpdateUserPhone(ctx, sqlc.UpdateUserPhoneParams{ID: id, Phone: &phone, FirebaseUID: &firebaseUID})
+	return toUser(row), mapErr(err)
+}
+
+func (r *UserRepository) GetSettings(ctx context.Context, userID uuid.UUID) (model.UserSettings, error) {
+	row, err := r.tx.Queries(ctx).GetUserSettings(ctx, userID)
+	return toUserSettings(row), mapErr(err)
+}
+
+// SettingsChange lists the settings to change; nil fields keep their value.
+type SettingsChange struct {
+	Language               *model.Language
+	NotifyPaymentReminders *bool
+	NotifyDrawResults      *bool
+	NotifyGroupActivity    *bool
+}
+
+// UpdateSettings applies the non-nil fields of c and returns the result.
+func (r *UserRepository) UpdateSettings(ctx context.Context, userID uuid.UUID, c SettingsChange) (model.UserSettings, error) {
+	arg := sqlc.UpdateUserSettingsParams{
+		UserID:                 userID,
+		NotifyPaymentReminders: c.NotifyPaymentReminders,
+		NotifyDrawResults:      c.NotifyDrawResults,
+		NotifyGroupActivity:    c.NotifyGroupActivity,
+	}
+	if c.Language != nil {
+		lang := string(*c.Language)
+		arg.Language = &lang
+	}
+	row, err := r.tx.Queries(ctx).UpdateUserSettings(ctx, arg)
+	return toUserSettings(row), mapErr(err)
+}
+
 func toUser(row sqlc.User) model.User {
 	u := model.User{
 		ID:             row.ID,
@@ -88,4 +130,15 @@ func toUser(row sqlc.User) model.User {
 		u.Phone = *row.Phone
 	}
 	return u
+}
+
+func toUserSettings(row sqlc.UserSetting) model.UserSettings {
+	return model.UserSettings{
+		UserID:                 row.UserID,
+		Language:               model.Language(row.Language),
+		NotifyPaymentReminders: row.NotifyPaymentReminders,
+		NotifyDrawResults:      row.NotifyDrawResults,
+		NotifyGroupActivity:    row.NotifyGroupActivity,
+		UpdatedAt:              row.UpdatedAt,
+	}
 }

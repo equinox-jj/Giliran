@@ -68,6 +68,27 @@ func (r *SessionRepository) RevokeOthers(ctx context.Context, userID, exceptID u
 	return n, mapErr(err)
 }
 
+// ListActive returns userID's sessions that are neither revoked nor expired at
+// now, with currentID first and the rest most recently active first.
+func (r *SessionRepository) ListActive(ctx context.Context, userID, currentID uuid.UUID, now time.Time) ([]model.Session, error) {
+	rows, err := r.tx.Queries(ctx).ListActiveUserSessions(ctx, sqlc.ListActiveUserSessionsParams{UserID: userID, CurrentID: currentID, Now: now})
+	if err != nil {
+		return nil, mapErr(err)
+	}
+	out := make([]model.Session, len(rows))
+	for i, row := range rows {
+		out[i] = toSession(row)
+	}
+	return out, nil
+}
+
+// SetFCMToken stores the device's push token on session id if it belongs to
+// userID and is still active, and reports whether it did.
+func (r *SessionRepository) SetFCMToken(ctx context.Context, id, userID uuid.UUID, token string) (bool, error) {
+	n, err := r.tx.Queries(ctx).SetSessionFCMToken(ctx, sqlc.SetSessionFCMTokenParams{ID: id, UserID: userID, FcmToken: token})
+	return n > 0, mapErr(err)
+}
+
 func toSession(row sqlc.Session) model.Session {
 	s := model.Session{
 		ID:               row.ID,

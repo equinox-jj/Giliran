@@ -34,3 +34,13 @@ WHERE id = sqlc.arg(id) AND user_id = sqlc.arg(user_id) AND revoked_at IS NULL;
 UPDATE sessions
 SET revoked_at = sqlc.arg(now)::timestamptz, revoked_reason = sqlc.arg(reason)::text
 WHERE user_id = sqlc.arg(user_id) AND id <> sqlc.arg(except_id) AND revoked_at IS NULL;
+
+-- name: ListActiveUserSessions :many
+-- The user's signed-in devices, the current one first.
+SELECT * FROM sessions
+WHERE user_id = sqlc.arg(user_id) AND revoked_at IS NULL AND expires_at > sqlc.arg(now)::timestamptz
+ORDER BY id = sqlc.arg(current_id)::uuid DESC, last_active_at DESC, created_at DESC;
+
+-- name: SetSessionFCMToken :execrows
+UPDATE sessions SET fcm_token = sqlc.arg(fcm_token)::text
+WHERE id = sqlc.arg(id) AND user_id = sqlc.arg(user_id) AND revoked_at IS NULL;

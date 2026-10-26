@@ -18,9 +18,11 @@ type AuthService interface {
 	SignIn(ctx context.Context, idToken string, device service.Device) (service.SignInResult, error)
 	Refresh(ctx context.Context, refreshToken string) (service.TokenPair, error)
 	Logout(ctx context.Context, userID, sessionID uuid.UUID) error
+	ChangePhone(ctx context.Context, userID, sessionID uuid.UUID, oldToken, newToken string) (model.User, error)
 }
 
-// AuthController serves /auth/sign-in, /auth/refresh and /auth/logout.
+// AuthController serves /auth/sign-in, /auth/refresh, /auth/logout and
+// /auth/phone.
 type AuthController struct {
 	auth AuthService
 }
@@ -71,4 +73,17 @@ func (h *AuthController) Logout(c fiber.Ctx) error {
 		return err
 	}
 	return response.NoContent(c)
+}
+
+// ChangePhone handles PUT /auth/phone.
+func (h *AuthController) ChangePhone(c fiber.Ctx) error {
+	var req dto.ChangePhoneRequest
+	if err := c.Bind().Body(&req); err != nil {
+		return err
+	}
+	user, err := h.auth.ChangePhone(c.Context(), middleware.UserID(c), middleware.SessionID(c), req.OldFirebaseIDToken, req.NewFirebaseIDToken)
+	if err != nil {
+		return err
+	}
+	return response.OK(c, dto.NewMe(user, nil))
 }

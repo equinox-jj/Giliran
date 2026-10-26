@@ -46,6 +46,7 @@ func newTestApp() *fiber.App {
 		Health: controller.NewHealthController(),
 		Auth:   controller.NewAuthController(nil), // auth and PIN routes are tested in internal/controller
 		PIN:    controller.NewPINController(nil),
+		Me:     controller.NewMeController(nil),
 	})
 	app.Get("/panic", func(fiber.Ctx) error { panic("boom") })
 	app.Post("/bind", func(c fiber.Ctx) error {
@@ -112,6 +113,36 @@ func TestServerResponses(t *testing.T) {
 			rid := resp.Header.Get(fiber.HeaderXRequestID)
 			if rid == "" || body["request_id"] != rid {
 				t.Errorf("request_id %v, header %q", body["request_id"], rid)
+			}
+		})
+	}
+}
+
+func TestServerProtectsMeRoutes(t *testing.T) {
+	// Arrange
+	tests := []struct {
+		method string
+		path   string
+	}{
+		{http.MethodGet, "/api/v1/me"},
+		{http.MethodPatch, "/api/v1/me"},
+		{http.MethodGet, "/api/v1/me/settings"},
+		{http.MethodPatch, "/api/v1/me/settings"},
+		{http.MethodPut, "/api/v1/me/push-token"},
+		{http.MethodGet, "/api/v1/me/sessions"},
+		{http.MethodDelete, "/api/v1/me/sessions/0192c3a4-0000-7000-8000-000000000000"},
+		{http.MethodPut, "/api/v1/auth/phone"},
+	}
+	app := newTestApp()
+
+	for _, tt := range tests {
+		t.Run(tt.method+" "+tt.path, func(t *testing.T) {
+			// Act
+			resp, body := do(t, app, httptest.NewRequest(tt.method, tt.path, nil))
+
+			// Assert
+			if resp.StatusCode != 401 || body["code"] != "unauthorized" {
+				t.Errorf("status %d code %v, want 401 unauthorized", resp.StatusCode, body["code"])
 			}
 		})
 	}

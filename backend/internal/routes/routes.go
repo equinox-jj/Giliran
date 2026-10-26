@@ -21,6 +21,7 @@ type Params struct {
 	Health *controller.HealthController
 	Auth   *controller.AuthController
 	PIN    *controller.PINController
+	Me     *controller.MeController
 }
 
 // Register adds every route to p.App.
@@ -45,4 +46,15 @@ func Register(p Params) {
 	auth.Put("/pin", requireAuth, pinLimit, p.PIN.Change)
 	auth.Post("/pin/verify", requireAuth, pinLimit, p.PIN.Verify)
 	auth.Post("/pin/reset", requireAuth, middleware.RateLimitByUser(rl.OTPMax, rl.OTPWindow), p.PIN.Reset)
+	auth.Put("/phone", requireAuth, middleware.RateLimitByUser(rl.OTPMax, rl.OTPWindow), p.Auth.ChangePhone)
+
+	me := v1.Group("/me", requireAuth)
+	writeLimit := middleware.RateLimitByUser(rl.WriteMax, rl.WriteWindow)
+	me.Get("", p.Me.Get)
+	me.Patch("", writeLimit, p.Me.Update)
+	me.Get("/settings", p.Me.GetSettings)
+	me.Patch("/settings", writeLimit, p.Me.UpdateSettings)
+	me.Put("/push-token", writeLimit, p.Me.SetPushToken)
+	me.Get("/sessions", p.Me.ListSessions)
+	me.Delete("/sessions/:session_id", writeLimit, p.Me.RevokeSession)
 }

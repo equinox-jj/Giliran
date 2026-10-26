@@ -204,3 +204,65 @@ func (q *Queries) SetUserPINAttempts(ctx context.Context, arg SetUserPINAttempts
 	_, err := q.db.Exec(ctx, setUserPINAttempts, arg.ID, arg.PINFailedCount, arg.PINLockedUntil)
 	return err
 }
+
+const updateUserName = `-- name: UpdateUserName :one
+UPDATE users SET name = $2
+WHERE id = $1 AND deleted_at IS NULL
+RETURNING id, phone, firebase_uid, name, avatar_key, pin_hash, pin_failed_count, pin_locked_until, created_at, updated_at, deleted_at
+`
+
+type UpdateUserNameParams struct {
+	ID   uuid.UUID
+	Name *string
+}
+
+func (q *Queries) UpdateUserName(ctx context.Context, arg UpdateUserNameParams) (User, error) {
+	row := q.db.QueryRow(ctx, updateUserName, arg.ID, arg.Name)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Phone,
+		&i.FirebaseUID,
+		&i.Name,
+		&i.AvatarKey,
+		&i.PINHash,
+		&i.PINFailedCount,
+		&i.PINLockedUntil,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
+const updateUserPhone = `-- name: UpdateUserPhone :one
+UPDATE users SET phone = $2, firebase_uid = $3
+WHERE id = $1 AND deleted_at IS NULL
+RETURNING id, phone, firebase_uid, name, avatar_key, pin_hash, pin_failed_count, pin_locked_until, created_at, updated_at, deleted_at
+`
+
+type UpdateUserPhoneParams struct {
+	ID          uuid.UUID
+	Phone       *string
+	FirebaseUID *string
+}
+
+// Moves the account to a new number and the Firebase account that verified it.
+func (q *Queries) UpdateUserPhone(ctx context.Context, arg UpdateUserPhoneParams) (User, error) {
+	row := q.db.QueryRow(ctx, updateUserPhone, arg.ID, arg.Phone, arg.FirebaseUID)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Phone,
+		&i.FirebaseUID,
+		&i.Name,
+		&i.AvatarKey,
+		&i.PINHash,
+		&i.PINFailedCount,
+		&i.PINLockedUntil,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}

@@ -21,15 +21,24 @@ type Querier interface {
 	// Locks the row so concurrent PIN attempts count correctly.
 	GetUserByIDForUpdate(ctx context.Context, id uuid.UUID) (User, error)
 	GetUserByPhone(ctx context.Context, phone *string) (User, error)
+	GetUserSettings(ctx context.Context, userID uuid.UUID) (UserSetting, error)
+	// The user's signed-in devices, the current one first.
+	ListActiveUserSessions(ctx context.Context, arg ListActiveUserSessionsParams) ([]Session, error)
 	// Signs the user out everywhere except the current session.
 	RevokeOtherUserSessions(ctx context.Context, arg RevokeOtherUserSessionsParams) (int64, error)
 	RevokeSessionFamily(ctx context.Context, arg RevokeSessionFamilyParams) (int64, error)
 	RevokeUserSession(ctx context.Context, arg RevokeUserSessionParams) (int64, error)
 	RotateSession(ctx context.Context, arg RotateSessionParams) error
+	SetSessionFCMToken(ctx context.Context, arg SetSessionFCMTokenParams) (int64, error)
 	SetUserFirebaseUID(ctx context.Context, arg SetUserFirebaseUIDParams) (User, error)
 	// Stores a new PIN hash and clears failed attempts and any lock.
 	SetUserPIN(ctx context.Context, arg SetUserPINParams) error
 	SetUserPINAttempts(ctx context.Context, arg SetUserPINAttemptsParams) error
+	UpdateUserName(ctx context.Context, arg UpdateUserNameParams) (User, error)
+	// Moves the account to a new number and the Firebase account that verified it.
+	UpdateUserPhone(ctx context.Context, arg UpdateUserPhoneParams) (User, error)
+	// Changes only the columns whose argument is not NULL.
+	UpdateUserSettings(ctx context.Context, arg UpdateUserSettingsParams) (UserSetting, error)
 }
 
 var _ Querier = (*Queries)(nil)

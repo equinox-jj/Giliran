@@ -29,6 +29,7 @@ import (
 type fakeAuth struct {
 	signInResult service.SignInResult
 	pair         service.TokenPair
+	user         model.User
 	err          error
 
 	gotIDToken string
@@ -36,6 +37,7 @@ type fakeAuth struct {
 	gotRefresh string
 	gotUser    uuid.UUID
 	gotSession uuid.UUID
+	gotTokens  []string
 }
 
 func (f *fakeAuth) SignIn(_ context.Context, idToken string, device service.Device) (service.SignInResult, error) {
@@ -51,6 +53,11 @@ func (f *fakeAuth) Refresh(_ context.Context, refreshToken string) (service.Toke
 func (f *fakeAuth) Logout(_ context.Context, userID, sessionID uuid.UUID) error {
 	f.gotUser, f.gotSession = userID, sessionID
 	return f.err
+}
+
+func (f *fakeAuth) ChangePhone(_ context.Context, userID, sessionID uuid.UUID, oldToken, newToken string) (model.User, error) {
+	f.gotUser, f.gotSession, f.gotTokens = userID, sessionID, []string{oldToken, newToken}
+	return f.user, f.err
 }
 
 var testTokens = security.NewTokenIssuer(&config.Config{JWT: config.JWT{
@@ -73,6 +80,7 @@ func newAuthApp(auth AuthService) *fiber.App {
 	app.Post("/api/v1/auth/sign-in", h.SignIn)
 	app.Post("/api/v1/auth/refresh", h.Refresh)
 	app.Post("/api/v1/auth/logout", middleware.Auth(testTokens), h.Logout)
+	app.Put("/api/v1/auth/phone", middleware.Auth(testTokens), h.ChangePhone)
 	return app
 }
 
@@ -223,5 +231,57 @@ func TestAuthLogoutWithoutToken(t *testing.T) {
 	// Assert
 	if resp.StatusCode != 401 || body["code"] != "unauthorized" {
 		t.Errorf("status %d code %v", resp.StatusCode, body["code"])
+	}
+}
+
+func TestAuthChangePhone(t *testing.T) {
+	// Arrange
+	fake := &fakeAuth{user: model.User{ID: uuid.Must(uuid.NewV7()), Phone: "+6281299998888", CreatedAt: time.Now()}}
+	req, userID, sessionID := authed(t, http.MethodPut, "/api/v1/auth/phone",
+		`{"old_firebase_id_token":"old","new_firebase_id_token":"new"}`)
+
+	// Act
+	resp, body := call(t, newAuthApp(fake), req)
+
+	// Assert
+	if resp.StatusCode != 200 {
+		t.Fatalf("status %d, body %v", resp.StatusCode, body)
+	}
+	if fake.gotUser != userID || fake.gotSession != sessionID || len(fake.gotTokens) != 2 ||
+		fake.gotTokens[0] != "old" || fake.gotTokens[1] != "new" {
+		t.Errorf("service got %s/%s %v", fake.gotUser, fake.gotSession, fake.gotTokens)
+	}
+	if data := body["data"].(map[string]any); data["phone"] != "+6281299998888" {
+		t.Errorf("data %v", data)
+	}
+}
+
+func TestAuthChangePhoneErrors(t *testing.T) {
+	// Arrange
+	tests := []struct {
+		name       string
+		body       string
+		serviceErr error
+		wantStatus int
+		wantCode   string
+	}{
+		{"missing fields", `{"old_firebase_id_token":"old"}`, nil, 422, "validation_error"},
+		{"rejected token", `{"old_firebase_id_token":"old","new_firebase_id_token":"new"}`, model.ErrOTPInvalid, 401, "otp_invalid"},
+		{"number taken", `{"old_firebase_id_token":"old","new_firebase_id_token":"new"}`, model.ErrPhoneAlreadyRegistered, 409, "phone_already_registered"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Arrange
+			req, _, _ := authed(t, http.MethodPut, "/api/v1/auth/phone", tt.body)
+
+			// Act
+			resp, body := call(t, newAuthApp(&fakeAuth{err: tt.serviceErr}), req)
+
+			// Assert
+			if resp.StatusCode != tt.wantStatus || body["code"] != tt.wantCode {
+				t.Errorf("status %d code %v, want %d %s", resp.StatusCode, body["code"], tt.wantStatus, tt.wantCode)
+			}
+		})
 	}
 }
