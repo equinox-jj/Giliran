@@ -15,13 +15,15 @@ import (
 type Params struct {
 	fx.In
 
-	App    *fiber.App
-	Config *config.Config
-	Tokens *security.TokenIssuer
-	Health *controller.HealthController
-	Auth   *controller.AuthController
-	PIN    *controller.PINController
-	Me     *controller.MeController
+	App     *fiber.App
+	Config  *config.Config
+	Tokens  *security.TokenIssuer
+	Health  *controller.HealthController
+	Auth    *controller.AuthController
+	PIN     *controller.PINController
+	Me      *controller.MeController
+	Groups  *controller.GroupController
+	Members *controller.MemberController
 }
 
 // Register adds every route to p.App.
@@ -59,4 +61,37 @@ func Register(p Params) {
 	me.Put("/push-token", writeLimit, p.Me.SetPushToken)
 	me.Get("/sessions", p.Me.ListSessions)
 	me.Delete("/sessions/:session_id", writeLimit, p.Me.RevokeSession)
+	me.Get("/groups", p.Groups.ListMine)
+
+	v1.Post("/groups", requireAuth, writeLimit, p.Groups.Create)
+	g := v1.Group("/groups/:group_id", requireAuth)
+	g.Get("", p.Groups.Get)
+	g.Patch("", writeLimit, p.Groups.Update)
+	g.Put("/payment-info", writeLimit, p.Groups.SetPaymentInfo)
+	g.Put("/payment-info/qris", writeLimit, p.Groups.UploadQRIS)
+	g.Delete("/payment-info/qris", writeLimit, p.Groups.DeleteQRIS)
+	g.Put("/fixed-order", writeLimit, p.Groups.SetFixedOrder)
+	g.Post("/close", writeLimit, p.Groups.Close)
+	g.Post("/invite-code/reset", writeLimit, p.Groups.ResetInvite)
+
+	g.Get("/members", p.Members.List)
+	g.Post("/guests", writeLimit, p.Members.AddGuest)
+	g.Get("/members/:member_id", p.Members.Get)
+	g.Patch("/members/:member_id", writeLimit, p.Members.UpdateGuest)
+	g.Delete("/members/:member_id", writeLimit, p.Members.Remove)
+	g.Post("/members/:member_id/claim-link", writeLimit, p.Members.CreateClaimLink)
+	g.Get("/leave-requests", p.Members.ListLeaveRequests)
+	g.Post("/leave-requests", writeLimit, p.Members.RequestLeave)
+	g.Post("/leave-requests/:request_id/approve", writeLimit, p.Members.ApproveLeave)
+	g.Post("/leave-requests/:request_id/reject", writeLimit, p.Members.RejectLeave)
+	g.Post("/ownership-transfers", writeLimit, p.Members.OfferOwnership)
+	g.Post("/ownership-transfers/:transfer_id/accept", writeLimit, p.Members.AcceptOwnership)
+	g.Post("/ownership-transfers/:transfer_id/decline", writeLimit, p.Members.DeclineOwnership)
+
+	// Invite codes and claim tokens are the secret in a link; a per-user
+	// limit slows anyone guessing them.
+	inviteLimit := middleware.RateLimitByUser(rl.PublicMax, rl.PublicWindow)
+	v1.Get("/invites/:invite_code", requireAuth, inviteLimit, p.Members.PreviewInvite)
+	v1.Post("/invites/:invite_code/join", requireAuth, inviteLimit, p.Members.Join)
+	v1.Post("/claims/:claim_token", requireAuth, inviteLimit, p.Members.Claim)
 }

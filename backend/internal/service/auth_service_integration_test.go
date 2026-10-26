@@ -58,6 +58,7 @@ func newAuthEnv(t *testing.T, verifier fakeVerifier) authEnv {
 	clk := clock.NewFake(time.Date(2026, 10, 26, 2, 0, 0, 0, time.UTC))
 	tokens := security.NewTokenIssuer(tokenCfg, clk)
 	svc := NewAuthService(tx, repository.NewUserRepository(tx), repository.NewSessionRepository(tx),
+		repository.NewMemberRepository(tx), NewActivity(repository.NewActivityRepository(tx), clk),
 		verifier, newMemStore(), tokens, clk, slog.New(slog.NewTextHandler(io.Discard, nil)), tokenCfg)
 	return authEnv{svc: svc, pool: pool, clock: clk, tokens: tokens}
 }

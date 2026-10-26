@@ -23,8 +23,11 @@ func OK(c fiber.Ctx, data any) error {
 }
 
 // Created replies 201 with a Location header pointing at the new resource.
+// An empty location sends none, for resources with no URL of their own.
 func Created(c fiber.Ctx, location string, data any) error {
-	c.Set(fiber.HeaderLocation, location)
+	if location != "" {
+		c.Set(fiber.HeaderLocation, location)
+	}
 	return c.Status(fiber.StatusCreated).JSON(envelope{Data: data})
 }
 

@@ -2,8 +2,6 @@ package controller
 
 import (
 	"context"
-	"io"
-	"strings"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
@@ -65,20 +63,7 @@ func (h *MeController) Update(c fiber.Ctx) error {
 // UploadAvatar handles PUT /me/avatar (multipart field "file"). The service
 // checks the type by content; the declared type is ignored.
 func (h *MeController) UploadAvatar(c fiber.Ctx) error {
-	if !strings.HasPrefix(string(c.Request().Header.ContentType()), fiber.MIMEMultipartForm) {
-		return model.ErrUnsupportedMediaType.WithDetail("Send the image as multipart/form-data in the field \"file\".")
-	}
-	fh, err := c.FormFile("file")
-	if err != nil {
-		return model.NewValidationError(model.FieldError{Field: "file", Code: model.FieldRequired, Message: "This field is required."})
-	}
-	f, err := fh.Open()
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	// The body limit (at least UPLOAD_MAX_BYTES) bounds this read.
-	data, err := io.ReadAll(f)
+	data, err := readUpload(c)
 	if err != nil {
 		return err
 	}

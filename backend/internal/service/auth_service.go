@@ -52,6 +52,8 @@ type AuthService struct {
 	tx         *repository.TxManager
 	users      *repository.UserRepository
 	sessions   *repository.SessionRepository
+	members    *repository.MemberRepository
+	activity   *Activity
 	verifier   firebase.AuthVerifier
 	store      storage.Storage
 	tokens     *security.TokenIssuer
@@ -64,6 +66,8 @@ func NewAuthService(
 	tx *repository.TxManager,
 	users *repository.UserRepository,
 	sessions *repository.SessionRepository,
+	members *repository.MemberRepository,
+	activity *Activity,
 	verifier firebase.AuthVerifier,
 	store storage.Storage,
 	tokens *security.TokenIssuer,
@@ -72,13 +76,14 @@ func NewAuthService(
 	cfg *config.Config,
 ) *AuthService {
 	return &AuthService{
-		tx: tx, users: users, sessions: sessions, verifier: verifier, store: store,
+		tx: tx, users: users, sessions: sessions, members: members, activity: activity, verifier: verifier, store: store,
 		tokens: tokens, clock: clk, log: log, refreshTTL: cfg.JWT.RefreshTTL,
 	}
 }
 
 // SignIn verifies the Firebase ID token, finds or creates the account for its
-// phone number, and starts a new session family on device.
+// phone number, gives it the guest slots added under that number (FR-MEM-04)
+// and starts a new session family on device.
 func (s *AuthService) SignIn(ctx context.Context, idToken string, device Device) (SignInResult, error) {
 	identity, err := s.verifier.Verify(ctx, idToken)
 	if err != nil {
@@ -98,6 +103,9 @@ func (s *AuthService) SignIn(ctx context.Context, idToken string, device Device)
 		if err != nil {
 			return err
 		}
+		if err := claimGuestsByPhone(ctx, s.members, s.activity, u.ID, phone); err != nil {
+			return err
+		}
 		sess, refresh, err := s.createSession(ctx, u.ID, uuid.Must(uuid.NewV7()), device, now)
 		if err != nil {
 			return err
@@ -110,7 +118,8 @@ func (s *AuthService) SignIn(ctx context.Context, idToken string, device Device)
 	err = s.tx.WithTx(ctx, signIn)
 	if errors.Is(err, repository.ErrDuplicate) {
 		// A concurrent first sign-in for the same phone created the user
-		// between our lookup and insert; this time the lookup finds it.
+		// between our lookup and insert, or the user joined a group whose
+		// guest we were claiming; this time the lookups see both.
 		err = s.tx.WithTx(ctx, signIn)
 	}
 	if err != nil {
