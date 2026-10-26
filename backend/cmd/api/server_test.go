@@ -126,6 +126,8 @@ func TestServerProtectsMeRoutes(t *testing.T) {
 	}{
 		{http.MethodGet, "/api/v1/me"},
 		{http.MethodPatch, "/api/v1/me"},
+		{http.MethodPut, "/api/v1/me/avatar"},
+		{http.MethodDelete, "/api/v1/me/avatar"},
 		{http.MethodGet, "/api/v1/me/settings"},
 		{http.MethodPatch, "/api/v1/me/settings"},
 		{http.MethodPut, "/api/v1/me/push-token"},

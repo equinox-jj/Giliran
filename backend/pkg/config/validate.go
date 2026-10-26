@@ -123,6 +123,9 @@ func (c *Config) validate() error {
 	v.positive("PIN_LOCKOUT_DURATION", c.PIN.LockoutDuration)
 
 	v.required("MINIO_ENDPOINT", c.MinIO.Endpoint)
+	if c.MinIO.PublicURL != "" {
+		v.absoluteURL("MINIO_PUBLIC_URL", c.MinIO.PublicURL, "http", "https")
+	}
 	v.secret("MINIO_ACCESS_KEY", c.MinIO.AccessKey, prod)
 	v.secret("MINIO_SECRET_KEY", c.MinIO.SecretKey, prod)
 	v.required("MINIO_BUCKET", c.MinIO.Bucket)

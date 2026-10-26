@@ -18,7 +18,7 @@ type AuthService interface {
 	SignIn(ctx context.Context, idToken string, device service.Device) (service.SignInResult, error)
 	Refresh(ctx context.Context, refreshToken string) (service.TokenPair, error)
 	Logout(ctx context.Context, userID, sessionID uuid.UUID) error
-	ChangePhone(ctx context.Context, userID, sessionID uuid.UUID, oldToken, newToken string) (model.User, error)
+	ChangePhone(ctx context.Context, userID, sessionID uuid.UUID, oldToken, newToken string) (service.Profile, error)
 }
 
 // AuthController serves /auth/sign-in, /auth/refresh, /auth/logout and
@@ -45,12 +45,11 @@ func (h *AuthController) SignIn(c fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-	// Avatars arrive with the MinIO client (Phase 2); a new account has none.
 	return response.OK(c, dto.AuthResult{
-		User:      dto.NewMe(res.User, nil),
+		User:      dto.NewMe(res.Profile.User, res.Profile.AvatarURL),
 		Tokens:    dto.NewTokenPair(res.Tokens.AccessToken, res.Tokens.RefreshToken, res.Tokens.ExpiresIn),
 		IsNewUser: res.IsNewUser,
-		PINSet:    res.User.HasPIN(),
+		PINSet:    res.Profile.User.HasPIN(),
 	})
 }
 
@@ -81,9 +80,9 @@ func (h *AuthController) ChangePhone(c fiber.Ctx) error {
 	if err := c.Bind().Body(&req); err != nil {
 		return err
 	}
-	user, err := h.auth.ChangePhone(c.Context(), middleware.UserID(c), middleware.SessionID(c), req.OldFirebaseIDToken, req.NewFirebaseIDToken)
+	p, err := h.auth.ChangePhone(c.Context(), middleware.UserID(c), middleware.SessionID(c), req.OldFirebaseIDToken, req.NewFirebaseIDToken)
 	if err != nil {
 		return err
 	}
-	return response.OK(c, dto.NewMe(user, nil))
+	return response.OK(c, dto.NewMe(p.User, p.AvatarURL))
 }

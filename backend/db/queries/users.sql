@@ -47,3 +47,9 @@ RETURNING *;
 UPDATE users SET phone = $2, firebase_uid = $3
 WHERE id = $1 AND deleted_at IS NULL
 RETURNING *;
+
+-- name: SetUserAvatarKey :one
+-- NULL removes the avatar.
+UPDATE users SET avatar_key = sqlc.narg(avatar_key)
+WHERE id = sqlc.arg(id) AND deleted_at IS NULL
+RETURNING *;

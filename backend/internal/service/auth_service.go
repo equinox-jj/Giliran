@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/equinox-jj/Giliran/backend/internal/clients/firebase"
+	"github.com/equinox-jj/Giliran/backend/internal/clients/storage"
 	"github.com/equinox-jj/Giliran/backend/internal/model"
 	"github.com/equinox-jj/Giliran/backend/internal/repository"
 	"github.com/equinox-jj/Giliran/backend/pkg/clock"
@@ -39,7 +40,7 @@ type TokenPair struct {
 
 // SignInResult is the outcome of a successful sign-in.
 type SignInResult struct {
-	User      model.User
+	Profile   Profile
 	Tokens    TokenPair
 	IsNewUser bool
 }
@@ -52,6 +53,7 @@ type AuthService struct {
 	users      *repository.UserRepository
 	sessions   *repository.SessionRepository
 	verifier   firebase.AuthVerifier
+	store      storage.Storage
 	tokens     *security.TokenIssuer
 	clock      clock.Clock
 	log        *slog.Logger
@@ -63,13 +65,14 @@ func NewAuthService(
 	users *repository.UserRepository,
 	sessions *repository.SessionRepository,
 	verifier firebase.AuthVerifier,
+	store storage.Storage,
 	tokens *security.TokenIssuer,
 	clk clock.Clock,
 	log *slog.Logger,
 	cfg *config.Config,
 ) *AuthService {
 	return &AuthService{
-		tx: tx, users: users, sessions: sessions, verifier: verifier,
+		tx: tx, users: users, sessions: sessions, verifier: verifier, store: store,
 		tokens: tokens, clock: clk, log: log, refreshTTL: cfg.JWT.RefreshTTL,
 	}
 }
@@ -88,17 +91,19 @@ func (s *AuthService) SignIn(ctx context.Context, idToken string, device Device)
 
 	now := s.clock.Now()
 	var res SignInResult
+	var user model.User
 	var sessionID uuid.UUID
 	signIn := func(ctx context.Context) error {
-		user, isNew, err := s.findOrCreateUser(ctx, identity.UID, phone)
+		u, isNew, err := s.findOrCreateUser(ctx, identity.UID, phone)
 		if err != nil {
 			return err
 		}
-		sess, refresh, err := s.createSession(ctx, user.ID, uuid.Must(uuid.NewV7()), device, now)
+		sess, refresh, err := s.createSession(ctx, u.ID, uuid.Must(uuid.NewV7()), device, now)
 		if err != nil {
 			return err
 		}
-		res = SignInResult{User: user, IsNewUser: isNew, Tokens: TokenPair{RefreshToken: refresh}}
+		user = u
+		res = SignInResult{IsNewUser: isNew, Tokens: TokenPair{RefreshToken: refresh}}
 		sessionID = sess.ID
 		return nil
 	}
@@ -112,7 +117,10 @@ func (s *AuthService) SignIn(ctx context.Context, idToken string, device Device)
 		return SignInResult{}, err
 	}
 
-	if res.Tokens, err = s.issue(res.User.ID, sessionID, res.Tokens.RefreshToken); err != nil {
+	if res.Tokens, err = s.issue(user.ID, sessionID, res.Tokens.RefreshToken); err != nil {
+		return SignInResult{}, err
+	}
+	if res.Profile, err = profileOf(ctx, s.store, user); err != nil {
 		return SignInResult{}, err
 	}
 	return res, nil
@@ -212,18 +220,18 @@ func (s *AuthService) Logout(ctx context.Context, userID, sessionID uuid.UUID) e
 // come from an OTP to the current number and newToken from an OTP to the new
 // one; a number that already has an account is phone_already_registered.
 // Every session except sessionID is signed out.
-func (s *AuthService) ChangePhone(ctx context.Context, userID, sessionID uuid.UUID, oldToken, newToken string) (model.User, error) {
+func (s *AuthService) ChangePhone(ctx context.Context, userID, sessionID uuid.UUID, oldToken, newToken string) (Profile, error) {
 	oldID, err := s.verifier.Verify(ctx, oldToken)
 	if err != nil {
-		return model.User{}, err
+		return Profile{}, err
 	}
 	newID, err := s.verifier.Verify(ctx, newToken)
 	if err != nil {
-		return model.User{}, err
+		return Profile{}, err
 	}
 	newPhone, err := utils.NormalizePhone("new_firebase_id_token", newID.Phone)
 	if err != nil {
-		return model.User{}, model.ErrOTPInvalid.WithDetail("Only Indonesian mobile numbers can be used.")
+		return Profile{}, model.ErrOTPInvalid.WithDetail("Only Indonesian mobile numbers can be used.")
 	}
 
 	var user model.User
@@ -254,9 +262,12 @@ func (s *AuthService) ChangePhone(ctx context.Context, userID, sessionID uuid.UU
 	})
 	if errors.Is(err, repository.ErrDuplicate) {
 		// The number or its Firebase account was claimed after our lookup.
-		return model.User{}, model.ErrPhoneAlreadyRegistered
+		return Profile{}, model.ErrPhoneAlreadyRegistered
 	}
-	return user, err
+	if err != nil {
+		return Profile{}, err
+	}
+	return profileOf(ctx, s.store, user)
 }
 
 // createSession inserts a session with a fresh refresh token and returns the

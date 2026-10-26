@@ -54,7 +54,7 @@ func newPINEnv(t *testing.T, verifier fakeVerifier) pinEnv {
 	if err != nil {
 		t.Fatalf("Parse: %v", err)
 	}
-	return pinEnv{authEnv: env, pins: pins, userID: res.User.ID, sessionID: sessionID}
+	return pinEnv{authEnv: env, pins: pins, userID: res.Profile.User.ID, sessionID: sessionID}
 }
 
 func (e pinEnv) setPIN(t *testing.T) {

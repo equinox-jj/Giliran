@@ -114,7 +114,11 @@ type Firebase struct {
 }
 
 type MinIO struct {
-	Endpoint       string        `koanf:"minio_endpoint"`
+	Endpoint string `koanf:"minio_endpoint"`
+	// PublicURL is the origin clients reach MinIO at, e.g.
+	// https://files.example.com; presigned URLs are signed for it. Empty
+	// means Endpoint and UseSSL.
+	PublicURL      string        `koanf:"minio_public_url"`
 	AccessKey      string        `koanf:"minio_access_key"`
 	SecretKey      string        `koanf:"minio_secret_key"`
 	UseSSL         bool          `koanf:"minio_use_ssl"`

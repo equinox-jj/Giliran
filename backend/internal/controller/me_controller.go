@@ -2,6 +2,8 @@ package controller
 
 import (
 	"context"
+	"io"
+	"strings"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
@@ -16,8 +18,10 @@ import (
 
 // ProfileService is what MeController needs from service.ProfileService.
 type ProfileService interface {
-	Me(ctx context.Context, userID uuid.UUID) (model.User, error)
-	UpdateName(ctx context.Context, userID uuid.UUID, name string) (model.User, error)
+	Me(ctx context.Context, userID uuid.UUID) (service.Profile, error)
+	UpdateName(ctx context.Context, userID uuid.UUID, name string) (service.Profile, error)
+	UploadAvatar(ctx context.Context, userID uuid.UUID, data []byte) (service.Profile, error)
+	DeleteAvatar(ctx context.Context, userID uuid.UUID) error
 	Settings(ctx context.Context, userID uuid.UUID) (model.UserSettings, error)
 	UpdateSettings(ctx context.Context, userID uuid.UUID, c repository.SettingsChange) (model.UserSettings, error)
 	SetPushToken(ctx context.Context, userID, sessionID uuid.UUID, token string) error
@@ -25,7 +29,8 @@ type ProfileService interface {
 	RevokeSession(ctx context.Context, userID, sessionID uuid.UUID) error
 }
 
-// MeController serves /me, /me/settings, /me/push-token and /me/sessions.
+// MeController serves /me, /me/avatar, /me/settings, /me/push-token and
+// /me/sessions.
 // Every route is behind middleware.Auth.
 type MeController struct {
 	profile ProfileService
@@ -37,12 +42,11 @@ func NewMeController(profile *service.ProfileService) *MeController {
 
 // Get handles GET /me.
 func (h *MeController) Get(c fiber.Ctx) error {
-	user, err := h.profile.Me(c.Context(), middleware.UserID(c))
+	p, err := h.profile.Me(c.Context(), middleware.UserID(c))
 	if err != nil {
 		return err
 	}
-	// Avatars arrive with the MinIO client (Phase 2B).
-	return response.OK(c, dto.NewMe(user, nil))
+	return response.OK(c, dto.NewMe(p.User, p.AvatarURL))
 }
 
 // Update handles PATCH /me.
@@ -51,11 +55,46 @@ func (h *MeController) Update(c fiber.Ctx) error {
 	if err := c.Bind().Body(&req); err != nil {
 		return err
 	}
-	user, err := h.profile.UpdateName(c.Context(), middleware.UserID(c), req.Name)
+	p, err := h.profile.UpdateName(c.Context(), middleware.UserID(c), req.Name)
 	if err != nil {
 		return err
 	}
-	return response.OK(c, dto.NewMe(user, nil))
+	return response.OK(c, dto.NewMe(p.User, p.AvatarURL))
+}
+
+// UploadAvatar handles PUT /me/avatar (multipart field "file"). The service
+// checks the type by content; the declared type is ignored.
+func (h *MeController) UploadAvatar(c fiber.Ctx) error {
+	if !strings.HasPrefix(string(c.Request().Header.ContentType()), fiber.MIMEMultipartForm) {
+		return model.ErrUnsupportedMediaType.WithDetail("Send the image as multipart/form-data in the field \"file\".")
+	}
+	fh, err := c.FormFile("file")
+	if err != nil {
+		return model.NewValidationError(model.FieldError{Field: "file", Code: model.FieldRequired, Message: "This field is required."})
+	}
+	f, err := fh.Open()
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	// The body limit (at least UPLOAD_MAX_BYTES) bounds this read.
+	data, err := io.ReadAll(f)
+	if err != nil {
+		return err
+	}
+	p, err := h.profile.UploadAvatar(c.Context(), middleware.UserID(c), data)
+	if err != nil {
+		return err
+	}
+	return response.OK(c, dto.NewMe(p.User, p.AvatarURL))
+}
+
+// DeleteAvatar handles DELETE /me/avatar.
+func (h *MeController) DeleteAvatar(c fiber.Ctx) error {
+	if err := h.profile.DeleteAvatar(c.Context(), middleware.UserID(c)); err != nil {
+		return err
+	}
+	return response.NoContent(c)
 }
 
 // GetSettings handles GET /me/settings.

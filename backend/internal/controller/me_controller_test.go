@@ -1,8 +1,11 @@
 package controller
 
 import (
+	"bytes"
 	"context"
+	"mime/multipart"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -11,6 +14,7 @@ import (
 
 	"github.com/equinox-jj/Giliran/backend/internal/model"
 	"github.com/equinox-jj/Giliran/backend/internal/repository"
+	"github.com/equinox-jj/Giliran/backend/internal/service"
 	"github.com/equinox-jj/Giliran/backend/pkg/middleware"
 	"github.com/equinox-jj/Giliran/backend/pkg/response"
 	"github.com/equinox-jj/Giliran/backend/pkg/validation"
@@ -18,7 +22,7 @@ import (
 
 // fakeProfile records its inputs and returns canned results.
 type fakeProfile struct {
-	user     model.User
+	profile  service.Profile
 	settings model.UserSettings
 	sessions []model.Session
 	err      error
@@ -28,17 +32,28 @@ type fakeProfile struct {
 	gotSession uuid.UUID
 	gotName    string
 	gotToken   string
+	gotData    []byte
 	gotChange  repository.SettingsChange
 }
 
-func (f *fakeProfile) Me(_ context.Context, userID uuid.UUID) (model.User, error) {
+func (f *fakeProfile) Me(_ context.Context, userID uuid.UUID) (service.Profile, error) {
 	f.called, f.gotUser = "me", userID
-	return f.user, f.err
+	return f.profile, f.err
 }
 
-func (f *fakeProfile) UpdateName(_ context.Context, userID uuid.UUID, name string) (model.User, error) {
+func (f *fakeProfile) UpdateName(_ context.Context, userID uuid.UUID, name string) (service.Profile, error) {
 	f.called, f.gotUser, f.gotName = "update_name", userID, name
-	return f.user, f.err
+	return f.profile, f.err
+}
+
+func (f *fakeProfile) UploadAvatar(_ context.Context, userID uuid.UUID, data []byte) (service.Profile, error) {
+	f.called, f.gotUser, f.gotData = "upload_avatar", userID, data
+	return f.profile, f.err
+}
+
+func (f *fakeProfile) DeleteAvatar(_ context.Context, userID uuid.UUID) error {
+	f.called, f.gotUser = "delete_avatar", userID
+	return f.err
 }
 
 func (f *fakeProfile) Settings(_ context.Context, userID uuid.UUID) (model.UserSettings, error) {
@@ -77,6 +92,8 @@ func newMeApp(profile ProfileService) *fiber.App {
 	me := app.Group("/api/v1/me", middleware.Auth(testTokens))
 	me.Get("", h.Get)
 	me.Patch("", h.Update)
+	me.Put("/avatar", h.UploadAvatar)
+	me.Delete("/avatar", h.DeleteAvatar)
 	me.Get("/settings", h.GetSettings)
 	me.Patch("/settings", h.UpdateSettings)
 	me.Put("/push-token", h.SetPushToken)
@@ -94,7 +111,7 @@ func testSettings() model.UserSettings {
 func TestMeGet(t *testing.T) {
 	// Arrange
 	name := "Rina Susanti"
-	fake := &fakeProfile{user: model.User{ID: uuid.Must(uuid.NewV7()), Phone: "+6281234567890", Name: &name, CreatedAt: time.Now()}}
+	fake := &fakeProfile{profile: service.Profile{User: model.User{ID: uuid.Must(uuid.NewV7()), Phone: "+6281234567890", Name: &name, CreatedAt: time.Now()}}}
 	req, userID, _ := authed(t, http.MethodGet, "/api/v1/me", "")
 
 	// Act
@@ -111,7 +128,7 @@ func TestMeGet(t *testing.T) {
 
 func TestMeUpdate(t *testing.T) {
 	// Arrange
-	fake := &fakeProfile{user: model.User{ID: uuid.Must(uuid.NewV7()), Phone: "+6281234567890", CreatedAt: time.Now()}}
+	fake := &fakeProfile{profile: service.Profile{User: model.User{ID: uuid.Must(uuid.NewV7()), Phone: "+6281234567890", CreatedAt: time.Now()}}}
 	req, _, _ := authed(t, http.MethodPatch, "/api/v1/me", `{"name":"Rina"}`)
 
 	// Act
@@ -120,6 +137,107 @@ func TestMeUpdate(t *testing.T) {
 	// Assert
 	if resp.StatusCode != 200 || fake.called != "update_name" || fake.gotName != "Rina" {
 		t.Errorf("status %d, service got %s %q", resp.StatusCode, fake.called, fake.gotName)
+	}
+}
+
+// avatarRequest builds an authorized multipart PUT /me/avatar with data in
+// the field named field.
+func avatarRequest(t *testing.T, field string, data []byte) (*http.Request, uuid.UUID) {
+	t.Helper()
+	var body bytes.Buffer
+	w := multipart.NewWriter(&body)
+	part, err := w.CreateFormFile(field, "avatar.jpg")
+	if err != nil {
+		t.Fatalf("CreateFormFile: %v", err)
+	}
+	part.Write(data)
+	w.Close()
+	userID, sessionID := uuid.Must(uuid.NewV7()), uuid.Must(uuid.NewV7())
+	token, _, err := testTokens.Issue(userID, sessionID)
+	if err != nil {
+		t.Fatalf("Issue: %v", err)
+	}
+	req := httptest.NewRequest(http.MethodPut, "/api/v1/me/avatar", &body)
+	req.Header.Set(fiber.HeaderContentType, w.FormDataContentType())
+	req.Header.Set(fiber.HeaderAuthorization, "Bearer "+token)
+	return req, userID
+}
+
+func TestMeUploadAvatar(t *testing.T) {
+	// Arrange
+	url := "http://localhost:9000/giliran/avatars/a.jpg?X-Amz-Signature=x"
+	fake := &fakeProfile{profile: service.Profile{
+		User:      model.User{ID: uuid.Must(uuid.NewV7()), Phone: "+6281234567890", CreatedAt: time.Now()},
+		AvatarURL: &url,
+	}}
+	req, userID := avatarRequest(t, "file", []byte("image bytes"))
+
+	// Act
+	resp, body := call(t, newMeApp(fake), req)
+
+	// Assert
+	if resp.StatusCode != 200 || fake.called != "upload_avatar" || fake.gotUser != userID || string(fake.gotData) != "image bytes" {
+		t.Fatalf("status %d, service got %s for %s with %q", resp.StatusCode, fake.called, fake.gotUser, fake.gotData)
+	}
+	if data := body["data"].(map[string]any); data["avatar_url"] != url {
+		t.Errorf("avatar_url %v, want %s", data["avatar_url"], url)
+	}
+}
+
+func TestMeUploadAvatarErrors(t *testing.T) {
+	// Arrange
+	tests := []struct {
+		name       string
+		field      string
+		serviceErr error
+		wantStatus int
+		wantCode   string
+	}{
+		{"missing file field", "photo", nil, 422, "validation_error"},
+		{"too large", "file", model.ErrFileTooLarge, 413, "file_too_large"},
+		{"not an image", "file", model.ErrUnsupportedMediaType, 415, "unsupported_media_type"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Arrange
+			req, _ := avatarRequest(t, tt.field, []byte("data"))
+
+			// Act
+			resp, body := call(t, newMeApp(&fakeProfile{err: tt.serviceErr}), req)
+
+			// Assert
+			if resp.StatusCode != tt.wantStatus || body["code"] != tt.wantCode {
+				t.Errorf("status %d code %v, want %d %s", resp.StatusCode, body["code"], tt.wantStatus, tt.wantCode)
+			}
+		})
+	}
+}
+
+func TestMeUploadAvatarRequiresMultipart(t *testing.T) {
+	// Arrange
+	req, _, _ := authed(t, http.MethodPut, "/api/v1/me/avatar", `{"file":"x"}`)
+
+	// Act
+	resp, body := call(t, newMeApp(&fakeProfile{}), req)
+
+	// Assert
+	if resp.StatusCode != 415 || body["code"] != "unsupported_media_type" {
+		t.Errorf("status %d code %v, want 415 unsupported_media_type", resp.StatusCode, body["code"])
+	}
+}
+
+func TestMeDeleteAvatar(t *testing.T) {
+	// Arrange
+	fake := &fakeProfile{}
+	req, userID, _ := authed(t, http.MethodDelete, "/api/v1/me/avatar", "")
+
+	// Act
+	resp, _ := call(t, newMeApp(fake), req)
+
+	// Assert
+	if resp.StatusCode != 204 || fake.called != "delete_avatar" || fake.gotUser != userID {
+		t.Errorf("status %d, service got %s for %s", resp.StatusCode, fake.called, fake.gotUser)
 	}
 }
 

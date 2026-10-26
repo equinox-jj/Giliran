@@ -6,6 +6,10 @@
 # by name, so the production .env must use:
 #   DATABASE_URL=postgres://<user>:<password>@postgres:5432/<db>?sslmode=disable
 #   MINIO_ENDPOINT=minio:9000
+#   MINIO_PUBLIC_URL=https://<files hostname>
+# The app downloads avatars and proofs from presigned URLs signed for
+# MINIO_PUBLIC_URL, so route that hostname (e.g. a second Cloudflare Tunnel
+# ingress) to minio:9000 without rewriting the Host header.
 #
 # Only the API is published, on 127.0.0.1:8080 for the Cloudflare Tunnel.
 # PostgreSQL and MinIO are reachable from this network only.

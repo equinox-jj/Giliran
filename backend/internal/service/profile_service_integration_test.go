@@ -3,8 +3,17 @@
 package service
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"image"
+	"image/jpeg"
+	"io"
+	"log/slog"
+	"maps"
+	"slices"
+	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -12,19 +21,76 @@ import (
 
 	"github.com/equinox-jj/Giliran/backend/internal/model"
 	"github.com/equinox-jj/Giliran/backend/internal/repository"
+	"github.com/equinox-jj/Giliran/backend/pkg/config"
 )
+
+// memStore is an in-memory storage.Storage. Presigned URLs are the key
+// behind a fake origin.
+type memStore struct {
+	mu      sync.Mutex
+	objects map[string][]byte
+	putErr  error
+}
+
+func newMemStore() *memStore {
+	return &memStore{objects: map[string][]byte{}}
+}
+
+func (m *memStore) Put(_ context.Context, key, _ string, r io.Reader, _ int64) error {
+	if m.putErr != nil {
+		return m.putErr
+	}
+	data, err := io.ReadAll(r)
+	if err != nil {
+		return err
+	}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.objects[key] = data
+	return nil
+}
+
+func (m *memStore) Delete(_ context.Context, key string) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	delete(m.objects, key)
+	return nil
+}
+
+func (m *memStore) PresignGet(_ context.Context, key string) (string, error) {
+	return "https://files.test/" + key, nil
+}
+
+func (m *memStore) keys() []string {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return slices.Sorted(maps.Keys(m.objects))
+}
 
 type profileEnv struct {
 	authEnv
-	svc *ProfileService
+	svc   *ProfileService
+	store *memStore
 }
 
 func newProfileEnv(t *testing.T) profileEnv {
 	t.Helper()
 	auth := newAuthEnv(t, fakeVerifier{"tok": rina, "budi": budi})
 	tx := repository.NewTxManager(auth.pool)
-	svc := NewProfileService(repository.NewUserRepository(tx), repository.NewSessionRepository(tx), auth.clock)
-	return profileEnv{authEnv: auth, svc: svc}
+	store := newMemStore()
+	cfg := &config.Config{MinIO: config.MinIO{UploadMaxBytes: 5 << 20}}
+	svc := NewProfileService(tx, repository.NewUserRepository(tx), repository.NewSessionRepository(tx), store,
+		auth.clock, slog.New(slog.NewTextHandler(io.Discard, nil)), cfg)
+	return profileEnv{authEnv: auth, svc: svc, store: store}
+}
+
+func testJPEG(t *testing.T, w, h int) []byte {
+	t.Helper()
+	var buf bytes.Buffer
+	if err := jpeg.Encode(&buf, image.NewRGBA(image.Rect(0, 0, w, h)), nil); err != nil {
+		t.Fatalf("jpeg.Encode: %v", err)
+	}
+	return buf.Bytes()
 }
 
 // session signs in with idToken and returns the user and session IDs.
@@ -48,8 +114,8 @@ func TestProfileUpdateNameTrims(t *testing.T) {
 	user, err := env.svc.UpdateName(context.Background(), userID, "  Rina Susanti ")
 
 	// Assert
-	if err != nil || user.Name == nil || *user.Name != "Rina Susanti" {
-		t.Fatalf("UpdateName: %v, name %v", err, user.Name)
+	if err != nil || user.User.Name == nil || *user.User.Name != "Rina Susanti" {
+		t.Fatalf("UpdateName: %v, name %v", err, user.User.Name)
 	}
 }
 
@@ -187,5 +253,149 @@ func TestProfileRevokeOtherUsersSession(t *testing.T) {
 	}
 	if n := env.count(t, `SELECT count(*) FROM sessions WHERE id = $1 AND revoked_at IS NULL`, budiSession); n != 1 {
 		t.Error("another user's session was revoked")
+	}
+}
+
+func TestProfileUploadAvatar(t *testing.T) {
+	// Arrange
+	t.Parallel()
+	env := newProfileEnv(t)
+	userID, _ := env.session(t, "tok")
+
+	// Act
+	p, err := env.svc.UploadAvatar(context.Background(), userID, testJPEG(t, 1024, 1024))
+
+	// Assert
+	if err != nil {
+		t.Fatalf("UploadAvatar: %v", err)
+	}
+	keys := env.store.keys()
+	if len(keys) != 1 || !strings.HasPrefix(keys[0], "avatars/"+userID.String()+"/") {
+		t.Fatalf("stored keys %v", keys)
+	}
+	if p.User.AvatarKey == nil || *p.User.AvatarKey != keys[0] || p.AvatarURL == nil || *p.AvatarURL != "https://files.test/"+keys[0] {
+		t.Errorf("profile key %v url %v", p.User.AvatarKey, p.AvatarURL)
+	}
+	if cfg, err := jpeg.DecodeConfig(bytes.NewReader(env.store.objects[keys[0]])); err != nil || cfg.Width != 512 {
+		t.Errorf("stored image %v, width %d, want 512", err, cfg.Width)
+	}
+}
+
+func TestProfileUploadAvatarReplacesOld(t *testing.T) {
+	// Arrange
+	t.Parallel()
+	env := newProfileEnv(t)
+	userID, _ := env.session(t, "tok")
+	first, err := env.svc.UploadAvatar(context.Background(), userID, testJPEG(t, 64, 64))
+	if err != nil {
+		t.Fatalf("first UploadAvatar: %v", err)
+	}
+
+	// Act
+	second, err := env.svc.UploadAvatar(context.Background(), userID, testJPEG(t, 64, 64))
+
+	// Assert
+	if err != nil {
+		t.Fatalf("second UploadAvatar: %v", err)
+	}
+	if keys := env.store.keys(); len(keys) != 1 || keys[0] != *second.User.AvatarKey || keys[0] == *first.User.AvatarKey {
+		t.Errorf("stored keys %v, want only %s", keys, *second.User.AvatarKey)
+	}
+}
+
+func TestProfileUploadAvatarRejects(t *testing.T) {
+	// Arrange
+	t.Parallel()
+	tests := []struct {
+		name string
+		data []byte
+		want error
+	}{
+		{"not an image", []byte("%PDF-1.7 not a picture"), model.ErrUnsupportedMediaType},
+		{"over the limit", make([]byte, 5<<20+1), model.ErrFileTooLarge},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Arrange
+			t.Parallel()
+			env := newProfileEnv(t)
+			userID, _ := env.session(t, "tok")
+
+			// Act
+			_, err := env.svc.UploadAvatar(context.Background(), userID, tt.data)
+
+			// Assert
+			if !errors.Is(err, tt.want) {
+				t.Errorf("err %v, want %v", err, tt.want)
+			}
+			if keys := env.store.keys(); len(keys) != 0 {
+				t.Errorf("stored %v", keys)
+			}
+		})
+	}
+}
+
+func TestProfileUploadAvatarStorageFailureKeepsOld(t *testing.T) {
+	// Arrange
+	t.Parallel()
+	env := newProfileEnv(t)
+	userID, _ := env.session(t, "tok")
+	first, err := env.svc.UploadAvatar(context.Background(), userID, testJPEG(t, 64, 64))
+	if err != nil {
+		t.Fatalf("first UploadAvatar: %v", err)
+	}
+	env.store.putErr = errors.New("minio down")
+
+	// Act
+	_, err = env.svc.UploadAvatar(context.Background(), userID, testJPEG(t, 64, 64))
+
+	// Assert
+	if err == nil {
+		t.Fatal("UploadAvatar succeeded with storage down")
+	}
+	me, err := env.svc.Me(context.Background(), userID)
+	if err != nil || me.User.AvatarKey == nil || *me.User.AvatarKey != *first.User.AvatarKey {
+		t.Errorf("avatar key %v after failed upload, want %s", me.User.AvatarKey, *first.User.AvatarKey)
+	}
+}
+
+func TestProfileDeleteAvatar(t *testing.T) {
+	// Arrange
+	t.Parallel()
+	env := newProfileEnv(t)
+	userID, _ := env.session(t, "tok")
+	if _, err := env.svc.UploadAvatar(context.Background(), userID, testJPEG(t, 64, 64)); err != nil {
+		t.Fatalf("UploadAvatar: %v", err)
+	}
+
+	// Act
+	err := env.svc.DeleteAvatar(context.Background(), userID)
+
+	// Assert
+	if err != nil {
+		t.Fatalf("DeleteAvatar: %v", err)
+	}
+	me, err := env.svc.Me(context.Background(), userID)
+	if err != nil || me.User.AvatarKey != nil || me.AvatarURL != nil {
+		t.Errorf("after delete: %v, key %v url %v", err, me.User.AvatarKey, me.AvatarURL)
+	}
+	if keys := env.store.keys(); len(keys) != 0 {
+		t.Errorf("objects left %v", keys)
+	}
+}
+
+func TestProfileDeleteAvatarWithoutOne(t *testing.T) {
+	// Arrange
+	t.Parallel()
+	env := newProfileEnv(t)
+	userID, _ := env.session(t, "tok")
+
+	// Act
+	err := env.svc.DeleteAvatar(context.Background(), userID)
+
+	// Assert
+	if err != nil {
+		t.Errorf("DeleteAvatar: %v", err)
 	}
 }

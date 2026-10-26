@@ -141,6 +141,37 @@ func (q *Queries) GetUserByPhone(ctx context.Context, phone *string) (User, erro
 	return i, err
 }
 
+const setUserAvatarKey = `-- name: SetUserAvatarKey :one
+UPDATE users SET avatar_key = $1
+WHERE id = $2 AND deleted_at IS NULL
+RETURNING id, phone, firebase_uid, name, avatar_key, pin_hash, pin_failed_count, pin_locked_until, created_at, updated_at, deleted_at
+`
+
+type SetUserAvatarKeyParams struct {
+	AvatarKey *string
+	ID        uuid.UUID
+}
+
+// NULL removes the avatar.
+func (q *Queries) SetUserAvatarKey(ctx context.Context, arg SetUserAvatarKeyParams) (User, error) {
+	row := q.db.QueryRow(ctx, setUserAvatarKey, arg.AvatarKey, arg.ID)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Phone,
+		&i.FirebaseUID,
+		&i.Name,
+		&i.AvatarKey,
+		&i.PINHash,
+		&i.PINFailedCount,
+		&i.PINLockedUntil,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+	)
+	return i, err
+}
+
 const setUserFirebaseUID = `-- name: SetUserFirebaseUID :one
 UPDATE users SET firebase_uid = $2
 WHERE id = $1 AND deleted_at IS NULL

@@ -52,6 +52,8 @@ func Register(p Params) {
 	writeLimit := middleware.RateLimitByUser(rl.WriteMax, rl.WriteWindow)
 	me.Get("", p.Me.Get)
 	me.Patch("", writeLimit, p.Me.Update)
+	me.Put("/avatar", writeLimit, p.Me.UploadAvatar)
+	me.Delete("/avatar", writeLimit, p.Me.DeleteAvatar)
 	me.Get("/settings", p.Me.GetSettings)
 	me.Patch("/settings", writeLimit, p.Me.UpdateSettings)
 	me.Put("/push-token", writeLimit, p.Me.SetPushToken)

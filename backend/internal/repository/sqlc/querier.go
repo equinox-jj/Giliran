@@ -30,6 +30,8 @@ type Querier interface {
 	RevokeUserSession(ctx context.Context, arg RevokeUserSessionParams) (int64, error)
 	RotateSession(ctx context.Context, arg RotateSessionParams) error
 	SetSessionFCMToken(ctx context.Context, arg SetSessionFCMTokenParams) (int64, error)
+	// NULL removes the avatar.
+	SetUserAvatarKey(ctx context.Context, arg SetUserAvatarKeyParams) (User, error)
 	SetUserFirebaseUID(ctx context.Context, arg SetUserFirebaseUIDParams) (User, error)
 	// Stores a new PIN hash and clears failed attempts and any lock.
 	SetUserPIN(ctx context.Context, arg SetUserPINParams) error

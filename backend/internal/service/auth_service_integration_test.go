@@ -58,7 +58,7 @@ func newAuthEnv(t *testing.T, verifier fakeVerifier) authEnv {
 	clk := clock.NewFake(time.Date(2026, 10, 26, 2, 0, 0, 0, time.UTC))
 	tokens := security.NewTokenIssuer(tokenCfg, clk)
 	svc := NewAuthService(tx, repository.NewUserRepository(tx), repository.NewSessionRepository(tx),
-		verifier, tokens, clk, slog.New(slog.NewTextHandler(io.Discard, nil)), tokenCfg)
+		verifier, newMemStore(), tokens, clk, slog.New(slog.NewTextHandler(io.Discard, nil)), tokenCfg)
 	return authEnv{svc: svc, pool: pool, clock: clk, tokens: tokens}
 }
 
@@ -114,14 +114,14 @@ func TestSignInCreatesAccount(t *testing.T) {
 	res := env.signIn(t, "tok")
 
 	// Assert
-	if !res.IsNewUser || res.User.Phone != rina.Phone || res.User.HasPIN() {
+	if !res.IsNewUser || res.Profile.User.Phone != rina.Phone || res.Profile.User.HasPIN() {
 		t.Errorf("result %+v", res)
 	}
-	if n := env.count(t, `SELECT count(*) FROM user_settings WHERE user_id = $1`, res.User.ID); n != 1 {
+	if n := env.count(t, `SELECT count(*) FROM user_settings WHERE user_id = $1`, res.Profile.User.ID); n != 1 {
 		t.Errorf("%d settings rows, want 1", n)
 	}
 	userID, sessionID, err := env.tokens.Parse(res.Tokens.AccessToken)
-	if err != nil || userID != res.User.ID {
+	if err != nil || userID != res.Profile.User.ID {
 		t.Fatalf("access token: %v, user %s", err, userID)
 	}
 	if n := env.count(t, `SELECT count(*) FROM sessions WHERE id = $1 AND user_id = $2 AND device_name = $3 AND revoked_at IS NULL`,
@@ -143,10 +143,10 @@ func TestSignInReturningUser(t *testing.T) {
 	second := env.signIn(t, "tok")
 
 	// Assert
-	if second.IsNewUser || second.User.ID != first.User.ID {
-		t.Errorf("second sign-in: new %v, user %s, want existing %s", second.IsNewUser, second.User.ID, first.User.ID)
+	if second.IsNewUser || second.Profile.User.ID != first.Profile.User.ID {
+		t.Errorf("second sign-in: new %v, user %s, want existing %s", second.IsNewUser, second.Profile.User.ID, first.Profile.User.ID)
 	}
-	if n := env.count(t, `SELECT count(DISTINCT family_id) FROM sessions WHERE user_id = $1`, first.User.ID); n != 2 {
+	if n := env.count(t, `SELECT count(DISTINCT family_id) FROM sessions WHERE user_id = $1`, first.Profile.User.ID); n != 2 {
 		t.Errorf("%d session families, want 2 (one per sign-in)", n)
 	}
 }
@@ -162,11 +162,11 @@ func TestSignInLinksNewFirebaseUIDToKnownPhone(t *testing.T) {
 	second := env.signIn(t, "new")
 
 	// Assert
-	if second.IsNewUser || second.User.ID != first.User.ID {
-		t.Fatalf("got user %s (new %v), want %s", second.User.ID, second.IsNewUser, first.User.ID)
+	if second.IsNewUser || second.Profile.User.ID != first.Profile.User.ID {
+		t.Fatalf("got user %s (new %v), want %s", second.Profile.User.ID, second.IsNewUser, first.Profile.User.ID)
 	}
-	if second.User.FirebaseUID == nil || *second.User.FirebaseUID != reissued.UID {
-		t.Errorf("firebase uid %v, want %s", second.User.FirebaseUID, reissued.UID)
+	if second.Profile.User.FirebaseUID == nil || *second.Profile.User.FirebaseUID != reissued.UID {
+		t.Errorf("firebase uid %v, want %s", second.Profile.User.FirebaseUID, reissued.UID)
 	}
 }
 
@@ -215,8 +215,8 @@ func TestSignInConcurrentFirstSignIn(t *testing.T) {
 		if err != nil {
 			t.Fatalf("sign-in %d: %v", i, err)
 		}
-		if results[i].User.ID != results[0].User.ID {
-			t.Errorf("sign-in %d got user %s, want %s", i, results[i].User.ID, results[0].User.ID)
+		if results[i].Profile.User.ID != results[0].Profile.User.ID {
+			t.Errorf("sign-in %d got user %s, want %s", i, results[i].Profile.User.ID, results[0].Profile.User.ID)
 		}
 	}
 	if users := env.count(t, `SELECT count(*) FROM users`); users != 1 {
@@ -295,7 +295,7 @@ func TestRefreshRejects(t *testing.T) {
 		{"logged out", func(t *testing.T, env authEnv) string {
 			res := env.signIn(t, "tok")
 			_, sessionID, _ := env.tokens.Parse(res.Tokens.AccessToken)
-			if err := env.svc.Logout(context.Background(), res.User.ID, sessionID); err != nil {
+			if err := env.svc.Logout(context.Background(), res.Profile.User.ID, sessionID); err != nil {
 				t.Fatalf("Logout: %v", err)
 			}
 			return res.Tokens.RefreshToken
@@ -332,7 +332,7 @@ func TestLogoutRevokesOnlyCurrentSession(t *testing.T) {
 	}
 
 	// Act
-	err = env.svc.Logout(context.Background(), current.User.ID, sessionID)
+	err = env.svc.Logout(context.Background(), current.Profile.User.ID, sessionID)
 
 	// Assert
 	if err != nil {
@@ -377,7 +377,8 @@ func TestChangePhoneMovesAccountAndSignsOutOthers(t *testing.T) {
 	_, sessionID, _ := env.tokens.Parse(current.Tokens.AccessToken)
 
 	// Act
-	user, err := env.svc.ChangePhone(context.Background(), current.User.ID, sessionID, "tok", "new")
+	p, err := env.svc.ChangePhone(context.Background(), current.Profile.User.ID, sessionID, "tok", "new")
+	user := p.User
 
 	// Assert
 	if err != nil {
@@ -420,14 +421,14 @@ func TestChangePhoneRejects(t *testing.T) {
 			_, sessionID, _ := env.tokens.Parse(res.Tokens.AccessToken)
 
 			// Act
-			_, err := env.svc.ChangePhone(context.Background(), res.User.ID, sessionID, tt.oldToken, tt.newToken)
+			_, err := env.svc.ChangePhone(context.Background(), res.Profile.User.ID, sessionID, tt.oldToken, tt.newToken)
 
 			// Assert
 			var merr *model.Error
 			if !errors.As(err, &merr) || merr.Code != tt.wantCode {
 				t.Fatalf("err %v, want %s", err, tt.wantCode)
 			}
-			if n := env.count(t, `SELECT count(*) FROM users WHERE id = $1 AND phone = $2`, res.User.ID, rina.Phone); n != 1 {
+			if n := env.count(t, `SELECT count(*) FROM users WHERE id = $1 AND phone = $2`, res.Profile.User.ID, rina.Phone); n != 1 {
 				t.Error("phone changed despite the error")
 			}
 		})

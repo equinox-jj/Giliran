@@ -29,7 +29,7 @@ import (
 type fakeAuth struct {
 	signInResult service.SignInResult
 	pair         service.TokenPair
-	user         model.User
+	profile      service.Profile
 	err          error
 
 	gotIDToken string
@@ -55,9 +55,9 @@ func (f *fakeAuth) Logout(_ context.Context, userID, sessionID uuid.UUID) error 
 	return f.err
 }
 
-func (f *fakeAuth) ChangePhone(_ context.Context, userID, sessionID uuid.UUID, oldToken, newToken string) (model.User, error) {
+func (f *fakeAuth) ChangePhone(_ context.Context, userID, sessionID uuid.UUID, oldToken, newToken string) (service.Profile, error) {
 	f.gotUser, f.gotSession, f.gotTokens = userID, sessionID, []string{oldToken, newToken}
-	return f.user, f.err
+	return f.profile, f.err
 }
 
 var testTokens = security.NewTokenIssuer(&config.Config{JWT: config.JWT{
@@ -111,7 +111,7 @@ func TestAuthSignIn(t *testing.T) {
 	// Arrange
 	user := model.User{ID: uuid.Must(uuid.NewV7()), Phone: "+6281234567890", CreatedAt: time.Now()}
 	fake := &fakeAuth{signInResult: service.SignInResult{
-		User:      user,
+		Profile:   service.Profile{User: user},
 		Tokens:    service.TokenPair{AccessToken: "access", RefreshToken: "refresh", ExpiresIn: 15 * time.Minute},
 		IsNewUser: true,
 	}}
@@ -236,7 +236,7 @@ func TestAuthLogoutWithoutToken(t *testing.T) {
 
 func TestAuthChangePhone(t *testing.T) {
 	// Arrange
-	fake := &fakeAuth{user: model.User{ID: uuid.Must(uuid.NewV7()), Phone: "+6281299998888", CreatedAt: time.Now()}}
+	fake := &fakeAuth{profile: service.Profile{User: model.User{ID: uuid.Must(uuid.NewV7()), Phone: "+6281299998888", CreatedAt: time.Now()}}}
 	req, userID, sessionID := authed(t, http.MethodPut, "/api/v1/auth/phone",
 		`{"old_firebase_id_token":"old","new_firebase_id_token":"new"}`)
 

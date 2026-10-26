@@ -84,6 +84,12 @@ func (r *UserRepository) UpdatePhone(ctx context.Context, id uuid.UUID, phone, f
 	return toUser(row), mapErr(err)
 }
 
+// SetAvatarKey points the user at a new avatar object; nil removes it.
+func (r *UserRepository) SetAvatarKey(ctx context.Context, id uuid.UUID, key *string) (model.User, error) {
+	row, err := r.tx.Queries(ctx).SetUserAvatarKey(ctx, sqlc.SetUserAvatarKeyParams{ID: id, AvatarKey: key})
+	return toUser(row), mapErr(err)
+}
+
 func (r *UserRepository) GetSettings(ctx context.Context, userID uuid.UUID) (model.UserSettings, error) {
 	row, err := r.tx.Queries(ctx).GetUserSettings(ctx, userID)
 	return toUserSettings(row), mapErr(err)
