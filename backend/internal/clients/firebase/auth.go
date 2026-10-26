@@ -1,6 +1,7 @@
 // Package firebase verifies Firebase phone-auth ID tokens with the Firebase
 // Admin SDK. The app does the OTP with Firebase; the backend only checks the
-// resulting token and then issues its own tokens.
+// resulting token and then issues its own tokens. It also deletes the
+// Firebase user when an account is deleted.
 package firebase
 
 import (
@@ -30,7 +31,16 @@ type AuthVerifier interface {
 	Verify(ctx context.Context, idToken string) (Identity, error)
 }
 
-// Verifier is the Firebase Admin SDK implementation of AuthVerifier.
+// UserDeleter removes a Firebase user, so a deleted account leaves no phone
+// number behind in Firebase Auth.
+type UserDeleter interface {
+	// DeleteUser deletes the user with uid. A user that does not exist is
+	// not an error.
+	DeleteUser(ctx context.Context, uid string) error
+}
+
+// Verifier is the Firebase Admin SDK implementation of AuthVerifier and
+// UserDeleter.
 type Verifier struct {
 	client *auth.Client
 }
@@ -80,4 +90,14 @@ func identityFrom(token *auth.Token) (Identity, error) {
 	return Identity{UID: token.UID, Phone: phone}, nil
 }
 
-var _ AuthVerifier = (*Verifier)(nil)
+func (v *Verifier) DeleteUser(ctx context.Context, uid string) error {
+	if err := v.client.DeleteUser(ctx, uid); err != nil && !auth.IsUserNotFound(err) {
+		return fmt.Errorf("delete firebase user: %w", err)
+	}
+	return nil
+}
+
+var (
+	_ AuthVerifier = (*Verifier)(nil)
+	_ UserDeleter  = (*Verifier)(nil)
+)

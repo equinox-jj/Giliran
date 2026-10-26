@@ -8,6 +8,7 @@ import (
 	"errors"
 	"io"
 	"log/slog"
+	"sync"
 	"testing"
 	"time"
 
@@ -28,6 +29,22 @@ type transparencyEnv struct {
 	reminders    *ReminderService
 	account      *AccountService
 	pins         *PINService
+	firebase     *fakeDeleter
+}
+
+// fakeDeleter records the Firebase users it was asked to delete and fails
+// with err.
+type fakeDeleter struct {
+	mu      sync.Mutex
+	deleted []string
+	err     error
+}
+
+func (f *fakeDeleter) DeleteUser(_ context.Context, uid string) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.deleted = append(f.deleted, uid)
+	return f.err
 }
 
 func newTransparencyEnv(t *testing.T) transparencyEnv {
@@ -44,6 +61,7 @@ func newTransparencyEnv(t *testing.T) transparencyEnv {
 	authz := NewAuthz(groups, members)
 	activity := NewActivity(logs, d.clock)
 	cfg := &config.Config{App: config.App{Location: d.groups.loc}}
+	fb := &fakeDeleter{}
 	pins := NewPINService(tx, users, sessions, security.NewPINHasher(pinCfg), fakeVerifier{}, d.clock, pinCfg)
 	return transparencyEnv{
 		drawEnv:      d,
@@ -51,8 +69,9 @@ func newTransparencyEnv(t *testing.T) transparencyEnv {
 		reminders:    NewReminderService(tx, groups, periods, payments, members, users, authz, activity, d.store, d.clock),
 		account: NewAccountService(pins, groups, users, sessions, members,
 			repository.NewLeaveRequestRepository(tx), repository.NewOwnershipTransferRepository(tx),
-			activity, d.store, d.clock, slog.New(slog.NewTextHandler(io.Discard, nil))),
-		pins: pins,
+			activity, d.store, fb, d.clock, slog.New(slog.NewTextHandler(io.Discard, nil))),
+		pins:     pins,
+		firebase: fb,
 	}
 }
 
@@ -452,6 +471,32 @@ func TestAccountDeleteFromDraftGroup(t *testing.T) {
 	if _, ok := env.store.objects[key]; ok {
 		t.Errorf("avatar object kept")
 	}
+	if len(env.firebase.deleted) != 1 || env.firebase.deleted[0] != budi.UID {
+		t.Errorf("firebase users deleted %v, want [%s]", env.firebase.deleted, budi.UID)
+	}
+}
+
+func TestAccountDeleteSurvivesFirebaseFailure(t *testing.T) {
+	// Arrange
+	t.Parallel()
+	env := newTransparencyEnv(t)
+	userID := env.user(t, "budi")
+	env.setPIN(t, userID)
+	env.firebase.err = errors.New("firebase unavailable")
+
+	// Act
+	err := env.account.Delete(context.Background(), userID, testPIN)
+
+	// Assert
+	if err != nil {
+		t.Fatalf("Delete: %v", err)
+	}
+	if n := env.count(t, "SELECT count(*) FROM users WHERE id = $1 AND deleted_at IS NOT NULL", userID); n != 1 {
+		t.Errorf("user not deleted")
+	}
+	if len(env.firebase.deleted) != 1 {
+		t.Errorf("firebase delete attempted %d times, want 1", len(env.firebase.deleted))
+	}
 }
 
 func TestAccountDeleteBlocked(t *testing.T) {
@@ -483,6 +528,9 @@ func TestAccountDeleteBlocked(t *testing.T) {
 			// Assert
 			if !errors.Is(err, tt.want) {
 				t.Errorf("err %v, want %v", err, tt.want)
+			}
+			if len(env.firebase.deleted) != 0 {
+				t.Errorf("firebase users deleted %v", env.firebase.deleted)
 			}
 			if n := env.count(t, "SELECT count(*) FROM users WHERE id = $1 AND deleted_at IS NULL", tt.user); n != 1 {
 				t.Errorf("user deleted")

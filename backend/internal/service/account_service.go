@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/equinox-jj/Giliran/backend/internal/clients/firebase"
 	"github.com/equinox-jj/Giliran/backend/internal/clients/storage"
 	"github.com/equinox-jj/Giliran/backend/internal/model"
 	"github.com/equinox-jj/Giliran/backend/internal/repository"
@@ -23,6 +24,7 @@ type AccountService struct {
 	transfers *repository.OwnershipTransferRepository
 	activity  *Activity
 	store     storage.Storage
+	firebase  firebase.UserDeleter
 	clock     clock.Clock
 	log       *slog.Logger
 }
@@ -37,12 +39,13 @@ func NewAccountService(
 	transfers *repository.OwnershipTransferRepository,
 	activity *Activity,
 	store storage.Storage,
+	fb firebase.UserDeleter,
 	clk clock.Clock,
 	log *slog.Logger,
 ) *AccountService {
 	return &AccountService{
 		pins: pins, groups: groups, users: users, sessions: sessions, members: members,
-		leaves: leaves, transfers: transfers, activity: activity, store: store, clock: clk, log: log,
+		leaves: leaves, transfers: transfers, activity: activity, store: store, firebase: fb, clock: clk, log: log,
 	}
 }
 
@@ -54,17 +57,18 @@ func NewAccountService(
 // payments and draws, so they leave through a leave request first.
 // Memberships of draft groups end and free their slots; completed and
 // closed groups keep the history under "Mantan anggota". Personal data is
-// cleared (DB_SCHEME §10), every session is revoked and the avatar object is
-// deleted.
+// cleared (DB_SCHEME §10), every session is revoked, and after the commit
+// the avatar object and the Firebase user are deleted. Those two only log a
+// failure: the account is already gone, and a leftover is cleaned up later.
 func (s *AccountService) Delete(ctx context.Context, userID uuid.UUID, pin string) error {
 	now := s.clock.Now()
-	var avatarKey *string
+	var avatarKey, firebaseUID *string
 	err := s.pins.checkPIN(ctx, userID, pin, func(ctx context.Context) error {
 		user, err := currentUser(s.users.GetByIDForUpdate(ctx, userID))
 		if err != nil {
 			return err
 		}
-		avatarKey = user.AvatarKey
+		avatarKey, firebaseUID = user.AvatarKey, user.FirebaseUID
 		memberships, err := s.members.ListUserMemberships(ctx, userID)
 		if err != nil {
 			return err
@@ -96,9 +100,16 @@ func (s *AccountService) Delete(ctx context.Context, userID uuid.UUID, pin strin
 	if err != nil {
 		return err
 	}
+	ctx = context.WithoutCancel(ctx)
 	if avatarKey != nil {
-		if err := s.store.Delete(context.WithoutCancel(ctx), *avatarKey); err != nil {
+		if err := s.store.Delete(ctx, *avatarKey); err != nil {
 			s.log.WarnContext(ctx, "orphaned storage object", "key", *avatarKey, "error", err)
+		}
+	}
+	if firebaseUID != nil {
+		// TODO(phase 7): retry from a worker job instead of only logging.
+		if err := s.firebase.DeleteUser(ctx, *firebaseUID); err != nil {
+			s.log.WarnContext(ctx, "orphaned firebase user", "firebase_uid", *firebaseUID, "error", err)
 		}
 	}
 	return nil
