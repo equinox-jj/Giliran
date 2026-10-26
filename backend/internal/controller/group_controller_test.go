@@ -507,3 +507,51 @@ func TestGroupResetInvite(t *testing.T) {
 		t.Errorf("status %d, data %v", resp.StatusCode, data)
 	}
 }
+
+func TestGroupWritesToClosedGroup(t *testing.T) {
+	// Arrange
+	closed := model.ErrGroupNotActive.WithDetail("The group is closed and read-only.")
+	gid := uuid.Must(uuid.NewV7()).String()
+	tests := []struct {
+		name string
+		req  func(t *testing.T) *http.Request
+	}{
+		{"payment info", func(t *testing.T) *http.Request {
+			req, _, _ := authed(t, http.MethodPut, "/api/v1/groups/"+gid+"/payment-info",
+				`{"bank_name":"BCA","account_number":"1234567890","account_holder":"Rina"}`)
+			return req
+		}},
+		{"qris", func(t *testing.T) *http.Request { return qrisRequest(t, uuid.MustParse(gid), []byte("png bytes")) }},
+		{"invite reset", func(t *testing.T) *http.Request {
+			req, _, _ := authed(t, http.MethodPost, "/api/v1/groups/"+gid+"/invite-code/reset", "")
+			return req
+		}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fake := &fakeGroups{err: closed}
+
+			// Act
+			resp, body := call(t, newGroupApp(fake), tt.req(t))
+
+			// Assert
+			if resp.StatusCode != 409 || body["code"] != "group_not_active" {
+				t.Errorf("status %d, code %v; want 409 group_not_active", resp.StatusCode, body["code"])
+			}
+		})
+	}
+}
+
+func TestGroupListMineRejectsUnknownStatus(t *testing.T) {
+	// Arrange
+	fake := &fakeGroups{}
+	req, _, _ := authed(t, http.MethodGet, "/api/v1/me/groups?status=archived", "")
+
+	// Act
+	resp, body := call(t, newGroupApp(fake), req)
+
+	// Assert
+	if resp.StatusCode != 422 || fake.called != "" || body["errors"].([]any)[0].(map[string]any)["field"] != "status" {
+		t.Errorf("status %d, errors %v, service called %q", resp.StatusCode, body["errors"], fake.called)
+	}
+}

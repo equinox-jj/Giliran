@@ -535,6 +535,8 @@ paths:
                       $ref: "#/components/schemas/GroupSummary"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/ValidationError"
 
   # ------------------------------------------------------------------ Groups
   /groups:
@@ -623,7 +625,7 @@ paths:
       tags: [Groups]
       operationId: setPaymentInfo
       summary: Set the organizer's bank account
-      description: Organizer only.
+      description: Organizer only. Completed and closed groups are read-only (`group_not_active`).
       requestBody:
         required: true
         content:
@@ -643,6 +645,8 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
         "422":
           $ref: "#/components/responses/ValidationError"
 
@@ -656,6 +660,7 @@ paths:
       description: |
         Organizer only. The server decodes the QR, checks the EMV TLV structure and
         CRC-16/CCITT, and rejects invalid codes with `validation_error` on field `file`.
+        Completed and closed groups are read-only (`group_not_active`).
       requestBody:
         required: true
         content:
@@ -675,6 +680,8 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
         "413":
           $ref: "#/components/responses/PayloadTooLarge"
         "415":
@@ -790,6 +797,7 @@ paths:
       tags: [Members]
       operationId: resetInviteCode
       summary: Replace the invite code (old links stop working)
+      description: Organizer or co-organizer. Completed and closed groups are read-only (`group_not_active`).
       responses:
         "200":
           description: New invite.
@@ -807,6 +815,8 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
 
   # ------------------------------------------------------------------ Members
   /invites/{invite_code}:
@@ -887,6 +897,8 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
 
   /groups/{group_id}/guests:
     parameters:
@@ -995,7 +1007,9 @@ paths:
       tags: [Members]
       operationId: createClaimLink
       summary: Create a link that lets a guest take over their slot
-      description: Organizer or co-organizer; guests only. Valid for 7 days.
+      description: |
+        Organizer or co-organizer; guests only. Valid for 7 days. Completed and closed
+        groups are read-only (`group_not_active`).
       responses:
         "201":
           description: Claim link.
@@ -1013,6 +1027,8 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
 
   /claims/{claim_token}:
     parameters:
@@ -1073,6 +1089,8 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
     post:
       tags: [Members]
       operationId: requestLeave

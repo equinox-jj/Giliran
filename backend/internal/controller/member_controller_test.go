@@ -602,3 +602,42 @@ func TestMemberRespondOwnership(t *testing.T) {
 		})
 	}
 }
+
+func TestMemberCreateClaimLinkInClosedGroup(t *testing.T) {
+	// Arrange
+	f := &fakeMembers{err: model.ErrGroupNotActive.WithDetail("The group is closed and read-only.")}
+	req, _, _ := authed(t, http.MethodPost, groupPath("/members/"+uuid.Must(uuid.NewV7()).String()+"/claim-link"), "")
+
+	// Act
+	resp, body := call(t, newMemberApp(f), req)
+
+	// Assert
+	if resp.StatusCode != 409 || body["code"] != "group_not_active" {
+		t.Errorf("status %d, code %v; want 409 group_not_active", resp.StatusCode, body["code"])
+	}
+}
+
+func TestMemberListsRejectUnknownStatus(t *testing.T) {
+	// Arrange
+	tests := []struct {
+		name string
+		path string
+	}{
+		{"members", "/members?status=gone"},
+		{"leave requests", "/leave-requests?status=gone"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			f := &fakeMembers{}
+			req, _, _ := authed(t, http.MethodGet, groupPath(tt.path), "")
+
+			// Act
+			resp, body := call(t, newMemberApp(f), req)
+
+			// Assert
+			if resp.StatusCode != 422 || f.called != "" || body["errors"].([]any)[0].(map[string]any)["field"] != "status" {
+				t.Errorf("status %d, errors %v, service called %q", resp.StatusCode, body["errors"], f.called)
+			}
+		})
+	}
+}
