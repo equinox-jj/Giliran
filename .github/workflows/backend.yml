@@ -1,0 +1,70 @@
+# Backend CI (PRD §10): lint, generated-code check, unit and integration
+# tests, and both Docker images, on every push and pull request that touches
+# backend/. Tool versions match the ones the Makefile targets are run with.
+name: backend
+
+on:
+  push:
+    paths: ["backend/**", ".github/workflows/backend.yml"]
+  pull_request:
+    paths: ["backend/**", ".github/workflows/backend.yml"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - uses: golangci/golangci-lint-action@v8
+        with:
+          version: v2.15.0
+          working-directory: backend
+      - uses: sqlc-dev/setup-sqlc@v4
+        with:
+          sqlc-version: "1.31.1"
+      - name: Generated sqlc code is up to date
+        run: sqlc diff
+
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+      - name: Unit tests
+        run: go test -race ./...
+      # testcontainers uses the runner's Docker daemon.
+      - name: Integration tests
+        run: go test -tags integration -count=1 ./...
+
+  docker:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build API image
+        run: docker build -f deploy/Dockerfile.api -t giliran-api:ci .
+      - name: Build worker image
+        run: docker build -f deploy/Dockerfile.worker -t giliran-worker:ci .
+      - name: Build backup image
+        run: docker build -t giliran-backup:ci deploy/backup
+      - name: Compose files are valid
+        run: |
+          cp .env.example .env
+          docker compose -f deploy/docker-compose.dev.yml config --quiet
+          docker compose -f deploy/docker-compose.prod.yml --profile backup --profile monitoring config --quiet

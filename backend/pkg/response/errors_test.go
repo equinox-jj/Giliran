@@ -15,6 +15,7 @@ import (
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/requestid"
+	"github.com/jackc/pgx/v5/pgconn"
 
 	"github.com/equinox-jj/Giliran/backend/internal/model"
 )
@@ -236,7 +237,59 @@ func TestErrorHandlerExtensions(t *testing.T) {
 	}
 }
 
-func TestErrorHandlerLogsOnlyInternalErrors(t *testing.T) {
+func TestErrorHandlerHidesDatabaseErrors(t *testing.T) {
+	// Arrange
+	pgErr := &pgconn.PgError{
+		Severity:       "ERROR",
+		Code:           "23505",
+		Message:        `duplicate key value violates unique constraint "users_phone_active_uq"`,
+		Detail:         "Key (phone)=(+6281234567890) already exists.",
+		TableName:      "users",
+		ConstraintName: "users_phone_active_uq",
+	}
+	tests := []struct {
+		name string
+		err  error
+	}{
+		{"pg error", pgErr},
+		{"wrapped pg error", fmt.Errorf("insert user: %w", pgErr)},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			app := newErrorApp(tt.err, io.Discard)
+
+			// Act
+			resp, err := app.Test(httptest.NewRequest(http.MethodGet, "/fail", nil))
+
+			// Assert
+			if err != nil {
+				t.Fatalf("app.Test: %v", err)
+			}
+			raw, err := io.ReadAll(resp.Body)
+			if err != nil {
+				t.Fatalf("read body: %v", err)
+			}
+			if resp.StatusCode != 500 {
+				t.Errorf("status %d, want 500", resp.StatusCode)
+			}
+			for _, leak := range []string{"users_phone_active_uq", "23505", "SQLSTATE", "+6281234567890", "duplicate key", "insert user"} {
+				if bytes.Contains(raw, []byte(leak)) {
+					t.Errorf("body leaks %q: %s", leak, raw)
+				}
+			}
+			var body map[string]any
+			if err := json.Unmarshal(raw, &body); err != nil {
+				t.Fatalf("decode body: %v", err)
+			}
+			if body["code"] != "internal_error" || body["detail"] != "Unexpected error." {
+				t.Errorf("body %v, want a bare internal_error", body)
+			}
+		})
+	}
+}
+
+func TestErrorHandlerLogsOnlyServerErrors(t *testing.T) {
 	// Arrange
 	tests := []struct {
 		name    string
@@ -244,6 +297,7 @@ func TestErrorHandlerLogsOnlyInternalErrors(t *testing.T) {
 		wantLog bool
 	}{
 		{"unknown error", errors.New("pq: connection refused"), true},
+		{"unavailable", fmt.Errorf("ping: %w: %w", model.ErrServiceUnavailable, errors.New("dial tcp: refused")), true},
 		{"domain error", model.ErrGroupFull, false},
 	}
 

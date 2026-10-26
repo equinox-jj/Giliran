@@ -43,6 +43,10 @@ func Register(p Params) {
 
 	requireAuth := middleware.Auth(p.Tokens)
 	rl := p.Config.RateLimit
+	// Every write has a limiter (routes_test.go walks the table to check).
+	// Per-user limits run after requireAuth; one handler shares its counters
+	// across every route it is used on.
+	writeLimit := middleware.RateLimitByUser(rl.WriteMax, rl.WriteWindow)
 
 	// Handlers run in order, so middleware goes before the controller.
 	auth := v1.Group("/auth")
@@ -50,7 +54,7 @@ func Register(p Params) {
 	// Every device refreshes about once per access-token lifetime, and a
 	// household shares one IP, so refresh gets the looser write limit.
 	auth.Post("/refresh", middleware.RateLimit(rl.WriteMax, rl.WriteWindow), p.Auth.Refresh)
-	auth.Post("/logout", requireAuth, p.Auth.Logout)
+	auth.Post("/logout", requireAuth, writeLimit, p.Auth.Logout)
 
 	// One per-user budget shared by every PIN check, on top of the lockout.
 	pinLimit := middleware.RateLimitByUser(rl.PINMax, rl.PINWindow)
@@ -61,7 +65,6 @@ func Register(p Params) {
 	auth.Put("/phone", requireAuth, middleware.RateLimitByUser(rl.OTPMax, rl.OTPWindow), p.Auth.ChangePhone)
 
 	me := v1.Group("/me", requireAuth)
-	writeLimit := middleware.RateLimitByUser(rl.WriteMax, rl.WriteWindow)
 	me.Get("", p.Me.Get)
 	me.Patch("", writeLimit, p.Me.Update)
 	me.Put("/avatar", writeLimit, p.Me.UploadAvatar)

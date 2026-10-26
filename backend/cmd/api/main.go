@@ -26,6 +26,12 @@ func main() {
 
 // options is the whole dependency graph, shared with the wiring test.
 func options() fx.Option {
+	return fx.Options(core(), firebase.Module, storage.Module)
+}
+
+// core is the graph without the external clients (Firebase and MinIO), so
+// the authorization sweep can run the real routes with fakes in their place.
+func core() fx.Option {
 	return fx.Options(
 		config.Module,
 		clock.Module,
@@ -33,8 +39,6 @@ func options() fx.Option {
 		repository.Module,
 		security.Module,
 		jobs.Module,
-		firebase.Module,
-		storage.Module,
 		service.Module,
 		controller.Module,
 		fx.Provide(newServer),

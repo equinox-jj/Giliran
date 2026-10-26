@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"log/slog"
 	"net/http"
@@ -35,15 +37,26 @@ type testBody struct {
 	Name string `json:"name" validate:"required,min=3"`
 }
 
-// newTestApp is the production app plus /panic and /bind routes.
+// fakePinger answers the health check's database ping with err.
+type fakePinger struct{ err error }
+
+func (p fakePinger) Ping(context.Context) error { return p.err }
+
+// newTestApp is the production app plus /panic and /bind routes, with a
+// reachable database.
 func newTestApp() *fiber.App {
+	return newTestAppWithDB(fakePinger{})
+}
+
+// newTestAppWithDB is newTestApp with db behind the health check.
+func newTestAppWithDB(db controller.Pinger) *fiber.App {
 	cfg := testConfig()
 	app := newFiberApp(cfg, slog.New(slog.NewTextHandler(io.Discard, nil)))
 	routes.Register(routes.Params{
 		App:    app,
 		Config: cfg,
 		Tokens: security.NewTokenIssuer(cfg, clock.System{}),
-		Health: controller.NewHealthController(),
+		Health: controller.NewHealthController(db),
 		Auth:   controller.NewAuthController(nil), // auth and PIN routes are tested in internal/controller
 		PIN:    controller.NewPINController(nil),
 		Me:     controller.NewMeController(nil, nil),
@@ -194,6 +207,32 @@ func TestServerHealth(t *testing.T) {
 	data, _ := body["data"].(map[string]any)
 	if data["status"] != "ok" {
 		t.Errorf("body %v", body)
+	}
+}
+
+func TestServerHealthDatabaseDown(t *testing.T) {
+	// Arrange
+	app := newTestAppWithDB(fakePinger{err: errors.New("dial tcp 10.0.0.5:5432: connect: connection refused")})
+	spec := contract.Load(t)
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/health", nil)
+
+	// Act
+	resp, err := app.Test(req)
+
+	// Assert
+	if err != nil {
+		t.Fatalf("app.Test: %v", err)
+	}
+	spec.AssertResponse(t, req, resp)
+	var body map[string]any
+	if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
+		t.Fatalf("decode body: %v", err)
+	}
+	if resp.StatusCode != 503 || body["code"] != "service_unavailable" {
+		t.Errorf("status %d code %v, want 503 service_unavailable", resp.StatusCode, body["code"])
+	}
+	if detail, _ := body["detail"].(string); strings.Contains(detail, "5432") {
+		t.Errorf("detail leaks the cause: %q", detail)
 	}
 }
 

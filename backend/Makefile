@@ -49,6 +49,10 @@ test: ## Unit tests (no Docker needed)
 test-integration: ## Unit and integration tests (needs Docker)
 	go test -tags integration -count=1 ./...
 
+.PHONY: smoke
+smoke: ## Latency smoke test against a running API (dev/staging; writes data)
+	go run ./test/smoke $(ARGS)
+
 .PHONY: deps-up
 deps-up: ## Start Postgres and MinIO, migrate (River too), create the bucket
 	$(COMPOSE) up -d migrate river-migrate minio-init

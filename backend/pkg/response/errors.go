@@ -141,8 +141,9 @@ func newProblem(e *model.Error, requestID string) Problem {
 }
 
 // ErrorHandler is the app-wide fiber.Config.ErrorHandler. Typed model errors
-// keep their code; anything unknown is logged and sent as a bare
-// internal_error so SQL errors and stack traces never reach the client.
+// keep their code; anything unknown is sent as a bare internal_error so SQL
+// errors and stack traces never reach the client. Server-side failures (500
+// and 503) are logged with their cause.
 func ErrorHandler(log *slog.Logger) fiber.ErrorHandler {
 	return func(c fiber.Ctx, err error) error {
 		rid := requestid.FromContext(c)
@@ -156,7 +157,7 @@ func ErrorHandler(log *slog.Logger) fiber.ErrorHandler {
 		default:
 			me = model.ErrInternal
 		}
-		if me.Kind == model.KindInternal {
+		if me.Kind == model.KindInternal || me.Kind == model.KindUnavailable {
 			log.ErrorContext(c.Context(), "request failed", "error", err, "request_id", rid,
 				"method", c.Method(), "path", c.Path())
 		}
