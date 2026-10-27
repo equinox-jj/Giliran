@@ -132,20 +132,6 @@ func (r *MemberRepository) ClaimGuest(ctx context.Context, id, userID uuid.UUID)
 	return toGroupMember(row), mapErr(err)
 }
 
-// ListClaimableGuestsByPhone row-locks and returns the active guests with
-// this phone in running groups userID is not in yet. Call it inside WithTx.
-func (r *MemberRepository) ListClaimableGuestsByPhone(ctx context.Context, phone string, userID uuid.UUID) ([]model.GroupMember, error) {
-	rows, err := r.tx.Queries(ctx).ListClaimableGuestsByPhone(ctx, sqlc.ListClaimableGuestsByPhoneParams{Phone: &phone, UserID: &userID})
-	if err != nil {
-		return nil, mapErr(err)
-	}
-	out := make([]model.GroupMember, len(rows))
-	for i, row := range rows {
-		out[i] = toGroupMember(row)
-	}
-	return out, nil
-}
-
 // Deactivate marks the member left or removed at now. Their slot link stays
 // for history, and the slot counts as free again.
 func (r *MemberRepository) Deactivate(ctx context.Context, id uuid.UUID, status model.MemberStatus, now time.Time) (model.GroupMember, error) {

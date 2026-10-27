@@ -296,61 +296,6 @@ func (q *Queries) ListActiveMemberUserIDs(ctx context.Context, arg ListActiveMem
 	return items, nil
 }
 
-const listClaimableGuestsByPhone = `-- name: ListClaimableGuestsByPhone :many
-SELECT gm.id, gm.group_id, gm.user_id, gm.guest_name, gm.guest_phone, gm.role, gm.status, gm.claim_token_hash, gm.claim_token_expires_at, gm.joined_at, gm.left_at, gm.created_at, gm.updated_at FROM group_members gm
-JOIN groups g ON g.id = gm.group_id
-WHERE gm.user_id IS NULL
-  AND gm.guest_phone = $1
-  AND gm.status = 'active'
-  AND g.status IN ('draft', 'active')
-  AND NOT EXISTS (
-      SELECT 1 FROM group_members o
-      WHERE o.group_id = gm.group_id AND o.user_id = $2 AND o.status = 'active')
-ORDER BY gm.joined_at
-FOR UPDATE OF gm
-`
-
-type ListClaimableGuestsByPhoneParams struct {
-	Phone  *string
-	UserID *uuid.UUID
-}
-
-// Active guest rows in running groups whose phone matches, skipping groups
-// the user is already in (FR-MEM-04 auto-claim at sign-in).
-func (q *Queries) ListClaimableGuestsByPhone(ctx context.Context, arg ListClaimableGuestsByPhoneParams) ([]GroupMember, error) {
-	rows, err := q.db.Query(ctx, listClaimableGuestsByPhone, arg.Phone, arg.UserID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []GroupMember{}
-	for rows.Next() {
-		var i GroupMember
-		if err := rows.Scan(
-			&i.ID,
-			&i.GroupID,
-			&i.UserID,
-			&i.GuestName,
-			&i.GuestPhone,
-			&i.Role,
-			&i.Status,
-			&i.ClaimTokenHash,
-			&i.ClaimTokenExpiresAt,
-			&i.JoinedAt,
-			&i.LeftAt,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const listMemberViews = `-- name: ListMemberViews :many
 SELECT
     gm.id, gm.group_id, gm.user_id, gm.guest_name, gm.guest_phone, gm.role, gm.status, gm.claim_token_hash, gm.claim_token_expires_at, gm.joined_at, gm.left_at, gm.created_at, gm.updated_at,

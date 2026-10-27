@@ -16,19 +16,21 @@ const (
 )
 
 // User is one account, mirroring the users table (DB_SCHEME §3.1).
-// The phone number is the identity and is unique among active users.
+// The email, proven by an email OTP, is the identity and is unique among
+// active users. Email and EmailVerifiedAt are nil only on deleted users.
 type User struct {
-	ID             uuid.UUID  `db:"id"`
-	Phone          string     `db:"phone"`        // E.164, +62…
-	FirebaseUID    *string    `db:"firebase_uid"` // nil until linked to Firebase phone auth
-	Name           *string    `db:"name"`         // 2–50 chars; nil until set after first sign-in
-	AvatarKey      *string    `db:"avatar_key"`   // MinIO object key
-	PINHash        *string    `db:"pin_hash"`     // argon2id encoded hash; nil until the PIN is set
-	PINFailedCount int16      `db:"pin_failed_count"`
-	PINLockedUntil *time.Time `db:"pin_locked_until"`
-	CreatedAt      time.Time  `db:"created_at"`
-	UpdatedAt      time.Time  `db:"updated_at"`
-	DeletedAt      *time.Time `db:"deleted_at"`
+	ID              uuid.UUID  `db:"id"`
+	Email           *string    `db:"email"`             // lowercase
+	EmailVerifiedAt *time.Time `db:"email_verified_at"` // last time the email was proven
+	Phone           *string    `db:"phone"`             // optional, unverified, E.164 +62…; only for wa.me reminder links
+	Name            *string    `db:"name"`              // 2–50 chars; nil until set after first sign-in
+	AvatarKey       *string    `db:"avatar_key"`        // MinIO object key
+	PINHash         *string    `db:"pin_hash"`          // argon2id encoded hash; nil until the PIN is set
+	PINFailedCount  int16      `db:"pin_failed_count"`
+	PINLockedUntil  *time.Time `db:"pin_locked_until"`
+	CreatedAt       time.Time  `db:"created_at"`
+	UpdatedAt       time.Time  `db:"updated_at"`
+	DeletedAt       *time.Time `db:"deleted_at"`
 }
 
 // IsDeleted reports whether the account has been soft-deleted.

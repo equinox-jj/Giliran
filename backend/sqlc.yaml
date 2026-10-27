@@ -38,7 +38,8 @@ sql:
               type: time.Time
               pointer: true
         rename:
-          firebase_uid: FirebaseUID
+          requester_ip: RequesterIP
+          provider_message_id: ProviderMessageID
           pin_hash: PINHash
           pin_failed_count: PINFailedCount
           pin_locked_until: PINLockedUntil

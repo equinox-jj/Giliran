@@ -18,6 +18,12 @@ type Querier interface {
 	AssignSlot(ctx context.Context, arg AssignSlotParams) error
 	// A NULL member_id cancels every pending request in the group.
 	CancelPendingLeaveRequests(ctx context.Context, arg CancelPendingLeaveRequestsParams) error
+	// Email OTP requests (DB_SCHEME §3.16, §4.4). Times come from the caller's
+	// clock. The 5-attempt and 5-resend limits are fixed by the table's CHECKs.
+	// Runs before inserting a new request: one pending request per email and purpose.
+	CancelPendingOtp(ctx context.Context, arg CancelPendingOtpParams) (int64, error)
+	// Account deletion: no code the user requested can complete afterwards.
+	CancelPendingOtpForUser(ctx context.Context, userID uuid.UUID) (int64, error)
 	// A NULL to_member_id cancels the group's pending transfer whoever it targets.
 	CancelPendingOwnershipTransfers(ctx context.Context, arg CancelPendingOwnershipTransfersParams) error
 	// The account takes over the guest row, so the slot keeps its history. The
@@ -37,13 +43,18 @@ type Querier interface {
 	CompleteGroup(ctx context.Context, arg CompleteGroupParams) (Group, error)
 	// The winner confirms receipt once.
 	ConfirmPayout(ctx context.Context, arg ConfirmPayoutParams) (Payout, error)
+	// In the same transaction as the session or change the code authorizes.
+	ConsumeOtpRequest(ctx context.Context, arg ConsumeOtpRequestParams) (EmailOtpRequest, error)
 	CountActiveMembers(ctx context.Context, groupID uuid.UUID) (int32, error)
 	CountFilledSlots(ctx context.Context, groupID uuid.UUID) (int32, error)
+	CountRecentOtpByEmail(ctx context.Context, arg CountRecentOtpByEmailParams) (int64, error)
+	CountRecentOtpByIP(ctx context.Context, arg CountRecentOtpByIPParams) (int64, error)
 	// A taken invite code inserts nothing and returns no rows, so the caller can
 	// retry with another code without aborting its transaction.
 	CreateGroup(ctx context.Context, arg CreateGroupParams) (Group, error)
 	CreateLeaveRequest(ctx context.Context, arg CreateLeaveRequestParams) (LeaveRequest, error)
 	CreateMember(ctx context.Context, arg CreateMemberParams) (GroupMember, error)
+	CreateOtpRequest(ctx context.Context, arg CreateOtpRequestParams) (EmailOtpRequest, error)
 	CreateOwnershipTransfer(ctx context.Context, arg CreateOwnershipTransferParams) (OwnershipTransfer, error)
 	CreatePaymentProof(ctx context.Context, arg CreatePaymentProofParams) (PaymentProof, error)
 	CreatePayments(ctx context.Context, arg CreatePaymentsParams) error
@@ -53,16 +64,20 @@ type Querier interface {
 	CreatePeriods(ctx context.Context, arg CreatePeriodsParams) error
 	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateSlots(ctx context.Context, arg CreateSlotsParams) error
+	// A new account starts with only its verified email; everything else is set later.
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	CreateUserSettings(ctx context.Context, userID uuid.UUID) error
 	DeleteExpiredIdempotencyKeys(ctx context.Context, now time.Time) (int64, error)
 	DeleteIdempotencyKey(ctx context.Context, arg DeleteIdempotencyKeyParams) error
+	// Retention (DB_SCHEME §10): any status, 24 hours after creation.
+	DeleteOtpRequestsBefore(ctx context.Context, before time.Time) (int64, error)
 	// Drops slots of a draft group; their slot_members rows cascade.
 	DeleteSlotsAbove(ctx context.Context, arg DeleteSlotsAboveParams) error
 	// Sessions revoked or expired before the cutoff (DB_SCHEME §10).
 	DeleteStaleSessions(ctx context.Context, cutoff time.Time) (int64, error)
 	// ExpireOwnershipTransfers across every group, for the worker.
 	ExpireAllOwnershipTransfers(ctx context.Context, now time.Time) (int64, error)
+	ExpireOtpRequests(ctx context.Context, now time.Time) (int64, error)
 	// Marks the group's pending transfers past their deadline as expired, so a
 	// new offer is not blocked by one nobody can accept any more.
 	ExpireOwnershipTransfers(ctx context.Context, arg ExpireOwnershipTransfersParams) error
@@ -86,6 +101,10 @@ type Querier interface {
 	// The caller's active membership: every permission check (GetMemberRole in
 	// DB_SCHEME §8) starts here.
 	GetMembership(ctx context.Context, arg GetMembershipParams) (GroupMember, error)
+	// Unlocked read for the email job.
+	GetOtpRequest(ctx context.Context, id uuid.UUID) (EmailOtpRequest, error)
+	// Locks the row inside the resend and verify transactions.
+	GetOtpRequestForUpdate(ctx context.Context, id uuid.UUID) (EmailOtpRequest, error)
 	GetOwnershipTransferForUpdate(ctx context.Context, arg GetOwnershipTransferForUpdateParams) (OwnershipTransfer, error)
 	GetPayment(ctx context.Context, arg GetPaymentParams) (GetPaymentRow, error)
 	GetPaymentForUpdate(ctx context.Context, arg GetPaymentForUpdateParams) (Payment, error)
@@ -98,11 +117,12 @@ type Querier interface {
 	GetPeriodView(ctx context.Context, arg GetPeriodViewParams) (GetPeriodViewRow, error)
 	// Locks the row so two refreshes of one token serialize.
 	GetSessionByRefreshTokenHashForUpdate(ctx context.Context, refreshTokenHash string) (Session, error)
-	GetUserByFirebaseUID(ctx context.Context, firebaseUid *string) (User, error)
+	GetUserByEmail(ctx context.Context, email string) (User, error)
+	// Locks the row so the PIN check at sign-in counts attempts correctly.
+	GetUserByEmailForUpdate(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
 	// Locks the row so concurrent PIN attempts count correctly.
 	GetUserByIDForUpdate(ctx context.Context, id uuid.UUID) (User, error)
-	GetUserByPhone(ctx context.Context, phone *string) (User, error)
 	GetUserSettings(ctx context.Context, userID uuid.UUID) (UserSetting, error)
 	InsertActivityLog(ctx context.Context, arg InsertActivityLogParams) error
 	// Active members holding a slot numbered above slot_no, for shrinking a
@@ -117,9 +137,6 @@ type Querier interface {
 	// starts at the newest entry; the caller asks for one row more than it shows
 	// to learn whether another page exists.
 	ListActivity(ctx context.Context, arg ListActivityParams) ([]ActivityLog, error)
-	// Active guest rows in running groups whose phone matches, skipping groups
-	// the user is already in (FR-MEM-04 auto-claim at sign-in).
-	ListClaimableGuestsByPhone(ctx context.Context, arg ListClaimableGuestsByPhoneParams) ([]GroupMember, error)
 	// Payments still owed in running periods whose payer gets the automatic
 	// reminder today: reminder_days_before the due date, and on it (FR-REM-01).
 	// Only active account members with payment reminders on (DB_SCHEME §8).
@@ -174,6 +191,9 @@ type Querier interface {
 	// first so two joins never pick the same slot.
 	LowestFreeSlot(ctx context.Context, groupID uuid.UUID) (Slot, error)
 	MarkGroupProofsPurged(ctx context.Context, arg MarkGroupProofsPurgedParams) error
+	// The email job's outcome. Matching resend_count keeps a job for an older code
+	// from overwriting the status of a newer send.
+	MarkOtpSent(ctx context.Context, arg MarkOtpSentParams) (int64, error)
 	MarkPaymentsReminded(ctx context.Context, arg MarkPaymentsRemindedParams) error
 	// A past winner who still owes a payment in some period of the group,
 	// including periods that have not opened yet (FR-MEM-05).
@@ -189,7 +209,13 @@ type Querier interface {
 	// Stores the result and reveals the seed (NULL for fixed-order groups). Only
 	// an open period is drawn; the guard trigger freezes the result afterwards.
 	RecordDraw(ctx context.Context, arg RecordDrawParams) (Period, error)
+	// A wrong code; the fifth locks the request.
+	RecordOtpFailure(ctx context.Context, id uuid.UUID) (EmailOtpRequest, error)
 	RejectPayment(ctx context.Context, arg RejectPaymentParams) (Payment, error)
+	// A new code: attempts reset, expiry moves. A skipped request stays skipped,
+	// since nothing is ever sent for it. No row when the request is no longer
+	// pending, was last sent after sent_before, or has used its 5 resends.
+	ResendOtpRequest(ctx context.Context, arg ResendOtpRequestParams) (EmailOtpRequest, error)
 	RespondOwnershipTransfer(ctx context.Context, arg RespondOwnershipTransferParams) (OwnershipTransfer, error)
 	ReviewLeaveRequest(ctx context.Context, arg ReviewLeaveRequestParams) (LeaveRequest, error)
 	RevokeAllUserSessions(ctx context.Context, arg RevokeAllUserSessionsParams) (int64, error)
@@ -218,7 +244,6 @@ type Querier interface {
 	SetSessionFCMToken(ctx context.Context, arg SetSessionFCMTokenParams) (int64, error)
 	// NULL removes the avatar.
 	SetUserAvatarKey(ctx context.Context, arg SetUserAvatarKeyParams) (User, error)
-	SetUserFirebaseUID(ctx context.Context, arg SetUserFirebaseUIDParams) (User, error)
 	// Stores a new PIN hash and clears failed attempts and any lock.
 	SetUserPIN(ctx context.Context, arg SetUserPINParams) error
 	SetUserPINAttempts(ctx context.Context, arg SetUserPINAttemptsParams) error
@@ -226,9 +251,12 @@ type Querier interface {
 	// NULL arguments keep the current value.
 	UpdateGroupSettings(ctx context.Context, arg UpdateGroupSettingsParams) (Group, error)
 	UpdateGuest(ctx context.Context, arg UpdateGuestParams) (GroupMember, error)
+	// Moves the account to a newly verified address.
+	UpdateUserEmail(ctx context.Context, arg UpdateUserEmailParams) (User, error)
 	UpdateUserName(ctx context.Context, arg UpdateUserNameParams) (User, error)
-	// Moves the account to a new number and the Firebase account that verified it.
-	UpdateUserPhone(ctx context.Context, arg UpdateUserPhoneParams) (User, error)
+	// A NULL name keeps the current one. The phone changes only when set_phone is
+	// true, and a NULL phone then clears it.
+	UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) (User, error)
 	// Changes only the columns whose argument is not NULL.
 	UpdateUserSettings(ctx context.Context, arg UpdateUserSettingsParams) (UserSetting, error)
 	VerificationCodeExists(ctx context.Context, verificationCode *string) (bool, error)

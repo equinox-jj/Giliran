@@ -40,7 +40,7 @@ const (
 	// token was presented again.
 	RevokedReasonReuseDetected  RevokedReason = "reuse_detected"
 	RevokedReasonPINReset       RevokedReason = "pin_reset"
-	RevokedReasonPhoneChanged   RevokedReason = "phone_changed"
+	RevokedReasonEmailChanged   RevokedReason = "email_changed"
 	RevokedReasonAccountDeleted RevokedReason = "account_deleted"
 	RevokedReasonExpired        RevokedReason = "expired"
 )
@@ -49,7 +49,7 @@ const (
 func (r RevokedReason) IsValid() bool {
 	switch r {
 	case RevokedReasonRotated, RevokedReasonLogout, RevokedReasonSignedOutByUser,
-		RevokedReasonReuseDetected, RevokedReasonPINReset, RevokedReasonPhoneChanged,
+		RevokedReasonReuseDetected, RevokedReasonPINReset, RevokedReasonEmailChanged,
 		RevokedReasonAccountDeleted, RevokedReasonExpired:
 		return true
 	}

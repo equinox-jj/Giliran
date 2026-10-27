@@ -83,21 +83,6 @@ SET user_id = $2, guest_name = NULL, guest_phone = NULL,
 WHERE id = $1 AND user_id IS NULL
 RETURNING *;
 
--- name: ListClaimableGuestsByPhone :many
--- Active guest rows in running groups whose phone matches, skipping groups
--- the user is already in (FR-MEM-04 auto-claim at sign-in).
-SELECT gm.* FROM group_members gm
-JOIN groups g ON g.id = gm.group_id
-WHERE gm.user_id IS NULL
-  AND gm.guest_phone = sqlc.arg(phone)
-  AND gm.status = 'active'
-  AND g.status IN ('draft', 'active')
-  AND NOT EXISTS (
-      SELECT 1 FROM group_members o
-      WHERE o.group_id = gm.group_id AND o.user_id = sqlc.arg(user_id) AND o.status = 'active')
-ORDER BY gm.joined_at
-FOR UPDATE OF gm;
-
 -- name: SetMemberStatus :one
 UPDATE group_members
 SET status = $2, left_at = $3

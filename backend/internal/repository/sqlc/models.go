@@ -5,6 +5,7 @@
 package sqlc
 
 import (
+	"net/netip"
 	"time"
 
 	"github.com/google/uuid"
@@ -22,6 +23,27 @@ type ActivityLog struct {
 	Before      []byte
 	After       []byte
 	CreatedAt   time.Time
+}
+
+type EmailOtpRequest struct {
+	ID                uuid.UUID
+	Purpose           string
+	Email             string
+	UserID            *uuid.UUID
+	CodeHash          string
+	Attempts          int16
+	ResendCount       int16
+	LastSentAt        time.Time
+	SendStatus        string
+	ProviderMessageID *string
+	DeviceName        *string
+	DevicePlatform    string
+	FcmToken          *string
+	RequesterIP       *netip.Addr
+	Status            string
+	ExpiresAt         time.Time
+	ConsumedAt        *time.Time
+	CreatedAt         time.Time
 }
 
 type Group struct {
@@ -201,17 +223,18 @@ type SlotMember struct {
 }
 
 type User struct {
-	ID             uuid.UUID
-	Phone          *string
-	FirebaseUID    *string
-	Name           *string
-	AvatarKey      *string
-	PINHash        *string
-	PINFailedCount int16
-	PINLockedUntil *time.Time
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
-	DeletedAt      *time.Time
+	ID              uuid.UUID
+	Phone           *string
+	Name            *string
+	AvatarKey       *string
+	PINHash         *string
+	PINFailedCount  int16
+	PINLockedUntil  *time.Time
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+	DeletedAt       *time.Time
+	Email           *string
+	EmailVerifiedAt *time.Time
 }
 
 type UserSetting struct {

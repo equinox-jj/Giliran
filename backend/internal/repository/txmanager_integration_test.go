@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -17,8 +18,7 @@ import (
 // createUser inserts a user through whatever Queries(ctx) returns.
 func createUser(ctx context.Context, m *TxManager) (uuid.UUID, error) {
 	id := uuid.Must(uuid.NewV7())
-	phone := "+6281234567890"
-	_, err := m.Queries(ctx).CreateUser(ctx, sqlc.CreateUserParams{ID: id, Phone: &phone})
+	_, err := m.Queries(ctx).CreateUser(ctx, sqlc.CreateUserParams{ID: id, Email: id.String() + "@example.com", VerifiedAt: time.Now()})
 	return id, err
 }
 

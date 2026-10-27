@@ -14,7 +14,7 @@ import (
 
 const anonymizeUser = `-- name: AnonymizeUser :execrows
 UPDATE users
-SET phone = NULL, firebase_uid = NULL, avatar_key = NULL, pin_hash = NULL,
+SET email = NULL, email_verified_at = NULL, phone = NULL, avatar_key = NULL, pin_hash = NULL,
     pin_failed_count = 0, pin_locked_until = NULL,
     name = 'Mantan anggota', deleted_at = $1::timestamptz
 WHERE id = $2 AND deleted_at IS NULL
@@ -36,24 +36,24 @@ func (q *Queries) AnonymizeUser(ctx context.Context, arg AnonymizeUserParams) (i
 }
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO users (id, phone, firebase_uid)
-VALUES ($1, $2, $3)
-RETURNING id, phone, firebase_uid, name, avatar_key, pin_hash, pin_failed_count, pin_locked_until, created_at, updated_at, deleted_at
+INSERT INTO users (id, email, email_verified_at)
+VALUES ($1, $2::text, $3::timestamptz)
+RETURNING id, phone, name, avatar_key, pin_hash, pin_failed_count, pin_locked_until, created_at, updated_at, deleted_at, email, email_verified_at
 `
 
 type CreateUserParams struct {
-	ID          uuid.UUID
-	Phone       *string
-	FirebaseUID *string
+	ID         uuid.UUID
+	Email      string
+	VerifiedAt time.Time
 }
 
+// A new account starts with only its verified email; everything else is set later.
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRow(ctx, createUser, arg.ID, arg.Phone, arg.FirebaseUID)
+	row := q.db.QueryRow(ctx, createUser, arg.ID, arg.Email, arg.VerifiedAt)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Phone,
-		&i.FirebaseUID,
 		&i.Name,
 		&i.AvatarKey,
 		&i.PINHash,
@@ -62,22 +62,23 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+		&i.Email,
+		&i.EmailVerifiedAt,
 	)
 	return i, err
 }
 
-const getUserByFirebaseUID = `-- name: GetUserByFirebaseUID :one
-SELECT id, phone, firebase_uid, name, avatar_key, pin_hash, pin_failed_count, pin_locked_until, created_at, updated_at, deleted_at FROM users
-WHERE firebase_uid = $1 AND deleted_at IS NULL
+const getUserByEmail = `-- name: GetUserByEmail :one
+SELECT id, phone, name, avatar_key, pin_hash, pin_failed_count, pin_locked_until, created_at, updated_at, deleted_at, email, email_verified_at FROM users
+WHERE email = $1::text AND deleted_at IS NULL
 `
 
-func (q *Queries) GetUserByFirebaseUID(ctx context.Context, firebaseUid *string) (User, error) {
-	row := q.db.QueryRow(ctx, getUserByFirebaseUID, firebaseUid)
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByEmail, email)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Phone,
-		&i.FirebaseUID,
 		&i.Name,
 		&i.AvatarKey,
 		&i.PINHash,
@@ -86,12 +87,41 @@ func (q *Queries) GetUserByFirebaseUID(ctx context.Context, firebaseUid *string)
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+		&i.Email,
+		&i.EmailVerifiedAt,
+	)
+	return i, err
+}
+
+const getUserByEmailForUpdate = `-- name: GetUserByEmailForUpdate :one
+SELECT id, phone, name, avatar_key, pin_hash, pin_failed_count, pin_locked_until, created_at, updated_at, deleted_at, email, email_verified_at FROM users
+WHERE email = $1::text AND deleted_at IS NULL
+FOR UPDATE
+`
+
+// Locks the row so the PIN check at sign-in counts attempts correctly.
+func (q *Queries) GetUserByEmailForUpdate(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByEmailForUpdate, email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Phone,
+		&i.Name,
+		&i.AvatarKey,
+		&i.PINHash,
+		&i.PINFailedCount,
+		&i.PINLockedUntil,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.Email,
+		&i.EmailVerifiedAt,
 	)
 	return i, err
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, phone, firebase_uid, name, avatar_key, pin_hash, pin_failed_count, pin_locked_until, created_at, updated_at, deleted_at FROM users
+SELECT id, phone, name, avatar_key, pin_hash, pin_failed_count, pin_locked_until, created_at, updated_at, deleted_at, email, email_verified_at FROM users
 WHERE id = $1 AND deleted_at IS NULL
 `
 
@@ -101,7 +131,6 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.Phone,
-		&i.FirebaseUID,
 		&i.Name,
 		&i.AvatarKey,
 		&i.PINHash,
@@ -110,12 +139,14 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+		&i.Email,
+		&i.EmailVerifiedAt,
 	)
 	return i, err
 }
 
 const getUserByIDForUpdate = `-- name: GetUserByIDForUpdate :one
-SELECT id, phone, firebase_uid, name, avatar_key, pin_hash, pin_failed_count, pin_locked_until, created_at, updated_at, deleted_at FROM users
+SELECT id, phone, name, avatar_key, pin_hash, pin_failed_count, pin_locked_until, created_at, updated_at, deleted_at, email, email_verified_at FROM users
 WHERE id = $1 AND deleted_at IS NULL
 FOR UPDATE
 `
@@ -127,7 +158,6 @@ func (q *Queries) GetUserByIDForUpdate(ctx context.Context, id uuid.UUID) (User,
 	err := row.Scan(
 		&i.ID,
 		&i.Phone,
-		&i.FirebaseUID,
 		&i.Name,
 		&i.AvatarKey,
 		&i.PINHash,
@@ -136,30 +166,8 @@ func (q *Queries) GetUserByIDForUpdate(ctx context.Context, id uuid.UUID) (User,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
-	)
-	return i, err
-}
-
-const getUserByPhone = `-- name: GetUserByPhone :one
-SELECT id, phone, firebase_uid, name, avatar_key, pin_hash, pin_failed_count, pin_locked_until, created_at, updated_at, deleted_at FROM users
-WHERE phone = $1 AND deleted_at IS NULL
-`
-
-func (q *Queries) GetUserByPhone(ctx context.Context, phone *string) (User, error) {
-	row := q.db.QueryRow(ctx, getUserByPhone, phone)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Phone,
-		&i.FirebaseUID,
-		&i.Name,
-		&i.AvatarKey,
-		&i.PINHash,
-		&i.PINFailedCount,
-		&i.PINLockedUntil,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.DeletedAt,
+		&i.Email,
+		&i.EmailVerifiedAt,
 	)
 	return i, err
 }
@@ -167,7 +175,7 @@ func (q *Queries) GetUserByPhone(ctx context.Context, phone *string) (User, erro
 const setUserAvatarKey = `-- name: SetUserAvatarKey :one
 UPDATE users SET avatar_key = $1
 WHERE id = $2 AND deleted_at IS NULL
-RETURNING id, phone, firebase_uid, name, avatar_key, pin_hash, pin_failed_count, pin_locked_until, created_at, updated_at, deleted_at
+RETURNING id, phone, name, avatar_key, pin_hash, pin_failed_count, pin_locked_until, created_at, updated_at, deleted_at, email, email_verified_at
 `
 
 type SetUserAvatarKeyParams struct {
@@ -182,7 +190,6 @@ func (q *Queries) SetUserAvatarKey(ctx context.Context, arg SetUserAvatarKeyPara
 	err := row.Scan(
 		&i.ID,
 		&i.Phone,
-		&i.FirebaseUID,
 		&i.Name,
 		&i.AvatarKey,
 		&i.PINHash,
@@ -191,36 +198,8 @@ func (q *Queries) SetUserAvatarKey(ctx context.Context, arg SetUserAvatarKeyPara
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
-	)
-	return i, err
-}
-
-const setUserFirebaseUID = `-- name: SetUserFirebaseUID :one
-UPDATE users SET firebase_uid = $2
-WHERE id = $1 AND deleted_at IS NULL
-RETURNING id, phone, firebase_uid, name, avatar_key, pin_hash, pin_failed_count, pin_locked_until, created_at, updated_at, deleted_at
-`
-
-type SetUserFirebaseUIDParams struct {
-	ID          uuid.UUID
-	FirebaseUID *string
-}
-
-func (q *Queries) SetUserFirebaseUID(ctx context.Context, arg SetUserFirebaseUIDParams) (User, error) {
-	row := q.db.QueryRow(ctx, setUserFirebaseUID, arg.ID, arg.FirebaseUID)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Phone,
-		&i.FirebaseUID,
-		&i.Name,
-		&i.AvatarKey,
-		&i.PINHash,
-		&i.PINFailedCount,
-		&i.PINLockedUntil,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.DeletedAt,
+		&i.Email,
+		&i.EmailVerifiedAt,
 	)
 	return i, err
 }
@@ -259,10 +238,43 @@ func (q *Queries) SetUserPINAttempts(ctx context.Context, arg SetUserPINAttempts
 	return err
 }
 
+const updateUserEmail = `-- name: UpdateUserEmail :one
+UPDATE users SET email = $1::text, email_verified_at = $2::timestamptz
+WHERE id = $3 AND deleted_at IS NULL
+RETURNING id, phone, name, avatar_key, pin_hash, pin_failed_count, pin_locked_until, created_at, updated_at, deleted_at, email, email_verified_at
+`
+
+type UpdateUserEmailParams struct {
+	Email      string
+	VerifiedAt time.Time
+	ID         uuid.UUID
+}
+
+// Moves the account to a newly verified address.
+func (q *Queries) UpdateUserEmail(ctx context.Context, arg UpdateUserEmailParams) (User, error) {
+	row := q.db.QueryRow(ctx, updateUserEmail, arg.Email, arg.VerifiedAt, arg.ID)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Phone,
+		&i.Name,
+		&i.AvatarKey,
+		&i.PINHash,
+		&i.PINFailedCount,
+		&i.PINLockedUntil,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletedAt,
+		&i.Email,
+		&i.EmailVerifiedAt,
+	)
+	return i, err
+}
+
 const updateUserName = `-- name: UpdateUserName :one
 UPDATE users SET name = $2
 WHERE id = $1 AND deleted_at IS NULL
-RETURNING id, phone, firebase_uid, name, avatar_key, pin_hash, pin_failed_count, pin_locked_until, created_at, updated_at, deleted_at
+RETURNING id, phone, name, avatar_key, pin_hash, pin_failed_count, pin_locked_until, created_at, updated_at, deleted_at, email, email_verified_at
 `
 
 type UpdateUserNameParams struct {
@@ -276,7 +288,6 @@ func (q *Queries) UpdateUserName(ctx context.Context, arg UpdateUserNameParams) 
 	err := row.Scan(
 		&i.ID,
 		&i.Phone,
-		&i.FirebaseUID,
 		&i.Name,
 		&i.AvatarKey,
 		&i.PINHash,
@@ -285,30 +296,40 @@ func (q *Queries) UpdateUserName(ctx context.Context, arg UpdateUserNameParams) 
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+		&i.Email,
+		&i.EmailVerifiedAt,
 	)
 	return i, err
 }
 
-const updateUserPhone = `-- name: UpdateUserPhone :one
-UPDATE users SET phone = $2, firebase_uid = $3
-WHERE id = $1 AND deleted_at IS NULL
-RETURNING id, phone, firebase_uid, name, avatar_key, pin_hash, pin_failed_count, pin_locked_until, created_at, updated_at, deleted_at
+const updateUserProfile = `-- name: UpdateUserProfile :one
+UPDATE users
+SET name  = COALESCE($1, name),
+    phone = CASE WHEN $2::boolean THEN $3 ELSE phone END
+WHERE id = $4 AND deleted_at IS NULL
+RETURNING id, phone, name, avatar_key, pin_hash, pin_failed_count, pin_locked_until, created_at, updated_at, deleted_at, email, email_verified_at
 `
 
-type UpdateUserPhoneParams struct {
-	ID          uuid.UUID
-	Phone       *string
-	FirebaseUID *string
+type UpdateUserProfileParams struct {
+	Name     *string
+	SetPhone bool
+	Phone    *string
+	ID       uuid.UUID
 }
 
-// Moves the account to a new number and the Firebase account that verified it.
-func (q *Queries) UpdateUserPhone(ctx context.Context, arg UpdateUserPhoneParams) (User, error) {
-	row := q.db.QueryRow(ctx, updateUserPhone, arg.ID, arg.Phone, arg.FirebaseUID)
+// A NULL name keeps the current one. The phone changes only when set_phone is
+// true, and a NULL phone then clears it.
+func (q *Queries) UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) (User, error) {
+	row := q.db.QueryRow(ctx, updateUserProfile,
+		arg.Name,
+		arg.SetPhone,
+		arg.Phone,
+		arg.ID,
+	)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Phone,
-		&i.FirebaseUID,
 		&i.Name,
 		&i.AvatarKey,
 		&i.PINHash,
@@ -317,6 +338,8 @@ func (q *Queries) UpdateUserPhone(ctx context.Context, arg UpdateUserPhoneParams
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DeletedAt,
+		&i.Email,
+		&i.EmailVerifiedAt,
 	)
 	return i, err
 }
