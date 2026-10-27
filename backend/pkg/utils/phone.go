@@ -1,5 +1,5 @@
 // Package utils holds small pure helpers shared across layers: phone number
-// normalization and business-date arithmetic.
+// and email normalization and business-date arithmetic.
 package utils
 
 import (

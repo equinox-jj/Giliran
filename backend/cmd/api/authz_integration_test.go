@@ -89,6 +89,7 @@ func newSweepApp(t *testing.T) sweepApp {
 	t.Setenv("LOG_LEVEL", "error")
 	t.Setenv("DATABASE_URL", db.Config().ConnString())
 	t.Setenv("JWT_SECRET", strings.Repeat("s", 48))
+	t.Setenv("OTP_SECRET", strings.Repeat("o", 48))
 	t.Setenv("MINIO_ENDPOINT", "minio.test:9000")
 	t.Setenv("MINIO_ACCESS_KEY", "test")
 	t.Setenv("MINIO_SECRET_KEY", "test-secret")

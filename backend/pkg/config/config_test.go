@@ -14,6 +14,7 @@ var required = map[string]string{
 	"APP_PUBLIC_BASE_URL": "http://localhost:8080",
 	"DATABASE_URL":        "postgres://giliran:CHANGE_ME@localhost:5432/giliran?sslmode=disable",
 	"JWT_SECRET":          strings.Repeat("s", 32),
+	"OTP_SECRET":          strings.Repeat("o", 32),
 	"MINIO_ENDPOINT":      "localhost:9000",
 	"MINIO_ACCESS_KEY":    "giliran",
 	"MINIO_SECRET_KEY":    "CHANGE_ME",
@@ -75,6 +76,15 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.App.Location == nil || cfg.App.Location.String() != "Asia/Jakarta" {
 		t.Errorf("location %v", cfg.App.Location)
 	}
+	if cfg.OTP.TTL != 10*time.Minute || cfg.OTP.ResendInterval != time.Minute || cfg.OTP.MaxAttempts != 5 {
+		t.Errorf("otp %+v", cfg.OTP)
+	}
+	if cfg.SMTP.TLS != SMTPTLSStartTLS || cfg.SMTP.Port != 587 || cfg.SMTP.DailyLimit != 100 {
+		t.Errorf("smtp %+v", cfg.SMTP)
+	}
+	if cfg.Worker.OTPExpireCron != "* * * * *" || cfg.Retention.OTPRequests != 24*time.Hour {
+		t.Errorf("otp expire cron %q, retention %s", cfg.Worker.OTPExpireCron, cfg.Retention.OTPRequests)
+	}
 	if cfg.HTTP.TrustedProxies == nil || len(cfg.HTTP.TrustedProxies) != 0 {
 		t.Errorf("trusted proxies %#v, want empty non-nil", cfg.HTTP.TrustedProxies)
 	}
@@ -122,6 +132,14 @@ func TestLoadInvalid(t *testing.T) {
 	}{
 		{"missing jwt secret", map[string]string{"JWT_SECRET": ""}, "JWT_SECRET: is required"},
 		{"short jwt secret", map[string]string{"JWT_SECRET": "too-short"}, "JWT_SECRET: must be at least 32 bytes, got 9"},
+		{"missing otp secret", map[string]string{"OTP_SECRET": ""}, "OTP_SECRET: is required"},
+		{"short otp secret", map[string]string{"OTP_SECRET": "too-short"}, "OTP_SECRET: must be at least 32 bytes, got 9"},
+		{"resend interval not shorter than ttl", map[string]string{"OTP_RESEND_INTERVAL": "10m"}, "OTP_RESEND_INTERVAL: must be shorter than OTP_TTL"},
+		{"negative max resends", map[string]string{"OTP_MAX_RESENDS": "-1"}, "OTP_MAX_RESENDS: must be at least 0"},
+		{"unknown smtp tls", map[string]string{"SMTP_TLS": "ssl"}, "SMTP_TLS: must be one of"},
+		{"smtp tls none in production", map[string]string{"APP_ENV": "production", "SMTP_TLS": "none"}, "SMTP_TLS: must not be none in production"},
+		{"unparsable smtp from", map[string]string{"SMTP_FROM": "Giliran"}, "SMTP_FROM: must be an address"},
+		{"bad otp expire cron", map[string]string{"WORKER_OTP_EXPIRE_CRON": "every minute"}, "WORKER_OTP_EXPIRE_CRON: must be a five-field cron spec"},
 		{"bad duration", map[string]string{"HTTP_READ_TIMEOUT": "ten seconds"}, "http_read_timeout"},
 		{"bad number", map[string]string{"HTTP_PORT": "eighty"}, "http_port"},
 		{"port out of range", map[string]string{"HTTP_PORT": "70000"}, "HTTP_PORT: must be between 1 and 65535"},

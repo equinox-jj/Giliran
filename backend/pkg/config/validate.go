@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"net/mail"
 	"net/url"
 	"slices"
 	"strings"
@@ -13,6 +14,10 @@ import (
 
 // minJWTSecretBytes is the shortest HS256 secret accepted (RFC 7518 §3.2).
 const minJWTSecretBytes = 32
+
+// minOTPSecretBytes is the shortest OTP_SECRET accepted, the HMAC-SHA256
+// output size.
+const minOTPSecretBytes = 32
 
 // placeholder is the value .env.example uses for secrets.
 const placeholder = "CHANGE_ME"
@@ -136,6 +141,35 @@ func (c *Config) validate() error {
 	v.atLeast("PIN_MAX_ATTEMPTS", int64(c.PIN.MaxAttempts), 1)
 	v.positive("PIN_LOCKOUT_DURATION", c.PIN.LockoutDuration)
 
+	v.secret("OTP_SECRET", c.OTP.Secret, prod)
+	if n := len(c.OTP.Secret); n > 0 && n < minOTPSecretBytes {
+		v.fail("OTP_SECRET", "must be at least %d bytes, got %d", minOTPSecretBytes, n)
+	}
+	v.positive("OTP_TTL", c.OTP.TTL)
+	v.positive("OTP_RESEND_INTERVAL", c.OTP.ResendInterval)
+	if c.OTP.ResendInterval >= c.OTP.TTL {
+		v.fail("OTP_RESEND_INTERVAL", "must be shorter than OTP_TTL")
+	}
+	v.atLeast("OTP_MAX_ATTEMPTS", int64(c.OTP.MaxAttempts), 1)
+	v.atLeast("OTP_MAX_RESENDS", int64(c.OTP.MaxResends), 0)
+	v.atLeast("OTP_LIMIT_PER_EMAIL", int64(c.OTP.LimitPerEmail), 1)
+	v.atLeast("OTP_LIMIT_PER_IP", int64(c.OTP.LimitPerIP), 1)
+	v.positive("OTP_LIMIT_WINDOW", c.OTP.LimitWindow)
+
+	// Only the shape: the API never sends mail, so SMTP_HOST is required by
+	// the worker's email client instead.
+	if c.SMTP.Port < 1 || c.SMTP.Port > 65535 {
+		v.fail("SMTP_PORT", "must be between 1 and 65535, got %d", c.SMTP.Port)
+	}
+	v.oneOf("SMTP_TLS", c.SMTP.TLS, SMTPTLSStartTLS, SMTPTLSImplicit, SMTPTLSNone)
+	if prod && c.SMTP.TLS == SMTPTLSNone {
+		v.fail("SMTP_TLS", "must not be %s in production", SMTPTLSNone)
+	}
+	if _, err := mail.ParseAddress(c.SMTP.From); err != nil {
+		v.fail("SMTP_FROM", "must be an address such as \"Giliran <masuk@example.com>\": %v", err)
+	}
+	v.atLeast("EMAIL_DAILY_LIMIT", int64(c.SMTP.DailyLimit), 1)
+
 	v.required("MINIO_ENDPOINT", c.MinIO.Endpoint)
 	if c.MinIO.PublicURL != "" {
 		v.absoluteURL("MINIO_PUBLIC_URL", c.MinIO.PublicURL, "http", "https")
@@ -162,9 +196,11 @@ func (c *Config) validate() error {
 	v.cron("WORKER_MISSED_ALERT_CRON", c.Worker.MissedAlertCron)
 	v.cron("WORKER_TRANSFER_EXPIRY_CRON", c.Worker.TransferExpiryCron)
 	v.cron("WORKER_CLEANUP_CRON", c.Worker.CleanupCron)
+	v.cron("WORKER_OTP_EXPIRE_CRON", c.Worker.OTPExpireCron)
 
 	v.positive("RETENTION_REVOKED_SESSIONS", c.Retention.RevokedSessions)
 	v.positive("RETENTION_PAYMENT_PROOFS", c.Retention.PaymentProofs)
+	v.positive("RETENTION_OTP_REQUESTS", c.Retention.OTPRequests)
 
 	return errors.Join(v.errs...)
 }

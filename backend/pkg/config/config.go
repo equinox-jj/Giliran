@@ -29,6 +29,8 @@ type Config struct {
 	Database    Database    `koanf:",squash"`
 	JWT         JWT         `koanf:",squash"`
 	PIN         PIN         `koanf:",squash"`
+	OTP         OTP         `koanf:",squash"`
+	SMTP        SMTP        `koanf:",squash"`
 	Firebase    Firebase    `koanf:",squash"`
 	MinIO       MinIO       `koanf:",squash"`
 	RateLimit   RateLimit   `koanf:",squash"`
@@ -42,6 +44,13 @@ const (
 	EnvDevelopment = "development"
 	EnvStaging     = "staging"
 	EnvProduction  = "production"
+)
+
+// Transport security modes accepted by SMTP_TLS.
+const (
+	SMTPTLSStartTLS = "starttls"
+	SMTPTLSImplicit = "tls"
+	SMTPTLSNone     = "none"
 )
 
 type App struct {
@@ -106,6 +115,35 @@ type PIN struct {
 	LockoutDuration   time.Duration `koanf:"pin_lockout_duration"`
 }
 
+// OTP holds the email-code settings (FR-AUTH-01). Secret keys both the code
+// derivation and the stored hash, so the API and the worker must share it.
+type OTP struct {
+	Secret         string        `koanf:"otp_secret"`
+	TTL            time.Duration `koanf:"otp_ttl"`
+	MaxAttempts    int           `koanf:"otp_max_attempts"`
+	ResendInterval time.Duration `koanf:"otp_resend_interval"`
+	MaxResends     int           `koanf:"otp_max_resends"`
+	// LimitPerEmail and LimitPerIP cap the code requests per LimitWindow,
+	// counted in email_otp_requests.
+	LimitPerEmail int           `koanf:"otp_limit_per_email"`
+	LimitPerIP    int           `koanf:"otp_limit_per_ip"`
+	LimitWindow   time.Duration `koanf:"otp_limit_window"`
+}
+
+// SMTP is used only by the worker, which sends the emails;
+// internal/clients/email requires the host at startup.
+type SMTP struct {
+	Host     string `koanf:"smtp_host"`
+	Port     int    `koanf:"smtp_port"`
+	Username string `koanf:"smtp_username"`
+	Password string `koanf:"smtp_password"`
+	// TLS is one of the SMTPTLS* modes.
+	TLS  string `koanf:"smtp_tls"`
+	From string `koanf:"smtp_from"`
+	// DailyLimit is the provider's daily quota; the worker warns at 80 %.
+	DailyLimit int `koanf:"email_daily_limit"`
+}
+
 // Firebase is checked by internal/clients/firebase at startup, which fails
 // when the credentials file is missing.
 type Firebase struct {
@@ -153,11 +191,13 @@ type Worker struct {
 	MissedAlertCron    string `koanf:"worker_missed_alert_cron"`
 	TransferExpiryCron string `koanf:"worker_transfer_expiry_cron"`
 	CleanupCron        string `koanf:"worker_cleanup_cron"`
+	OTPExpireCron      string `koanf:"worker_otp_expire_cron"`
 }
 
 type Retention struct {
 	RevokedSessions time.Duration `koanf:"retention_revoked_sessions"`
 	PaymentProofs   time.Duration `koanf:"retention_payment_proofs"`
+	OTPRequests     time.Duration `koanf:"retention_otp_requests"`
 }
 
 // defaults are the tunables from .env.example. Secrets and anything that
@@ -189,6 +229,17 @@ var defaults = map[string]any{
 	"pin_argon2_key_length":       32,
 	"pin_max_attempts":            5,
 	"pin_lockout_duration":        "15m",
+	"otp_ttl":                     "10m",
+	"otp_max_attempts":            5,
+	"otp_resend_interval":         "60s",
+	"otp_max_resends":             5,
+	"otp_limit_per_email":         5,
+	"otp_limit_per_ip":            20,
+	"otp_limit_window":            "1h",
+	"smtp_port":                   587,
+	"smtp_tls":                    SMTPTLSStartTLS,
+	"smtp_from":                   "Giliran <masuk@giliran.monai.my.id>",
+	"email_daily_limit":           100,
 	"firebase_credentials_file":   "./secrets/firebase-service-account.json",
 	"minio_use_ssl":               false,
 	"minio_region":                "us-east-1",
@@ -209,8 +260,10 @@ var defaults = map[string]any{
 	"worker_missed_alert_cron":    "0 10 * * *",
 	"worker_transfer_expiry_cron": "0 * * * *",
 	"worker_cleanup_cron":         "0 3 * * *",
+	"worker_otp_expire_cron":      "* * * * *",
 	"retention_revoked_sessions":  "720h",
 	"retention_payment_proofs":    "2160h",
+	"retention_otp_requests":      "24h",
 }
 
 // Load reads .env from the working directory, if present, and the process
