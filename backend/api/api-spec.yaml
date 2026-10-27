@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Giliran API
-  version: 1.0.0
+  version: 1.2.0
   summary: REST API for Giliran, a transparent arisan (rotating savings group) manager.
   description: |
     Backend API for the Giliran mobile app (Flutter) built with Go Fiber.
@@ -24,6 +24,12 @@ info:
       `422 idempotency_key_reused`.
     - **The app never moves money.** Payments are records of transfers made outside the app.
 
+    ## Sign-in (email OTP)
+    The user enters their email, receives a 6-digit code (valid 10 minutes, 5 attempts),
+    and enters it in the app. New emails create an account; existing accounts must also
+    enter their PIN. The same flow handles `sign_in`, `reset_pin` and `change_email`.
+    Email is sent through an SMTP provider by a background job.
+
     ## Error codes
     | code | status | meaning |
     |---|---|---|
@@ -31,8 +37,13 @@ info:
     | `bad_request` | 400 | Malformed request (bad JSON, bad UUID) |
     | `invalid_pagination` | 400 | Pagination parameters out of range |
     | `unauthorized` | 401 | Missing, invalid or expired access token |
-    | `otp_invalid` | 401 | Firebase ID token rejected |
     | `refresh_token_invalid` | 401 | Refresh token unknown, expired or revoked |
+    | `pin_required` | 422 | Code is correct; the account must also send its PIN |
+    | `otp_not_found` | 404 | Unknown code request |
+    | `otp_invalid` | 422 | Wrong code; see `attempts_remaining` |
+    | `otp_expired` | 410 | Code older than 10 minutes; resend or request a new one |
+    | `otp_already_used` | 409 | Code request already completed |
+    | `otp_too_many_attempts` | 429 | 5 wrong codes, or resend limit reached; request a new code |
     | `pin_invalid` | 401 | Wrong PIN |
     | `pin_not_set` | 409 | Action requires a PIN that has not been set |
     | `pin_already_set` | 409 | A PIN is already set; use change PIN |
@@ -47,7 +58,7 @@ info:
     | `invite_not_found` | 404 | Invite code invalid or reset |
     | `claim_not_found` | 404 | Claim link invalid or expired |
     | `draw_not_found` | 404 | Verification code unknown |
-    | `phone_already_registered` | 409 | New phone number already has an account |
+    | `email_already_registered` | 409 | Change-email target already has an account |
     | `group_full` | 409 | No free slots |
     | `group_not_draft` | 409 | Setting can only change before the group starts |
     | `group_not_active` | 409 | Group is not running |
@@ -78,7 +89,7 @@ info:
     name: Proprietary
 
 servers:
-  - url: https://api.giliran.monai.my.id/api/v1
+  - url: https://giliran.monai.my.id/api/v1
     description: Production
   - url: http://localhost:8080/api/v1
     description: Local development
@@ -89,7 +100,7 @@ security:
 tags:
   - name: System
   - name: Auth
-    description: Phone OTP sign-in, tokens and PIN.
+    description: Email OTP sign-in, tokens and PIN.
   - name: Me
     description: The signed-in user's profile, settings, devices and groups.
   - name: Groups
@@ -115,7 +126,7 @@ paths:
       security: []
       responses:
         "200":
-          description: Service and database are reachable.
+          description: Service and database are reachable. Email delivery is checked by monitoring the job queue, not here.
           content:
             application/json:
               schema:
@@ -124,47 +135,22 @@ paths:
                 properties:
                   data:
                     type: object
-                    required: [status]
+                    required: [status, checks]
                     properties:
                       status:
                         type: string
                         enum: [ok]
+                      checks:
+                        type: object
+                        required: [database]
+                        properties:
+                          database:
+                            type: string
+                            enum: [ok]
         "503":
           $ref: "#/components/responses/ServiceUnavailable"
 
   # ------------------------------------------------------------------ Auth
-  /auth/sign-in:
-    post:
-      tags: [Auth]
-      operationId: signIn
-      summary: Sign in or sign up with a Firebase phone-auth ID token
-      description: |
-        The app completes phone OTP with Firebase, then sends the Firebase ID token here.
-        A new phone number creates an account (`is_new_user: true`).
-        If `pin_set` is false, the app must call `POST /auth/pin` next.
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SignInRequest"
-      responses:
-        "200":
-          description: Signed in.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AuthResultEnvelope"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-        "429":
-          $ref: "#/components/responses/TooManyRequests"
-        "500":
-          $ref: "#/components/responses/InternalError"
-
   /auth/refresh:
     post:
       tags: [Auth]
@@ -271,52 +257,130 @@ paths:
         "429":
           $ref: "#/components/responses/TooManyRequests"
 
-  /auth/pin/reset:
+  /auth/email/otp:
     post:
       tags: [Auth]
-      operationId: resetPin
-      summary: Reset a forgotten PIN after a fresh OTP
-      description: Signs out every other session.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ResetPinRequest"
-      responses:
-        "204":
-          description: PIN reset.
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "422":
-          $ref: "#/components/responses/ValidationError"
-        "429":
-          $ref: "#/components/responses/TooManyRequests"
+      operationId: requestEmailOtp
+      summary: Send a 6-digit sign-in code by email
+      description: |
+        Creates a one-time code and sends it to `email` (sent by a background job, usually
+        within seconds). The code is valid for 10 minutes and allows 5 attempts.
 
-  /auth/phone:
-    put:
-      tags: [Auth]
-      operationId: changePhone
-      summary: Change phone number (OTP on the old and the new number)
+        - `sign_in`: no access token. Unknown emails get a code too; the account is created
+          when the code is verified.
+        - `reset_pin`: no access token. Always returns `202`; the email is only sent if an
+          account exists, so the response never reveals which emails are registered.
+        - `change_email`: requires a Bearer token and the current `pin`; `email` is the new
+          address.
+      security:
+        - {}
+        - bearerAuth: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ChangePhoneRequest"
+              $ref: "#/components/schemas/EmailOtpRequest"
       responses:
-        "200":
-          description: Phone changed. Other sessions are signed out.
+        "202":
+          description: Code requested.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/MeEnvelope"
+                $ref: "#/components/schemas/EmailOtpChallengeEnvelope"
         "401":
           $ref: "#/components/responses/Unauthorized"
         "409":
           $ref: "#/components/responses/Conflict"
         "422":
           $ref: "#/components/responses/ValidationError"
+        "423":
+          $ref: "#/components/responses/Locked"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /auth/email/otp/{otp_id}/resend:
+    parameters:
+      - $ref: "#/components/parameters/OtpId"
+    post:
+      tags: [Auth]
+      operationId: resendEmailOtp
+      summary: Send a new code for the same request
+      description: |
+        Replaces the code, resets the attempts and the 10-minute expiry. Available 60 seconds
+        after the previous send (`resend_available_at`), at most 5 times per request; otherwise
+        `429` with `Retry-After`.
+      security:
+        - {}
+        - bearerAuth: []
+      responses:
+        "202":
+          description: New code sent.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailOtpChallengeEnvelope"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+
+  /auth/email/otp/{otp_id}/verify:
+    parameters:
+      - $ref: "#/components/parameters/OtpId"
+    post:
+      tags: [Auth]
+      operationId: verifyEmailOtp
+      summary: Verify the code and receive tokens
+      description: |
+        Body by purpose:
+
+        | purpose | account | body | result |
+        |---|---|---|---|
+        | `sign_in` | new, or no PIN yet | `{ "code" }` | `auth`; the app then calls `POST /auth/pin` |
+        | `sign_in` | existing with PIN | `{ "code", "pin" }` | `auth` |
+        | `reset_pin` | existing | `{ "code", "new_pin", "new_pin_confirmation" }` | `auth`; all other sessions revoked |
+        | `change_email` | signed in (Bearer) | `{ "code" }` | `user`; all other sessions revoked |
+
+        If the code is correct but the account needs its PIN and none was sent, the response
+        is `422 pin_required`; the code stays valid, so the app shows the PIN pad and sends
+        `{ "code", "pin" }`. A wrong code returns `422 otp_invalid` with `attempts_remaining`;
+        after 5 wrong codes the request is locked (`429 otp_too_many_attempts`) and the user
+        must request a new code. Wrong PINs count toward the PIN lock.
+      security:
+        - {}
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailOtpVerifyRequest"
+      responses:
+        "200":
+          description: Verified.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailOtpResultEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "410":
+          $ref: "#/components/responses/Gone"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "423":
+          $ref: "#/components/responses/Locked"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
 
   # ------------------------------------------------------------------ Me
   /me:
@@ -336,7 +400,7 @@ paths:
     patch:
       tags: [Me]
       operationId: updateMe
-      summary: Update my display name
+      summary: Update my name or WhatsApp number
       requestBody:
         required: true
         content:
@@ -1806,7 +1870,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: Access token from `/auth/sign-in` or `/auth/refresh`. Lifetime 15 minutes.
+      description: Access token from verifying an email OTP or from `/auth/refresh`. Lifetime 15 minutes.
 
   headers:
     Location:
@@ -1879,6 +1943,13 @@ components:
       schema:
         type: string
         pattern: "^[A-Z0-9]{8}$"
+    OtpId:
+      name: otp_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
     IdempotencyKey:
       name: Idempotency-Key
       in: header
@@ -1959,7 +2030,7 @@ components:
                 request_id: req_01JB8Z6X4Q
             payments_incomplete:
               value:
-                type: https://api.giliran.monai.my.id/problems/payments-incomplete
+                type: https://giliran.monai.my.id/problems/payments-incomplete
                 title: Payments incomplete
                 status: 409
                 detail: 8 of 10 payments are paid. Confirm to draw anyway.
@@ -1974,7 +2045,7 @@ components:
           schema:
             $ref: "#/components/schemas/ValidationProblem"
           example:
-            type: https://api.giliran.monai.my.id/problems/validation-error
+            type: https://giliran.monai.my.id/problems/validation-error
             title: Validation failed
             status: 422
             detail: One or more fields are invalid.
@@ -2028,6 +2099,19 @@ components:
             status: 415
             detail: Upload a JPEG, PNG or WebP image.
             code: unsupported_media_type
+            request_id: req_01JB8Z6X4Q
+    Gone:
+      description: The code has expired.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+          example:
+            type: about:blank
+            title: Gone
+            status: 410
+            detail: Kode sudah kedaluwarsa. Buat kode baru.
+            code: otp_expired
             request_id: req_01JB8Z6X4Q
     TooManyRequests:
       description: Rate limit exceeded.
@@ -2169,21 +2253,6 @@ components:
           format: uri
 
     # ---------------------------------------------------------- auth
-    SignInRequest:
-      type: object
-      required: [firebase_id_token, device_name, device_platform]
-      properties:
-        firebase_id_token:
-          type: string
-        device_name:
-          type: string
-          maxLength: 100
-          examples: ["Samsung Galaxy A54"]
-        device_platform:
-          type: string
-          enum: [android, ios]
-        fcm_token:
-          type: string
     RefreshRequest:
       type: object
       required: [refresh_token]
@@ -2245,38 +2314,121 @@ components:
           $ref: "#/components/schemas/Pin"
         new_pin_confirmation:
           $ref: "#/components/schemas/Pin"
-    ResetPinRequest:
-      type: object
-      required: [firebase_id_token, new_pin, new_pin_confirmation]
-      properties:
-        firebase_id_token:
-          type: string
-          description: Fresh token from an OTP to the registered number.
-        new_pin:
-          $ref: "#/components/schemas/Pin"
-        new_pin_confirmation:
-          $ref: "#/components/schemas/Pin"
-    ChangePhoneRequest:
-      type: object
-      required: [old_firebase_id_token, new_firebase_id_token]
-      properties:
-        old_firebase_id_token:
-          type: string
-          description: Token from an OTP to the current number.
-        new_firebase_id_token:
-          type: string
-          description: Token from an OTP to the new number.
 
-    # ---------------------------------------------------------- me
-    Me:
+    # ---------------------------------------------------------- email OTP
+    Email:
+      type: string
+      format: email
+      maxLength: 254
+      description: Stored and compared in lowercase.
+      examples: ["rina.wulandari@gmail.com"]
+    OtpPurpose:
+      type: string
+      enum: [sign_in, reset_pin, change_email]
+    EmailOtpRequest:
       type: object
-      required: [id, phone, name, avatar_url, pin_set, created_at]
+      required: [purpose, email, device_name, device_platform]
+      properties:
+        purpose:
+          $ref: "#/components/schemas/OtpPurpose"
+        email:
+          $ref: "#/components/schemas/Email"
+        device_name:
+          type: string
+          maxLength: 100
+          examples: ["Samsung Galaxy A54"]
+        device_platform:
+          type: string
+          enum: [android, ios]
+        fcm_token:
+          type: string
+          maxLength: 4096
+        pin:
+          allOf:
+            - $ref: "#/components/schemas/Pin"
+          description: Required for `change_email`.
+    EmailOtpChallenge:
+      type: object
+      required: [id, purpose, email_masked, code_length, expires_at, resend_available_at, attempts_remaining]
       properties:
         id:
           type: string
           format: uuid
+        purpose:
+          $ref: "#/components/schemas/OtpPurpose"
+        email_masked:
+          type: string
+          examples: ["ri•••••@gmail.com"]
+        code_length:
+          type: integer
+          enum: [6]
+        expires_at:
+          type: string
+          format: date-time
+        resend_available_at:
+          type: string
+          format: date-time
+        attempts_remaining:
+          type: integer
+          minimum: 0
+          maximum: 5
+    EmailOtpChallengeEnvelope:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/EmailOtpChallenge"
+    EmailOtpVerifyRequest:
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+          pattern: "^[0-9]{6}$"
+        pin:
+          $ref: "#/components/schemas/Pin"
+        new_pin:
+          $ref: "#/components/schemas/Pin"
+        new_pin_confirmation:
+          $ref: "#/components/schemas/Pin"
+    EmailOtpResult:
+      type: object
+      required: [purpose]
+      properties:
+        purpose:
+          $ref: "#/components/schemas/OtpPurpose"
+        auth:
+          description: For `sign_in` and `reset_pin`.
+          oneOf:
+            - $ref: "#/components/schemas/AuthResult"
+            - type: "null"
+        user:
+          description: For `change_email`.
+          oneOf:
+            - $ref: "#/components/schemas/Me"
+            - type: "null"
+    EmailOtpResultEnvelope:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/EmailOtpResult"
+
+    # ---------------------------------------------------------- me
+    Me:
+      type: object
+      required: [id, email, phone, name, avatar_url, pin_set, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          $ref: "#/components/schemas/Email"
         phone:
-          $ref: "#/components/schemas/Phone"
+          description: Optional and not verified; used only for WhatsApp reminder links from organizers.
+          oneOf:
+            - $ref: "#/components/schemas/Phone"
+            - type: "null"
         name:
           type: [string, "null"]
           description: Null until set after the first sign-in.
@@ -2290,12 +2442,17 @@ components:
           format: date-time
     UpdateMeRequest:
       type: object
-      required: [name]
+      minProperties: 1
       properties:
         name:
           type: string
           minLength: 2
           maxLength: 50
+        phone:
+          description: Optional WhatsApp number for reminders; `null` removes it. Not verified.
+          oneOf:
+            - $ref: "#/components/schemas/Phone"
+            - type: "null"
     UserSettings:
       type: object
       required: [language, notify_payment_reminders, notify_draw_results, notify_group_activity]
@@ -3301,12 +3458,6 @@ components:
           $ref: "#/components/schemas/PaymentInfo"
 
     # ---------------------------------------------------------- envelopes
-    AuthResultEnvelope:
-      type: object
-      required: [data]
-      properties:
-        data:
-          $ref: "#/components/schemas/AuthResult"
     TokenPairEnvelope:
       type: object
       required: [data]
