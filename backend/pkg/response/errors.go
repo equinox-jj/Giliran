@@ -76,6 +76,8 @@ func statusFor(k model.ErrorKind) int {
 		return fiber.StatusNotFound
 	case model.KindConflict:
 		return fiber.StatusConflict
+	case model.KindGone:
+		return fiber.StatusGone
 	case model.KindTooLarge:
 		return fiber.StatusRequestEntityTooLarge
 	case model.KindUnsupportedType:

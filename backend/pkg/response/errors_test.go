@@ -51,6 +51,7 @@ func TestStatusFor(t *testing.T) {
 		{model.KindForbidden, 403},
 		{model.KindNotFound, 404},
 		{model.KindConflict, 409},
+		{model.KindGone, 410},
 		{model.KindTooLarge, 413},
 		{model.KindUnsupportedType, 415},
 		{model.KindInvalid, 422},

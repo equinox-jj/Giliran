@@ -498,27 +498,3 @@ func claimGuest(ctx context.Context, members *repository.MemberRepository, activ
 	})
 	return m, err
 }
-
-// claimGuestsByPhone gives userID every guest slot in a running group whose
-// phone matches theirs (FR-MEM-04 auto-claim). Within one group only the
-// earliest such guest is claimed, since a user holds one membership per
-// group. Call it inside WithTx. If the user joined one of those groups
-// concurrently it returns repository.ErrDuplicate, and a retry skips that
-// group.
-func claimGuestsByPhone(ctx context.Context, members *repository.MemberRepository, activity *Activity, userID uuid.UUID, phone string) error {
-	guests, err := members.ListClaimableGuestsByPhone(ctx, phone, userID)
-	if err != nil {
-		return err
-	}
-	claimed := map[uuid.UUID]bool{}
-	for _, g := range guests {
-		if claimed[g.GroupID] {
-			continue
-		}
-		if _, err := claimGuest(ctx, members, activity, g, userID); err != nil {
-			return err
-		}
-		claimed[g.GroupID] = true
-	}
-	return nil
-}

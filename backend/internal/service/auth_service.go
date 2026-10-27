@@ -11,14 +11,11 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/equinox-jj/Giliran/backend/internal/clients/firebase"
-	"github.com/equinox-jj/Giliran/backend/internal/clients/storage"
 	"github.com/equinox-jj/Giliran/backend/internal/model"
 	"github.com/equinox-jj/Giliran/backend/internal/repository"
 	"github.com/equinox-jj/Giliran/backend/pkg/clock"
 	"github.com/equinox-jj/Giliran/backend/pkg/config"
 	"github.com/equinox-jj/Giliran/backend/pkg/security"
-	"github.com/equinox-jj/Giliran/backend/pkg/utils"
 )
 
 // refreshTokenBytes is the entropy of a refresh token.
@@ -38,24 +35,19 @@ type TokenPair struct {
 	ExpiresIn    time.Duration // access token lifetime
 }
 
-// SignInResult is the outcome of a successful sign-in.
+// SignInResult is the outcome of a successful sign-in or PIN reset.
 type SignInResult struct {
 	Profile   Profile
 	Tokens    TokenPair
 	IsNewUser bool
 }
 
-// AuthService signs users in with a Firebase phone-auth token and manages
-// their sessions: refresh-token rotation with reuse detection (FR-AUTH-08)
-// and logout.
+// AuthService manages sessions: refresh-token rotation with reuse detection
+// (FR-AUTH-08) and logout. OTPService signs users in and uses createSession
+// and issue to start their sessions.
 type AuthService struct {
 	tx         *repository.TxManager
-	users      *repository.UserRepository
 	sessions   *repository.SessionRepository
-	members    *repository.MemberRepository
-	activity   *Activity
-	verifier   firebase.AuthVerifier
-	store      storage.Storage
 	tokens     *security.TokenIssuer
 	clock      clock.Clock
 	log        *slog.Logger
@@ -64,105 +56,15 @@ type AuthService struct {
 
 func NewAuthService(
 	tx *repository.TxManager,
-	users *repository.UserRepository,
 	sessions *repository.SessionRepository,
-	members *repository.MemberRepository,
-	activity *Activity,
-	verifier firebase.AuthVerifier,
-	store storage.Storage,
 	tokens *security.TokenIssuer,
 	clk clock.Clock,
 	log *slog.Logger,
 	cfg *config.Config,
 ) *AuthService {
 	return &AuthService{
-		tx: tx, users: users, sessions: sessions, members: members, activity: activity, verifier: verifier, store: store,
-		tokens: tokens, clock: clk, log: log, refreshTTL: cfg.JWT.RefreshTTL,
+		tx: tx, sessions: sessions, tokens: tokens, clock: clk, log: log, refreshTTL: cfg.JWT.RefreshTTL,
 	}
-}
-
-// SignIn verifies the Firebase ID token, finds or creates the account for its
-// phone number, gives it the guest slots added under that number (FR-MEM-04)
-// and starts a new session family on device.
-func (s *AuthService) SignIn(ctx context.Context, idToken string, device Device) (SignInResult, error) {
-	identity, err := s.verifier.Verify(ctx, idToken)
-	if err != nil {
-		return SignInResult{}, err
-	}
-	phone, err := utils.NormalizePhone("firebase_id_token", identity.Phone)
-	if err != nil {
-		return SignInResult{}, model.ErrOTPInvalid.WithDetail("Only Indonesian mobile numbers can sign in.")
-	}
-
-	now := s.clock.Now()
-	var res SignInResult
-	var user model.User
-	var sessionID uuid.UUID
-	signIn := func(ctx context.Context) error {
-		u, isNew, err := s.findOrCreateUser(ctx, identity.UID, phone)
-		if err != nil {
-			return err
-		}
-		if err := claimGuestsByPhone(ctx, s.members, s.activity, u.ID, phone); err != nil {
-			return err
-		}
-		sess, refresh, err := s.createSession(ctx, u.ID, uuid.Must(uuid.NewV7()), device, now)
-		if err != nil {
-			return err
-		}
-		user = u
-		res = SignInResult{IsNewUser: isNew, Tokens: TokenPair{RefreshToken: refresh}}
-		sessionID = sess.ID
-		return nil
-	}
-	err = s.tx.WithTx(ctx, signIn)
-	if errors.Is(err, repository.ErrDuplicate) {
-		// A concurrent first sign-in for the same phone created the user
-		// between our lookup and insert, or the user joined a group whose
-		// guest we were claiming; this time the lookups see both.
-		err = s.tx.WithTx(ctx, signIn)
-	}
-	if err != nil {
-		return SignInResult{}, err
-	}
-
-	if res.Tokens, err = s.issue(user.ID, sessionID, res.Tokens.RefreshToken); err != nil {
-		return SignInResult{}, err
-	}
-	if res.Profile, err = profileOf(ctx, s.store, user); err != nil {
-		return SignInResult{}, err
-	}
-	return res, nil
-}
-
-// findOrCreateUser looks the user up by Firebase UID, then by phone (linking
-// the UID if Firebase issued a new one for a known number), and otherwise
-// creates the account with its default settings.
-func (s *AuthService) findOrCreateUser(ctx context.Context, uid, phone string) (model.User, bool, error) {
-	user, err := s.users.GetByFirebaseUID(ctx, uid)
-	if err == nil {
-		return user, false, nil
-	}
-	if !errors.Is(err, repository.ErrNotFound) {
-		return model.User{}, false, err
-	}
-
-	user, err = s.users.GetByPhone(ctx, phone)
-	if err == nil {
-		user, err = s.users.SetFirebaseUID(ctx, user.ID, uid)
-		return user, false, err
-	}
-	if !errors.Is(err, repository.ErrNotFound) {
-		return model.User{}, false, err
-	}
-
-	if user, err = s.users.Create(ctx, uuid.Must(uuid.NewV7()), phone, uid); err != nil {
-		return model.User{}, false, err
-	}
-	if err := s.users.CreateSettings(ctx, user.ID); err != nil {
-		return model.User{}, false, err
-	}
-	return user, true, nil
 }
 
 // Refresh rotates a refresh token: the presented session is revoked as
@@ -223,60 +125,6 @@ func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (TokenPa
 func (s *AuthService) Logout(ctx context.Context, userID, sessionID uuid.UUID) error {
 	_, err := s.sessions.RevokeForUser(ctx, sessionID, userID, model.RevokedReasonLogout, s.clock.Now())
 	return err
-}
-
-// ChangePhone moves the account to a new number (FR-AUTH-06). oldToken must
-// come from an OTP to the current number and newToken from an OTP to the new
-// one; a number that already has an account is phone_already_registered.
-// Every session except sessionID is signed out.
-func (s *AuthService) ChangePhone(ctx context.Context, userID, sessionID uuid.UUID, oldToken, newToken string) (Profile, error) {
-	oldID, err := s.verifier.Verify(ctx, oldToken)
-	if err != nil {
-		return Profile{}, err
-	}
-	newID, err := s.verifier.Verify(ctx, newToken)
-	if err != nil {
-		return Profile{}, err
-	}
-	newPhone, err := utils.NormalizePhone("new_firebase_id_token", newID.Phone)
-	if err != nil {
-		return Profile{}, model.ErrOTPInvalid.WithDetail("Only Indonesian mobile numbers can be used.")
-	}
-
-	var user model.User
-	err = s.tx.WithTx(ctx, func(ctx context.Context) error {
-		current, err := currentUser(s.users.GetByIDForUpdate(ctx, userID))
-		if err != nil {
-			return err
-		}
-		if !ownsIdentity(current, oldID) {
-			return model.ErrOTPInvalid.WithDetail("The first OTP was not sent to this account's phone number.")
-		}
-		if newPhone == current.Phone {
-			return model.NewValidationError(model.FieldError{
-				Field: "new_firebase_id_token", Code: model.FieldInvalidFormat,
-				Message: "The new number is the same as the current one.",
-			})
-		}
-		if _, err := s.users.GetByPhone(ctx, newPhone); err == nil {
-			return model.ErrPhoneAlreadyRegistered
-		} else if !errors.Is(err, repository.ErrNotFound) {
-			return err
-		}
-		if user, err = s.users.UpdatePhone(ctx, userID, newPhone, newID.UID); err != nil {
-			return err
-		}
-		_, err = s.sessions.RevokeOthers(ctx, userID, sessionID, model.RevokedReasonPhoneChanged, s.clock.Now())
-		return err
-	})
-	if errors.Is(err, repository.ErrDuplicate) {
-		// The number or its Firebase account was claimed after our lookup.
-		return Profile{}, model.ErrPhoneAlreadyRegistered
-	}
-	if err != nil {
-		return Profile{}, err
-	}
-	return profileOf(ctx, s.store, user)
 }
 
 // createSession inserts a session with a fresh refresh token and returns the

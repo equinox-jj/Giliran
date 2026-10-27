@@ -75,6 +75,35 @@ type CleanupArgs struct{}
 
 func (CleanupArgs) Kind() string { return "cleanup" }
 
+// EmailOTPArgs emails the code for one send of an email_otp_requests row
+// (email.otp). The code is never stored: the worker derives it again from
+// OTPID and ResendCount, and skips the send once the row has moved on.
+type EmailOTPArgs struct {
+	OTPID       uuid.UUID `json:"otp_id"`
+	ResendCount int16     `json:"resend_count"`
+}
+
+func (EmailOTPArgs) Kind() string { return "email.otp" }
+
+// A code lives 10 minutes, and River's backoff spends about 6 of them on 5
+// attempts, so later retries would only deliver a dead code.
+func (EmailOTPArgs) InsertOpts() river.InsertOpts {
+	return river.InsertOpts{MaxAttempts: 5, UniqueOpts: river.UniqueOpts{ByArgs: true}}
+}
+
+// EmailChangedNoticeArgs tells the previous address that the account moved
+// to a new email (email.email_changed_notice). Best effort.
+type EmailChangedNoticeArgs struct {
+	UserID   uuid.UUID `json:"user_id"`
+	OldEmail string    `json:"old_email"`
+}
+
+func (EmailChangedNoticeArgs) Kind() string { return "email.email_changed_notice" }
+
+func (EmailChangedNoticeArgs) InsertOpts() river.InsertOpts {
+	return river.InsertOpts{MaxAttempts: 10}
+}
+
 // AccountPurgeArgs deletes what a deleted account left outside the
 // database: its avatar object and its Firebase user (account.purge).
 type AccountPurgeArgs struct {

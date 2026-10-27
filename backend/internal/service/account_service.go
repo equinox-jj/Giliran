@@ -18,6 +18,7 @@ type AccountService struct {
 	groups    *repository.GroupRepository
 	users     *repository.UserRepository
 	sessions  *repository.SessionRepository
+	otps      *repository.OTPRepository
 	members   *repository.MemberRepository
 	leaves    *repository.LeaveRequestRepository
 	transfers *repository.OwnershipTransferRepository
@@ -31,6 +32,7 @@ func NewAccountService(
 	groups *repository.GroupRepository,
 	users *repository.UserRepository,
 	sessions *repository.SessionRepository,
+	otps *repository.OTPRepository,
 	members *repository.MemberRepository,
 	leaves *repository.LeaveRequestRepository,
 	transfers *repository.OwnershipTransferRepository,
@@ -39,7 +41,7 @@ func NewAccountService(
 	clk clock.Clock,
 ) *AccountService {
 	return &AccountService{
-		pins: pins, groups: groups, users: users, sessions: sessions, members: members,
+		pins: pins, groups: groups, users: users, sessions: sessions, otps: otps, members: members,
 		leaves: leaves, transfers: transfers, activity: activity, enqueuer: enqueuer, clock: clk,
 	}
 }
@@ -52,9 +54,9 @@ func NewAccountService(
 // payments and draws, so they leave through a leave request first.
 // Memberships of draft groups end and free their slots; completed and
 // closed groups keep the history under "Mantan anggota". Personal data is
-// cleared (DB_SCHEME §10) and every session is revoked. The avatar object
-// and the Firebase user are deleted by an account.purge job queued in the
-// same transaction, which retries until both are gone.
+// cleared (DB_SCHEME §10), every session is revoked and pending email codes
+// are cancelled. The avatar object is deleted by an account.purge job queued
+// in the same transaction, which retries until it is gone.
 func (s *AccountService) Delete(ctx context.Context, userID uuid.UUID, pin string) error {
 	now := s.clock.Now()
 	return s.pins.checkPIN(ctx, userID, pin, func(ctx context.Context) error {
@@ -90,11 +92,14 @@ func (s *AccountService) Delete(ctx context.Context, userID uuid.UUID, pin strin
 		if _, err := s.sessions.RevokeAll(ctx, userID, model.RevokedReasonAccountDeleted, now); err != nil {
 			return err
 		}
-		if user.AvatarKey == nil && user.FirebaseUID == nil {
+		if _, err := s.otps.CancelPendingForUser(ctx, userID); err != nil {
+			return err
+		}
+		if user.AvatarKey == nil {
 			return nil
 		}
 		return s.enqueuer.Enqueue(ctx, river.InsertManyParams{
-			Args: jobs.AccountPurgeArgs{FirebaseUID: user.FirebaseUID, AvatarKey: user.AvatarKey},
+			Args: jobs.AccountPurgeArgs{AvatarKey: user.AvatarKey},
 		})
 	})
 }

@@ -82,20 +82,31 @@ func (s *ProfileService) Me(ctx context.Context, userID uuid.UUID) (Profile, err
 	return profileOf(ctx, s.store, user)
 }
 
-// UpdateName sets the display name, trimmed of surrounding whitespace.
-func (s *ProfileService) UpdateName(ctx context.Context, userID uuid.UUID, name string) (Profile, error) {
-	name = strings.TrimSpace(name)
-	switch n := utf8.RuneCountInString(name); {
-	case n < nameMinLen:
-		return Profile{}, model.NewValidationError(model.FieldError{
-			Field: "name", Code: model.FieldMinLength, Message: fmt.Sprintf("Must have at least %d characters.", nameMinLen),
-		})
-	case n > nameMaxLen:
-		return Profile{}, model.NewValidationError(model.FieldError{
-			Field: "name", Code: model.FieldMaxLength, Message: fmt.Sprintf("Must have at most %d characters.", nameMaxLen),
-		})
+// UpdateProfile changes the display name, trimmed of surrounding whitespace,
+// and the phone used for wa.me reminder links (FR-PROF-01). The phone is
+// optional and unverified; c.SetPhone with a nil Phone clears it.
+func (s *ProfileService) UpdateProfile(ctx context.Context, userID uuid.UUID, c repository.ProfileChange) (Profile, error) {
+	if c.Name != nil {
+		name := strings.TrimSpace(*c.Name)
+		switch n := utf8.RuneCountInString(name); {
+		case n < nameMinLen:
+			return Profile{}, model.NewValidationError(model.FieldError{
+				Field: "name", Code: model.FieldMinLength, Message: fmt.Sprintf("Must have at least %d characters.", nameMinLen),
+			})
+		case n > nameMaxLen:
+			return Profile{}, model.NewValidationError(model.FieldError{
+				Field: "name", Code: model.FieldMaxLength, Message: fmt.Sprintf("Must have at most %d characters.", nameMaxLen),
+			})
+		}
+		c.Name = &name
 	}
-	user, err := currentUser(s.users.UpdateName(ctx, userID, name))
+	if c.SetPhone {
+		var err error
+		if c.Phone, err = normalizeOptionalPhone(c.Phone); err != nil {
+			return Profile{}, err
+		}
+	}
+	user, err := currentUser(s.users.UpdateProfile(ctx, userID, c))
 	if err != nil {
 		return Profile{}, err
 	}

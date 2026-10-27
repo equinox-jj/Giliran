@@ -75,7 +75,7 @@ type profileEnv struct {
 
 func newProfileEnv(t *testing.T) profileEnv {
 	t.Helper()
-	auth := newAuthEnv(t, fakeVerifier{"tok": rina, "budi": budi})
+	auth := newAuthEnv(t, accounts{"tok": rina, "budi": budi})
 	tx := repository.NewTxManager(auth.pool)
 	store := newMemStore()
 	cfg := &config.Config{MinIO: config.MinIO{UploadMaxBytes: 5 << 20}}
@@ -109,28 +109,85 @@ func TestProfileUpdateNameTrims(t *testing.T) {
 	t.Parallel()
 	env := newProfileEnv(t)
 	userID, _ := env.session(t, "tok")
+	name := "  Rina Susanti "
 
 	// Act
-	user, err := env.svc.UpdateName(context.Background(), userID, "  Rina Susanti ")
+	user, err := env.svc.UpdateProfile(context.Background(), userID, repository.ProfileChange{Name: &name})
 
 	// Assert
 	if err != nil || user.User.Name == nil || *user.User.Name != "Rina Susanti" {
-		t.Fatalf("UpdateName: %v, name %v", err, user.User.Name)
+		t.Fatalf("UpdateProfile: %v, name %v", err, user.User.Name)
+	}
+	if user.User.Phone == nil || *user.User.Phone != rina.Phone {
+		t.Errorf("phone %v, want it kept as %s", user.User.Phone, rina.Phone)
 	}
 }
 
-func TestProfileUpdateNameRejectsBlank(t *testing.T) {
+func TestProfileUpdatePhone(t *testing.T) {
 	// Arrange
 	t.Parallel()
-	env := newProfileEnv(t)
-	userID, _ := env.session(t, "tok")
+	local := "0813-1111-2222"
+	want := "+6281311112222"
+	tests := []struct {
+		name  string
+		phone *string
+		want  *string
+	}{
+		{"normalized", &local, &want},
+		{"cleared", nil, nil},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Arrange
+			t.Parallel()
+			env := newProfileEnv(t)
+			userID, _ := env.session(t, "tok")
 
-	// Act
-	_, err := env.svc.UpdateName(context.Background(), userID, "  R  ")
+			// Act
+			user, err := env.svc.UpdateProfile(context.Background(), userID, repository.ProfileChange{SetPhone: true, Phone: tt.phone})
 
-	// Assert
-	if !errors.Is(err, model.ErrValidation) {
-		t.Errorf("err %v, want validation_error", err)
+			// Assert
+			if err != nil {
+				t.Fatalf("UpdateProfile: %v", err)
+			}
+			if (user.User.Phone == nil) != (tt.want == nil) || tt.want != nil && *user.User.Phone != *tt.want {
+				t.Errorf("phone %v, want %v", user.User.Phone, tt.want)
+			}
+			if user.User.Name != nil {
+				t.Errorf("name %v, want it left unset", *user.User.Name)
+			}
+		})
+	}
+}
+
+func TestProfileUpdateRejects(t *testing.T) {
+	// Arrange
+	t.Parallel()
+	blank, foreign := "  R  ", "+6591234567"
+	tests := []struct {
+		name   string
+		change repository.ProfileChange
+		field  string
+	}{
+		{"blank name", repository.ProfileChange{Name: &blank}, "name"},
+		{"non-Indonesian phone", repository.ProfileChange{SetPhone: true, Phone: &foreign}, "phone"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Arrange
+			t.Parallel()
+			env := newProfileEnv(t)
+			userID, _ := env.session(t, "tok")
+
+			// Act
+			_, err := env.svc.UpdateProfile(context.Background(), userID, tt.change)
+
+			// Assert
+			var merr *model.Error
+			if !errors.As(err, &merr) || merr.Code != "validation_error" || len(merr.Fields) != 1 || merr.Fields[0].Field != tt.field {
+				t.Errorf("err %v, want validation_error on %s", err, tt.field)
+			}
+		})
 	}
 }
 

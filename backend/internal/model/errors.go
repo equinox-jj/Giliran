@@ -16,6 +16,7 @@ const (
 	KindForbidden                        // 403
 	KindNotFound                         // 404
 	KindConflict                         // 409
+	KindGone                             // 410
 	KindTooLarge                         // 413
 	KindUnsupportedType                  // 415
 	KindInvalid                          // 422
@@ -113,12 +114,19 @@ var (
 	ErrInvalidPagination = &Error{Kind: KindBadRequest, Code: "invalid_pagination", Message: "Pagination parameters are out of range."}
 
 	ErrUnauthorized        = &Error{Kind: KindUnauthenticated, Code: "unauthorized", Message: "Missing, invalid or expired access token."}
-	ErrOTPInvalid          = &Error{Kind: KindUnauthenticated, Code: "otp_invalid", Message: "The Firebase ID token was rejected."}
 	ErrRefreshTokenInvalid = &Error{Kind: KindUnauthenticated, Code: "refresh_token_invalid", Message: "Refresh token is unknown, expired or revoked."}
 	ErrPINInvalid          = &Error{Kind: KindUnauthenticated, Code: "pin_invalid", Message: "Wrong PIN."}
 	ErrPINNotSet           = &Error{Kind: KindConflict, Code: "pin_not_set", Message: "This action requires a PIN that has not been set."}
 	ErrPINLocked           = &Error{Kind: KindLocked, Code: "pin_locked", Message: "Too many wrong PIN attempts."}
 	ErrPINAlreadySet       = &Error{Kind: KindConflict, Code: "pin_already_set", Message: "A PIN is already set; change it instead."}
+
+	// Email codes (FR-AUTH-01). otp_invalid carries attempts_remaining.
+	ErrOTPInvalid         = &Error{Kind: KindInvalid, Code: "otp_invalid", Message: "Wrong code."}
+	ErrPINRequired        = &Error{Kind: KindInvalid, Code: "pin_required", Message: "The code is correct; send the account's PIN as well."}
+	ErrOTPNotFound        = &Error{Kind: KindNotFound, Code: "otp_not_found", Message: "Unknown code request."}
+	ErrOTPExpired         = &Error{Kind: KindGone, Code: "otp_expired", Message: "The code has expired; resend it or request a new one."}
+	ErrOTPAlreadyUsed     = &Error{Kind: KindConflict, Code: "otp_already_used", Message: "This code request is already completed."}
+	ErrOTPTooManyAttempts = &Error{Kind: KindRateLimited, Code: "otp_too_many_attempts", Message: "Too many wrong codes or resends; request a new code."}
 
 	// ErrForbiddenRole is only for members whose role cannot do the action.
 	// Non-members get ErrGroupNotFound instead, so group existence never leaks.
@@ -136,7 +144,7 @@ var (
 	ErrClaimNotFound   = &Error{Kind: KindNotFound, Code: "claim_not_found", Message: "Claim link is invalid or expired."}
 	ErrDrawNotFound    = &Error{Kind: KindNotFound, Code: "draw_not_found", Message: "Verification code is unknown."}
 
-	ErrPhoneAlreadyRegistered = &Error{Kind: KindConflict, Code: "phone_already_registered", Message: "This phone number already has an account."}
+	ErrEmailAlreadyRegistered = &Error{Kind: KindConflict, Code: "email_already_registered", Message: "This email already has an account."}
 	ErrGroupFull              = &Error{Kind: KindConflict, Code: "group_full", Message: "The group has no free slots."}
 	ErrGroupNotDraft          = &Error{Kind: KindConflict, Code: "group_not_draft", Message: "This setting can only change before the group starts."}
 	ErrGroupNotActive         = &Error{Kind: KindConflict, Code: "group_not_active", Message: "The group is not running."}

@@ -8,14 +8,12 @@ import (
 	"io"
 	"log/slog"
 	"strings"
-	"sync"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/equinox-jj/Giliran/backend/internal/clients/firebase"
 	"github.com/equinox-jj/Giliran/backend/internal/model"
 	"github.com/equinox-jj/Giliran/backend/internal/repository"
 	"github.com/equinox-jj/Giliran/backend/pkg/clock"
@@ -24,52 +22,115 @@ import (
 	"github.com/equinox-jj/Giliran/backend/test/integration"
 )
 
-// fakeVerifier maps ID tokens to identities; unknown tokens are rejected.
-type fakeVerifier map[string]firebase.Identity
-
-func (f fakeVerifier) Verify(_ context.Context, idToken string) (firebase.Identity, error) {
-	id, ok := f[idToken]
-	if !ok {
-		return firebase.Identity{}, model.ErrOTPInvalid
-	}
-	return id, nil
+// identity is a test account: the email it signs in with and the phone it
+// then sets on its profile, which reminders use for wa.me links.
+type identity struct {
+	Email string
+	Phone string
 }
 
+// accounts maps the keys tests sign in with to identities.
+type accounts map[string]identity
+
 var (
-	rina     = firebase.Identity{UID: "uid-rina", Phone: "+6281234567890"}
+	rina     = identity{Email: "rina@gmail.com", Phone: "+6281234567890"}
+	budi     = identity{Email: "budi@gmail.com", Phone: "+6281299998888"}
 	android  = Device{Name: "Samsung Galaxy A54", Platform: model.DevicePlatformAndroid}
 	tokenCfg = &config.Config{JWT: config.JWT{
 		Secret: strings.Repeat("s", 32), Issuer: "test", Audience: "test",
 		AccessTTL: 15 * time.Minute, RefreshTTL: 30 * 24 * time.Hour,
 	}}
+	// otpCfg has limits high enough that no fixture trips them.
+	otpCfg = config.OTP{
+		Secret: strings.Repeat("o", 32), TTL: 10 * time.Minute, ResendInterval: time.Minute,
+		LimitPerEmail: 1000, LimitPerIP: 1000, LimitWindow: time.Hour,
+	}
 )
 
 type authEnv struct {
-	svc    *AuthService
-	pool   *pgxpool.Pool
-	clock  *clock.Fake
-	tokens *security.TokenIssuer
+	svc      *AuthService
+	otp      *OTPService
+	pins     *PINService
+	pool     *pgxpool.Pool
+	clock    *clock.Fake
+	tokens   *security.TokenIssuer
+	accounts accounts
 }
 
-func newAuthEnv(t *testing.T, verifier fakeVerifier) authEnv {
+func newAuthEnv(t *testing.T, accts accounts) authEnv {
 	t.Helper()
 	pool := integration.NewDB(t)
 	tx := repository.NewTxManager(pool)
 	clk := clock.NewFake(time.Date(2026, 10, 26, 2, 0, 0, 0, time.UTC))
-	tokens := security.NewTokenIssuer(tokenCfg, clk)
-	svc := NewAuthService(tx, repository.NewUserRepository(tx), repository.NewSessionRepository(tx),
-		repository.NewMemberRepository(tx), NewActivity(repository.NewActivityRepository(tx), clk),
-		verifier, newMemStore(), tokens, clk, slog.New(slog.NewTextHandler(io.Discard, nil)), tokenCfg)
-	return authEnv{svc: svc, pool: pool, clock: clk, tokens: tokens}
+	cfg := &config.Config{JWT: tokenCfg.JWT, PIN: pinCfg.PIN, OTP: otpCfg}
+	tokens := security.NewTokenIssuer(cfg, clk)
+	users := repository.NewUserRepository(tx)
+	sessions := repository.NewSessionRepository(tx)
+	log := slog.New(slog.NewTextHandler(io.Discard, nil))
+	svc := NewAuthService(tx, sessions, tokens, clk, log, cfg)
+	pins := NewPINService(tx, users, security.NewPINHasher(cfg), clk, cfg)
+	otp := NewOTPService(tx, users, sessions, repository.NewOTPRepository(tx), pins, svc,
+		newTestEnqueuer(t, pool), newMemStore(), clk, log, cfg)
+	return authEnv{svc: svc, otp: otp, pins: pins, pool: pool, clock: clk, tokens: tokens, accounts: accts}
 }
 
-func (e authEnv) signIn(t *testing.T, idToken string) SignInResult {
+// code derives the code the email job would send for one send of otpID.
+func code(otpID uuid.UUID, resendCount int) string {
+	return security.OTPCode([]byte(otpCfg.Secret), otpID, resendCount)
+}
+
+// request asks for a code and fails the test on error.
+func (e authEnv) request(t *testing.T, in OTPStart) OTPChallenge {
 	t.Helper()
-	res, err := e.svc.SignIn(context.Background(), idToken, android)
+	if in.Device == (Device{}) {
+		in.Device = android
+	}
+	ch, err := e.otp.Request(context.Background(), in)
 	if err != nil {
-		t.Fatalf("SignIn: %v", err)
+		t.Fatalf("Request %s: %v", in.Purpose, err)
+	}
+	return ch
+}
+
+// signInEmail signs in with an emailed code, sending pin for an account that
+// has one.
+func (e authEnv) signInEmail(t *testing.T, email string, pin *string) SignInResult {
+	t.Helper()
+	ch := e.request(t, OTPStart{Purpose: model.OTPPurposeSignIn, Email: email})
+	res, err := e.otp.Verify(context.Background(), ch.ID, OTPVerify{Code: code(ch.ID, 0), PIN: pin}, nil)
+	if err != nil {
+		t.Fatalf("Verify sign_in: %v", err)
+	}
+	return *res.Auth
+}
+
+// signIn signs the account under key in. A new account also sets its phone,
+// as the app would through PATCH /me. Accounts with a PIN must use goodPIN.
+func (e authEnv) signIn(t *testing.T, key string) SignInResult {
+	t.Helper()
+	id, ok := e.accounts[key]
+	if !ok {
+		t.Fatalf("no test account %q", key)
+	}
+	pin := goodPIN
+	res := e.signInEmail(t, id.Email, &pin)
+	if res.IsNewUser && id.Phone != "" {
+		if _, err := e.pool.Exec(context.Background(), `UPDATE users SET phone = $2 WHERE id = $1`, res.Profile.User.ID, id.Phone); err != nil {
+			t.Fatalf("set phone: %v", err)
+		}
+		res.Profile.User.Phone = &id.Phone
 	}
 	return res
+}
+
+// caller is the account and session behind res's access token.
+func (e authEnv) caller(t *testing.T, res SignInResult) *Caller {
+	t.Helper()
+	userID, sessionID, err := e.tokens.Parse(res.Tokens.AccessToken)
+	if err != nil {
+		t.Fatalf("Parse: %v", err)
+	}
+	return &Caller{UserID: userID, SessionID: sessionID}
 }
 
 func (e authEnv) refresh(t *testing.T, token string) TokenPair {
@@ -106,129 +167,10 @@ func (e authEnv) revokedReason(t *testing.T, token string) string {
 	return *reason
 }
 
-func TestSignInCreatesAccount(t *testing.T) {
-	// Arrange
-	t.Parallel()
-	env := newAuthEnv(t, fakeVerifier{"tok": rina})
-
-	// Act
-	res := env.signIn(t, "tok")
-
-	// Assert
-	if !res.IsNewUser || res.Profile.User.Phone != rina.Phone || res.Profile.User.HasPIN() {
-		t.Errorf("result %+v", res)
-	}
-	if n := env.count(t, `SELECT count(*) FROM user_settings WHERE user_id = $1`, res.Profile.User.ID); n != 1 {
-		t.Errorf("%d settings rows, want 1", n)
-	}
-	userID, sessionID, err := env.tokens.Parse(res.Tokens.AccessToken)
-	if err != nil || userID != res.Profile.User.ID {
-		t.Fatalf("access token: %v, user %s", err, userID)
-	}
-	if n := env.count(t, `SELECT count(*) FROM sessions WHERE id = $1 AND user_id = $2 AND device_name = $3 AND revoked_at IS NULL`,
-		sessionID, userID, android.Name); n != 1 {
-		t.Error("session row missing or wrong")
-	}
-	if res.Tokens.ExpiresIn != 15*time.Minute || res.Tokens.RefreshToken == "" {
-		t.Errorf("tokens %+v", res.Tokens)
-	}
-}
-
-func TestSignInReturningUser(t *testing.T) {
-	// Arrange
-	t.Parallel()
-	env := newAuthEnv(t, fakeVerifier{"tok": rina})
-	first := env.signIn(t, "tok")
-
-	// Act
-	second := env.signIn(t, "tok")
-
-	// Assert
-	if second.IsNewUser || second.Profile.User.ID != first.Profile.User.ID {
-		t.Errorf("second sign-in: new %v, user %s, want existing %s", second.IsNewUser, second.Profile.User.ID, first.Profile.User.ID)
-	}
-	if n := env.count(t, `SELECT count(DISTINCT family_id) FROM sessions WHERE user_id = $1`, first.Profile.User.ID); n != 2 {
-		t.Errorf("%d session families, want 2 (one per sign-in)", n)
-	}
-}
-
-func TestSignInLinksNewFirebaseUIDToKnownPhone(t *testing.T) {
-	// Arrange
-	t.Parallel()
-	reissued := firebase.Identity{UID: "uid-rina-new", Phone: rina.Phone}
-	env := newAuthEnv(t, fakeVerifier{"old": rina, "new": reissued})
-	first := env.signIn(t, "old")
-
-	// Act
-	second := env.signIn(t, "new")
-
-	// Assert
-	if second.IsNewUser || second.Profile.User.ID != first.Profile.User.ID {
-		t.Fatalf("got user %s (new %v), want %s", second.Profile.User.ID, second.IsNewUser, first.Profile.User.ID)
-	}
-	if second.Profile.User.FirebaseUID == nil || *second.Profile.User.FirebaseUID != reissued.UID {
-		t.Errorf("firebase uid %v, want %s", second.Profile.User.FirebaseUID, reissued.UID)
-	}
-}
-
-func TestSignInRejects(t *testing.T) {
-	// Arrange
-	t.Parallel()
-	env := newAuthEnv(t, fakeVerifier{"foreign": {UID: "uid-sg", Phone: "+6591234567"}})
-	tests := []struct {
-		name  string
-		token string
-	}{
-		{"token the verifier rejects", "unknown"},
-		{"non-Indonesian number", "foreign"},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// Act
-			_, err := env.svc.SignIn(context.Background(), tt.token, android)
-
-			// Assert
-			if !errors.Is(err, model.ErrOTPInvalid) {
-				t.Errorf("got %v, want otp_invalid", err)
-			}
-		})
-	}
-}
-
-func TestSignInConcurrentFirstSignIn(t *testing.T) {
-	// Arrange
-	t.Parallel()
-	env := newAuthEnv(t, fakeVerifier{"tok": rina})
-	const n = 5
-	results := make([]SignInResult, n)
-	errs := make([]error, n)
-	var wg sync.WaitGroup
-
-	// Act
-	for i := range n {
-		wg.Go(func() { results[i], errs[i] = env.svc.SignIn(context.Background(), "tok", android) })
-	}
-	wg.Wait()
-
-	// Assert
-	for i, err := range errs {
-		if err != nil {
-			t.Fatalf("sign-in %d: %v", i, err)
-		}
-		if results[i].Profile.User.ID != results[0].Profile.User.ID {
-			t.Errorf("sign-in %d got user %s, want %s", i, results[i].Profile.User.ID, results[0].Profile.User.ID)
-		}
-	}
-	if users := env.count(t, `SELECT count(*) FROM users`); users != 1 {
-		t.Errorf("%d users, want 1", users)
-	}
-}
-
 func TestRefreshRotates(t *testing.T) {
 	// Arrange
 	t.Parallel()
-	env := newAuthEnv(t, fakeVerifier{"tok": rina})
+	env := newAuthEnv(t, accounts{"tok": rina})
 	signedIn := env.signIn(t, "tok")
 	env.clock.Advance(20 * time.Minute)
 
@@ -260,7 +202,7 @@ func TestRefreshRotates(t *testing.T) {
 func TestRefreshReuseRevokesFamily(t *testing.T) {
 	// Arrange
 	t.Parallel()
-	env := newAuthEnv(t, fakeVerifier{"tok": rina})
+	env := newAuthEnv(t, accounts{"tok": rina})
 	stolen := env.signIn(t, "tok").Tokens.RefreshToken
 	latest := env.refresh(t, env.refresh(t, stolen).RefreshToken).RefreshToken
 	other := env.signIn(t, "tok").Tokens.RefreshToken // another device, another family
@@ -307,7 +249,7 @@ func TestRefreshRejects(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange
 			t.Parallel()
-			env := newAuthEnv(t, fakeVerifier{"tok": rina})
+			env := newAuthEnv(t, accounts{"tok": rina})
 			token := tt.token(t, env)
 
 			// Act
@@ -324,7 +266,7 @@ func TestRefreshRejects(t *testing.T) {
 func TestLogoutRevokesOnlyCurrentSession(t *testing.T) {
 	// Arrange
 	t.Parallel()
-	env := newAuthEnv(t, fakeVerifier{"tok": rina})
+	env := newAuthEnv(t, accounts{"tok": rina})
 	current := env.signIn(t, "tok")
 	other := env.signIn(t, "tok")
 	_, sessionID, err := env.tokens.Parse(current.Tokens.AccessToken)
@@ -350,7 +292,7 @@ func TestLogoutRevokesOnlyCurrentSession(t *testing.T) {
 func TestLogoutIgnoresOtherUsersSession(t *testing.T) {
 	// Arrange
 	t.Parallel()
-	env := newAuthEnv(t, fakeVerifier{"tok": rina})
+	env := newAuthEnv(t, accounts{"tok": rina})
 	victim := env.signIn(t, "tok")
 	_, sessionID, _ := env.tokens.Parse(victim.Tokens.AccessToken)
 
@@ -363,75 +305,5 @@ func TestLogoutIgnoresOtherUsersSession(t *testing.T) {
 	}
 	if got := env.revokedReason(t, victim.Tokens.RefreshToken); got != "" {
 		t.Errorf("another user's session was revoked (%s)", got)
-	}
-}
-
-var budi = firebase.Identity{UID: "uid-budi", Phone: "+6281299998888"}
-
-func TestChangePhoneMovesAccountAndSignsOutOthers(t *testing.T) {
-	// Arrange
-	t.Parallel()
-	newRina := firebase.Identity{UID: "uid-rina-new", Phone: "081311112222"}
-	env := newAuthEnv(t, fakeVerifier{"tok": rina, "new": newRina})
-	current := env.signIn(t, "tok")
-	other := env.signIn(t, "tok")
-	_, sessionID, _ := env.tokens.Parse(current.Tokens.AccessToken)
-
-	// Act
-	p, err := env.svc.ChangePhone(context.Background(), current.Profile.User.ID, sessionID, "tok", "new")
-	user := p.User
-
-	// Assert
-	if err != nil {
-		t.Fatalf("ChangePhone: %v", err)
-	}
-	if user.Phone != "+6281311112222" || user.FirebaseUID == nil || *user.FirebaseUID != newRina.UID {
-		t.Errorf("user %+v", user)
-	}
-	if got := env.revokedReason(t, other.Tokens.RefreshToken); got != "phone_changed" {
-		t.Errorf("other session revoked as %q, want phone_changed", got)
-	}
-	if got := env.revokedReason(t, current.Tokens.RefreshToken); got != "" {
-		t.Errorf("current session revoked as %q, want active", got)
-	}
-}
-
-func TestChangePhoneRejects(t *testing.T) {
-	// Arrange
-	t.Parallel()
-	tests := []struct {
-		name     string
-		oldToken string
-		newToken string
-		wantCode string
-	}{
-		{"old otp for another number", "budi", "fresh", "otp_invalid"},
-		{"new number has an account", "tok", "budi", "phone_already_registered"},
-		{"new number is the current one", "tok", "tok", "validation_error"},
-		{"rejected token", "tok", "unknown", "otp_invalid"},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// Arrange
-			t.Parallel()
-			fresh := firebase.Identity{UID: "uid-fresh", Phone: "+6281355556666"}
-			env := newAuthEnv(t, fakeVerifier{"tok": rina, "budi": budi, "fresh": fresh})
-			res := env.signIn(t, "tok")
-			env.signIn(t, "budi")
-			_, sessionID, _ := env.tokens.Parse(res.Tokens.AccessToken)
-
-			// Act
-			_, err := env.svc.ChangePhone(context.Background(), res.Profile.User.ID, sessionID, tt.oldToken, tt.newToken)
-
-			// Assert
-			var merr *model.Error
-			if !errors.As(err, &merr) || merr.Code != tt.wantCode {
-				t.Fatalf("err %v, want %s", err, tt.wantCode)
-			}
-			if n := env.count(t, `SELECT count(*) FROM users WHERE id = $1 AND phone = $2`, res.Profile.User.ID, rina.Phone); n != 1 {
-				t.Error("phone changed despite the error")
-			}
-		})
 	}
 }

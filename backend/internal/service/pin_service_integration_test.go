@@ -11,11 +11,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/equinox-jj/Giliran/backend/internal/clients/firebase"
 	"github.com/equinox-jj/Giliran/backend/internal/model"
-	"github.com/equinox-jj/Giliran/backend/internal/repository"
 	"github.com/equinox-jj/Giliran/backend/pkg/config"
-	"github.com/equinox-jj/Giliran/backend/pkg/security"
 )
 
 const (
@@ -32,29 +29,17 @@ var pinCfg = &config.Config{PIN: config.PIN{
 
 type pinEnv struct {
 	authEnv
-	pins      *PINService
 	userID    uuid.UUID
 	sessionID uuid.UUID
 }
 
-// newPINEnv signs Rina in with the "tok" ID token. verifier may add more
-// tokens (for reset); "tok" is always Rina.
-func newPINEnv(t *testing.T, verifier fakeVerifier) pinEnv {
+// newPINEnv signs Rina in under the "tok" key.
+func newPINEnv(t *testing.T) pinEnv {
 	t.Helper()
-	if verifier == nil {
-		verifier = fakeVerifier{}
-	}
-	verifier["tok"] = rina
-	env := newAuthEnv(t, verifier)
-	tx := repository.NewTxManager(env.pool)
-	pins := NewPINService(tx, repository.NewUserRepository(tx), repository.NewSessionRepository(tx),
-		security.NewPINHasher(pinCfg), verifier, env.clock, pinCfg)
+	env := newAuthEnv(t, accounts{"tok": rina})
 	res := env.signIn(t, "tok")
-	_, sessionID, err := env.tokens.Parse(res.Tokens.AccessToken)
-	if err != nil {
-		t.Fatalf("Parse: %v", err)
-	}
-	return pinEnv{authEnv: env, pins: pins, userID: res.Profile.User.ID, sessionID: sessionID}
+	c := env.caller(t, res)
+	return pinEnv{authEnv: env, userID: c.UserID, sessionID: c.SessionID}
 }
 
 func (e pinEnv) setPIN(t *testing.T) {
@@ -89,7 +74,7 @@ func (e pinEnv) attempts(t *testing.T) (int, bool) {
 func TestPINSetThenVerify(t *testing.T) {
 	// Arrange
 	t.Parallel()
-	env := newPINEnv(t, nil)
+	env := newPINEnv(t)
 	env.setPIN(t)
 
 	// Act
@@ -118,7 +103,7 @@ func TestPINSetErrors(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange
 			t.Parallel()
-			env := newPINEnv(t, nil)
+			env := newPINEnv(t)
 			tt.setup(t, env)
 
 			// Act
@@ -135,7 +120,7 @@ func TestPINSetErrors(t *testing.T) {
 func TestPINVerifyNotSet(t *testing.T) {
 	// Arrange
 	t.Parallel()
-	env := newPINEnv(t, nil)
+	env := newPINEnv(t)
 
 	// Act
 	err := env.pins.Verify(context.Background(), env.userID, goodPIN)
@@ -149,7 +134,7 @@ func TestPINVerifyNotSet(t *testing.T) {
 func TestPINWrongAttemptIsCounted(t *testing.T) {
 	// Arrange
 	t.Parallel()
-	env := newPINEnv(t, nil)
+	env := newPINEnv(t)
 	env.setPIN(t)
 
 	// Act
@@ -167,7 +152,7 @@ func TestPINWrongAttemptIsCounted(t *testing.T) {
 func TestPINFifthWrongAttemptLocks(t *testing.T) {
 	// Arrange
 	t.Parallel()
-	env := newPINEnv(t, nil)
+	env := newPINEnv(t)
 	env.setPIN(t)
 	env.failVerify(t, 4)
 
@@ -187,7 +172,7 @@ func TestPINFifthWrongAttemptLocks(t *testing.T) {
 func TestPINLockedRejectsCorrectPIN(t *testing.T) {
 	// Arrange
 	t.Parallel()
-	env := newPINEnv(t, nil)
+	env := newPINEnv(t)
 	env.setPIN(t)
 	env.failVerify(t, 5)
 	env.clock.Advance(10 * time.Minute)
@@ -205,7 +190,7 @@ func TestPINLockedRejectsCorrectPIN(t *testing.T) {
 func TestPINUnlocksAfterLockout(t *testing.T) {
 	// Arrange
 	t.Parallel()
-	env := newPINEnv(t, nil)
+	env := newPINEnv(t)
 	env.setPIN(t)
 	env.failVerify(t, 5)
 	env.clock.Advance(15 * time.Minute)
@@ -225,7 +210,7 @@ func TestPINUnlocksAfterLockout(t *testing.T) {
 func TestPINCorrectAttemptClearsCount(t *testing.T) {
 	// Arrange
 	t.Parallel()
-	env := newPINEnv(t, nil)
+	env := newPINEnv(t)
 	env.setPIN(t)
 	env.failVerify(t, 3)
 
@@ -244,7 +229,7 @@ func TestPINCorrectAttemptClearsCount(t *testing.T) {
 func TestPINConcurrentWrongAttemptsAllCount(t *testing.T) {
 	// Arrange
 	t.Parallel()
-	env := newPINEnv(t, nil)
+	env := newPINEnv(t)
 	env.setPIN(t)
 	var wg sync.WaitGroup
 
@@ -263,7 +248,7 @@ func TestPINConcurrentWrongAttemptsAllCount(t *testing.T) {
 func TestPINChange(t *testing.T) {
 	// Arrange
 	t.Parallel()
-	env := newPINEnv(t, nil)
+	env := newPINEnv(t)
 	env.setPIN(t)
 	if err := env.pins.Change(context.Background(), env.userID, goodPIN, otherPIN); err != nil {
 		t.Fatalf("Change: %v", err)
@@ -281,7 +266,7 @@ func TestPINChange(t *testing.T) {
 func TestPINChangeWrongCurrent(t *testing.T) {
 	// Arrange
 	t.Parallel()
-	env := newPINEnv(t, nil)
+	env := newPINEnv(t)
 	env.setPIN(t)
 
 	// Act
@@ -296,50 +281,5 @@ func TestPINChangeWrongCurrent(t *testing.T) {
 	}
 	if failed, _ := env.attempts(t); failed != 0 {
 		t.Errorf("failed %d after the successful verify, want 0", failed)
-	}
-}
-
-func TestPINResetSignsOutOtherSessions(t *testing.T) {
-	// Arrange
-	t.Parallel()
-	env := newPINEnv(t, fakeVerifier{"otp": rina})
-	env.setPIN(t)
-	env.failVerify(t, 5) // locked
-	otherDevice := env.signIn(t, "tok").Tokens.RefreshToken
-
-	// Act
-	err := env.pins.Reset(context.Background(), env.userID, env.sessionID, "otp", otherPIN)
-
-	// Assert
-	if err != nil {
-		t.Fatalf("Reset: %v", err)
-	}
-	if got := env.revokedReason(t, otherDevice); got != "pin_reset" {
-		t.Errorf("other device revoked_reason %q, want pin_reset", got)
-	}
-	if n := env.count(t, `SELECT count(*) FROM sessions WHERE id = $1 AND revoked_at IS NULL`, env.sessionID); n != 1 {
-		t.Error("current session was revoked")
-	}
-	if verr := env.pins.Verify(context.Background(), env.userID, otherPIN); verr != nil {
-		t.Errorf("new PIN after reset: %v", verr)
-	}
-}
-
-func TestPINResetRejectsOtherNumber(t *testing.T) {
-	// Arrange
-	t.Parallel()
-	stranger := firebase.Identity{UID: "uid-budi", Phone: "+6281299998888"}
-	env := newPINEnv(t, fakeVerifier{"otp": stranger})
-	env.setPIN(t)
-
-	// Act
-	err := env.pins.Reset(context.Background(), env.userID, env.sessionID, "otp", otherPIN)
-
-	// Assert
-	if !errors.Is(err, model.ErrOTPInvalid) {
-		t.Fatalf("got %v, want otp_invalid", err)
-	}
-	if verr := env.pins.Verify(context.Background(), env.userID, goodPIN); verr != nil {
-		t.Errorf("PIN changed despite the rejected reset: %v", verr)
 	}
 }

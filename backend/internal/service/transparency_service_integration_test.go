@@ -43,12 +43,12 @@ func newTransparencyEnv(t *testing.T) transparencyEnv {
 	authz := NewAuthz(groups, members)
 	activity := NewActivity(logs, d.clock)
 	cfg := &config.Config{App: config.App{Location: d.groups.loc}}
-	pins := NewPINService(tx, users, sessions, security.NewPINHasher(pinCfg), fakeVerifier{}, d.clock, pinCfg)
+	pins := NewPINService(tx, users, security.NewPINHasher(pinCfg), d.clock, pinCfg)
 	return transparencyEnv{
 		drawEnv:      d,
 		transparency: NewTransparencyService(groups, logs, payments, members, users, authz, d.store, d.clock, cfg),
 		reminders:    NewReminderService(tx, groups, periods, payments, members, users, authz, activity, d.jobs, d.store, d.clock),
-		account: NewAccountService(pins, groups, users, sessions, members,
+		account: NewAccountService(pins, groups, users, sessions, repository.NewOTPRepository(tx), members,
 			repository.NewLeaveRequestRepository(tx), repository.NewOwnershipTransferRepository(tx),
 			activity, d.jobs, d.clock),
 		pins: pins,
@@ -429,6 +429,7 @@ func TestAccountDeleteFromDraftGroup(t *testing.T) {
 	env.setPIN(t, a.budi)
 	key := "avatars/" + a.budi.String() + "/a.jpg"
 	env.exec(t, "UPDATE users SET avatar_key = $2 WHERE id = $1", a.budi, key)
+	reset := env.request(t, OTPStart{Purpose: model.OTPPurposeResetPIN, Email: budi.Email})
 
 	// Act
 	err := env.account.Delete(context.Background(), a.budi, testPIN)
@@ -438,7 +439,7 @@ func TestAccountDeleteFromDraftGroup(t *testing.T) {
 		t.Fatalf("Delete: %v", err)
 	}
 	if n := env.count(t, `SELECT count(*) FROM users WHERE id = $1 AND deleted_at IS NOT NULL AND phone IS NULL
-		AND firebase_uid IS NULL AND avatar_key IS NULL AND pin_hash IS NULL AND name = 'Mantan anggota'`, a.budi); n != 1 {
+		AND email IS NULL AND email_verified_at IS NULL AND avatar_key IS NULL AND pin_hash IS NULL AND name = 'Mantan anggota'`, a.budi); n != 1 {
 		t.Errorf("user not anonymized")
 	}
 	if n := env.count(t, "SELECT count(*) FROM sessions WHERE user_id = $1 AND revoked_reason IS DISTINCT FROM 'account_deleted'", a.budi); n != 0 {
@@ -447,10 +448,12 @@ func TestAccountDeleteFromDraftGroup(t *testing.T) {
 	if n := env.count(t, "SELECT count(*) FROM group_members WHERE id = $1 AND status = 'left'", a.memberIDs["budi"]); n != 1 {
 		t.Errorf("membership still active")
 	}
+	if status, _, _ := env.otpRow(t, reset.ID); status != "cancelled" {
+		t.Errorf("pending reset_pin request %s, want cancelled", status)
+	}
 	purges := queued[jobs.AccountPurgeArgs](t, env.pool, jobs.AccountPurgeArgs{}.Kind())
-	if len(purges) != 1 || purges[0].FirebaseUID == nil || *purges[0].FirebaseUID != budi.UID ||
-		purges[0].AvatarKey == nil || *purges[0].AvatarKey != key {
-		t.Errorf("account.purge jobs %+v, want one for %s and %s", purges, budi.UID, key)
+	if len(purges) != 1 || purges[0].FirebaseUID != nil || purges[0].AvatarKey == nil || *purges[0].AvatarKey != key {
+		t.Errorf("account.purge jobs %+v, want one for %s", purges, key)
 	}
 }
 

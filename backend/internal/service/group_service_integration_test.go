@@ -20,7 +20,6 @@ import (
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/qrcode"
 
-	"github.com/equinox-jj/Giliran/backend/internal/clients/firebase"
 	"github.com/equinox-jj/Giliran/backend/internal/jobs"
 	"github.com/equinox-jj/Giliran/backend/internal/model"
 	"github.com/equinox-jj/Giliran/backend/internal/repository"
@@ -30,8 +29,8 @@ import (
 )
 
 var (
-	sari  = firebase.Identity{UID: "uid-sari", Phone: "+6281277776666"}
-	joko  = firebase.Identity{UID: "uid-joko", Phone: "+6281244443333"}
+	sari  = identity{Email: "sari@gmail.com", Phone: "+6281277776666"}
+	joko  = identity{Email: "joko@gmail.com", Phone: "+6281244443333"}
 	start = utils.Date(2026, time.November, 1)
 )
 
@@ -47,7 +46,7 @@ type groupEnv struct {
 
 func newGroupEnv(t *testing.T) groupEnv {
 	t.Helper()
-	auth := newAuthEnv(t, fakeVerifier{"rina": rina, "budi": budi, "sari": sari, "joko": joko})
+	auth := newAuthEnv(t, accounts{"rina": rina, "budi": budi, "sari": sari, "joko": joko})
 	jakarta, err := time.LoadLocation("Asia/Jakarta")
 	if err != nil {
 		t.Fatalf("LoadLocation: %v", err)
@@ -79,10 +78,10 @@ func newGroupEnv(t *testing.T) groupEnv {
 	}
 }
 
-// user signs idToken in and returns the user's ID.
-func (e groupEnv) user(t *testing.T, idToken string) uuid.UUID {
+// user signs the account under key in and returns its ID.
+func (e groupEnv) user(t *testing.T, key string) uuid.UUID {
 	t.Helper()
-	return e.signIn(t, idToken).Profile.User.ID
+	return e.signIn(t, key).Profile.User.ID
 }
 
 func (e groupEnv) create(t *testing.T, organizer uuid.UUID, slots int16, method model.DrawMethod) GroupDetail {
@@ -896,33 +895,6 @@ func TestClaimByMemberOfGroupIsAlreadyMember(t *testing.T) {
 
 	// Assert
 	wantErr(t, err, model.ErrAlreadyMember)
-}
-
-func TestSignInClaimsGuestsByPhone(t *testing.T) {
-	// Arrange
-	t.Parallel()
-	env := newGroupEnv(t)
-	rinaID := env.user(t, "rina")
-	d := env.create(t, rinaID, 4, model.DrawMethodRandom)
-	phone := sari.Phone
-	g := env.guest(t, d.Group.ID, rinaID, "Sari", &phone)
-	second := env.guest(t, d.Group.ID, rinaID, "Sari lagi", &phone)
-
-	// Act
-	sariID := env.user(t, "sari")
-
-	// Assert
-	m, err := env.members.Get(context.Background(), d.Group.ID, sariID, g.Member.ID)
-	if err != nil || m.Member.UserID == nil || *m.Member.UserID != sariID {
-		t.Fatalf("claimed member %+v, %v", m.Member, err)
-	}
-	other, err := env.members.Get(context.Background(), d.Group.ID, rinaID, second.Member.ID)
-	if err != nil || !other.Member.IsGuest() {
-		t.Errorf("second guest %+v, %v; want it left as a guest", other.Member, err)
-	}
-	if acts := env.actions(t, d.Group.ID); acts[len(acts)-1] != "member.guest_claimed" {
-		t.Errorf("activity %v", acts)
-	}
 }
 
 func TestRemoveMember(t *testing.T) {
