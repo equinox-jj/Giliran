@@ -31,9 +31,8 @@ flowchart LR
     api -- "enqueue in the same tx" --> pg
     worker --> pg
     worker --> minio
-    api -- "verify ID token" --> fbauth["Firebase Auth"]
+    worker -- "sign-in codes, notices (SMTP)" --> smtp["Email provider<br/>(Resend; Mailpit in dev)"]
     worker -- "push" --> fcm["FCM"]
-    worker -- "delete user" --> fbauth
     kuma -- "GET /api/v1/health" --> api
     backup -- "pg_dump + mc mirror" --> offsite[("Off-site S3")]
     app -. "presigned GET" .-> minio
@@ -42,7 +41,8 @@ flowchart LR
 - **Request path:** `internal/routes` → `internal/controller` (HTTP only) → `internal/service` (business rules, transactions, authorization) → `internal/repository` (sqlc over pgx) → PostgreSQL. The layers are wired with Uber Fx, and each one has a `module.go`.
 - **Group authorization** runs in the services on every request. A non-member gets `404 group_not_found`, and a member without the right role gets `403 forbidden_role`.
 - **Money writes** (payments, draws, payouts, reminders) run in a transaction and require an `Idempotency-Key`. Every organizer write appends to the activity log in the same transaction, and database triggers keep the log and draw results immutable.
-- **Jobs** (pushes, reminders, missed-payment alerts, transfer expiry, cleanup, account purge) are queued in the same transaction as the write that caused them, so they run only if it commits.
+- **Sign-in** is by email code. `POST /api/v1/auth/email/otp` creates a request and queues its email; the worker derives the 6-digit code from `OTP_SECRET` and the request id, so the code is never stored (only its HMAC) and the API never talks to the mail server. The same flow resets a forgotten PIN and changes the account email. Accounts with a PIN also enter it at sign-in.
+- **Jobs** (sign-in emails, pushes, reminders, missed-payment alerts, transfer and code expiry, cleanup, account purge) are queued in the same transaction as the write that caused them, so they run only if it commits.
 - **Draws** use `hmac-sha256-v1` commit-reveal. When a period opens, `seed_hash` is published; at the draw, the seed is revealed so anyone can recompute the winner. The public check is at `/v/{code}` (HTML) and `/api/v1/public/draws/{code}` (JSON).
 
 ## Quick start
@@ -50,20 +50,32 @@ flowchart LR
 Prerequisites: Go 1.27.3, Docker, and on PATH [`sqlc`](https://sqlc.dev) 1.31.1, [`golangci-lint`](https://golangci-lint.run) v2 and [`air`](https://github.com/air-verse/air) (live reload, optional).
 
 ```sh
-cp .env.example .env            # then fill in JWT_SECRET (openssl rand -base64 48) and the CHANGE_ME values
+cp .env.example .env            # then fill in JWT_SECRET (openssl rand -base64 48), OTP_SECRET (openssl rand -hex 32) and the CHANGE_ME values
+# The worker needs a Firebase key for FCM push (the API doesn't).
 # Firebase console > Project settings > Service accounts > Generate new private key:
 cp ~/Downloads/<key>.json secrets/firebase-service-account.json
 
-make up                         # Postgres, MinIO, migrations, bucket, API and worker
+make up                         # Postgres, MinIO, Mailpit, migrations, bucket, API and worker
 curl localhost:8080/api/v1/health
 ```
+
+In dev, the worker sends every email to [Mailpit](https://mailpit.axllent.org). Read sign-in codes in its inbox at <http://localhost:8025>. To sign in from the command line:
+
+```sh
+curl -X POST localhost:8080/api/v1/auth/email/otp -H 'Content-Type: application/json' \
+  -d '{"purpose":"sign_in","email":"rina@example.com","device_name":"curl","device_platform":"android"}'
+# read the code in Mailpit, then, with the id from the response:
+curl -X POST localhost:8080/api/v1/auth/email/otp/<id>/verify -H 'Content-Type: application/json' -d '{"code":"123456"}'
+```
+
+`000007_email_otp` refuses to run while the database has active users from before email sign-in. Reset an old dev database with `docker compose -f deploy/docker-compose.dev.yml down -v`.
 
 Keep `MINIO_ACCESS_KEY`/`MINIO_SECRET_KEY` equal to `MINIO_ROOT_USER`/`MINIO_ROOT_PASSWORD`. Otherwise every upload fails with a signature error.
 
 To run the binaries on the host instead, start only the dependencies:
 
 ```sh
-make deps-up                    # Postgres + MinIO, app and River migrations, bucket
+make deps-up                    # Postgres, MinIO and Mailpit, app and River migrations, bucket
 make run                        # API (reads .env; environment variables override it)
 make run-worker                 # worker
 make dev                        # API with live reload
@@ -120,8 +132,26 @@ docker compose -f deploy/docker-compose.prod.yml up -d --build
 - Only the API is published, on `127.0.0.1:8080`, for the Cloudflare Tunnel. Set `HTTP_TRUSTED_PROXIES` so rate limits see the client IP from `X-Forwarded-For`.
 - Inside the Compose network, use `DATABASE_URL=…@postgres:5432/…` and `MINIO_ENDPOINT=minio:9000`.
 - The app downloads files from presigned URLs signed for `MINIO_PUBLIC_URL`. Route that hostname (for example a second tunnel ingress) to `minio:9000` **without rewriting the Host header**.
-- Set `APP_ENV=production` and `APP_PUBLIC_BASE_URL` (invite, claim and Bukti Kocok links). The Firebase key goes in `secrets/`, which is mounted read-only at `/secrets`.
+- Set `APP_ENV=production` and `APP_PUBLIC_BASE_URL` (invite, claim and Bukti Kocok links).
+- **Secrets:** `JWT_SECRET` (API), `OTP_SECRET` (the API and the worker, which must share it), `SMTP_PASSWORD` (worker), the database and MinIO passwords, and the Firebase key in `secrets/`, which is mounted read-only at `/secrets` for the worker only. Rotating `OTP_SECRET` invalidates only the codes in flight.
 - On every `up`, `migrate` (app schema) and `river-migrate` (River's tables) run before the API and the worker start.
+
+### Email
+
+Only the worker sends email: sign-in, PIN-reset and email-change codes, and the notice to the old address after an email change. It speaks plain SMTP (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_TLS`, `SMTP_FROM`), so switching provider is only a config change. With Resend: `smtp.resend.com`, port `587`, `starttls`, username `resend` and the API key as the password. `SMTP_TLS=none` is refused in production.
+
+Before going live, verify the sending domain (`giliran.monai.my.id` in the default `SMTP_FROM`) with the provider and publish its DNS records:
+
+- **SPF:** the TXT record the provider gives, which authorizes its servers to send for the domain.
+- **DKIM:** the provider's signing key (TXT or CNAME records), so receivers can check messages weren't altered.
+- **DMARC:** `_dmarc.<domain>  TXT  "v=DMARC1; p=none; rua=mailto:<you>"`. Move to `p=quarantine` once reports show SPF and DKIM passing.
+
+Without them, codes land in spam or get rejected, and users can't sign in. Send a test code to a Gmail address and check "Show original" for `SPF: PASS`, `DKIM: PASS` and `DMARC: PASS`.
+
+Two log events need an alert (log alerting or an Uptime Kuma push monitor):
+
+- `email.send_failed` (ERROR): a code couldn't be delivered after its retries, or the code expired first. The request is marked `send_status = failed`.
+- `email.quota_warning`: the emails sent in the last 24 hours reached 80 % of `EMAIL_DAILY_LIMIT`, the provider's daily quota (default 100, Resend's free tier).
 
 ### Backups
 
@@ -161,7 +191,7 @@ Test a restore on a scratch machine now and then. A backup that has never been r
 
 ### Monitoring
 
-`GET /api/v1/health` pings the database. It returns `200 {"data":{"status":"ok"}}`, or `503 service_unavailable` (logged with its cause) when Postgres is unreachable. Uptime Kuma is in the prod Compose file behind a profile:
+`GET /api/v1/health` pings the database. It returns `200 {"data":{"status":"ok","checks":{"database":"ok"}}}`, or `503 service_unavailable` (logged with its cause) when Postgres is unreachable. Uptime Kuma is in the prod Compose file behind a profile:
 
 ```sh
 docker compose -f deploy/docker-compose.prod.yml --profile monitoring up -d uptime-kuma
@@ -187,12 +217,12 @@ internal/service   business rules, transactions, authorization (Authz), activity
 internal/repository pgx pool, TxManager, repositories over sqlc (internal/repository/sqlc)
 internal/jobs      Enqueuer, workers, notification kinds and texts (jobs/notify)
 internal/draw      pure commit-reveal draw (Commit, Pick, Verify) with golden vectors
-internal/clients   Firebase (auth, FCM, user deletion), MinIO storage
-internal/web       public draw verification page (html/template)
+internal/clients   email (SMTP), Firebase (FCM push), MinIO storage
+internal/web       public draw verification page and email templates
 internal/model, dto domain types and typed errors; request/response shapes
 pkg/               config, logger, middleware, response, security, validation, clock, utils, images, qris
 db/                migrations and sqlc queries
 api/api-spec.yaml  OpenAPI contract
 test/              integration (testcontainers), contract (OpenAPI), smoke (latency)
-deploy/            Dockerfiles, dev and prod Compose, backup image
+deploy/            Dockerfiles, dev (with Mailpit) and prod Compose, backup image
 ```

@@ -54,8 +54,8 @@ smoke: ## Latency smoke test against a running API (dev/staging; writes data)
 	go run ./test/smoke $(ARGS)
 
 .PHONY: deps-up
-deps-up: ## Start Postgres and MinIO, migrate (River too), create the bucket
-	$(COMPOSE) up -d migrate river-migrate minio-init
+deps-up: ## Start Postgres, MinIO and Mailpit, migrate (River too), create the bucket
+	$(COMPOSE) up -d migrate river-migrate minio-init mailpit
 
 .PHONY: up
 up: ## Start the whole dev stack, API and worker included
