@@ -21,6 +21,7 @@ type Params struct {
 	Tokens   *security.TokenIssuer
 	Health   *controller.HealthController
 	Auth     *controller.AuthController
+	OTP      *controller.OTPController
 	PIN      *controller.PINController
 	Me       *controller.MeController
 	Groups   *controller.GroupController
@@ -50,7 +51,14 @@ func Register(p Params) {
 
 	// Handlers run in order, so middleware goes before the controller.
 	auth := v1.Group("/auth")
-	auth.Post("/sign-in", middleware.RateLimit(rl.OTPMax, rl.OTPWindow), p.Auth.SignIn)
+	// Email codes need no account, except change_email, which the service
+	// checks. This per-IP limit is in memory; the per-email and per-IP limits
+	// the service counts in the database are the real ones.
+	optionalAuth := middleware.OptionalAuth(p.Tokens)
+	otpLimit := middleware.RateLimit(rl.OTPMax, rl.OTPWindow)
+	auth.Post("/email/otp", optionalAuth, otpLimit, p.OTP.Request)
+	auth.Post("/email/otp/:otp_id/resend", optionalAuth, otpLimit, p.OTP.Resend)
+	auth.Post("/email/otp/:otp_id/verify", optionalAuth, otpLimit, p.OTP.Verify)
 	// Every device refreshes about once per access-token lifetime, and a
 	// household shares one IP, so refresh gets the looser write limit.
 	auth.Post("/refresh", middleware.RateLimit(rl.WriteMax, rl.WriteWindow), p.Auth.Refresh)
@@ -61,8 +69,6 @@ func Register(p Params) {
 	auth.Post("/pin", requireAuth, pinLimit, p.PIN.Set)
 	auth.Put("/pin", requireAuth, pinLimit, p.PIN.Change)
 	auth.Post("/pin/verify", requireAuth, pinLimit, p.PIN.Verify)
-	auth.Post("/pin/reset", requireAuth, middleware.RateLimitByUser(rl.OTPMax, rl.OTPWindow), p.PIN.Reset)
-	auth.Put("/phone", requireAuth, middleware.RateLimitByUser(rl.OTPMax, rl.OTPWindow), p.Auth.ChangePhone)
 
 	me := v1.Group("/me", requireAuth)
 	me.Get("", p.Me.Get)

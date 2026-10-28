@@ -110,8 +110,8 @@ func newPaymentFlow(t *testing.T) paymentFlow {
 	idem := service.NewIdempotencyService(tx, repository.NewIdempotencyRepository(tx), clk)
 
 	f := paymentFlow{pool: pool, clock: clk, rina: uuid.Must(uuid.NewV7()), budi: uuid.Must(uuid.NewV7())}
-	for id, phone := range map[uuid.UUID]string{f.rina: "+6281234567890", f.budi: "+6281298765432"} {
-		if _, err := pool.Exec(ctx, `INSERT INTO users (id, phone, name) VALUES ($1, $2, 'Anggota')`, id, phone); err != nil {
+	for id, email := range map[uuid.UUID]string{f.rina: "rina@example.com", f.budi: "budi@example.com"} {
+		if _, err := pool.Exec(ctx, `INSERT INTO users (id, email, email_verified_at, name) VALUES ($1, $2, now(), 'Anggota')`, id, email); err != nil {
 			t.Fatalf("insert user: %v", err)
 		}
 	}

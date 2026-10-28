@@ -23,24 +23,55 @@ type (
 // its token expires (at most JWT_ACCESS_TTL). Failures are 401 unauthorized.
 func Auth(tokens *security.TokenIssuer) fiber.Handler {
 	return func(c fiber.Ctx) error {
-		scheme, token, ok := strings.Cut(c.Get(fiber.HeaderAuthorization), " ")
-		if !ok || !strings.EqualFold(scheme, "Bearer") || token == "" {
-			return model.ErrUnauthorized
-		}
-		userID, sessionID, err := tokens.Parse(token)
-		if err != nil {
+		if err := authenticate(c, tokens); err != nil {
 			return err
 		}
-		c.Locals(userIDKey{}, userID)
-		c.Locals(sessionIDKey{}, sessionID)
 		return c.Next()
 	}
+}
+
+// OptionalAuth is Auth for routes that also serve anonymous callers: with no
+// Authorization header the request continues signed out, and UserIDOpt
+// reports false. A header that is present must still hold a valid token, so
+// a client with an expired one gets 401 and refreshes instead of silently
+// acting anonymously.
+func OptionalAuth(tokens *security.TokenIssuer) fiber.Handler {
+	return func(c fiber.Ctx) error {
+		if c.Get(fiber.HeaderAuthorization) == "" {
+			return c.Next()
+		}
+		if err := authenticate(c, tokens); err != nil {
+			return err
+		}
+		return c.Next()
+	}
+}
+
+func authenticate(c fiber.Ctx, tokens *security.TokenIssuer) error {
+	scheme, token, ok := strings.Cut(c.Get(fiber.HeaderAuthorization), " ")
+	if !ok || !strings.EqualFold(scheme, "Bearer") || token == "" {
+		return model.ErrUnauthorized
+	}
+	userID, sessionID, err := tokens.Parse(token)
+	if err != nil {
+		return err
+	}
+	c.Locals(userIDKey{}, userID)
+	c.Locals(sessionIDKey{}, sessionID)
+	return nil
 }
 
 // UserID is the signed-in user on a route behind Auth.
 func UserID(c fiber.Ctx) uuid.UUID {
 	id, _ := c.Locals(userIDKey{}).(uuid.UUID)
 	return id
+}
+
+// UserIDOpt is the signed-in user on a route behind OptionalAuth, and false
+// when the caller sent no token.
+func UserIDOpt(c fiber.Ctx) (uuid.UUID, bool) {
+	id, ok := c.Locals(userIDKey{}).(uuid.UUID)
+	return id, ok
 }
 
 // SessionID is the current session on a route behind Auth.

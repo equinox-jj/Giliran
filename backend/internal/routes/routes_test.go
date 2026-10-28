@@ -47,6 +47,7 @@ func newLimitedApp(cfg *config.Config, tokens *security.TokenIssuer) *fiber.App 
 		Tokens:       tokens,
 		Health:       controller.NewHealthController(nil),
 		Auth:         controller.NewAuthController(nil),
+		OTP:          controller.NewOTPController(nil),
 		PIN:          controller.NewPINController(nil),
 		Me:           controller.NewMeController(nil, nil),
 		Groups:       controller.NewGroupController(nil),

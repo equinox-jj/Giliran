@@ -39,5 +39,5 @@ func (h *HealthController) Get(c fiber.Ctx) error {
 		// The cause is logged with the request; the client sees the sentinel.
 		return fmt.Errorf("health: ping database: %w: %w", model.ErrServiceUnavailable, err)
 	}
-	return response.OK(c, dto.HealthResponse{Status: "ok"})
+	return response.OK(c, dto.HealthResponse{Status: "ok", Checks: dto.HealthChecks{Database: "ok"}})
 }

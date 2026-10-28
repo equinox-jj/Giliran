@@ -17,10 +17,10 @@ type PINService interface {
 	Set(ctx context.Context, userID uuid.UUID, pin string) error
 	Verify(ctx context.Context, userID uuid.UUID, pin string) error
 	Change(ctx context.Context, userID uuid.UUID, currentPIN, newPIN string) error
-	Reset(ctx context.Context, userID, sessionID uuid.UUID, idToken, newPIN string) error
 }
 
-// PINController serves /auth/pin, /auth/pin/verify and /auth/pin/reset.
+// PINController serves /auth/pin and /auth/pin/verify. A forgotten PIN is
+// reset with a reset_pin email code (OTPController).
 // Every route is behind middleware.Auth.
 type PINController struct {
 	pin PINService
@@ -61,19 +61,6 @@ func (h *PINController) Verify(c fiber.Ctx) error {
 		return err
 	}
 	if err := h.pin.Verify(c.Context(), middleware.UserID(c), req.PIN); err != nil {
-		return err
-	}
-	return response.NoContent(c)
-}
-
-// Reset handles POST /auth/pin/reset.
-func (h *PINController) Reset(c fiber.Ctx) error {
-	var req dto.ResetPinRequest
-	if err := c.Bind().Body(&req); err != nil {
-		return err
-	}
-	err := h.pin.Reset(c.Context(), middleware.UserID(c), middleware.SessionID(c), req.FirebaseIDToken, req.NewPIN)
-	if err != nil {
 		return err
 	}
 	return response.NoContent(c)

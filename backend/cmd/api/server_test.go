@@ -146,7 +146,6 @@ func TestServerProtectsMeRoutes(t *testing.T) {
 		{http.MethodPut, "/api/v1/me/push-token"},
 		{http.MethodGet, "/api/v1/me/sessions"},
 		{http.MethodDelete, "/api/v1/me/sessions/0192c3a4-0000-7000-8000-000000000000"},
-		{http.MethodPut, "/api/v1/auth/phone"},
 	}
 	app := newTestApp()
 

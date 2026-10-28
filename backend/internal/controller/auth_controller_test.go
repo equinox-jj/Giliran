@@ -27,22 +27,12 @@ import (
 
 // fakeAuth records its inputs and returns canned results.
 type fakeAuth struct {
-	signInResult service.SignInResult
-	pair         service.TokenPair
-	profile      service.Profile
-	err          error
+	pair service.TokenPair
+	err  error
 
-	gotIDToken string
-	gotDevice  service.Device
 	gotRefresh string
 	gotUser    uuid.UUID
 	gotSession uuid.UUID
-	gotTokens  []string
-}
-
-func (f *fakeAuth) SignIn(_ context.Context, idToken string, device service.Device) (service.SignInResult, error) {
-	f.gotIDToken, f.gotDevice = idToken, device
-	return f.signInResult, f.err
 }
 
 func (f *fakeAuth) Refresh(_ context.Context, refreshToken string) (service.TokenPair, error) {
@@ -53,11 +43,6 @@ func (f *fakeAuth) Refresh(_ context.Context, refreshToken string) (service.Toke
 func (f *fakeAuth) Logout(_ context.Context, userID, sessionID uuid.UUID) error {
 	f.gotUser, f.gotSession = userID, sessionID
 	return f.err
-}
-
-func (f *fakeAuth) ChangePhone(_ context.Context, userID, sessionID uuid.UUID, oldToken, newToken string) (service.Profile, error) {
-	f.gotUser, f.gotSession, f.gotTokens = userID, sessionID, []string{oldToken, newToken}
-	return f.profile, f.err
 }
 
 var testTokens = security.NewTokenIssuer(&config.Config{JWT: config.JWT{
@@ -77,10 +62,8 @@ func newAuthApp(auth AuthService) *fiber.App {
 	})
 	app.Use(middleware.RequestID())
 	h := &AuthController{auth: auth}
-	app.Post("/api/v1/auth/sign-in", h.SignIn)
 	app.Post("/api/v1/auth/refresh", h.Refresh)
 	app.Post("/api/v1/auth/logout", middleware.Auth(testTokens), h.Logout)
-	app.Put("/api/v1/auth/phone", middleware.Auth(testTokens), h.ChangePhone)
 	return app
 }
 
@@ -105,66 +88,6 @@ func call(t *testing.T, app *fiber.App, req *http.Request) (*http.Response, map[
 		}
 	}
 	return resp, body
-}
-
-func TestAuthSignIn(t *testing.T) {
-	// Arrange
-	user := model.User{ID: uuid.Must(uuid.NewV7()), Phone: "+6281234567890", CreatedAt: time.Now()}
-	fake := &fakeAuth{signInResult: service.SignInResult{
-		Profile:   service.Profile{User: user},
-		Tokens:    service.TokenPair{AccessToken: "access", RefreshToken: "refresh", ExpiresIn: 15 * time.Minute},
-		IsNewUser: true,
-	}}
-	app := newAuthApp(fake)
-	req := jsonRequest("/api/v1/auth/sign-in",
-		`{"firebase_id_token":"fb-token","device_name":"Samsung Galaxy A54","device_platform":"android","fcm_token":"fcm"}`)
-
-	// Act
-	resp, body := call(t, app, req)
-
-	// Assert
-	if resp.StatusCode != 200 {
-		t.Fatalf("status %d, body %v", resp.StatusCode, body)
-	}
-	if fake.gotIDToken != "fb-token" || fake.gotDevice.Name != "Samsung Galaxy A54" ||
-		fake.gotDevice.Platform != model.DevicePlatformAndroid || fake.gotDevice.FCMToken == nil || *fake.gotDevice.FCMToken != "fcm" {
-		t.Errorf("service got %q, %+v", fake.gotIDToken, fake.gotDevice)
-	}
-	data := body["data"].(map[string]any)
-	tokens := data["tokens"].(map[string]any)
-	if tokens["token_type"] != "Bearer" || tokens["expires_in"] != float64(900) || data["is_new_user"] != true || data["pin_set"] != false {
-		t.Errorf("data %v", data)
-	}
-}
-
-func TestAuthSignInErrors(t *testing.T) {
-	// Arrange
-	tests := []struct {
-		name       string
-		body       string
-		serviceErr error
-		wantStatus int
-		wantCode   string
-	}{
-		{"missing fields", `{}`, nil, 422, "validation_error"},
-		{"unknown platform", `{"firebase_id_token":"t","device_name":"d","device_platform":"windows"}`, nil, 422, "validation_error"},
-		{"rejected token", `{"firebase_id_token":"t","device_name":"d","device_platform":"ios"}`, model.ErrOTPInvalid, 401, "otp_invalid"},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// Arrange
-			app := newAuthApp(&fakeAuth{err: tt.serviceErr})
-
-			// Act
-			resp, body := call(t, app, jsonRequest("/api/v1/auth/sign-in", tt.body))
-
-			// Assert
-			if resp.StatusCode != tt.wantStatus || body["code"] != tt.wantCode {
-				t.Errorf("status %d code %v, want %d %s", resp.StatusCode, body["code"], tt.wantStatus, tt.wantCode)
-			}
-		})
-	}
 }
 
 func TestAuthRefresh(t *testing.T) {
@@ -231,57 +154,5 @@ func TestAuthLogoutWithoutToken(t *testing.T) {
 	// Assert
 	if resp.StatusCode != 401 || body["code"] != "unauthorized" {
 		t.Errorf("status %d code %v", resp.StatusCode, body["code"])
-	}
-}
-
-func TestAuthChangePhone(t *testing.T) {
-	// Arrange
-	fake := &fakeAuth{profile: service.Profile{User: model.User{ID: uuid.Must(uuid.NewV7()), Phone: "+6281299998888", CreatedAt: time.Now()}}}
-	req, userID, sessionID := authed(t, http.MethodPut, "/api/v1/auth/phone",
-		`{"old_firebase_id_token":"old","new_firebase_id_token":"new"}`)
-
-	// Act
-	resp, body := call(t, newAuthApp(fake), req)
-
-	// Assert
-	if resp.StatusCode != 200 {
-		t.Fatalf("status %d, body %v", resp.StatusCode, body)
-	}
-	if fake.gotUser != userID || fake.gotSession != sessionID || len(fake.gotTokens) != 2 ||
-		fake.gotTokens[0] != "old" || fake.gotTokens[1] != "new" {
-		t.Errorf("service got %s/%s %v", fake.gotUser, fake.gotSession, fake.gotTokens)
-	}
-	if data := body["data"].(map[string]any); data["phone"] != "+6281299998888" {
-		t.Errorf("data %v", data)
-	}
-}
-
-func TestAuthChangePhoneErrors(t *testing.T) {
-	// Arrange
-	tests := []struct {
-		name       string
-		body       string
-		serviceErr error
-		wantStatus int
-		wantCode   string
-	}{
-		{"missing fields", `{"old_firebase_id_token":"old"}`, nil, 422, "validation_error"},
-		{"rejected token", `{"old_firebase_id_token":"old","new_firebase_id_token":"new"}`, model.ErrOTPInvalid, 401, "otp_invalid"},
-		{"number taken", `{"old_firebase_id_token":"old","new_firebase_id_token":"new"}`, model.ErrPhoneAlreadyRegistered, 409, "phone_already_registered"},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// Arrange
-			req, _, _ := authed(t, http.MethodPut, "/api/v1/auth/phone", tt.body)
-
-			// Act
-			resp, body := call(t, newAuthApp(&fakeAuth{err: tt.serviceErr}), req)
-
-			// Assert
-			if resp.StatusCode != tt.wantStatus || body["code"] != tt.wantCode {
-				t.Errorf("status %d code %v, want %d %s", resp.StatusCode, body["code"], tt.wantStatus, tt.wantCode)
-			}
-		})
 	}
 }

@@ -30,7 +30,7 @@ type fakeProfile struct {
 	called     string
 	gotUser    uuid.UUID
 	gotSession uuid.UUID
-	gotName    string
+	gotProfile repository.ProfileChange
 	gotToken   string
 	gotData    []byte
 	gotChange  repository.SettingsChange
@@ -41,8 +41,8 @@ func (f *fakeProfile) Me(_ context.Context, userID uuid.UUID) (service.Profile, 
 	return f.profile, f.err
 }
 
-func (f *fakeProfile) UpdateName(_ context.Context, userID uuid.UUID, name string) (service.Profile, error) {
-	f.called, f.gotUser, f.gotName = "update_name", userID, name
+func (f *fakeProfile) UpdateProfile(_ context.Context, userID uuid.UUID, c repository.ProfileChange) (service.Profile, error) {
+	f.called, f.gotUser, f.gotProfile = "update_profile", userID, c
 	return f.profile, f.err
 }
 
@@ -102,6 +102,8 @@ func newMeApp(profile ProfileService) *fiber.App {
 	return app
 }
 
+var testEmail = "rina.wulandari@gmail.com"
+
 func testSettings() model.UserSettings {
 	s := model.NewUserSettings(uuid.Must(uuid.NewV7()))
 	s.Language = model.LanguageEnglish
@@ -111,7 +113,7 @@ func testSettings() model.UserSettings {
 func TestMeGet(t *testing.T) {
 	// Arrange
 	name := "Rina Susanti"
-	fake := &fakeProfile{profile: service.Profile{User: model.User{ID: uuid.Must(uuid.NewV7()), Phone: "+6281234567890", Name: &name, CreatedAt: time.Now()}}}
+	fake := &fakeProfile{profile: service.Profile{User: model.User{ID: uuid.Must(uuid.NewV7()), Email: &testEmail, Name: &name, CreatedAt: time.Now()}}}
 	req, userID, _ := authed(t, http.MethodGet, "/api/v1/me", "")
 
 	// Act
@@ -128,16 +130,77 @@ func TestMeGet(t *testing.T) {
 
 func TestMeUpdate(t *testing.T) {
 	// Arrange
-	fake := &fakeProfile{profile: service.Profile{User: model.User{ID: uuid.Must(uuid.NewV7()), Phone: "+6281234567890", CreatedAt: time.Now()}}}
-	req, _, _ := authed(t, http.MethodPatch, "/api/v1/me", `{"name":"Rina"}`)
-
-	// Act
-	resp, _ := call(t, newMeApp(fake), req)
-
-	// Assert
-	if resp.StatusCode != 200 || fake.called != "update_name" || fake.gotName != "Rina" {
-		t.Errorf("status %d, service got %s %q", resp.StatusCode, fake.called, fake.gotName)
+	phone := "+6281234567890"
+	tests := []struct {
+		name         string
+		body         string
+		wantName     *string
+		wantSetPhone bool
+		wantPhone    *string
+	}{
+		{"name only", `{"name":"Rina"}`, ptr("Rina"), false, nil},
+		{"phone only", `{"phone":"081234567890"}`, nil, true, ptr("081234567890")},
+		{"clear phone", `{"phone":null}`, nil, true, nil},
+		{"both", `{"name":"Rina","phone":"081234567890"}`, ptr("Rina"), true, ptr("081234567890")},
 	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Arrange
+			fake := &fakeProfile{profile: service.Profile{User: model.User{
+				ID: uuid.Must(uuid.NewV7()), Email: &testEmail, Phone: &phone, CreatedAt: time.Now(),
+			}}}
+			req, userID, _ := authed(t, http.MethodPatch, "/api/v1/me", tt.body)
+
+			// Act
+			resp, body := call(t, newMeApp(fake), req)
+
+			// Assert
+			if resp.StatusCode != 200 || fake.called != "update_profile" || fake.gotUser != userID {
+				t.Fatalf("status %d, service got %s for %s", resp.StatusCode, fake.called, fake.gotUser)
+			}
+			got := fake.gotProfile
+			if !equalPtr(got.Name, tt.wantName) || got.SetPhone != tt.wantSetPhone || !equalPtr(got.Phone, tt.wantPhone) {
+				t.Errorf("change %+v", got)
+			}
+			if data := body["data"].(map[string]any); data["email"] != testEmail || data["phone"] != phone {
+				t.Errorf("data %v", data)
+			}
+		})
+	}
+}
+
+func TestMeUpdateErrors(t *testing.T) {
+	// Arrange
+	tests := []struct {
+		name string
+		body string
+	}{
+		{"empty", `{}`},
+		{"short name", `{"name":"R"}`},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Arrange
+			fake := &fakeProfile{}
+			req, _, _ := authed(t, http.MethodPatch, "/api/v1/me", tt.body)
+
+			// Act
+			resp, body := call(t, newMeApp(fake), req)
+
+			// Assert
+			if resp.StatusCode != 422 || body["code"] != "validation_error" || fake.called != "" {
+				t.Errorf("status %d code %v, service called %q", resp.StatusCode, body["code"], fake.called)
+			}
+		})
+	}
+}
+
+func ptr[T any](v T) *T { return &v }
+
+func equalPtr[T comparable](a, b *T) bool {
+	return a == nil && b == nil || a != nil && b != nil && *a == *b
 }
 
 // avatarRequest builds an authorized multipart PUT /me/avatar with data in
@@ -171,7 +234,7 @@ func TestMeUploadAvatar(t *testing.T) {
 	// Arrange
 	url := "http://localhost:9000/giliran/avatars/a.jpg?X-Amz-Signature=x"
 	fake := &fakeProfile{profile: service.Profile{
-		User:      model.User{ID: uuid.Must(uuid.NewV7()), Phone: "+6281234567890", CreatedAt: time.Now()},
+		User:      model.User{ID: uuid.Must(uuid.NewV7()), Email: &testEmail, CreatedAt: time.Now()},
 		AvatarURL: &url,
 	}}
 	req, userID := avatarRequest(t, "file", []byte("image bytes"))

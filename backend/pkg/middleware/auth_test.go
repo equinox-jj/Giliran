@@ -158,3 +158,53 @@ func TestRateLimitByUser(t *testing.T) {
 		t.Errorf("second user: status %d, want 204 (separate budget)", resp.StatusCode)
 	}
 }
+
+func TestOptionalAuth(t *testing.T) {
+	// Arrange
+	tokens := testTokens()
+	userID, sessionID := uuid.Must(uuid.NewV7()), uuid.Must(uuid.NewV7())
+	token, _, err := tokens.Issue(userID, sessionID)
+	if err != nil {
+		t.Fatalf("Issue: %v", err)
+	}
+	tests := []struct {
+		name       string
+		header     string
+		wantStatus int
+		wantCode   string
+		wantUser   string
+	}{
+		{"anonymous", "", 200, "", "anonymous"},
+		{"valid token", "Bearer " + token, 200, "", userID.String() + "/" + sessionID.String()},
+		{"invalid token", "Bearer not.a.jwt", 401, "unauthorized", ""},
+		{"basic scheme", "Basic dXNlcjpwYXNz", 401, "unauthorized", ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Arrange
+			var gotUser string
+			app := newApp()
+			app.Get("/otp", OptionalAuth(tokens), func(c fiber.Ctx) error {
+				if id, ok := UserIDOpt(c); ok {
+					gotUser = id.String() + "/" + SessionID(c).String()
+				} else {
+					gotUser = "anonymous"
+				}
+				return c.SendStatus(fiber.StatusOK)
+			})
+			req := httptest.NewRequest(http.MethodGet, "/otp", nil)
+			if tt.header != "" {
+				req.Header.Set(fiber.HeaderAuthorization, tt.header)
+			}
+
+			// Act
+			resp, code := send(t, app, req)
+
+			// Assert
+			if resp.StatusCode != tt.wantStatus || code != tt.wantCode || gotUser != tt.wantUser {
+				t.Errorf("status %d code %q user %q, want %d %q %q", resp.StatusCode, code, gotUser, tt.wantStatus, tt.wantCode, tt.wantUser)
+			}
+		})
+	}
+}

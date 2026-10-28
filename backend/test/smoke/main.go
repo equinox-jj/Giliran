@@ -5,10 +5,10 @@
 //
 // It reads .env like the API (DATABASE_URL and JWT_SECRET must match the
 // server under test), seeds accounts straight into Postgres because sign-in
-// needs Firebase, mints their access tokens, and drives one started group
-// over HTTP. It writes data, so it refuses APP_ENV=production unless -force
-// is set; point it at a dev or staging stack. Seeded users have +62899…
-// phones and stay behind.
+// needs an emailed code, mints their access tokens, and drives one started
+// group over HTTP. It writes data, so it refuses APP_ENV=production unless
+// -force is set; point it at a dev or staging stack. Seeded users have
+// smoke-…@example.com emails and stay behind.
 //
 // Every user stays under RATE_LIMIT_WRITE_MAX: -requests per write endpoint
 // times four write endpoints must fit in one write window.
@@ -115,13 +115,13 @@ func seedUsers(ctx context.Context, cfg *config.Config, n int) ([]*user, error) 
 	}
 	defer pool.Close()
 	tokens := security.NewTokenIssuer(cfg, clock.System{})
-	// A random block of phone numbers, so reruns do not collide.
-	base := rand.IntN(90_000_000) //nolint:gosec // test data, not a secret
 	users := make([]*user, n)
 	for i := range users {
 		u := &user{id: uuid.Must(uuid.NewV7())}
-		phone := fmt.Sprintf("+62899%08d", base+i)
-		if _, err := pool.Exec(ctx, `INSERT INTO users (id, phone, name) VALUES ($1, $2, $3)`, u.id, phone, fmt.Sprintf("Smoke %02d", i+1)); err != nil {
+		// The ID keeps the email unique across reruns.
+		email := fmt.Sprintf("smoke-%s@example.com", u.id)
+		if _, err := pool.Exec(ctx, `INSERT INTO users (id, email, email_verified_at, name) VALUES ($1, $2, now(), $3)`,
+			u.id, email, fmt.Sprintf("Smoke %02d", i+1)); err != nil {
 			return nil, fmt.Errorf("insert user: %w", err)
 		}
 		if _, err := pool.Exec(ctx, `INSERT INTO user_settings (user_id) VALUES ($1) ON CONFLICT DO NOTHING`, u.id); err != nil {

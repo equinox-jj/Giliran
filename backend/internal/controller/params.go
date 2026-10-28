@@ -35,6 +35,11 @@ func paymentID(c fiber.Ctx) (uuid.UUID, error) {
 	return pathID(c, "payment_id", model.ErrPaymentNotFound)
 }
 
+// otpID parses the otp_id path parameter.
+func otpID(c fiber.Ctx) (uuid.UUID, error) {
+	return pathID(c, "otp_id", model.ErrOTPNotFound)
+}
+
 // verificationCode checks the verification_code path parameter. A code
 // that cannot exist gets draw_not_found like an unknown one.
 func verificationCode(c fiber.Ctx) (string, error) {

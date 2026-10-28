@@ -19,11 +19,9 @@ import (
 type fakePIN struct {
 	err error
 
-	called     string
-	gotUser    uuid.UUID
-	gotSession uuid.UUID
-	gotPINs    []string
-	gotIDToken string
+	called  string
+	gotUser uuid.UUID
+	gotPINs []string
 }
 
 func (f *fakePIN) Set(_ context.Context, userID uuid.UUID, pin string) error {
@@ -41,11 +39,6 @@ func (f *fakePIN) Change(_ context.Context, userID uuid.UUID, currentPIN, newPIN
 	return f.err
 }
 
-func (f *fakePIN) Reset(_ context.Context, userID, sessionID uuid.UUID, idToken, newPIN string) error {
-	f.called, f.gotUser, f.gotSession, f.gotIDToken, f.gotPINs = "reset", userID, sessionID, idToken, []string{newPIN}
-	return f.err
-}
-
 // newPINApp mounts the PIN routes as routes.Register does, minus rate limits.
 func newPINApp(pin PINService) *fiber.App {
 	app := fiber.New(fiber.Config{
@@ -58,7 +51,6 @@ func newPINApp(pin PINService) *fiber.App {
 	app.Post("/api/v1/auth/pin", auth, h.Set)
 	app.Put("/api/v1/auth/pin", auth, h.Change)
 	app.Post("/api/v1/auth/pin/verify", auth, h.Verify)
-	app.Post("/api/v1/auth/pin/reset", auth, h.Reset)
 	return app
 }
 
@@ -89,7 +81,6 @@ func TestPINRoutes(t *testing.T) {
 		{"set", http.MethodPost, "/api/v1/auth/pin", `{"pin":"135792","pin_confirmation":"135792"}`, "set", []string{"135792"}},
 		{"change", http.MethodPut, "/api/v1/auth/pin", `{"current_pin":"135792","new_pin":"246813","new_pin_confirmation":"246813"}`, "change", []string{"135792", "246813"}},
 		{"verify", http.MethodPost, "/api/v1/auth/pin/verify", `{"pin":"135792"}`, "verify", []string{"135792"}},
-		{"reset", http.MethodPost, "/api/v1/auth/pin/reset", `{"firebase_id_token":"fb","new_pin":"246813","new_pin_confirmation":"246813"}`, "reset", []string{"246813"}},
 	}
 
 	for _, tt := range tests {
@@ -117,21 +108,6 @@ func TestPINRoutes(t *testing.T) {
 	}
 }
 
-func TestPINResetPassesSession(t *testing.T) {
-	// Arrange
-	fake := &fakePIN{}
-	req, _, sessionID := authed(t, http.MethodPost, "/api/v1/auth/pin/reset",
-		`{"firebase_id_token":"fb","new_pin":"246813","new_pin_confirmation":"246813"}`)
-
-	// Act
-	call(t, newPINApp(fake), req)
-
-	// Assert
-	if fake.gotSession != sessionID || fake.gotIDToken != "fb" {
-		t.Errorf("service got session %s token %q, want %s fb", fake.gotSession, fake.gotIDToken, sessionID)
-	}
-}
-
 func TestPINErrors(t *testing.T) {
 	// Arrange
 	tests := []struct {
@@ -149,7 +125,6 @@ func TestPINErrors(t *testing.T) {
 		{"change missing fields", http.MethodPut, "/api/v1/auth/pin", `{}`, nil, 422, "validation_error"},
 		{"verify not set", http.MethodPost, "/api/v1/auth/pin/verify", `{"pin":"135792"}`, model.ErrPINNotSet, 409, "pin_not_set"},
 		{"verify locked", http.MethodPost, "/api/v1/auth/pin/verify", `{"pin":"135792"}`, model.ErrPINLocked.WithRetryAfter(15 * time.Minute), 423, "pin_locked"},
-		{"reset foreign otp", http.MethodPost, "/api/v1/auth/pin/reset", `{"firebase_id_token":"fb","new_pin":"246813","new_pin_confirmation":"246813"}`, model.ErrOTPInvalid, 401, "otp_invalid"},
 	}
 
 	for _, tt := range tests {

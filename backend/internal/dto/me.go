@@ -6,18 +6,20 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/equinox-jj/Giliran/backend/internal/model"
+	"github.com/equinox-jj/Giliran/backend/internal/repository"
 )
 
 // UpdateMeRequest is the body of PATCH /me. The service trims the name and
-// checks its length again.
+// checks its length again, and normalizes the phone; a null phone removes
+// it. At least one field must be present.
 type UpdateMeRequest struct {
-	Name string `json:"name" validate:"required,min=2,max=50"`
+	Name  *string          `json:"name" validate:"omitnil,min=2,max=50"`
+	Phone Optional[string] `json:"phone"`
 }
 
-// ChangePhoneRequest is the body of PUT /auth/phone.
-type ChangePhoneRequest struct {
-	OldFirebaseIDToken string `json:"old_firebase_id_token" validate:"required"`
-	NewFirebaseIDToken string `json:"new_firebase_id_token" validate:"required"`
+// Change converts the request and reports whether it changes anything.
+func (r UpdateMeRequest) Change() (repository.ProfileChange, bool) {
+	return repository.ProfileChange{Name: r.Name, SetPhone: r.Phone.Set, Phone: r.Phone.Value}, r.Name != nil || r.Phone.Set
 }
 
 // UserSettings is the UserSettings schema.

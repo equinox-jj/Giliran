@@ -17,7 +17,7 @@ import (
 // ProfileService is what MeController needs from service.ProfileService.
 type ProfileService interface {
 	Me(ctx context.Context, userID uuid.UUID) (service.Profile, error)
-	UpdateName(ctx context.Context, userID uuid.UUID, name string) (service.Profile, error)
+	UpdateProfile(ctx context.Context, userID uuid.UUID, c repository.ProfileChange) (service.Profile, error)
 	UploadAvatar(ctx context.Context, userID uuid.UUID, data []byte) (service.Profile, error)
 	DeleteAvatar(ctx context.Context, userID uuid.UUID) error
 	Settings(ctx context.Context, userID uuid.UUID) (model.UserSettings, error)
@@ -59,7 +59,11 @@ func (h *MeController) Update(c fiber.Ctx) error {
 	if err := c.Bind().Body(&req); err != nil {
 		return err
 	}
-	p, err := h.profile.UpdateName(c.Context(), middleware.UserID(c), req.Name)
+	change, ok := req.Change()
+	if !ok {
+		return model.ErrValidation.WithDetail("Send name or phone to change.")
+	}
+	p, err := h.profile.UpdateProfile(c.Context(), middleware.UserID(c), change)
 	if err != nil {
 		return err
 	}

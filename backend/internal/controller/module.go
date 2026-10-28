@@ -8,7 +8,7 @@ import (
 // Module provides every HTTP controller.
 var Module = fx.Module("controller", fx.Provide(
 	func(pool *pgxpool.Pool) *HealthController { return NewHealthController(pool) },
-	NewAuthController, NewPINController, NewMeController,
+	NewAuthController, NewOTPController, NewPINController, NewMeController,
 	NewGroupController, NewMemberController, NewPeriodController, NewPaymentController,
 	NewDrawController, NewPayoutController, NewTransparencyController, NewReminderController,
 	NewIdempotency,
