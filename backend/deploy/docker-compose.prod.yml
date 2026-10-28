@@ -7,6 +7,9 @@
 #   DATABASE_URL=postgres://<user>:<password>@postgres:5432/<db>?sslmode=disable
 #   MINIO_ENDPOINT=minio:9000
 #   MINIO_PUBLIC_URL=https://<files hostname>
+#   OTP_SECRET=<openssl rand -hex 32>   (API and worker)
+#   SMTP_HOST, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD, SMTP_TLS, SMTP_FROM
+#                                       (worker; it sends the sign-in codes)
 # The app downloads avatars and proofs from presigned URLs signed for
 # MINIO_PUBLIC_URL, so route that hostname (e.g. a second Cloudflare Tunnel
 # ingress) to minio:9000 without rewriting the Host header.
@@ -30,11 +33,6 @@ services:
     image: giliran-api:local
     restart: unless-stopped
     env_file: ../.env
-    environment:
-      FIREBASE_CREDENTIALS_FILE: /secrets/firebase-service-account.json
-    volumes:
-      # the image runs as uid 65532 (distroless nonroot); the key must be readable by it
-      - ../secrets:/secrets:ro
     ports:
       - "127.0.0.1:8080:8080"
     depends_on:
@@ -43,7 +41,8 @@ services:
       minio-init:
         condition: service_completed_successfully
 
-  # Runs River's jobs: pushes, reminders, alerts, expiry and cleanup.
+  # Runs River's jobs: emails, pushes, reminders, alerts, expiry and cleanup.
+  # Only the worker needs the Firebase key (FCM) and SMTP.
   worker:
     build:
       context: ..
@@ -54,6 +53,7 @@ services:
     environment:
       FIREBASE_CREDENTIALS_FILE: /secrets/firebase-service-account.json
     volumes:
+      # the image runs as uid 65532 (distroless nonroot); the key must be readable by it
       - ../secrets:/secrets:ro
     depends_on:
       river-migrate:

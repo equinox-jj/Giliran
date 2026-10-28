@@ -7,7 +7,6 @@ import (
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
 
-	"github.com/equinox-jj/Giliran/backend/internal/clients/firebase"
 	"github.com/equinox-jj/Giliran/backend/internal/clients/storage"
 	"github.com/equinox-jj/Giliran/backend/internal/controller"
 	"github.com/equinox-jj/Giliran/backend/internal/jobs"
@@ -26,11 +25,11 @@ func main() {
 
 // options is the whole dependency graph, shared with the wiring test.
 func options() fx.Option {
-	return fx.Options(core(), firebase.Module, storage.Module)
+	return fx.Options(core(), storage.Module)
 }
 
-// core is the graph without the external clients (Firebase and MinIO), so
-// the authorization sweep can run the real routes with fakes in their place.
+// core is the graph without the external client (MinIO), so the
+// authorization sweep can run the real routes with a fake in its place.
 func core() fx.Option {
 	return fx.Options(
 		config.Module,

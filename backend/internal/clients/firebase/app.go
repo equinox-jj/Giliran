@@ -1,3 +1,6 @@
+// Package firebase sends push notifications through FCM with the Firebase
+// Admin SDK. Only the worker uses it; sign-in is by email code, so the API
+// needs no Firebase credentials.
 package firebase
 
 import (
@@ -13,7 +16,7 @@ import (
 
 // NewApp builds the Admin SDK app from FIREBASE_CREDENTIALS_FILE (a
 // service-account JSON) and, if set, FIREBASE_PROJECT_ID. It fails when the
-// credentials file is missing, so neither binary starts without it.
+// credentials file is missing, so the worker does not start without it.
 func NewApp(ctx context.Context, cfg config.Firebase) (*fb.App, error) {
 	if _, err := os.Stat(cfg.CredentialsFile); err != nil {
 		return nil, fmt.Errorf("FIREBASE_CREDENTIALS_FILE %q: %w (download a service-account key from the Firebase console)", cfg.CredentialsFile, err)

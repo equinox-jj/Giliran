@@ -1,5 +1,5 @@
-# Local development stack: API, worker, PostgreSQL and MinIO. Ports bind to
-# 127.0.0.1 only.
+# Local development stack: API, worker, PostgreSQL, MinIO and Mailpit. Ports
+# bind to 127.0.0.1 only.
 #
 #   docker compose -f deploy/docker-compose.dev.yml up -d --build
 #   docker compose -f deploy/docker-compose.dev.yml watch    # rebuild the API and worker on change
@@ -7,7 +7,9 @@
 #
 # To run the API or worker on the host with `go run ./cmd/api` (or
 # ./cmd/worker) instead, start only their dependencies:
-#   docker compose -f deploy/docker-compose.dev.yml up -d migrate river-migrate minio-init
+#   docker compose -f deploy/docker-compose.dev.yml up -d migrate river-migrate minio-init mailpit
+#
+# The worker sends sign-in codes to Mailpit; read them at http://localhost:8025.
 #
 # Every container reads ../.env (POSTGRES_*, MINIO_ROOT_*). Migrations, River's
 # included, run on every `up` and the MinIO bucket is created if it is missing.
@@ -30,9 +32,6 @@ services:
       # Presigned URLs must name a host the client can reach, not minio:9000.
       # An Android emulator needs http://10.0.2.2:9000; a phone, the LAN IP.
       MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL:-http://localhost:9000}
-      FIREBASE_CREDENTIALS_FILE: /secrets/firebase-service-account.json
-    volumes:
-      - ../secrets:/secrets:ro
     entrypoint:
       - sh
       - -c
@@ -59,8 +58,9 @@ services:
         - path: ../go.sum
           action: rebuild
 
-  # Runs River's jobs: pushes, reminders, alerts, expiry and cleanup. Same
-  # build-stage approach as the API.
+  # Runs River's jobs: emails, pushes, reminders, alerts, expiry and cleanup.
+  # Same build-stage approach as the API. It alone needs the Firebase key (FCM)
+  # and SMTP; .env keeps SMTP_HOST=localhost for `go run`.
   worker:
     build:
       context: ..
@@ -72,6 +72,9 @@ services:
     environment:
       MINIO_ENDPOINT: minio:9000
       FIREBASE_CREDENTIALS_FILE: /secrets/firebase-service-account.json
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      SMTP_TLS: none
     volumes:
       - ../secrets:/secrets:ro
     entrypoint:
@@ -85,6 +88,8 @@ services:
         condition: service_completed_successfully
       minio-init:
         condition: service_completed_successfully
+      mailpit:
+        condition: service_healthy
     develop:
       watch: *watch
 
@@ -173,6 +178,20 @@ services:
     depends_on:
       minio:
         condition: service_healthy
+
+  # Catches every email the worker sends: SMTP on 1025, inbox at :8025.
+  mailpit:
+    image: axllent/mailpit:v1.31.6
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:1025:1025" # SMTP, for `go run ./cmd/worker`
+      - "127.0.0.1:8025:8025" # web inbox
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
 
 volumes:
   postgres-data:

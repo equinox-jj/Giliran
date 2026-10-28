@@ -23,7 +23,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/fx"
 
-	"github.com/equinox-jj/Giliran/backend/internal/clients/firebase"
 	"github.com/equinox-jj/Giliran/backend/internal/clients/storage"
 	"github.com/equinox-jj/Giliran/backend/internal/controller"
 	"github.com/equinox-jj/Giliran/backend/internal/model"
@@ -32,13 +31,6 @@ import (
 	"github.com/equinox-jj/Giliran/backend/pkg/utils"
 	"github.com/equinox-jj/Giliran/backend/test/integration"
 )
-
-// noVerifier stands in for Firebase; the sweep never signs in.
-type noVerifier struct{}
-
-func (noVerifier) Verify(context.Context, string) (firebase.Identity, error) {
-	return firebase.Identity{}, model.ErrOTPInvalid
-}
 
 // memStore keeps uploaded objects in memory instead of MinIO.
 type memStore struct {
@@ -69,7 +61,7 @@ func (s *memStore) PresignGet(_ context.Context, key string) (string, error) {
 }
 
 // sweepApp is the real API graph (config, services, controllers, routes and
-// middleware) on a test database, with Firebase and MinIO faked.
+// middleware) on a test database, with MinIO faked.
 type sweepApp struct {
 	app     *fiber.App
 	tokens  *security.TokenIssuer
@@ -102,10 +94,7 @@ func newSweepApp(t *testing.T) sweepApp {
 	// requests go through app.Test, so nothing listens on a port.
 	app := fx.New(
 		core(),
-		fx.Provide(
-			func() firebase.AuthVerifier { return noVerifier{} },
-			func() storage.Storage { return &memStore{objects: map[string][]byte{}} },
-		),
+		fx.Provide(func() storage.Storage { return &memStore{objects: map[string][]byte{}} }),
 		fx.Populate(&s.app, &s.tokens, &s.groups, &s.members, &s.leaves, &s.owners, &s.pays, &s.pool),
 		fx.NopLogger,
 	)

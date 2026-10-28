@@ -144,8 +144,9 @@ type SMTP struct {
 	DailyLimit int `koanf:"email_daily_limit"`
 }
 
-// Firebase is checked by internal/clients/firebase at startup, which fails
-// when the credentials file is missing.
+// Firebase is used only by the worker, for FCM. internal/clients/firebase
+// checks it when firebase.WorkerModule starts, and fails when the
+// credentials file is missing; the API never reads it.
 type Firebase struct {
 	ProjectID       string `koanf:"firebase_project_id"`
 	CredentialsFile string `koanf:"firebase_credentials_file"`
