@@ -1,23 +1,26 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../core/themes/themes.dart';
-import 'component_gallery_page.dart';
+import 'router.dart';
 
-class GiliranApp extends StatelessWidget {
-  const GiliranApp({super.key, this.themeMode = ThemeMode.system});
+class GiliranApp extends ConsumerWidget {
+  const GiliranApp({
+    super.key,
+    this.themeMode = ThemeMode.system,
+  });
 
   final ThemeMode themeMode;
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
+  Widget build(BuildContext context, WidgetRef ref) {
+    return MaterialApp.router(
       title: 'Giliran',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       themeMode: themeMode,
-      // Temporary home until the router lands.
-      home: const ComponentGalleryPage(),
+      routerConfig: ref.watch(routerProvider),
     );
   }
 }
