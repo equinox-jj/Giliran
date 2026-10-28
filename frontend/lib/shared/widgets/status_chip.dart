@@ -76,7 +76,11 @@ class StatusChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          AppIcon(status.icon, size: AppSizes.iconSm, color: colors.fg),
+          AppIcon(
+            status.icon,
+            size: AppSizes.iconSm,
+            color: colors.fg,
+          ),
           const SizedBox(width: AppSpace.s1),
           Text(
             text,
@@ -97,7 +101,10 @@ class StatusChip extends StatelessWidget {
         child: chip,
       );
     } else if (status == ChipStatus.unpaid) {
-      chip = DashedBorder(color: colors.fg.withValues(alpha: 0.6), child: chip);
+      chip = DashedBorder(
+        color: colors.fg.withValues(alpha: 0.6),
+        child: chip,
+      );
     }
 
     return Semantics(

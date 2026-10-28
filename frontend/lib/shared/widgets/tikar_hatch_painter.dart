@@ -55,7 +55,10 @@ class TikarHatch extends StatelessWidget {
   Widget build(BuildContext context) => ClipRRect(
     borderRadius: borderRadius,
     child: CustomPaint(
-      painter: TikarHatchPainter(color, background: background),
+      painter: TikarHatchPainter(
+        color,
+        background: background,
+      ),
       child: child,
     ),
   );

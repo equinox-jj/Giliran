@@ -55,7 +55,10 @@ class _ShakeState extends State<Shake> with SingleTickerProviderStateMixin {
           math.sin(v * math.pi * 2 * widget.oscillations) *
           widget.distance *
           (1 - v);
-      return Transform.translate(offset: Offset(dx, 0), child: child);
+      return Transform.translate(
+        offset: Offset(dx, 0),
+        child: child,
+      );
     },
     child: widget.child,
   );
