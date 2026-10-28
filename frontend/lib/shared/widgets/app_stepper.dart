@@ -156,27 +156,33 @@ class _AppStepperState extends State<AppStepper> {
             ),
             _button(AppIcons.minusBold, 'Kurangi', -1, !atMin),
             const SizedBox(width: AppSpace.s2),
+            // A collapsed field is exactly one line tall, so Center can put
+            // the digits on the buttons' midline.
             SizedBox(
               width: 64,
-              child: Semantics(
-                label: widget.label,
-                value: '${widget.value}',
-                child: TextField(
-                  controller: _controller,
-                  focusNode: _focus,
-                  textAlign: TextAlign.center,
-                  keyboardType: TextInputType.number,
-                  textInputAction: TextInputAction.done,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  onSubmitted: _commit,
-                  style: t.amountLg.copyWith(color: c.textPrimary),
-                  decoration: const InputDecoration(
-                    filled: false,
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    contentPadding: EdgeInsets.zero,
-                    constraints: BoxConstraints(minHeight: AppSizes.tapMin),
+              height: AppSizes.tapMin,
+              child: Center(
+                child: Semantics(
+                  label: widget.label,
+                  value: '${widget.value}',
+                  child: TextField(
+                    controller: _controller,
+                    focusNode: _focus,
+                    textAlign: TextAlign.center,
+                    keyboardType: TextInputType.number,
+                    textInputAction: TextInputAction.done,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    onSubmitted: _commit,
+                    style: t.amountLg.copyWith(color: c.textPrimary),
+                    // Empty constraints override the theme's 56 min height.
+                    decoration: const InputDecoration(
+                      isCollapsed: true,
+                      filled: false,
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      constraints: BoxConstraints(),
+                    ),
                   ),
                 ),
               ),

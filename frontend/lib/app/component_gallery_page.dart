@@ -267,6 +267,7 @@ class _GalleryState extends State<_Gallery> {
                   gap,
                   const Wrap(
                     spacing: AppSpace.s2,
+                    runSpacing: AppSpace.s2,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       CountDot(),

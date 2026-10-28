@@ -103,6 +103,8 @@ class AppTextField extends StatelessWidget {
       ),
       decoration: InputDecoration(
         hintText: hint,
+        // Match the value style so a custom-sized hint sits on the same line.
+        hintStyle: style?.copyWith(color: c.textTertiary),
         // An empty error widget switches to the error border; the message is
         // rendered below with its icon.
         error: hasError ? const SizedBox.shrink() : null,
@@ -113,7 +115,9 @@ class AppTextField extends StatelessWidget {
                   start: AppSpace.s3,
                   end: AppSpace.s2,
                 ),
-                child: prefix,
+                // The decorator forces the prefix to the full field height;
+                // center it and keep it at its own width.
+                child: Center(widthFactor: 1, heightFactor: 1, child: prefix),
               ),
         prefixIconConstraints: const BoxConstraints(minHeight: AppSizes.inputH),
         suffixIcon: suffix,

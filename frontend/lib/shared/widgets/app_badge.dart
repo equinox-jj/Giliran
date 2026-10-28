@@ -36,15 +36,18 @@ class CountBadge extends StatelessWidget {
     final c = context.colors;
     final t = AppTextStyles.of(context);
     return Container(
-      constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
+      height: 20,
+      constraints: const BoxConstraints(minWidth: 20),
       padding: const EdgeInsets.symmetric(horizontal: 6),
       decoration: ShapeDecoration(color: c.inverse, shape: AppShapes.pill),
-      alignment: Alignment.center,
-      child: Text(
-        count > max ? '$max+' : '$count',
-        style: t.micro.copyWith(
-          color: c.textOnInverse,
-          fontFeatures: AppTextStyles.tabularFigures,
+      child: Center(
+        widthFactor: 1,
+        child: Text(
+          count > max ? '$max+' : '$count',
+          style: t.micro.copyWith(
+            color: c.textOnInverse,
+            fontFeatures: AppTextStyles.tabularFigures,
+          ),
         ),
       ),
     );
@@ -66,8 +69,10 @@ class LabelBadge extends StatelessWidget {
       height: 20,
       padding: const EdgeInsets.symmetric(horizontal: AppSpace.s2),
       decoration: ShapeDecoration(color: c.subtle, shape: AppShapes.pill),
-      alignment: Alignment.center,
-      child: Text(label, style: t.micro.copyWith(color: c.textSecondary)),
+      child: Center(
+        widthFactor: 1,
+        child: Text(label, style: t.micro.copyWith(color: c.textSecondary)),
+      ),
     );
   }
 }

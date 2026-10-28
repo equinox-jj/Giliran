@@ -35,10 +35,16 @@ mixin _ScrolledUnder<T extends StatefulWidget> on State<T> {
     }
   }
 
-  Widget hairline(BuildContext context) => AnimatedOpacity(
-    opacity: scrollOffset > 0 ? 1 : 0,
-    duration: AppMotion.base,
-    child: Container(height: 1, color: context.colors.hairline),
+  /// Drawn over the bar's bottom edge so it doesn't add to [preferredSize].
+  Widget hairline(BuildContext context) => Positioned(
+    left: 0,
+    right: 0,
+    bottom: 0,
+    child: AnimatedOpacity(
+      opacity: scrollOffset > 0 ? 1 : 0,
+      duration: AppMotion.base,
+      child: Container(height: 1, color: context.colors.hairline),
+    ),
   );
 }
 
@@ -107,8 +113,7 @@ class _AppTopBarState extends State<AppTopBar> with _ScrolledUnder {
       color: c.page,
       child: SafeArea(
         bottom: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        child: Stack(
           children: [
             SizedBox(
               height: AppSizes.topBarH,
@@ -193,8 +198,7 @@ class _GreetingTopBarState extends State<GreetingTopBar> with _ScrolledUnder {
       color: c.page,
       child: SafeArea(
         bottom: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        child: Stack(
           children: [
             SizedBox(
               height: AppSizes.greetingBarH,

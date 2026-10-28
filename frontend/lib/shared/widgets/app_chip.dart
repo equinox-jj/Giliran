@@ -87,16 +87,19 @@ class _InvertedCount extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     return Container(
-      constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
+      height: 20,
+      constraints: const BoxConstraints(minWidth: 20),
       padding: const EdgeInsets.symmetric(horizontal: 6),
       decoration: ShapeDecoration(
         color: c.textOnInverse,
         shape: AppShapes.pill,
       ),
-      alignment: Alignment.center,
-      child: Text(
-        count > 9 ? '9+' : '$count',
-        style: AppTextStyles.of(context).micro.copyWith(color: c.inverse),
+      child: Center(
+        widthFactor: 1,
+        child: Text(
+          count > 9 ? '9+' : '$count',
+          style: AppTextStyles.of(context).micro.copyWith(color: c.inverse),
+        ),
       ),
     );
   }

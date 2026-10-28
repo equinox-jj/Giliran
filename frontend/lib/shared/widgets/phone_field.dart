@@ -71,12 +71,14 @@ class _PhoneFieldState extends State<PhoneField> {
         height: 32,
         padding: const EdgeInsets.symmetric(horizontal: 10),
         decoration: ShapeDecoration(color: c.subtle, shape: AppShapes.pill),
-        alignment: Alignment.center,
-        child: Text(
-          '+62',
-          style: t.label.copyWith(
-            color: c.textPrimary,
-            fontFeatures: AppTextStyles.tabularFigures,
+        child: Center(
+          widthFactor: 1,
+          child: Text(
+            '+62',
+            style: t.label.copyWith(
+              color: c.textPrimary,
+              fontFeatures: AppTextStyles.tabularFigures,
+            ),
           ),
         ),
       ),
