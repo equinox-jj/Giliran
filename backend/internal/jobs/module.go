@@ -25,6 +25,7 @@ var WorkerModule = fx.Module("jobs.worker",
 	fx.Provide(
 		NewPushWorker, NewRemindersWorker, NewMissedAlertWorker,
 		NewExpireTransfersWorker, NewCleanupWorker, NewAccountPurgeWorker,
+		NewEmailQuota, NewEmailOTPWorker, NewEmailChangedNoticeWorker, NewExpireOTPWorker,
 		newClient,
 	),
 	fx.Invoke(func(*river.Client[pgx.Tx]) {}),
@@ -43,6 +44,9 @@ type clientParams struct {
 	ExpireTransfers *ExpireTransfersWorker
 	Cleanup         *CleanupWorker
 	AccountPurge    *AccountPurgeWorker
+	EmailOTP        *EmailOTPWorker
+	EmailNotice     *EmailChangedNoticeWorker
+	ExpireOTP       *ExpireOTPWorker
 }
 
 func newClient(p clientParams) (*river.Client[pgx.Tx], error) {
@@ -53,6 +57,9 @@ func newClient(p clientParams) (*river.Client[pgx.Tx], error) {
 	river.AddWorker(workers, p.ExpireTransfers)
 	river.AddWorker(workers, p.Cleanup)
 	river.AddWorker(workers, p.AccountPurge)
+	river.AddWorker(workers, p.EmailOTP)
+	river.AddWorker(workers, p.EmailNotice)
+	river.AddWorker(workers, p.ExpireOTP)
 
 	periodic, err := periodicJobs(p.Config, p.Clock)
 	if err != nil {
@@ -64,6 +71,7 @@ func newClient(p clientParams) (*river.Client[pgx.Tx], error) {
 		Queues: map[string]river.QueueConfig{
 			river.QueueDefault: {MaxWorkers: max(1, n/2)},
 			QueuePush:          {MaxWorkers: n},
+			QueueEmail:         {MaxWorkers: max(1, n/2)},
 		},
 		Workers:      workers,
 		PeriodicJobs: periodic,
@@ -78,7 +86,7 @@ func newClient(p clientParams) (*river.Client[pgx.Tx], error) {
 			if err := client.Start(context.Background()); err != nil {
 				return fmt.Errorf("start river: %w", err)
 			}
-			p.Log.Info("worker started", "queues", []string{river.QueueDefault, QueuePush}, "periodic_jobs", len(periodic))
+			p.Log.Info("worker started", "queues", []string{river.QueueDefault, QueuePush, QueueEmail}, "periodic_jobs", len(periodic))
 			return nil
 		},
 		OnStop: client.Stop,
@@ -86,7 +94,7 @@ func newClient(p clientParams) (*river.Client[pgx.Tx], error) {
 	return client, nil
 }
 
-// periodicJobs schedules the daily and hourly jobs from WORKER_*_CRON in
+// periodicJobs schedules the daily, hourly and minutely jobs from WORKER_*_CRON in
 // APP_TIMEZONE. The daily jobs carry their business date, which with their
 // unique options makes a day run once even across restarts.
 func periodicJobs(cfg *config.Config, clk clock.Clock) ([]*river.PeriodicJob, error) {
@@ -101,6 +109,7 @@ func periodicJobs(cfg *config.Config, clk clock.Clock) ([]*river.PeriodicJob, er
 		{"obligations.missed_alert", cfg.Worker.MissedAlertCron, func() river.JobArgs { return MissedAlertArgs{Date: today()} }},
 		{"ownership_transfers.expire", cfg.Worker.TransferExpiryCron, func() river.JobArgs { return ExpireTransfersArgs{} }},
 		{"cleanup", cfg.Worker.CleanupCron, func() river.JobArgs { return CleanupArgs{} }},
+		{"otp.expire", cfg.Worker.OTPExpireCron, func() river.JobArgs { return ExpireOTPArgs{} }},
 	}
 	out := make([]*river.PeriodicJob, len(specs))
 	for i, s := range specs {

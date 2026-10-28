@@ -1,5 +1,5 @@
-// Package web renders the public HTML pages served next to the API: the
-// Bukti Kocok draw verification page.
+// Package web renders the public HTML pages served next to the API (the
+// Bukti Kocok draw verification page) and the emails the worker sends.
 package web
 
 import (

@@ -401,7 +401,7 @@ func (s *OTPService) changeEmail(ctx context.Context, row model.OTPRequest, sess
 		return user, nil
 	}
 	return user, s.enqueuer.Enqueue(ctx, river.InsertManyParams{
-		Args: jobs.EmailChangedNoticeArgs{UserID: user.ID, OldEmail: *current.Email},
+		Args: jobs.EmailChangedNoticeArgs{UserID: user.ID, OldEmail: *current.Email, ChangedAt: now},
 	})
 }
 

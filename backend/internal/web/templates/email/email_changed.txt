@@ -1,0 +1,9 @@
+{{if .English -}}
+The email of your Giliran account was changed{{if .NewEmailMasked}} to {{.NewEmailMasked}}{{end}} on {{.When}}. This address no longer signs in to it, and every other device was signed out.
+
+If you made this change, there is nothing to do. If you didn't, someone knew your PIN: reply to this email right away so we can help.
+{{- else -}}
+Email akun Giliran kamu diganti{{if .NewEmailMasked}} menjadi {{.NewEmailMasked}}{{end}} pada {{.When}}. Alamat ini tidak bisa lagi dipakai untuk masuk, dan semua perangkat lain sudah dikeluarkan.
+
+Kalau kamu yang menggantinya, tidak perlu melakukan apa-apa. Kalau bukan, berarti ada yang tahu PIN kamu: segera balas email ini supaya kami bisa membantu.
+{{- end}}

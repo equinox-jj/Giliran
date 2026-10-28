@@ -69,39 +69,26 @@ func (s *recordingStore) Delete(_ context.Context, key string) error {
 	return s.err
 }
 
-type recordingDeleter struct {
-	deleted []string
-	err     error
-}
-
-func (d *recordingDeleter) DeleteUser(_ context.Context, uid string) error {
-	d.deleted = append(d.deleted, uid)
-	return d.err
-}
-
 func TestAccountPurgeWorker(t *testing.T) {
 	// Arrange
-	uid, key := "uid-budi", "avatars/budi.jpg"
+	key := "avatars/budi.jpg"
 	tests := []struct {
-		name      string
-		args      AccountPurgeArgs
-		storeErr  error
-		fbErr     error
-		wantErr   bool
-		wantKeys  int
-		wantUsers int
+		name     string
+		args     AccountPurgeArgs
+		storeErr error
+		wantErr  bool
+		wantKeys int
 	}{
-		{"both", AccountPurgeArgs{FirebaseUID: &uid, AvatarKey: &key}, nil, nil, false, 1, 1},
-		{"no avatar", AccountPurgeArgs{FirebaseUID: &uid}, nil, nil, false, 0, 1},
-		{"firebase down retries", AccountPurgeArgs{FirebaseUID: &uid, AvatarKey: &key}, nil, errors.New("down"), true, 1, 1},
-		{"storage down retries first", AccountPurgeArgs{FirebaseUID: &uid, AvatarKey: &key}, errors.New("down"), nil, true, 1, 0},
+		{"avatar", AccountPurgeArgs{AvatarKey: &key}, nil, false, 1},
+		{"no avatar", AccountPurgeArgs{}, nil, false, 0},
+		{"storage down retries", AccountPurgeArgs{AvatarKey: &key}, errors.New("down"), true, 1},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange
 			store := &recordingStore{err: tt.storeErr}
-			fb := &recordingDeleter{err: tt.fbErr}
-			w := &AccountPurgeWorker{store: store, firebase: fb}
+			w := NewAccountPurgeWorker(nil)
+			w.store = store
 
 			// Act
 			err := w.Work(context.Background(), &river.Job[AccountPurgeArgs]{Args: tt.args})
@@ -110,8 +97,27 @@ func TestAccountPurgeWorker(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("err %v, want error %v", err, tt.wantErr)
 			}
-			if len(store.deleted) != tt.wantKeys || len(fb.deleted) != tt.wantUsers {
-				t.Errorf("deleted keys %v, users %v", store.deleted, fb.deleted)
+			if len(store.deleted) != tt.wantKeys {
+				t.Errorf("deleted keys %v, want %d", store.deleted, tt.wantKeys)
+			}
+		})
+	}
+}
+
+func TestEmailArgsUseEmailQueue(t *testing.T) {
+	// Arrange
+	tests := []interface {
+		river.JobArgs
+		river.JobArgsWithInsertOpts
+	}{EmailOTPArgs{}, EmailChangedNoticeArgs{}}
+	for _, a := range tests {
+		t.Run(a.Kind(), func(t *testing.T) {
+			// Act
+			opts := a.InsertOpts()
+
+			// Assert
+			if opts.Queue != QueueEmail {
+				t.Errorf("queue %q, want %q", opts.Queue, QueueEmail)
 			}
 		})
 	}

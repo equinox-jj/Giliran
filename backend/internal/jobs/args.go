@@ -15,6 +15,10 @@ import (
 // maintenance never delays a push (FR-DRW-05 wants them within a minute).
 const QueuePush = "push"
 
+// QueueEmail is the queue for email.*: someone is waiting for each code, so
+// a backlog of maintenance must not delay it either.
+const QueueEmail = "email"
+
 // PushArgs sends one notification to every device of one user (push.send).
 type PushArgs struct {
 	UserID       uuid.UUID         `json:"user_id"`
@@ -88,32 +92,39 @@ func (EmailOTPArgs) Kind() string { return "email.otp" }
 // A code lives 10 minutes, and River's backoff spends about 6 of them on 5
 // attempts, so later retries would only deliver a dead code.
 func (EmailOTPArgs) InsertOpts() river.InsertOpts {
-	return river.InsertOpts{MaxAttempts: 5, UniqueOpts: river.UniqueOpts{ByArgs: true}}
+	return river.InsertOpts{Queue: QueueEmail, MaxAttempts: 5, UniqueOpts: river.UniqueOpts{ByArgs: true}}
 }
 
 // EmailChangedNoticeArgs tells the previous address that the account moved
 // to a new email (email.email_changed_notice). Best effort.
 type EmailChangedNoticeArgs struct {
-	UserID   uuid.UUID `json:"user_id"`
-	OldEmail string    `json:"old_email"`
+	UserID    uuid.UUID `json:"user_id"`
+	OldEmail  string    `json:"old_email"`
+	ChangedAt time.Time `json:"changed_at"`
 }
 
 func (EmailChangedNoticeArgs) Kind() string { return "email.email_changed_notice" }
 
 func (EmailChangedNoticeArgs) InsertOpts() river.InsertOpts {
-	return river.InsertOpts{MaxAttempts: 10}
+	return river.InsertOpts{Queue: QueueEmail, MaxAttempts: 10}
 }
 
+// ExpireOTPArgs marks pending email codes past their expiry expired
+// (otp.expire). Verify treats them as expired either way; this keeps the
+// status honest for troubleshooting.
+type ExpireOTPArgs struct{}
+
+func (ExpireOTPArgs) Kind() string { return "otp.expire" }
+
 // AccountPurgeArgs deletes what a deleted account left outside the
-// database: its avatar object and its Firebase user (account.purge).
+// database: its avatar object (account.purge).
 type AccountPurgeArgs struct {
-	FirebaseUID *string `json:"firebase_uid,omitempty"`
-	AvatarKey   *string `json:"avatar_key,omitempty"`
+	AvatarKey *string `json:"avatar_key,omitempty"`
 }
 
 func (AccountPurgeArgs) Kind() string { return "account.purge" }
 
-// Both deletes are idempotent, so retrying for about a day is safe.
+// The delete is idempotent, so retrying for about a day is safe.
 func (AccountPurgeArgs) InsertOpts() river.InsertOpts {
 	return river.InsertOpts{MaxAttempts: 15}
 }

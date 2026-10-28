@@ -7,7 +7,6 @@ import (
 
 	"github.com/riverqueue/river"
 
-	"github.com/equinox-jj/Giliran/backend/internal/clients/firebase"
 	"github.com/equinox-jj/Giliran/backend/internal/clients/storage"
 	"github.com/equinox-jj/Giliran/backend/internal/repository"
 	"github.com/equinox-jj/Giliran/backend/pkg/clock"
@@ -40,6 +39,30 @@ func (w *ExpireTransfersWorker) Work(ctx context.Context, _ *river.Job[ExpireTra
 	return nil
 }
 
+// ExpireOTPWorker marks pending email codes past their expiry expired
+// (otp.expire).
+type ExpireOTPWorker struct {
+	river.WorkerDefaults[ExpireOTPArgs]
+	otps  *repository.OTPRepository
+	clock clock.Clock
+	log   *slog.Logger
+}
+
+func NewExpireOTPWorker(otps *repository.OTPRepository, clk clock.Clock, log *slog.Logger) *ExpireOTPWorker {
+	return &ExpireOTPWorker{otps: otps, clock: clk, log: log}
+}
+
+func (w *ExpireOTPWorker) Work(ctx context.Context, _ *river.Job[ExpireOTPArgs]) error {
+	n, err := w.otps.ExpireDue(ctx, w.clock.Now())
+	if err != nil {
+		return err
+	}
+	if n > 0 {
+		w.log.DebugContext(ctx, "email codes expired", "count", n)
+	}
+	return nil
+}
+
 // objectDeleter is the part of storage.Storage the workers use.
 type objectDeleter interface {
 	// Delete removes key. A missing key is not an error.
@@ -51,12 +74,14 @@ const proofPurgeBatch = 100
 
 // CleanupWorker applies DB_SCHEME §10 (cleanup): it deletes expired
 // idempotency keys, sessions revoked or expired over
-// RETENTION_REVOKED_SESSIONS ago, and the proof images of groups that
+// RETENTION_REVOKED_SESSIONS ago, email code requests created over
+// RETENTION_OTP_REQUESTS ago, and the proof images of groups that
 // completed or closed over RETENTION_PAYMENT_PROOFS ago.
 type CleanupWorker struct {
 	river.WorkerDefaults[CleanupArgs]
 	idempotency *repository.IdempotencyRepository
 	sessions    *repository.SessionRepository
+	otps        *repository.OTPRepository
 	groups      *repository.GroupRepository
 	store       objectDeleter
 	clock       clock.Clock
@@ -67,6 +92,7 @@ type CleanupWorker struct {
 func NewCleanupWorker(
 	idempotency *repository.IdempotencyRepository,
 	sessions *repository.SessionRepository,
+	otps *repository.OTPRepository,
 	groups *repository.GroupRepository,
 	store storage.Storage,
 	clk clock.Clock,
@@ -74,7 +100,7 @@ func NewCleanupWorker(
 	log *slog.Logger,
 ) *CleanupWorker {
 	return &CleanupWorker{
-		idempotency: idempotency, sessions: sessions, groups: groups, store: store,
+		idempotency: idempotency, sessions: sessions, otps: otps, groups: groups, store: store,
 		clock: clk, retention: cfg.Retention, log: log,
 	}
 }
@@ -89,6 +115,10 @@ func (w *CleanupWorker) Work(ctx context.Context, _ *river.Job[CleanupArgs]) err
 		return err
 	}
 	sessions, err := w.sessions.DeleteStale(ctx, now.Add(-w.retention.RevokedSessions))
+	if err != nil {
+		return err
+	}
+	otps, err := w.otps.DeleteBefore(ctx, now.Add(-w.retention.OTPRequests))
 	if err != nil {
 		return err
 	}
@@ -119,31 +149,25 @@ func (w *CleanupWorker) Work(ctx context.Context, _ *river.Job[CleanupArgs]) err
 		}
 	}
 	w.log.InfoContext(ctx, "cleanup done",
-		"idempotency_keys", keys, "sessions", sessions, "proof_groups", groups, "proof_objects", objects)
+		"idempotency_keys", keys, "sessions", sessions, "otp_requests", otps, "proof_groups", groups, "proof_objects", objects)
 	return nil
 }
 
-// AccountPurgeWorker deletes a deleted account's avatar object and Firebase
-// user (account.purge), so no phone number stays in Firebase Auth. Both
-// deletes ignore what is already gone, so a retry is safe.
+// AccountPurgeWorker deletes a deleted account's avatar object
+// (account.purge). The delete ignores what is already gone, so a retry is
+// safe.
 type AccountPurgeWorker struct {
 	river.WorkerDefaults[AccountPurgeArgs]
-	store    objectDeleter
-	firebase firebase.UserDeleter
+	store objectDeleter
 }
 
-func NewAccountPurgeWorker(store storage.Storage, fb firebase.UserDeleter) *AccountPurgeWorker {
-	return &AccountPurgeWorker{store: store, firebase: fb}
+func NewAccountPurgeWorker(store storage.Storage) *AccountPurgeWorker {
+	return &AccountPurgeWorker{store: store}
 }
 
 func (w *AccountPurgeWorker) Work(ctx context.Context, job *river.Job[AccountPurgeArgs]) error {
 	if k := job.Args.AvatarKey; k != nil {
-		if err := w.store.Delete(ctx, *k); err != nil {
-			return err
-		}
-	}
-	if uid := job.Args.FirebaseUID; uid != nil {
-		return w.firebase.DeleteUser(ctx, *uid)
+		return w.store.Delete(ctx, *k)
 	}
 	return nil
 }

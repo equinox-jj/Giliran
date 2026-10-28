@@ -72,7 +72,9 @@ func newWorkerEnv(t *testing.T) workerEnv {
 	sessions := repository.NewSessionRepository(tx)
 	payments := repository.NewPaymentRepository(tx)
 	members := repository.NewMemberRepository(tx)
-	cfg := &config.Config{Retention: config.Retention{RevokedSessions: 30 * 24 * time.Hour, PaymentProofs: 90 * 24 * time.Hour}}
+	cfg := &config.Config{Retention: config.Retention{
+		RevokedSessions: 30 * 24 * time.Hour, PaymentProofs: 90 * 24 * time.Hour, OTPRequests: 24 * time.Hour,
+	}}
 	sender := &fakeSender{results: map[string]firebase.SendResult{}}
 	return workerEnv{
 		transparencyEnv: e,
@@ -81,8 +83,8 @@ func newWorkerEnv(t *testing.T) workerEnv {
 		reminders:       jobs.NewRemindersWorker(payments, e.jobs, discardLog),
 		missed:          jobs.NewMissedAlertWorker(payments, members, e.jobs, discardLog),
 		expire:          jobs.NewExpireTransfersWorker(repository.NewOwnershipTransferRepository(tx), e.clock, discardLog),
-		cleanup: jobs.NewCleanupWorker(repository.NewIdempotencyRepository(tx), sessions, repository.NewGroupRepository(tx),
-			e.store, e.clock, cfg, discardLog),
+		cleanup: jobs.NewCleanupWorker(repository.NewIdempotencyRepository(tx), sessions, repository.NewOTPRepository(tx),
+			repository.NewGroupRepository(tx), e.store, e.clock, cfg, discardLog),
 	}
 }
 
@@ -334,6 +336,10 @@ func TestCleanupWorker(t *testing.T) {
 		VALUES ($1, 'expired-key', 'POST', '/x', 'h', 200, $2, $2), ($1, 'live-key-1', 'POST', '/x', 'h', 200, $3, $3)`,
 		a.rina, now.Add(-time.Hour), now.Add(time.Hour))
 	env.exec(t, "UPDATE sessions SET revoked_at = $2, revoked_reason = 'logout' WHERE user_id = $1", a.sari, now.Add(-31*24*time.Hour))
+	env.exec(t, "UPDATE email_otp_requests SET created_at = $1, last_sent_at = $1, expires_at = $2", now.Add(-25*time.Hour), now.Add(-24*time.Hour))
+	oldOTPs := env.count(t, "SELECT count(*) FROM email_otp_requests")
+	env.exec(t, `INSERT INTO email_otp_requests (id, purpose, email, code_hash, device_platform, last_sent_at, expires_at, created_at)
+		VALUES ($1, 'sign_in', 'baru@gmail.com', repeat('a', 64), 'android', $2, $3, $2)`, uuid.Must(uuid.NewV7()), now, now.Add(10*time.Minute))
 
 	// Act
 	err = env.cleanup.Work(context.Background(), &river.Job[jobs.CleanupArgs]{})
@@ -353,6 +359,9 @@ func TestCleanupWorker(t *testing.T) {
 	}
 	if n := env.count(t, "SELECT count(*) FROM sessions WHERE user_id = $1", a.budi); n == 0 {
 		t.Error("active session deleted")
+	}
+	if n := env.count(t, "SELECT count(*) FROM email_otp_requests"); oldOTPs == 0 || n != 1 {
+		t.Errorf("%d code requests left of %d old and 1 new, want only the new one", n, oldOTPs)
 	}
 	if _, ok := env.store.objects[key]; ok {
 		t.Error("proof object kept")

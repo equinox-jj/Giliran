@@ -1,0 +1,13 @@
+{{if .English -}}
+{{if eq .Purpose "sign_in"}}Your Giliran sign-in code:{{else if eq .Purpose "reset_pin"}}Your Giliran code to reset your PIN:{{else}}Your Giliran code to change your account email:{{end}}
+
+{{.Code}}
+
+Valid for {{.Minutes}} minutes. Never share this code with anyone. If you didn't ask for it, ignore this email.
+{{- else -}}
+{{if eq .Purpose "sign_in"}}Kode masuk Giliran kamu:{{else if eq .Purpose "reset_pin"}}Kode Giliran untuk reset PIN kamu:{{else}}Kode Giliran untuk mengganti email akun kamu:{{end}}
+
+{{.Code}}
+
+Berlaku {{.Minutes}} menit. Jangan berikan kode ini ke siapa pun. Kalau kamu tidak memintanya, abaikan email ini.
+{{- end}}

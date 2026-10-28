@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="{{if .English}}en{{else}}id{{end}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Giliran</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f5f7;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1f2933;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f5f7;padding:24px 12px;">
+<tr><td align="center">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#ffffff;border-radius:12px;padding:32px 28px;">
+<tr><td style="font-size:18px;font-weight:700;color:#0f766e;padding-bottom:20px;">Giliran</td></tr>
+<tr><td style="font-size:15px;line-height:1.5;padding-bottom:16px;">
+{{- if .English}}
+The email of your Giliran account was changed{{if .NewEmailMasked}} to <strong>{{.NewEmailMasked}}</strong>{{end}} on {{.When}}. This address no longer signs in to it, and every other device was signed out.
+{{- else}}
+Email akun Giliran kamu diganti{{if .NewEmailMasked}} menjadi <strong>{{.NewEmailMasked}}</strong>{{end}} pada {{.When}}. Alamat ini tidak bisa lagi dipakai untuk masuk, dan semua perangkat lain sudah dikeluarkan.
+{{- end}}
+</td></tr>
+<tr><td style="font-size:14px;line-height:1.5;color:#52606d;">
+{{- if .English}}If you made this change, there is nothing to do. If you didn't, someone knew your PIN: reply to this email right away so we can help.
+{{- else}}Kalau kamu yang menggantinya, tidak perlu melakukan apa-apa. Kalau bukan, berarti ada yang tahu PIN kamu: segera balas email ini supaya kami bisa membantu.
+{{- end}}
+</td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>

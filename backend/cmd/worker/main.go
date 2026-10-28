@@ -1,6 +1,6 @@
-// Command worker runs Giliran's River background jobs: push notifications,
-// daily reminders, missed-payment alerts, ownership-transfer expiry, cleanup
-// and account purges.
+// Command worker runs Giliran's River background jobs: sign-in code emails,
+// push notifications, daily reminders, missed-payment alerts,
+// ownership-transfer and code expiry, cleanup and account purges.
 //
 //	worker           run the jobs until SIGINT or SIGTERM
 //	worker migrate   create or upgrade River's tables, then exit
@@ -15,6 +15,7 @@ import (
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
 
+	"github.com/equinox-jj/Giliran/backend/internal/clients/email"
 	"github.com/equinox-jj/Giliran/backend/internal/clients/firebase"
 	"github.com/equinox-jj/Giliran/backend/internal/clients/storage"
 	"github.com/equinox-jj/Giliran/backend/internal/jobs"
@@ -47,6 +48,7 @@ func options() fx.Option {
 		logger.Module,
 		repository.Module,
 		firebase.WorkerModule,
+		email.Module,
 		storage.Module,
 		jobs.Module,
 		jobs.WorkerModule,

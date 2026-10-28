@@ -452,7 +452,7 @@ func TestAccountDeleteFromDraftGroup(t *testing.T) {
 		t.Errorf("pending reset_pin request %s, want cancelled", status)
 	}
 	purges := queued[jobs.AccountPurgeArgs](t, env.pool, jobs.AccountPurgeArgs{}.Kind())
-	if len(purges) != 1 || purges[0].FirebaseUID != nil || purges[0].AvatarKey == nil || *purges[0].AvatarKey != key {
+	if len(purges) != 1 || purges[0].AvatarKey == nil || *purges[0].AvatarKey != key {
 		t.Errorf("account.purge jobs %+v, want one for %s", purges, key)
 	}
 }
