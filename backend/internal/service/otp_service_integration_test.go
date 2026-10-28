@@ -271,6 +271,37 @@ func TestOTPConcurrentVerifySignsInOnce(t *testing.T) {
 	}
 }
 
+func TestOTPConcurrentRequestsLeaveOnePending(t *testing.T) {
+	// Arrange
+	t.Parallel()
+	env := newAuthEnv(t, accounts{})
+	const n = 5
+	errs := make([]error, n)
+	var wg sync.WaitGroup
+
+	// Act
+	for i := range n {
+		wg.Go(func() {
+			_, errs[i] = env.otp.Request(context.Background(),
+				OTPStart{Purpose: model.OTPPurposeSignIn, Email: rina.Email, Device: android})
+		})
+	}
+	wg.Wait()
+
+	// Assert
+	for i, err := range errs {
+		if err != nil {
+			t.Errorf("request %d: %v", i, err)
+		}
+	}
+	if pending := env.count(t, `SELECT count(*) FROM email_otp_requests WHERE email = $1 AND status = 'pending'`, rina.Email); pending != 1 {
+		t.Errorf("%d pending requests, want 1", pending)
+	}
+	if total := env.count(t, `SELECT count(*) FROM email_otp_requests WHERE email = $1`, rina.Email); total != n {
+		t.Errorf("%d requests, want %d", total, n)
+	}
+}
+
 func TestOTPResend(t *testing.T) {
 	// Arrange
 	t.Parallel()

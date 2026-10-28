@@ -14,7 +14,6 @@ import (
 )
 
 const cancelPendingOtp = `-- name: CancelPendingOtp :execrows
-
 UPDATE email_otp_requests SET status = 'cancelled'
 WHERE email = $1 AND purpose = $2 AND status = 'pending'
 `
@@ -24,8 +23,6 @@ type CancelPendingOtpParams struct {
 	Purpose string
 }
 
-// Email OTP requests (DB_SCHEME §3.16, §4.4). Times come from the caller's
-// clock. The 5-attempt and 5-resend limits are fixed by the table's CHECKs.
 // Runs before inserting a new request: one pending request per email and purpose.
 func (q *Queries) CancelPendingOtp(ctx context.Context, arg CancelPendingOtpParams) (int64, error) {
 	result, err := q.db.Exec(ctx, cancelPendingOtp, arg.Email, arg.Purpose)
@@ -280,6 +277,26 @@ func (q *Queries) GetOtpRequestForUpdate(ctx context.Context, id uuid.UUID) (Ema
 		&i.CreatedAt,
 	)
 	return i, err
+}
+
+const lockOtpEmail = `-- name: LockOtpEmail :exec
+
+SELECT pg_advisory_xact_lock(hashtextextended($1::text || ':' || $2::text, 0))
+`
+
+type LockOtpEmailParams struct {
+	Email   string
+	Purpose string
+}
+
+// Email OTP requests (DB_SCHEME §3.16, §4.4). Times come from the caller's
+// clock. The 5-attempt and 5-resend limits are fixed by the table's CHECKs.
+// Serializes requests for one email and purpose until the transaction ends,
+// so concurrent requests cancel each other instead of colliding on
+// email_otp_requests_one_pending_uq.
+func (q *Queries) LockOtpEmail(ctx context.Context, arg LockOtpEmailParams) error {
+	_, err := q.db.Exec(ctx, lockOtpEmail, arg.Email, arg.Purpose)
+	return err
 }
 
 const markOtpSent = `-- name: MarkOtpSent :execrows

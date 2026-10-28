@@ -512,3 +512,25 @@ func TestAccountDeleteOrganizerOfDraft(t *testing.T) {
 		t.Fatalf("err %v, want organizer_cannot_leave", err)
 	}
 }
+
+func TestAccountDeleteWithoutAvatarQueuesNoPurge(t *testing.T) {
+	// Arrange
+	t.Parallel()
+	env := newTransparencyEnv(t)
+	a := env.ready(t, model.DrawMethodRandom)
+	env.setPIN(t, a.budi)
+
+	// Act
+	err := env.account.Delete(context.Background(), a.budi, testPIN)
+
+	// Assert
+	if err != nil {
+		t.Fatalf("Delete: %v", err)
+	}
+	if n := env.count(t, "SELECT count(*) FROM users WHERE id = $1 AND deleted_at IS NOT NULL", a.budi); n != 1 {
+		t.Errorf("user not deleted")
+	}
+	if purges := queued[jobs.AccountPurgeArgs](t, env.pool, jobs.AccountPurgeArgs{}.Kind()); len(purges) != 0 {
+		t.Errorf("account.purge jobs %+v, want none", purges)
+	}
+}

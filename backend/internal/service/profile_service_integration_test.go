@@ -93,10 +93,10 @@ func testJPEG(t *testing.T, w, h int) []byte {
 	return buf.Bytes()
 }
 
-// session signs in with idToken and returns the user and session IDs.
-func (e profileEnv) session(t *testing.T, idToken string) (uuid.UUID, uuid.UUID) {
+// session signs the account under key in and returns the user and session IDs.
+func (e profileEnv) session(t *testing.T, key string) (uuid.UUID, uuid.UUID) {
 	t.Helper()
-	res := e.signIn(t, idToken)
+	res := e.signIn(t, key)
 	userID, sessionID, err := e.tokens.Parse(res.Tokens.AccessToken)
 	if err != nil {
 		t.Fatalf("Parse: %v", err)

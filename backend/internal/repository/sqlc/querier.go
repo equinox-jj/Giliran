@@ -18,8 +18,6 @@ type Querier interface {
 	AssignSlot(ctx context.Context, arg AssignSlotParams) error
 	// A NULL member_id cancels every pending request in the group.
 	CancelPendingLeaveRequests(ctx context.Context, arg CancelPendingLeaveRequestsParams) error
-	// Email OTP requests (DB_SCHEME §3.16, §4.4). Times come from the caller's
-	// clock. The 5-attempt and 5-resend limits are fixed by the table's CHECKs.
 	// Runs before inserting a new request: one pending request per email and purpose.
 	CancelPendingOtp(ctx context.Context, arg CancelPendingOtpParams) (int64, error)
 	// Account deletion: no code the user requested can complete afterwards.
@@ -187,6 +185,12 @@ type Querier interface {
 	ListUserMemberships(ctx context.Context, userID *uuid.UUID) ([]ListUserMembershipsRow, error)
 	// The push tokens of the user's signed-in, unexpired devices.
 	ListUserPushTokens(ctx context.Context, arg ListUserPushTokensParams) ([]string, error)
+	// Email OTP requests (DB_SCHEME §3.16, §4.4). Times come from the caller's
+	// clock. The 5-attempt and 5-resend limits are fixed by the table's CHECKs.
+	// Serializes requests for one email and purpose until the transaction ends,
+	// so concurrent requests cancel each other instead of colliding on
+	// email_otp_requests_one_pending_uq.
+	LockOtpEmail(ctx context.Context, arg LockOtpEmailParams) error
 	// The lowest slot with no active holder that has not won yet. Lock the group
 	// first so two joins never pick the same slot.
 	LowestFreeSlot(ctx context.Context, groupID uuid.UUID) (Slot, error)

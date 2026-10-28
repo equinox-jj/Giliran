@@ -167,6 +167,12 @@ func (s *OTPService) Request(ctx context.Context, in OTPStart) (OTPChallenge, er
 		}
 		r.CodeHash = security.OTPCodeHash(s.secret, r.ID, security.OTPCode(s.secret, r.ID, 0))
 
+		// Under the lock, a concurrent request for this email and purpose has
+		// either committed its pending row, which the cancel below sees, or
+		// waits for ours.
+		if err := s.otps.LockEmail(ctx, email, in.Purpose); err != nil {
+			return err
+		}
 		if _, err := s.otps.CancelPending(ctx, email, in.Purpose); err != nil {
 			return err
 		}
@@ -177,17 +183,10 @@ func (s *OTPService) Request(ctx context.Context, in OTPStart) (OTPChallenge, er
 		row = created
 		return s.queueCode(ctx, created)
 	}
-	run := func() error {
-		if in.Purpose == model.OTPPurposeChangeEmail {
-			return s.pins.checkPIN(ctx, in.Caller.UserID, *in.PIN, create)
-		}
-		return s.tx.WithTx(ctx, create)
-	}
-	err = run()
-	if errors.Is(err, repository.ErrDuplicate) {
-		// A concurrent request for the same email and purpose inserted its
-		// pending row after our cancel; this time the cancel sees it.
-		err = run()
+	if in.Purpose == model.OTPPurposeChangeEmail {
+		err = s.pins.checkPIN(ctx, in.Caller.UserID, *in.PIN, create)
+	} else {
+		err = s.tx.WithTx(ctx, create)
 	}
 	if err != nil {
 		return OTPChallenge{}, err

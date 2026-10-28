@@ -1,6 +1,12 @@
 -- Email OTP requests (DB_SCHEME §3.16, §4.4). Times come from the caller's
 -- clock. The 5-attempt and 5-resend limits are fixed by the table's CHECKs.
 
+-- name: LockOtpEmail :exec
+-- Serializes requests for one email and purpose until the transaction ends,
+-- so concurrent requests cancel each other instead of colliding on
+-- email_otp_requests_one_pending_uq.
+SELECT pg_advisory_xact_lock(hashtextextended(sqlc.arg(email)::text || ':' || sqlc.arg(purpose)::text, 0));
+
 -- name: CancelPendingOtp :execrows
 -- Runs before inserting a new request: one pending request per email and purpose.
 UPDATE email_otp_requests SET status = 'cancelled'

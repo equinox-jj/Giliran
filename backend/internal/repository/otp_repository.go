@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"net/netip"
 	"time"
 
@@ -39,6 +40,15 @@ func (r *OTPRepository) Create(ctx context.Context, o model.OTPRequest, now time
 		ExpiresAt:      o.ExpiresAt,
 	})
 	return toOTPRequest(row), mapErr(err)
+}
+
+// LockEmail holds a transaction-scoped lock on email and purpose. It fails
+// outside a transaction, where the lock would end with the statement.
+func (r *OTPRepository) LockEmail(ctx context.Context, email string, purpose model.OTPPurpose) error {
+	if !InTx(ctx) {
+		return errors.New("repository: LockEmail needs a transaction")
+	}
+	return mapErr(r.tx.Queries(ctx).LockOtpEmail(ctx, sqlc.LockOtpEmailParams{Email: email, Purpose: string(purpose)}))
 }
 
 // CancelPending cancels the pending request for email and purpose, if any.
