@@ -1,0 +1,198 @@
+import 'dart:async';
+
+import 'package:flutter/services.dart';
+import 'package:material_ui/material_ui.dart';
+
+import '../../core/constants/app_icons.dart';
+import '../../core/themes/themes.dart';
+import 'app_icon.dart';
+import 'pressable.dart';
+
+/// Whole numbers within a range (slots 2–50, reminder days 0–7): label left,
+/// minus · editable value · plus right. Long-press repeats every 120 ms; at a
+/// limit the button disables and a caption states the range. [helper] shows
+/// the live consequence ("10 periode · selesai Agu 2027").
+class AppStepper extends StatefulWidget {
+  const AppStepper({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.onChanged,
+    this.unit,
+    this.helper,
+  });
+
+  final String label;
+  final int value;
+  final int min;
+  final int max;
+  final ValueChanged<int> onChanged;
+
+  /// Used in the limit caption: "Maksimal 50 slot".
+  final String? unit;
+  final String? helper;
+
+  @override
+  State<AppStepper> createState() => _AppStepperState();
+}
+
+class _AppStepperState extends State<AppStepper> {
+  late final _controller = TextEditingController(text: '${widget.value}');
+  final _focus = FocusNode();
+  Timer? _repeat;
+
+  @override
+  void initState() {
+    super.initState();
+    _focus.addListener(() {
+      if (!_focus.hasFocus) _commit(_controller.text);
+    });
+  }
+
+  @override
+  void didUpdateWidget(AppStepper old) {
+    super.didUpdateWidget(old);
+    if (!_focus.hasFocus && _controller.text != '${widget.value}') {
+      _controller.text = '${widget.value}';
+    }
+  }
+
+  @override
+  void dispose() {
+    _repeat?.cancel();
+    _controller.dispose();
+    _focus.dispose();
+    super.dispose();
+  }
+
+  int _current = 0;
+
+  void _set(int v) {
+    final next = v.clamp(widget.min, widget.max);
+    _current = next;
+    if (next != widget.value) {
+      HapticFeedback.selectionClick();
+      widget.onChanged(next);
+    }
+  }
+
+  void _commit(String text) {
+    final parsed = int.tryParse(text);
+    _set(parsed ?? widget.value);
+    _controller.text =
+        '${(parsed ?? widget.value).clamp(widget.min, widget.max)}';
+  }
+
+  void _startRepeat(int delta) {
+    _current = widget.value;
+    _repeat?.cancel();
+    _repeat = Timer.periodic(const Duration(milliseconds: 120), (_) {
+      final next = _current + delta;
+      if (next < widget.min || next > widget.max) {
+        _repeat?.cancel();
+        return;
+      }
+      _set(next);
+    });
+  }
+
+  void _stopRepeat() => _repeat?.cancel();
+
+  Widget _button(String icon, String label, int delta, bool enabled) {
+    final c = context.colors;
+    return Pressable(
+      onTap: enabled ? () => _set(widget.value + delta) : null,
+      onLongPressStart: enabled ? (_) => _startRepeat(delta) : null,
+      onLongPressEnd: enabled ? (_) => _stopRepeat() : null,
+      semanticLabel: label,
+      shape: const CircleBorder(),
+      hitPadding: const EdgeInsets.all(2),
+      child: Container(
+        width: AppSizes.circleButton,
+        height: AppSizes.circleButton,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: enabled ? c.borderStrong : c.hairline,
+            width: AppStroke.regular,
+          ),
+        ),
+        alignment: Alignment.center,
+        child: AppIcon(
+          icon,
+          size: AppSizes.iconMd,
+          color: enabled ? c.textPrimary : c.textTertiary,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final t = AppTextStyles.of(context);
+    final atMin = widget.value <= widget.min;
+    final atMax = widget.value >= widget.max;
+    final unit = widget.unit == null ? '' : ' ${widget.unit}';
+    final limit = atMax
+        ? 'Maksimal ${widget.max}$unit'
+        : atMin
+        ? 'Minimal ${widget.min}$unit'
+        : null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                widget.label,
+                style: t.bodyLg.copyWith(color: c.textPrimary),
+              ),
+            ),
+            _button(AppIcons.minusBold, 'Kurangi', -1, !atMin),
+            const SizedBox(width: AppSpace.s2),
+            SizedBox(
+              width: 64,
+              child: Semantics(
+                label: widget.label,
+                value: '${widget.value}',
+                child: TextField(
+                  controller: _controller,
+                  focusNode: _focus,
+                  textAlign: TextAlign.center,
+                  keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.done,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  onSubmitted: _commit,
+                  style: t.amountLg.copyWith(color: c.textPrimary),
+                  decoration: const InputDecoration(
+                    filled: false,
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
+                    constraints: BoxConstraints(minHeight: AppSizes.tapMin),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: AppSpace.s2),
+            _button(AppIcons.plusBold, 'Tambah', 1, !atMax),
+          ],
+        ),
+        if (limit != null || widget.helper != null) ...[
+          const SizedBox(height: AppSpace.s1),
+          Text(
+            [?limit, ?widget.helper].join(' · '),
+            style: t.caption.copyWith(color: c.textSecondary),
+          ),
+        ],
+      ],
+    );
+  }
+}

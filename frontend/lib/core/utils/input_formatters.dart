@@ -1,0 +1,60 @@
+import 'package:flutter/services.dart';
+
+import '../themes/app_typography.dart';
+
+/// Live dot grouping for Rupiah amounts while typing: "200000" -> "200.000".
+class RupiahInputFormatter extends TextInputFormatter {
+  const RupiahInputFormatter({this.maxDigits = 12});
+
+  final int maxDigits;
+
+  /// Parses a grouped value back to an int ("2.000.000" -> 2000000).
+  static int? parse(String text) {
+    final digits = text.replaceAll(RegExp(r'\D'), '');
+    return digits.isEmpty ? null : int.tryParse(digits);
+  }
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    var digits = newValue.text.replaceAll(RegExp(r'\D'), '');
+    digits = digits.replaceFirst(RegExp(r'^0+(?=\d)'), '');
+    if (digits.length > maxDigits) return oldValue;
+    if (digits.isEmpty) return const TextEditingValue();
+    final text = Rupiah.digits(int.parse(digits));
+    return TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
+    );
+  }
+}
+
+/// Groups digits by [groupSize] with spaces while typing (account numbers:
+/// "1234 5678 90").
+class DigitGroupingFormatter extends TextInputFormatter {
+  const DigitGroupingFormatter({this.groupSize = 4, this.maxDigits = 20});
+
+  final int groupSize;
+  final int maxDigits;
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
+    if (digits.length > maxDigits) return oldValue;
+    final buffer = StringBuffer();
+    for (var i = 0; i < digits.length; i++) {
+      if (i > 0 && i % groupSize == 0) buffer.write(' ');
+      buffer.write(digits[i]);
+    }
+    final text = buffer.toString();
+    return TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
+    );
+  }
+}
