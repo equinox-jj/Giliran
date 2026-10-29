@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:giliran/core/enums/payment_status.dart';
+import 'package:giliran/core/utils/enums/payment_status.dart';
 import 'package:giliran/core/themes/themes.dart';
 import 'package:giliran/core/utils/input_formatters.dart';
 import 'package:giliran/core/utils/phone_formatter.dart';

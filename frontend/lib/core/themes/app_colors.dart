@@ -1,6 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../enums/payment_status.dart';
+import '../utils/enums/payment_status.dart';
 import 'app_palette.dart';
 
 /// A status color pair: foreground (icon, label) on background (chip fill).

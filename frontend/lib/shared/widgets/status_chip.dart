@@ -1,7 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/constants/app_icons.dart';
-import '../../core/enums/payment_status.dart';
+import '../../core/utils/enums/payment_status.dart';
 import '../../core/themes/themes.dart';
 import 'app_icon.dart';
 import 'dashed_border.dart';
