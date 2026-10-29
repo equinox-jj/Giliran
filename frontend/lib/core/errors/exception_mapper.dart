@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 
+import '../logger/app_logger.dart';
 import '../utils/enums/api_error_code.dart';
 import 'exceptions.dart';
 import 'failures.dart';
@@ -31,16 +32,30 @@ Future<T> guard<T>(Future<T> Function() body) async {
   } on Error {
     rethrow;
   } on Object catch (e, st) {
-    Error.throwWithStackTrace(mapToFailure(e, st), st);
+    Error.throwWithStackTrace(_mapAndLog(e, st), st);
   }
 }
 
 /// Like [guard], for streams such as Drift watch queries.
 Stream<T> guardStream<T>(Stream<T> stream) => stream.handleError(
-  (Object e, StackTrace st) =>
-      Error.throwWithStackTrace(mapToFailure(e, st), st),
+  (Object e, StackTrace st) => Error.throwWithStackTrace(_mapAndLog(e, st), st),
   test: (e) => e is! Error,
 );
+
+/// Maps like [mapToFailure], logging failures the app can't explain so they
+/// aren't silent in debug builds.
+Failure _mapAndLog(Object error, StackTrace stackTrace) {
+  final failure = mapToFailure(error, stackTrace);
+  if (failure is UnexpectedFailure) {
+    AppLogger.e(
+      'Unexpected error in the data layer',
+      tag: 'data',
+      error: failure,
+      stackTrace: stackTrace,
+    );
+  }
+  return failure;
+}
 
 Failure _fromDio(DioException e, StackTrace? stackTrace) {
   switch (e.type) {
