@@ -1,0 +1,65 @@
+/// Problem Details `code` values from the API (`api-spec.yaml`).
+///
+/// Clients branch on these, never on `detail`. Codes the app does not know yet
+/// map to [unknown].
+enum ApiErrorCode {
+  validationError('validation_error'),
+  badRequest('bad_request'),
+  invalidPagination('invalid_pagination'),
+  unauthorized('unauthorized'),
+  refreshTokenInvalid('refresh_token_invalid'),
+  pinRequired('pin_required'),
+  otpNotFound('otp_not_found'),
+  otpInvalid('otp_invalid'),
+  otpExpired('otp_expired'),
+  otpAlreadyUsed('otp_already_used'),
+  otpTooManyAttempts('otp_too_many_attempts'),
+  pinInvalid('pin_invalid'),
+  pinNotSet('pin_not_set'),
+  pinAlreadySet('pin_already_set'),
+  pinLocked('pin_locked'),
+  forbiddenRole('forbidden_role'),
+  notFound('not_found'),
+  userNotFound('user_not_found'),
+  groupNotFound('group_not_found'),
+  memberNotFound('member_not_found'),
+  periodNotFound('period_not_found'),
+  paymentNotFound('payment_not_found'),
+  inviteNotFound('invite_not_found'),
+  claimNotFound('claim_not_found'),
+  drawNotFound('draw_not_found'),
+  emailAlreadyRegistered('email_already_registered'),
+  groupFull('group_full'),
+  groupNotDraft('group_not_draft'),
+  groupNotActive('group_not_active'),
+  alreadyMember('already_member'),
+  fixedOrderIncomplete('fixed_order_incomplete'),
+  slotsNotFilled('slots_not_filled'),
+  paymentInfoMissing('payment_info_missing'),
+  invalidPaymentState('invalid_payment_state'),
+  paymentAlreadyReviewed('payment_already_reviewed'),
+  periodNotOpen('period_not_open'),
+  drawTooEarly('draw_too_early'),
+  drawAlreadyDone('draw_already_done'),
+  paymentsIncomplete('payments_incomplete'),
+  payoutAlreadyRecorded('payout_already_recorded'),
+  obligationsOutstanding('obligations_outstanding'),
+  organizerCannotLeave('organizer_cannot_leave'),
+  pendingRequestExists('pending_request_exists'),
+  idempotencyKeyReused('idempotency_key_reused'),
+  fileTooLarge('file_too_large'),
+  unsupportedMediaType('unsupported_media_type'),
+  rateLimitExceeded('rate_limit_exceeded'),
+  internalError('internal_error'),
+  serviceUnavailable('service_unavailable'),
+  unknown('unknown');
+
+  const ApiErrorCode(this.apiValue);
+
+  final String apiValue;
+
+  static ApiErrorCode fromApi(String? value) => ApiErrorCode.values.firstWhere(
+    (c) => c.apiValue == value,
+    orElse: () => ApiErrorCode.unknown,
+  );
+}
