@@ -34,18 +34,6 @@ mixin _ScrolledUnder<T extends StatefulWidget> on State<T> {
       setState(() => scrollOffset = offset);
     }
   }
-
-  /// Drawn over the bar's bottom edge so it doesn't add to [preferredSize].
-  Widget hairline(BuildContext context) => Positioned(
-    left: 0,
-    right: 0,
-    bottom: 0,
-    child: AnimatedOpacity(
-      opacity: scrollOffset > 0 ? 1 : 0,
-      duration: AppMotion.base,
-      child: Container(height: 1, color: context.colors.hairline),
-    ),
-  );
 }
 
 /// Compact top app bar: 64 high on `bg.page`, a circle back button (or close
@@ -148,7 +136,7 @@ class _AppTopBarState extends State<AppTopBar> with _ScrolledUnder {
                 ),
               ),
             ),
-            hairline(context),
+            _Hairline(visible: scrollOffset > 0),
           ],
         ),
       ),
@@ -255,10 +243,30 @@ class _GreetingTopBarState extends State<GreetingTopBar> with _ScrolledUnder {
                 ),
               ),
             ),
-            hairline(context),
+            _Hairline(visible: scrollOffset > 0),
           ],
         ),
       ),
     );
   }
+}
+
+/// Drawn over the bar's bottom edge so it doesn't add to `preferredSize`.
+/// Fades in once content scrolls under the bar.
+class _Hairline extends StatelessWidget {
+  const _Hairline({required this.visible});
+
+  final bool visible;
+
+  @override
+  Widget build(BuildContext context) => Positioned(
+    left: 0,
+    right: 0,
+    bottom: 0,
+    child: AnimatedOpacity(
+      opacity: visible ? 1 : 0,
+      duration: AppMotion.base,
+      child: Container(height: 1, color: context.colors.hairline),
+    ),
+  );
 }

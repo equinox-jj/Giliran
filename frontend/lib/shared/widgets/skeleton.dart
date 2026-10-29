@@ -29,14 +29,6 @@ class Skeleton extends StatefulWidget {
   final double radius;
   final bool circle;
 
-  /// Rings load as a dashed circle.
-  static Widget ring({required double size}) => Builder(
-    builder: (context) => DashedBorder.circle(
-      color: context.colors.borderStrong,
-      child: SizedBox.square(dimension: size),
-    ),
-  );
-
   @override
   State<Skeleton> createState() => _SkeletonState();
 }
@@ -95,4 +87,19 @@ class _SkeletonState extends State<Skeleton>
       ),
     );
   }
+}
+
+/// Rings load as a dashed circle.
+class SkeletonRing extends StatelessWidget {
+  const SkeletonRing({super.key, required this.size});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) => ExcludeSemantics(
+    child: DashedBorder.circle(
+      color: context.colors.borderStrong,
+      child: SizedBox.square(dimension: size),
+    ),
+  );
 }

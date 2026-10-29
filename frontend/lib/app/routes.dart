@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../features/auth/presentation/pages/sign_in_page.dart';
+import '../features/auth/presentation/pages/splash_page.dart';
+import '../features/auth/presentation/pages/welcome_page.dart';
 import '../features/group/presentation/pages/groups_page.dart';
 import '../features/history/presentation/pages/activity_page.dart';
 import '../features/home/presentation/pages/home_page.dart';
@@ -114,6 +116,29 @@ class ProfileRoute extends GoRouteData with $ProfileRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) =>
       const ProfilePage();
+}
+
+/// S01 launch gate. Until auth state exists every launch goes to Welcome;
+/// later the gate applies the redirect rules of design system 10.2.
+@TypedGoRoute<SplashRoute>(name: 'splash', path: '/')
+class SplashRoute extends GoRouteData with $SplashRoute {
+  const SplashRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => SplashPage(
+    onReady: () => const WelcomeRoute().go(context),
+  );
+}
+
+/// S02 onboarding pager for signed-out users.
+@TypedGoRoute<WelcomeRoute>(name: 'welcome', path: '/welcome')
+class WelcomeRoute extends GoRouteData with $WelcomeRoute {
+  const WelcomeRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => WelcomePage(
+    onSignIn: () => const SignInRoute().push<void>(context),
+  );
 }
 
 @TypedGoRoute<SignInRoute>(name: 'signIn', path: '/sign-in')

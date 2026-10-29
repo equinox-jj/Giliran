@@ -5,6 +5,7 @@
 abstract final class AppIcons {
   static const arrowLeft = 'assets/icons/arrow-left.svg';
   static const arrowLeftBold = 'assets/icons/arrow-left-bold.svg';
+  static const arrowRight = 'assets/icons/arrow-right.svg';
   static const backspace = 'assets/icons/backspace.svg';
   static const bank = 'assets/icons/bank.svg';
   static const bellRinging = 'assets/icons/bell-ringing.svg';

@@ -94,77 +94,8 @@ class _PinPadState extends State<PinPad> {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    final t = AppTextStyles.of(context);
     final entered = widget.controller.value.length;
-
-    Widget dot(int i) {
-      final filled = i < entered;
-      final size = AppSizes.pinDot;
-      if (widget.error) {
-        return Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            color: c.rejected.fg,
-            shape: BoxShape.circle,
-          ),
-        );
-      }
-      return filled
-          ? Container(
-              width: size,
-              height: size,
-              decoration: BoxDecoration(
-                color: c.textPrimary,
-                shape: BoxShape.circle,
-              ),
-            )
-          : DashedBorder.circle(
-              color: c.borderStrong,
-              child: SizedBox.square(dimension: size),
-            );
-    }
-
-    Widget key({
-      required Widget child,
-      required VoidCallback? onTap,
-      required String label,
-      bool filled = true,
-    }) => Pressable(
-      onTap: widget.enabled ? onTap : null,
-      semanticLabel: label,
-      shape: const CircleBorder(),
-      child: Container(
-        width: AppSizes.pinKey,
-        height: AppSizes.pinKey,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: filled ? c.subtle : null,
-          shape: BoxShape.circle,
-        ),
-        child: ExcludeSemantics(child: child),
-      ),
-    );
-
-    Widget digit(String d) => key(
-      label: d,
-      onTap: () => _press(d),
-      child: Text(
-        d,
-        style: t.titleLg.copyWith(
-          color: c.textPrimary,
-          fontFeatures: AppTextStyles.tabularFigures,
-        ),
-      ),
-    );
-
-    const gap = SizedBox(width: AppSpace.s6, height: AppSpace.s4);
-    Widget row(List<Widget> keys) => Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [keys[0], gap, keys[1], gap, keys[2]],
-    );
-
-    final empty = const SizedBox.square(dimension: AppSizes.pinKey);
+    final enabled = widget.enabled;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -177,49 +108,166 @@ class _PinPadState extends State<PinPad> {
               trigger: _shakes,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
+                spacing: AppSpace.s4,
                 children: [
-                  for (var i = 0; i < widget.length; i++) ...[
-                    if (i > 0) const SizedBox(width: AppSpace.s4),
-                    dot(i),
-                  ],
+                  for (var i = 0; i < widget.length; i++)
+                    _PinDot(filled: i < entered, error: widget.error),
                 ],
               ),
             ),
           ),
         ),
         const SizedBox(height: AppSpace.s10),
-        row([digit('1'), digit('2'), digit('3')]),
-        gap,
-        row([digit('4'), digit('5'), digit('6')]),
-        gap,
-        row([digit('7'), digit('8'), digit('9')]),
-        gap,
-        row([
-          widget.onBiometric == null
-              ? empty
-              : key(
-                  label: widget.biometricLabel,
-                  onTap: widget.onBiometric,
-                  filled: false,
-                  child: AppIcon(
-                    widget.biometricIcon,
-                    size: AppSizes.iconXl,
-                    color: c.textPrimary,
-                  ),
+        _KeyRow(
+          children: [
+            _DigitKey('1', enabled: enabled, onPress: _press),
+            _DigitKey('2', enabled: enabled, onPress: _press),
+            _DigitKey('3', enabled: enabled, onPress: _press),
+          ],
+        ),
+        _KeyRow.gap,
+        _KeyRow(
+          children: [
+            _DigitKey('4', enabled: enabled, onPress: _press),
+            _DigitKey('5', enabled: enabled, onPress: _press),
+            _DigitKey('6', enabled: enabled, onPress: _press),
+          ],
+        ),
+        _KeyRow.gap,
+        _KeyRow(
+          children: [
+            _DigitKey('7', enabled: enabled, onPress: _press),
+            _DigitKey('8', enabled: enabled, onPress: _press),
+            _DigitKey('9', enabled: enabled, onPress: _press),
+          ],
+        ),
+        _KeyRow.gap,
+        _KeyRow(
+          children: [
+            if (widget.onBiometric == null)
+              const SizedBox.square(dimension: AppSizes.pinKey)
+            else
+              _PinKey(
+                label: widget.biometricLabel,
+                onTap: enabled ? widget.onBiometric : null,
+                filled: false,
+                child: AppIcon(
+                  widget.biometricIcon,
+                  size: AppSizes.iconXl,
+                  color: c.textPrimary,
                 ),
-          digit('0'),
-          key(
-            label: 'Hapus',
-            onTap: entered == 0 ? null : _delete,
-            filled: false,
-            child: AppIcon(
-              AppIcons.backspace,
-              size: AppSizes.iconLg,
-              color: c.textPrimary,
+              ),
+            _DigitKey('0', enabled: enabled, onPress: _press),
+            _PinKey(
+              label: 'Hapus',
+              onTap: enabled && entered > 0 ? _delete : null,
+              filled: false,
+              child: AppIcon(
+                AppIcons.backspace,
+                size: AppSizes.iconLg,
+                color: c.textPrimary,
+              ),
             ),
-          ),
-        ]),
+          ],
+        ),
       ],
     );
   }
+}
+
+/// One PIN dot: dashed when empty, ink when filled, bata on error.
+class _PinDot extends StatelessWidget {
+  const _PinDot({required this.filled, required this.error});
+
+  final bool filled;
+  final bool error;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    const size = AppSizes.pinDot;
+    if (!error && !filled) {
+      return DashedBorder.circle(
+        color: c.borderStrong,
+        child: const SizedBox.square(dimension: size),
+      );
+    }
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: error ? c.rejected.fg : c.textPrimary,
+        shape: BoxShape.circle,
+      ),
+    );
+  }
+}
+
+/// Three keys with the keypad gap between them.
+class _KeyRow extends StatelessWidget {
+  const _KeyRow({required this.children});
+
+  static const gap = SizedBox(width: AppSpace.s6, height: AppSpace.s4);
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    mainAxisSize: MainAxisSize.min,
+    spacing: AppSpace.s6,
+    children: children,
+  );
+}
+
+/// A 72 px round key. [onTap] null disables it.
+class _PinKey extends StatelessWidget {
+  const _PinKey({
+    required this.label,
+    required this.onTap,
+    required this.child,
+    this.filled = true,
+  });
+
+  final String label;
+  final VoidCallback? onTap;
+  final Widget child;
+  final bool filled;
+
+  @override
+  Widget build(BuildContext context) => Pressable(
+    onTap: onTap,
+    semanticLabel: label,
+    shape: const CircleBorder(),
+    child: Container(
+      width: AppSizes.pinKey,
+      height: AppSizes.pinKey,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: filled ? context.colors.subtle : null,
+        shape: BoxShape.circle,
+      ),
+      child: ExcludeSemantics(child: child),
+    ),
+  );
+}
+
+class _DigitKey extends StatelessWidget {
+  const _DigitKey(this.digit, {required this.enabled, required this.onPress});
+
+  final String digit;
+  final bool enabled;
+  final ValueChanged<String> onPress;
+
+  @override
+  Widget build(BuildContext context) => _PinKey(
+    label: digit,
+    onTap: enabled ? () => onPress(digit) : null,
+    child: Text(
+      digit,
+      style: AppTextStyles.of(context).titleLg.copyWith(
+        color: context.colors.textPrimary,
+        fontFeatures: AppTextStyles.tabularFigures,
+      ),
+    ),
+  );
 }

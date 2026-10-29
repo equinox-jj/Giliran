@@ -100,35 +100,6 @@ class _AppStepperState extends State<AppStepper> {
 
   void _stopRepeat() => _repeat?.cancel();
 
-  Widget _button(String icon, String label, int delta, bool enabled) {
-    final c = context.colors;
-    return Pressable(
-      onTap: enabled ? () => _set(widget.value + delta) : null,
-      onLongPressStart: enabled ? (_) => _startRepeat(delta) : null,
-      onLongPressEnd: enabled ? (_) => _stopRepeat() : null,
-      semanticLabel: label,
-      shape: const CircleBorder(),
-      hitPadding: const EdgeInsets.all(2),
-      child: Container(
-        width: AppSizes.circleButton,
-        height: AppSizes.circleButton,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: enabled ? c.borderStrong : c.hairline,
-            width: AppStroke.regular,
-          ),
-        ),
-        alignment: Alignment.center,
-        child: AppIcon(
-          icon,
-          size: AppSizes.iconMd,
-          color: enabled ? c.textPrimary : c.textTertiary,
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -154,7 +125,13 @@ class _AppStepperState extends State<AppStepper> {
                 style: t.bodyLg.copyWith(color: c.textPrimary),
               ),
             ),
-            _button(AppIcons.minusBold, 'Kurangi', -1, !atMin),
+            _StepButton(
+              icon: AppIcons.minusBold,
+              label: 'Kurangi',
+              onTap: !atMin ? () => _set(widget.value - 1) : null,
+              onRepeatStart: !atMin ? () => _startRepeat(-1) : null,
+              onRepeatEnd: _stopRepeat,
+            ),
             const SizedBox(width: AppSpace.s2),
             // A collapsed field is exactly one line tall, so Center can put
             // the digits on the buttons' midline.
@@ -188,7 +165,13 @@ class _AppStepperState extends State<AppStepper> {
               ),
             ),
             const SizedBox(width: AppSpace.s2),
-            _button(AppIcons.plusBold, 'Tambah', 1, !atMax),
+            _StepButton(
+              icon: AppIcons.plusBold,
+              label: 'Tambah',
+              onTap: !atMax ? () => _set(widget.value + 1) : null,
+              onRepeatStart: !atMax ? () => _startRepeat(1) : null,
+              onRepeatEnd: _stopRepeat,
+            ),
           ],
         ),
         if (limit != null || widget.helper != null) ...[
@@ -199,6 +182,55 @@ class _AppStepperState extends State<AppStepper> {
           ),
         ],
       ],
+    );
+  }
+}
+
+/// Round minus/plus button; long-press repeats via [onRepeatStart].
+/// [onTap] null disables it.
+class _StepButton extends StatelessWidget {
+  const _StepButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    required this.onRepeatStart,
+    required this.onRepeatEnd,
+  });
+
+  final String icon;
+  final String label;
+  final VoidCallback? onTap;
+  final VoidCallback? onRepeatStart;
+  final VoidCallback onRepeatEnd;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final enabled = onTap != null;
+    return Pressable(
+      onTap: onTap,
+      onLongPressStart: enabled ? (_) => onRepeatStart?.call() : null,
+      onLongPressEnd: enabled ? (_) => onRepeatEnd() : null,
+      semanticLabel: label,
+      shape: const CircleBorder(),
+      hitPadding: const EdgeInsets.all(2),
+      child: Container(
+        width: AppSizes.circleButton,
+        height: AppSizes.circleButton,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: enabled ? c.borderStrong : c.hairline,
+            width: AppStroke.regular,
+          ),
+        ),
+        alignment: Alignment.center,
+        child: AppIcon(
+          icon,
+          size: AppSizes.iconMd,
+          color: enabled ? c.textPrimary : c.textTertiary,
+        ),
+      ),
     );
   }
 }

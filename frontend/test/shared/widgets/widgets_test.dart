@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:giliran/app/component_gallery_page.dart';
+import 'package:giliran/core/constants/app_icons.dart';
 import 'package:giliran/core/themes/themes.dart';
 import 'package:giliran/shared/widgets/widgets.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -136,6 +137,63 @@ void main() {
     await tester.tap(find.text('Saya sudah transfer'));
     await tester.pump();
     expect(checked, isTrue);
+  });
+
+  group('PageDots', () {
+    testWidgets('stretches the current dot and reads its position', (
+      tester,
+    ) async {
+      // Arrange & Act
+      await tester.pumpApp(const PageDots(count: 3, index: 1));
+
+      // Assert
+      final widths = tester
+          .widgetList<AnimatedContainer>(find.byType(AnimatedContainer))
+          .map((d) => d.constraints?.maxWidth)
+          .toList();
+      expect(widths, [8, 24, 8]);
+      expect(find.bySemanticsLabel('Halaman 2 dari 3'), findsOneWidget);
+    });
+  });
+
+  testWidgets('AppButton draws the trailing icon after the label', (
+    tester,
+  ) async {
+    // Arrange & Act
+    await tester.pumpApp(
+      AppButton(
+        label: 'Lanjut',
+        trailingIcon: AppIcons.arrowRight,
+        onPressed: () {},
+      ),
+    );
+
+    // Assert
+    final label = tester.getCenter(find.text('Lanjut'));
+    final icon = tester.getCenter(find.byType(AppIcon));
+    expect(icon.dx, greaterThan(label.dx));
+  });
+
+  group('IllustrationColorMapper', () {
+    test('keeps light colors and maps them for dark', () {
+      // Arrange
+      const light = IllustrationColorMapper(GiliranColors.light);
+      const dark = IllustrationColorMapper(GiliranColors.dark);
+
+      // Act
+      Color map(IllustrationColorMapper m, Color c) =>
+          m.substitute(null, 'path', 'stroke', c);
+
+      // Assert
+      expect(map(light, AppPalette.kopi900), AppPalette.kopi900);
+      expect(map(dark, AppPalette.kopi900), GiliranColors.dark.textPrimary);
+      expect(map(dark, AppPalette.kopi50), GiliranColors.dark.page);
+      expect(
+        map(dark, AppPalette.jambu200),
+        GiliranColors.dark.tones[2].surface,
+      );
+      expect(map(dark, AppPalette.bata600), AppPalette.bata600);
+    });
   });
 
   for (final dark in [false, true]) {

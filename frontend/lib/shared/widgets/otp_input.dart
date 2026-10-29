@@ -79,42 +79,20 @@ class _OtpInputState extends State<OtpInput> {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    final t = AppTextStyles.of(context);
     final text = _controller.text;
     final enabled = !widget.checking;
 
-    Widget box(int i) {
-      final filled = i < text.length;
-      final current =
-          _focus.hasFocus && i == text.length.clamp(0, widget.length - 1);
-      final (Color color, double width) = widget.error
-          ? (c.rejected.fg, AppStroke.strong)
-          : current
-          ? (c.textPrimary, AppStroke.strong)
-          : (c.borderStrong, AppStroke.regular);
-      return Container(
-        width: AppSizes.otpBoxW,
-        height: AppSizes.otpBoxH,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: c.surface,
-          borderRadius: BorderRadius.circular(AppRadius.sm),
-          border: Border.all(color: color, width: width),
-        ),
-        child: Text(
-          filled ? text[i] : '',
-          style: t.amountLg.copyWith(color: c.textPrimary),
-        ),
-      );
-    }
-
     final boxes = Row(
       mainAxisSize: MainAxisSize.min,
+      spacing: AppSpace.s2,
       children: [
-        for (var i = 0; i < widget.length; i++) ...[
-          if (i > 0) const SizedBox(width: AppSpace.s2),
-          box(i),
-        ],
+        for (var i = 0; i < widget.length; i++)
+          _OtpBox(
+            digit: i < text.length ? text[i] : '',
+            current:
+                _focus.hasFocus && i == text.length.clamp(0, widget.length - 1),
+            error: widget.error,
+          ),
       ],
     );
 
@@ -174,6 +152,45 @@ class _OtpInputState extends State<OtpInput> {
           ),
         ],
       ],
+    );
+  }
+}
+
+/// One 48 × 56 code box. [current] marks where the next digit lands.
+class _OtpBox extends StatelessWidget {
+  const _OtpBox({
+    required this.digit,
+    required this.current,
+    required this.error,
+  });
+
+  final String digit;
+  final bool current;
+  final bool error;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final (Color color, double width) = error
+        ? (c.rejected.fg, AppStroke.strong)
+        : current
+        ? (c.textPrimary, AppStroke.strong)
+        : (c.borderStrong, AppStroke.regular);
+    return Container(
+      width: AppSizes.otpBoxW,
+      height: AppSizes.otpBoxH,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: c.surface,
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+        border: Border.all(color: color, width: width),
+      ),
+      child: Text(
+        digit,
+        style: AppTextStyles.of(context).amountLg.copyWith(
+          color: c.textPrimary,
+        ),
+      ),
     );
   }
 }

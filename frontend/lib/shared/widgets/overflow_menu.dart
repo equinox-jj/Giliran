@@ -75,27 +75,12 @@ class OverflowMenuButton extends StatelessWidget {
       ),
       Offset.zero & overlay.size,
     );
-    final c = context.colors;
-    final t = AppTextStyles.of(context);
-
-    PopupMenuItem<OverflowMenuItem> entry(OverflowMenuItem item) {
-      final color = item.destructive ? c.rejected.fg : c.textPrimary;
-      return PopupMenuItem(
-        value: item,
-        height: AppSizes.tapMin,
-        child: Row(
-          children: [
-            AppIcon(
-              item.icon,
-              size: AppSizes.iconMd,
-              color: item.destructive ? c.rejected.fg : c.textSecondary,
-            ),
-            const SizedBox(width: AppSpace.s3),
-            Text(item.label, style: t.body.copyWith(color: color)),
-          ],
-        ),
-      );
-    }
+    PopupMenuItem<OverflowMenuItem> entry(OverflowMenuItem item) =>
+        PopupMenuItem(
+          value: item,
+          height: AppSizes.tapMin,
+          child: _MenuRow(item),
+        );
 
     final selected = await showMenu<OverflowMenuItem>(
       context: context,
@@ -111,12 +96,10 @@ class OverflowMenuButton extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) => Builder(
-    builder: (context) => CircleIconButton(
-      icon: AppIcons.dotsThree,
-      semanticLabel: semanticLabel,
-      onPressed: () => _open(context),
-    ),
+  Widget build(BuildContext context) => CircleIconButton(
+    icon: AppIcons.dotsThree,
+    semanticLabel: semanticLabel,
+    onPressed: () => _open(context),
   );
 }
 
@@ -147,6 +130,31 @@ class _SheetRow extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Popup-menu row on medium and up.
+class _MenuRow extends StatelessWidget {
+  const _MenuRow(this.item);
+
+  final OverflowMenuItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final t = AppTextStyles.of(context);
+    final color = item.destructive ? c.rejected.fg : c.textPrimary;
+    return Row(
+      children: [
+        AppIcon(
+          item.icon,
+          size: AppSizes.iconMd,
+          color: item.destructive ? c.rejected.fg : c.textSecondary,
+        ),
+        const SizedBox(width: AppSpace.s3),
+        Text(item.label, style: t.body.copyWith(color: color)),
+      ],
     );
   }
 }

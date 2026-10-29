@@ -11,7 +11,7 @@ part 'router.g.dart';
 GoRouter router(Ref ref) {
   final router = GoRouter(
     routes: $appRoutes,
-    initialLocation: const HomeRoute().location,
+    initialLocation: const SplashRoute().location,
     debugLogDiagnostics: kDebugMode,
     redirect: _authRedirect,
   );

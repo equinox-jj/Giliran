@@ -1,0 +1,19 @@
+# Native launch screen (S01). Matches the Flutter SplashPage: the kaleng,
+# 72 dp, centered on bg.page, so the hand-off shows no jump or flash.
+# Images are rendered from assets/images/illustrations/splash_kaleng.svg at
+# xxxhdpi (4x). Regenerate with: dart run flutter_native_splash:create
+flutter_native_splash:
+  color: "#FBF7F1" # kopi-50, bg.page light
+  color_dark: "#15110D" # kopi-950, bg.page dark
+  image: assets/images/splash/splash.png
+  image_dark: assets/images/splash/splash_dark.png
+
+  android_12:
+    color: "#FBF7F1"
+    color_dark: "#15110D"
+    image: assets/images/splash/splash_android12.png
+    image_dark: assets/images/splash/splash_android12_dark.png
+
+  android_gravity: center
+  ios_content_mode: center
+  web: false

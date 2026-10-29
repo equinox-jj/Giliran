@@ -44,6 +44,7 @@ class AppButton extends StatelessWidget {
     this.variant = AppButtonVariant.ink,
     this.size = AppButtonSize.regular,
     this.icon,
+    this.trailingIcon,
     this.loading = false,
     this.block = false,
     this.disabledReason,
@@ -56,6 +57,7 @@ class AppButton extends StatelessWidget {
     required this.onPressed,
     this.size = AppButtonSize.regular,
     this.icon,
+    this.trailingIcon,
     this.loading = false,
     this.block = false,
     this.disabledReason,
@@ -68,6 +70,7 @@ class AppButton extends StatelessWidget {
     required this.onPressed,
     this.size = AppButtonSize.regular,
     this.icon,
+    this.trailingIcon,
     this.loading = false,
     this.block = false,
     this.disabledReason,
@@ -80,6 +83,7 @@ class AppButton extends StatelessWidget {
     required this.onPressed,
     this.size = AppButtonSize.regular,
     this.icon,
+    this.trailingIcon,
     this.loading = false,
     this.block = false,
     this.disabledReason,
@@ -92,6 +96,7 @@ class AppButton extends StatelessWidget {
     required this.onPressed,
     this.size = AppButtonSize.regular,
     this.icon,
+    this.trailingIcon,
     this.loading = false,
     this.block = false,
     this.disabledReason,
@@ -105,6 +110,10 @@ class AppButton extends StatelessWidget {
 
   /// Leading icon asset from `AppIcons` (20 px).
   final String? icon;
+
+  /// Trailing icon asset from `AppIcons` (20 px), e.g. the arrow on "Lanjut".
+  /// Ignored when [icon] is set.
+  final String? trailingIcon;
   final bool loading;
 
   /// Stretch to the available width.
@@ -193,6 +202,22 @@ class AppButton extends StatelessWidget {
           ),
           const SizedBox(width: AppSpace.s2),
           Flexible(child: text),
+        ],
+      );
+    } else if (trailingIcon != null) {
+      content = Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Flexible(child: text),
+          const SizedBox(width: AppSpace.s2),
+          SizedBox.square(
+            dimension: AppSizes.iconMd,
+            child: Center(
+              child: loading
+                  ? spinner
+                  : AppIcon(trailingIcon!, size: AppSizes.iconMd, color: fg),
+            ),
+          ),
         ],
       );
     } else {
