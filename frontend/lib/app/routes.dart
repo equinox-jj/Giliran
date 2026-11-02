@@ -51,9 +51,7 @@ part 'routes.g.dart';
     ),
   ],
 )
-class AppShellRoute extends StatefulShellRouteData {
-  const AppShellRoute();
-
+class const AppShellRoute() extends StatefulShellRouteData {
   @override
   Widget builder(
     BuildContext context,
@@ -72,46 +70,30 @@ class AppShellRoute extends StatefulShellRouteData {
   }
 }
 
-class HomeBranch extends StatefulShellBranchData {
-  const HomeBranch();
-}
+class const HomeBranch() extends StatefulShellBranchData;
 
-class GroupsBranch extends StatefulShellBranchData {
-  const GroupsBranch();
-}
+class const GroupsBranch() extends StatefulShellBranchData;
 
-class ActivityBranch extends StatefulShellBranchData {
-  const ActivityBranch();
-}
+class const ActivityBranch() extends StatefulShellBranchData;
 
-class ProfileBranch extends StatefulShellBranchData {
-  const ProfileBranch();
-}
+class const ProfileBranch() extends StatefulShellBranchData;
 
-class HomeRoute extends GoRouteData with $HomeRoute {
-  const HomeRoute();
-
+class const HomeRoute() extends GoRouteData with $HomeRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) => const HomePage();
 }
 
-class GroupsRoute extends GoRouteData with $GroupsRoute {
-  const GroupsRoute();
-
+class const GroupsRoute() extends GoRouteData with $GroupsRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) => const GroupsPage();
 }
 
-class ActivityRoute extends GoRouteData with $ActivityRoute {
-  const ActivityRoute();
-
+class const ActivityRoute() extends GoRouteData with $ActivityRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) => const ActivityPage();
 }
 
-class ProfileRoute extends GoRouteData with $ProfileRoute {
-  const ProfileRoute();
-
+class const ProfileRoute() extends GoRouteData with $ProfileRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) => const ProfilePage();
 }
@@ -119,9 +101,7 @@ class ProfileRoute extends GoRouteData with $ProfileRoute {
 /// S01 launch gate. Until auth state exists every launch goes to Welcome;
 /// later the gate applies the redirect rules of design system 10.2.
 @TypedGoRoute<SplashRoute>(name: 'splash', path: '/')
-class SplashRoute extends GoRouteData with $SplashRoute {
-  const SplashRoute();
-
+class const SplashRoute() extends GoRouteData with $SplashRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) => SplashPage(
     onReady: () => const WelcomeRoute().go(context),
@@ -130,9 +110,7 @@ class SplashRoute extends GoRouteData with $SplashRoute {
 
 /// S02 onboarding pager for signed-out users.
 @TypedGoRoute<WelcomeRoute>(name: 'welcome', path: '/welcome')
-class WelcomeRoute extends GoRouteData with $WelcomeRoute {
-  const WelcomeRoute();
-
+class const WelcomeRoute() extends GoRouteData with $WelcomeRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) => WelcomePage(
     onSignIn: () => const SignInRoute().push<void>(context),
@@ -140,18 +118,14 @@ class WelcomeRoute extends GoRouteData with $WelcomeRoute {
 }
 
 @TypedGoRoute<SignInRoute>(name: 'signIn', path: '/sign-in')
-class SignInRoute extends GoRouteData with $SignInRoute {
-  const SignInRoute();
-
+class const SignInRoute() extends GoRouteData with $SignInRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) => const SignInPage();
 }
 
 /// Debug-only component gallery; release builds land on Home instead.
 @TypedGoRoute<GalleryRoute>(name: 'gallery', path: '/gallery')
-class GalleryRoute extends GoRouteData with $GalleryRoute {
-  const GalleryRoute();
-
+class const GalleryRoute() extends GoRouteData with $GalleryRoute {
   @override
   String? redirect(BuildContext context, GoRouterState state) => kDebugMode ? null : const HomeRoute().location;
 

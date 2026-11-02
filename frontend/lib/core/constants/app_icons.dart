@@ -2,7 +2,7 @@
 ///
 /// Regular weight by default, `*Fill` for active nav and status icons,
 /// `*Bold` for 16 px sizes. Render with `AppIcon`.
-abstract final class AppIcons {
+abstract final class AppIcons() {
   static const arrowLeft = 'assets/icons/arrow-left.svg';
   static const arrowLeftBold = 'assets/icons/arrow-left-bold.svg';
   static const arrowRight = 'assets/icons/arrow-right.svg';

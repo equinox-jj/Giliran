@@ -2,7 +2,7 @@
 ///
 /// Clients branch on these, never on `detail`. Codes the app does not know yet
 /// map to [unknown].
-enum ApiErrorCode {
+enum ApiErrorCode(final String apiValue) {
   validationError('validation_error'),
   badRequest('bad_request'),
   invalidPagination('invalid_pagination'),
@@ -53,10 +53,6 @@ enum ApiErrorCode {
   internalError('internal_error'),
   serviceUnavailable('service_unavailable'),
   unknown('unknown');
-
-  const ApiErrorCode(this.apiValue);
-
-  final String apiValue;
 
   static ApiErrorCode fromApi(String? value) => ApiErrorCode.values.firstWhere(
     (c) => c.apiValue == value,

@@ -9,7 +9,7 @@ import 'model/pin_request_models.dart';
 /// handled by `RefreshInterceptor`, not here.
 ///
 /// Every method throws a typed `AppException` on failure.
-abstract interface class AuthRemoteDataSource {
+abstract interface class AuthRemoteDataSource() {
   /// `POST /auth/email/otp`: sends a 6-digit code to `body.email`.
   Future<EmailOtpChallengeModel> requestEmailOtp(EmailOtpRequestModel body);
 

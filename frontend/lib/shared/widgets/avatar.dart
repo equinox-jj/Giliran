@@ -9,32 +9,21 @@ import 'dashed_border.dart';
 /// Member avatar: the photo when [imageUrl] is set, otherwise initials on the
 /// group [tone] (pandan outside a group). Guests get a dashed ring and a
 /// `UserCircleDashed` badge; organizers a kunyit crown badge.
-class AppAvatar extends StatelessWidget {
-  const AppAvatar({
-    super.key,
-    required this.name,
-    this.imageUrl,
-    this.size = AppSizes.avatarMd,
-    this.tone,
-    this.guest = false,
-    this.organizer = false,
-    this.ringColor,
-    this.semanticLabel,
-  });
-
-  final String name;
-  final String? imageUrl;
-  final double size;
-  final GroupTone? tone;
-  final bool guest;
-  final bool organizer;
+class const AppAvatar({
+  super.key,
+  required final String name,
+  final String? imageUrl,
+  final double size = AppSizes.avatarMd,
+  final GroupTone? tone,
+  final bool guest = false,
+  final bool organizer = false,
 
   /// Optional 2 px ring (avatar stacks use the page color).
-  final Color? ringColor;
+  final Color? ringColor,
 
   /// Defaults to [name]; pass an empty string to make it decorative.
-  final String? semanticLabel;
-
+  final String? semanticLabel,
+}) extends StatelessWidget {
   /// Returns the uppercase initials of the first two words of [name], or `?` when
   /// [name] is blank.
   static String initials(String name) {
@@ -142,34 +131,20 @@ class AppAvatar extends StatelessWidget {
 }
 
 /// A person in an [AvatarStack].
-class AvatarData {
-  const AvatarData({required this.name, this.imageUrl, this.guest = false});
-
-  final String name;
-  final String? imageUrl;
-  final bool guest;
-}
+class const AvatarData({required final String name, final String? imageUrl, final bool guest = false});
 
 /// Up to [max] avatars overlapping by 30%, each with a 2 px page ring, then a
 /// "+N" chip.
-class AvatarStack extends StatelessWidget {
-  const AvatarStack({
-    super.key,
-    required this.people,
-    this.size = AppSizes.avatarSm,
-    this.max = 4,
-    this.tone,
-    this.ringColor,
-  });
-
-  final List<AvatarData> people;
-  final double size;
-  final int max;
-  final GroupTone? tone;
+class const AvatarStack({
+  super.key,
+  required final List<AvatarData> people,
+  final double size = AppSizes.avatarSm,
+  final int max = 4,
+  final GroupTone? tone,
 
   /// Defaults to the page color; use the surface color on cards.
-  final Color? ringColor;
-
+  final Color? ringColor,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;

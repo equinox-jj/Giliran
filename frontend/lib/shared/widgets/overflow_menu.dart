@@ -8,33 +8,23 @@ import 'circle_icon_button.dart';
 import 'pressable.dart';
 
 /// One action in an [OverflowMenuButton].
-class OverflowMenuItem {
-  const OverflowMenuItem({
-    required this.label,
-    required this.icon,
-    required this.onSelected,
-    this.destructive = false,
-  });
-
-  final String label;
-  final String icon;
-  final VoidCallback onSelected;
+class const OverflowMenuItem({
+  required final String label,
+  required final String icon,
+  required final VoidCallback onSelected,
 
   /// Shown last, below a hairline, in `rejected.fg`.
-  final bool destructive;
-}
+  final bool destructive = false,
+}) {}
 
 /// `DotsThree` circle button that opens an action sheet on phones and an
 /// anchored 280-wide popup from medium up. At most 7 items.
-class OverflowMenuButton extends StatelessWidget {
-  const OverflowMenuButton({
-    super.key,
-    required this.items,
-    this.semanticLabel = 'Menu',
-  }) : assert(items.length <= 7, 'Never more than 7 items');
-
-  final List<OverflowMenuItem> items;
-  final String semanticLabel;
+class const OverflowMenuButton({
+  super.key,
+  required final List<OverflowMenuItem> items,
+  final String semanticLabel = 'Menu',
+}) extends StatelessWidget {
+  this : assert(items.length <= 7, 'Never more than 7 items');
 
   List<OverflowMenuItem> get _regular => items.where((i) => !i.destructive).toList();
 
@@ -99,11 +89,7 @@ class OverflowMenuButton extends StatelessWidget {
   );
 }
 
-class _SheetRow extends StatelessWidget {
-  const _SheetRow(this.item);
-
-  final OverflowMenuItem item;
-
+class const _SheetRow(final OverflowMenuItem item) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -131,11 +117,7 @@ class _SheetRow extends StatelessWidget {
 }
 
 /// Popup-menu row on medium and up.
-class _MenuRow extends StatelessWidget {
-  const _MenuRow(this.item);
-
-  final OverflowMenuItem item;
-
+class const _MenuRow(final OverflowMenuItem item) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;

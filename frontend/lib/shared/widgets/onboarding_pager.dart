@@ -6,44 +6,30 @@ import 'illustration.dart';
 
 /// One page of the [OnboardingPager].
 @immutable
-class OnboardingPageData {
-  const OnboardingPageData({
-    required this.illustration,
-    required this.toneIndex,
-    required this.headline,
-    required this.body,
-  });
-
+class const OnboardingPageData({
   /// Asset from `AppIllustrations`.
-  final String illustration;
+  required final String illustration,
 
   /// Index into `GiliranColors.tones` for the illustration panel.
-  final int toneIndex;
+  required final int toneIndex,
 
   /// Mixed-weight headline; mark the bold run with `**`.
-  final String headline;
-  final String body;
-}
+  required final String headline,
+  required final String body,
+}) {}
 
 /// Swipeable onboarding pages (8.13): a tone panel with the illustration,
 /// the page dots, a headline and a `bodyLg` paragraph. The dots stay put
 /// while the pages swipe under them. Buttons belong to the screen.
-class OnboardingPager extends StatelessWidget {
-  const OnboardingPager({
-    super.key,
-    required this.pages,
-    required this.controller,
-    required this.index,
-    this.onPageChanged,
-  });
-
-  final List<OnboardingPageData> pages;
-  final PageController controller;
+class const OnboardingPager({
+  super.key,
+  required final List<OnboardingPageData> pages,
+  required final PageController controller,
 
   /// The current page, for the dots.
-  final int index;
-  final ValueChanged<int>? onPageChanged;
-
+  required final int index,
+  final ValueChanged<int>? onPageChanged,
+}) extends StatelessWidget {
   static const _panelMaxH = 340.0;
   static const _dotsGap = 28.0;
 
@@ -76,17 +62,11 @@ class OnboardingPager extends StatelessWidget {
   }
 }
 
-class _Page extends StatelessWidget {
-  const _Page({
-    required this.page,
-    required this.panelHeight,
-    required this.textTop,
-  });
-
-  final OnboardingPageData page;
-  final double panelHeight;
-  final double textTop;
-
+class const _Page({
+  required final OnboardingPageData page,
+  required final double panelHeight,
+  required final double textTop,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -115,18 +95,12 @@ class _Page extends StatelessWidget {
 }
 
 /// The rounded tone panel holding an onboarding illustration.
-class OnboardingPanel extends StatelessWidget {
-  const OnboardingPanel({
-    super.key,
-    required this.illustration,
-    required this.toneIndex,
-    required this.height,
-  });
-
-  final String illustration;
-  final int toneIndex;
-  final double height;
-
+class const OnboardingPanel({
+  super.key,
+  required final String illustration,
+  required final int toneIndex,
+  required final double height,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -144,12 +118,7 @@ class OnboardingPanel extends StatelessWidget {
 
 /// Page indicator: 8 px dots; the current one stretches to a 24 px kunyit
 /// pill with an ink outline. Read as "Halaman 2 dari 3".
-class PageDots extends StatelessWidget {
-  const PageDots({super.key, required this.count, required this.index});
-
-  final int count;
-  final int index;
-
+class const PageDots({super.key, required final int count, required final int index}) extends StatelessWidget {
   static const _dot = 8.0;
   static const _active = 24.0;
 

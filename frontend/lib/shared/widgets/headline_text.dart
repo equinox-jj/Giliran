@@ -8,13 +8,8 @@ import '../../core/themes/themes.dart';
 /// ```dart
 /// HeadlineText('Periode 4 dari 10, **8 orang sudah bayar**.')
 /// ```
-class HeadlineText extends StatelessWidget {
-  const HeadlineText(this.text, {super.key, this.color, this.textAlign});
-
-  final String text;
-  final Color? color;
-  final TextAlign? textAlign;
-
+class const HeadlineText(final String text, {super.key, final Color? color, final TextAlign? textAlign})
+    extends StatelessWidget {
   static List<(String, bool)> parse(String text) {
     final parts = text.split('**');
     return [
@@ -48,11 +43,7 @@ class HeadlineText extends StatelessWidget {
 }
 
 /// The headline block under a headline top bar: 8 above, 24 below.
-class HeadlineBlock extends StatelessWidget {
-  const HeadlineBlock(this.text, {super.key});
-
-  final String text;
-
+class const HeadlineBlock(final String text, {super.key}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.only(top: AppSpace.s2, bottom: AppSpace.s6),

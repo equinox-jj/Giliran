@@ -4,7 +4,7 @@ import '../../utils/logger/app_logger.dart';
 
 /// Logs each request's method, URI and status through [AppLogger], which is
 /// silent outside debug builds. Bodies and headers are never logged.
-class LoggerInterceptor extends Interceptor {
+class LoggerInterceptor() extends Interceptor {
   static const _tag = 'http';
 
   @override

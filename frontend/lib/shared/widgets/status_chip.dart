@@ -8,18 +8,13 @@ import 'dashed_border.dart';
 import 'tikar_hatch_painter.dart';
 
 /// Statuses a chip can show. Labels are fixed and map 1:1 to API values.
-enum ChipStatus {
+enum ChipStatus(final String label, final String icon) {
   paid('Sudah bayar', AppIcons.checkCircleFill),
   pendingReview('Menunggu cek', AppIcons.hourglassMedium),
   unpaid('Belum bayar', AppIcons.circleDashed),
   rejected('Ditolak', AppIcons.xCircle),
   overdue('Lewat jatuh tempo', AppIcons.warningCircle),
   won('Sudah dapat', AppIcons.scrollFill);
-
-  const ChipStatus(this.label, this.icon);
-
-  final String label;
-  final String icon;
 
   /// Overdue is derived: unpaid or rejected with `due_date` before today.
   static ChipStatus fromPayment(PaymentStatus status, {bool overdue = false}) {
@@ -45,14 +40,13 @@ enum ChipStatus {
 
 /// Status chip: color + icon + word, 28 high. Pending paints the tikar hatch;
 /// unpaid gets a dashed outline; won (kunyit) carries an ink outline.
-class StatusChip extends StatelessWidget {
-  const StatusChip(this.status, {super.key, this.label});
-
-  final ChipStatus status;
+class const StatusChip(
+  final ChipStatus status, {
+  super.key,
 
   /// Overrides the fixed label (e.g. "Menunggu" in tight rows).
-  final String? label;
-
+  final String? label,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;

@@ -5,13 +5,19 @@ import '../../core/themes/themes.dart';
 import 'app_icon.dart';
 import 'pressable.dart';
 
-enum _SettingsRowKind { navigation, toggle, info, locked, destructive }
+enum _SettingsRowKind() {
+  navigation,
+  toggle,
+  info,
+  locked,
+  destructive,
+}
 
 /// Settings row: 56 high (64 with a subtitle), padding 16, a 24 px leading
 /// icon in `text.secondary`. Group rows with [SettingsGroup].
 class SettingsRow extends StatelessWidget {
   /// Opens a screen; shows [value] and a `CaretRight`.
-  const SettingsRow.navigation({
+  const new navigation({
     super.key,
     required this.label,
     required VoidCallback this.onTap,
@@ -23,7 +29,7 @@ class SettingsRow extends StatelessWidget {
        onToggle = null;
 
   /// Adaptive switch; track is `paid.fg` when on.
-  const SettingsRow.toggle({
+  const new toggle({
     super.key,
     required this.label,
     required this.toggleValue,
@@ -35,7 +41,7 @@ class SettingsRow extends StatelessWidget {
        onTap = null;
 
   /// Read-only value (email, app version).
-  const SettingsRow.info({
+  const new info({
     super.key,
     required this.label,
     required String this.value,
@@ -47,7 +53,7 @@ class SettingsRow extends StatelessWidget {
        onTap = null;
 
   /// Disabled after the group starts: lock icon + the reason as subtitle.
-  const SettingsRow.locked({
+  const new locked({
     super.key,
     required this.label,
     this.icon,
@@ -59,7 +65,7 @@ class SettingsRow extends StatelessWidget {
        onTap = null;
 
   /// Label in `rejected.fg`, no trailing.
-  const SettingsRow.destructive({
+  const new destructive({
     super.key,
     required this.label,
     required VoidCallback this.onTap,
@@ -197,12 +203,8 @@ class SettingsRow extends StatelessWidget {
 
 /// Rows grouped into a `radius.md` card with hairlines inside, an optional
 /// `caption` header in `text.tertiary`, and 24 px below the group.
-class SettingsGroup extends StatelessWidget {
-  const SettingsGroup({super.key, this.header, required this.children});
-
-  final String? header;
-  final List<Widget> children;
-
+class const SettingsGroup({super.key, final String? header, required final List<Widget> children})
+    extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;

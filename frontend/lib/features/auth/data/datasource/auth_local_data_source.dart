@@ -6,7 +6,7 @@ import 'model/token_pair_model.dart';
 /// and the biometric flags.
 ///
 /// Every method throws `CacheException` on failure.
-abstract interface class AuthLocalDataSource {
+abstract interface class AuthLocalDataSource() {
   /// Stores a token pair from verify. Throws when either token is missing.
   Future<void> saveTokens(TokenPairModel tokens);
 

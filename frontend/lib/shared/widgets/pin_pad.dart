@@ -10,45 +10,34 @@ import 'shake.dart';
 
 /// Holds the digits entered on a [PinPad]. Call [clear] after a wrong PIN or
 /// between "Buat PIN" and "Ulangi PIN".
-class PinPadController extends ValueNotifier<String> {
-  PinPadController() : super('');
+class PinPadController() extends ValueNotifier<String> {
+  this : super('');
 
   void clear() => value = '';
 }
 
 /// Six PIN dots plus a 3×4 keypad of 72 px keys. The biometric key
 /// (bottom-left) shows only when [onBiometric] is set (lock screen).
-class PinPad extends StatefulWidget {
-  const PinPad({
-    super.key,
-    required this.controller,
-    required this.onCompleted,
-    this.length = 6,
-    this.error = false,
-    this.enabled = true,
-    this.onBiometric,
-    this.biometricIcon = AppIcons.fingerprint,
-    this.biometricLabel = 'Buka dengan sidik jari',
-  });
-
-  final PinPadController controller;
-  final ValueChanged<String> onCompleted;
-  final int length;
+class const PinPad({
+  super.key,
+  required final PinPadController controller,
+  required final ValueChanged<String> onCompleted,
+  final int length = 6,
 
   /// Wrong PIN: dots turn bata and shake. The parent clears the controller.
-  final bool error;
-  final bool enabled;
-  final VoidCallback? onBiometric;
+  final bool error = false,
+  final bool enabled = true,
+  final VoidCallback? onBiometric,
 
   /// `AppIcons.fingerprint` on Android, `AppIcons.scanSmiley` for Face ID.
-  final String biometricIcon;
-  final String biometricLabel;
-
+  final String biometricIcon = AppIcons.fingerprint,
+  final String biometricLabel = 'Buka dengan sidik jari',
+}) extends StatefulWidget {
   @override
   State<PinPad> createState() => _PinPadState();
 }
 
-class _PinPadState extends State<PinPad> {
+class _PinPadState() extends State<PinPad> {
   int _shakes = 0;
 
   @override
@@ -175,12 +164,7 @@ class _PinPadState extends State<PinPad> {
 }
 
 /// One PIN dot: dashed when empty, ink when filled, bata on error.
-class _PinDot extends StatelessWidget {
-  const _PinDot({required this.filled, required this.error});
-
-  final bool filled;
-  final bool error;
-
+class const _PinDot({required final bool filled, required final bool error}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -203,12 +187,8 @@ class _PinDot extends StatelessWidget {
 }
 
 /// Three keys with the keypad gap between them.
-class _KeyRow extends StatelessWidget {
-  const _KeyRow({required this.children});
-
+class const _KeyRow({required final List<Widget> children}) extends StatelessWidget {
   static const gap = SizedBox(width: AppSpace.s6, height: AppSpace.s4);
-
-  final List<Widget> children;
 
   @override
   Widget build(BuildContext context) => Row(
@@ -219,19 +199,12 @@ class _KeyRow extends StatelessWidget {
 }
 
 /// A 72 px round key. [onTap] null disables it.
-class _PinKey extends StatelessWidget {
-  const _PinKey({
-    required this.label,
-    required this.onTap,
-    required this.child,
-    this.filled = true,
-  });
-
-  final String label;
-  final VoidCallback? onTap;
-  final Widget child;
-  final bool filled;
-
+class const _PinKey({
+  required final String label,
+  required final VoidCallback? onTap,
+  required final Widget child,
+  final bool filled = true,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Pressable(
     onTap: onTap,
@@ -250,13 +223,8 @@ class _PinKey extends StatelessWidget {
   );
 }
 
-class _DigitKey extends StatelessWidget {
-  const _DigitKey(this.digit, {required this.enabled, required this.onPress});
-
-  final String digit;
-  final bool enabled;
-  final ValueChanged<String> onPress;
-
+class const _DigitKey(final String digit, {required final bool enabled, required final ValueChanged<String> onPress})
+    extends StatelessWidget {
   @override
   Widget build(BuildContext context) => _PinKey(
     label: digit,

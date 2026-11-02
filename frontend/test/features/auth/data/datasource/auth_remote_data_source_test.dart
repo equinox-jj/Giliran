@@ -14,7 +14,7 @@ import 'package:giliran/features/auth/data/datasource/model/pin_request_models.d
 
 /// Records each request and answers with the queued [status], [body] and
 /// [headers].
-class _RecordingAdapter implements HttpClientAdapter {
+class _RecordingAdapter() implements HttpClientAdapter {
   int status = 200;
   Object? body;
   Map<String, List<String>> headers = const {};

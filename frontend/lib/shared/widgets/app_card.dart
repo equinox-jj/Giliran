@@ -4,7 +4,7 @@ import '../../core/themes/themes.dart';
 import 'dashed_border.dart';
 import 'pressable.dart';
 
-enum AppCardStyle {
+enum AppCardStyle() {
   /// `bg.surface`, no border.
   filled,
 
@@ -16,28 +16,18 @@ enum AppCardStyle {
 }
 
 /// Card: `radius.lg`, padding 16 (phone) / 24 (tablet), never a shadow.
-class AppCard extends StatelessWidget {
-  const AppCard({
-    super.key,
-    required this.child,
-    this.style = AppCardStyle.filled,
-    this.color,
-    this.padding,
-    this.radius = AppRadius.lg,
-    this.onTap,
-    this.semanticLabel,
-  });
-
-  final Widget child;
-  final AppCardStyle style;
+class const AppCard({
+  super.key,
+  required final Widget child,
+  final AppCardStyle style = AppCardStyle.filled,
 
   /// Fill override (a group tone).
-  final Color? color;
-  final EdgeInsets? padding;
-  final double radius;
-  final VoidCallback? onTap;
-  final String? semanticLabel;
-
+  final Color? color,
+  final EdgeInsets? padding,
+  final double radius = AppRadius.lg,
+  final VoidCallback? onTap,
+  final String? semanticLabel,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -79,30 +69,20 @@ class AppCard extends StatelessWidget {
 /// List row: min 64, `radius.md`, `bg.surface`, padding 12/16, a leading 40
 /// slot, `title` + `body`/secondary subtitle and a trailing slot. Rows are
 /// separated by 8 px gaps, not dividers.
-class AppListRow extends StatelessWidget {
-  const AppListRow({
-    super.key,
-    required this.title,
-    this.subtitle,
-    this.leading,
-    this.trailing,
-    this.onTap,
-    this.inverse = false,
-    this.semanticLabel,
-  });
-
-  final String title;
-  final String? subtitle;
-  final Widget? leading;
-  final Widget? trailing;
-  final VoidCallback? onTap;
+class const AppListRow({
+  super.key,
+  required final String title,
+  final String? subtitle,
+  final Widget? leading,
+  final Widget? trailing,
+  final VoidCallback? onTap,
 
   /// The viewer's own row: ink fill with cream text.
-  final bool inverse;
+  final bool inverse = false,
 
   /// One sentence for screen readers; defaults to title + subtitle.
-  final String? semanticLabel;
-
+  final String? semanticLabel,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -166,20 +146,13 @@ class AppListRow extends StatelessWidget {
 /// (64 on tablet), min height 200. Max one per screen. [decoration] is an
 /// optional corner doodle, painted at 40% opacity and excluded from
 /// semantics.
-class HeroPanel extends StatelessWidget {
-  const HeroPanel({
-    super.key,
-    required this.child,
-    this.color,
-    this.decoration,
-    this.padding,
-  });
-
-  final Widget child;
-  final Color? color;
-  final Widget? decoration;
-  final EdgeInsets? padding;
-
+class const HeroPanel({
+  super.key,
+  required final Widget child,
+  final Color? color,
+  final Widget? decoration,
+  final EdgeInsets? padding,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;

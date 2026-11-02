@@ -2,7 +2,7 @@
 /// the Tikar design system. These are the system's placeholder art; final
 /// illustrations should keep the same 2.5 px round stroke and cast.
 /// Render with `Doodle`.
-abstract final class AppDoodles {
+abstract final class AppDoodles() {
   /// Kaleng kocokan: draw stage, hero corners (40%).
   static const kaleng = 'assets/images/doodles/kaleng.svg';
 

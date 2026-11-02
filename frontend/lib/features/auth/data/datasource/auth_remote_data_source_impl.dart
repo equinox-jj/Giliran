@@ -16,11 +16,7 @@ import 'model/pin_request_models.dart';
 
 part 'auth_remote_data_source_impl.g.dart';
 
-class AuthRemoteDataSourceImpl with BaseRemoteDataSource implements AuthRemoteDataSource {
-  AuthRemoteDataSourceImpl(this._dio);
-
-  final Dio _dio;
-
+class AuthRemoteDataSourceImpl(final Dio _dio) with BaseRemoteDataSource implements AuthRemoteDataSource {
   @override
   Future<EmailOtpChallengeModel> requestEmailOtp(EmailOtpRequestModel body) => safeApiCall(() async {
     final response = await _dio.post<Map<String, dynamic>>(

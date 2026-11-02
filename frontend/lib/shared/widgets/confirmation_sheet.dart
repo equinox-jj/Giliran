@@ -38,30 +38,20 @@ Future<bool> showConfirmationSheet(
   return result ?? false;
 }
 
-class _ConfirmationSheet extends StatefulWidget {
-  const _ConfirmationSheet({
-    required this.icon,
-    required this.title,
-    required this.confirmLabel,
-    required this.cancelLabel,
-    required this.summary,
-    required this.consentLabel,
-    required this.toneColor,
-  });
-
-  final String icon;
-  final String title;
-  final String confirmLabel;
-  final String cancelLabel;
-  final List<KeyValueItem> summary;
-  final String? consentLabel;
-  final Color? toneColor;
-
+class const _ConfirmationSheet({
+  required final String icon,
+  required final String title,
+  required final String confirmLabel,
+  required final String cancelLabel,
+  required final List<KeyValueItem> summary,
+  required final String? consentLabel,
+  required final Color? toneColor,
+}) extends StatefulWidget {
   @override
   State<_ConfirmationSheet> createState() => _ConfirmationSheetState();
 }
 
-class _ConfirmationSheetState extends State<_ConfirmationSheet> {
+class _ConfirmationSheetState() extends State<_ConfirmationSheet> {
   bool _consent = false;
 
   @override

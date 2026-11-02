@@ -8,9 +8,7 @@ part 'payments_dao.g.dart';
 /// Reads and writes cached [Payments], including offline cash marks waiting
 /// to sync (PRD §9, "Organizer offline when marking cash payment").
 @DriftAccessor(tables: [Payments])
-class PaymentsDao extends DatabaseAccessor<AppDatabase> with _$PaymentsDaoMixin {
-  PaymentsDao(super.attachedDatabase);
-
+class PaymentsDao(super.attachedDatabase) extends DatabaseAccessor<AppDatabase> with _$PaymentsDaoMixin {
   /// A period's payment board ordered by slot number.
   Stream<List<PaymentRow>> watchByPeriod(String periodId) =>
       (select(payments)

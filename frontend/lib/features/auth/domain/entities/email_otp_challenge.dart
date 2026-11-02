@@ -9,7 +9,7 @@ part 'email_otp_challenge.freezed.dart';
 /// attempts left.
 @freezed
 abstract class EmailOtpChallenge with _$EmailOtpChallenge {
-  const factory EmailOtpChallenge({
+  const factory({
     String? id,
     OtpPurpose? purpose,
     String? emailMasked,
@@ -24,7 +24,7 @@ abstract class EmailOtpChallenge with _$EmailOtpChallenge {
 /// the app is closed. [email] is the full address the user typed.
 @freezed
 abstract class PendingOtp with _$PendingOtp {
-  const factory PendingOtp({
+  const factory({
     String? email,
     EmailOtpChallenge? challenge,
   }) = _PendingOtp;

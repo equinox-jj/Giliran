@@ -6,7 +6,7 @@ import 'sync_columns.dart';
 /// Cached periods (rounds) from the API `Period` resource, with the winner
 /// `MemberRef` and `PaymentSummary` flattened into columns.
 @DataClassName('PeriodRow')
-class Periods extends Table with SyncColumns {
+class Periods() extends Table with SyncColumns {
   TextColumn get id => text()();
   TextColumn get groupId => text().references(Groups, #id, onDelete: KeyAction.cascade)();
   IntColumn get periodNo => integer()();

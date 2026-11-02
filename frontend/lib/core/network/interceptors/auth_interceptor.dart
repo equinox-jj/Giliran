@@ -5,11 +5,7 @@ import '../api_endpoints.dart';
 
 /// Attaches `Authorization: Bearer <access token>` to every request unless it
 /// is flagged [ApiEndpoints.kNoAuth].
-class AuthInterceptor extends Interceptor {
-  AuthInterceptor(this._storage);
-
-  final SecureStorage _storage;
-
+class AuthInterceptor(final SecureStorage _storage) extends Interceptor {
   @override
   Future<void> onRequest(
     RequestOptions options,

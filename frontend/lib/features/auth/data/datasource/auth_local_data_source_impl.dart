@@ -13,12 +13,11 @@ import 'model/token_pair_model.dart';
 
 part 'auth_local_data_source_impl.g.dart';
 
-class AuthLocalDataSourceImpl with BaseLocalDataSource implements AuthLocalDataSource {
-  AuthLocalDataSourceImpl({
-    required SecureStorage secureStorage,
-    required Preferences preferences,
-  }) : _secure = secureStorage,
-       _prefs = preferences;
+class AuthLocalDataSourceImpl({
+  required SecureStorage secureStorage,
+  required Preferences preferences,
+}) with BaseLocalDataSource implements AuthLocalDataSource {
+  this : _secure = secureStorage, _prefs = preferences;
 
   final SecureStorage _secure;
   final Preferences _prefs;

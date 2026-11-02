@@ -1,6 +1,6 @@
 /// Central registry of the API base URL, paths, and `RequestOptions.extra`
 /// keys.
-abstract final class ApiEndpoints {
+abstract final class ApiEndpoints() {
   /// Base URL for all requests. Override with
   /// `--dart-define=API_BASE_URL=http://10.0.2.2:8080/api/v1` for a local
   /// backend.

@@ -12,11 +12,7 @@ import 'profile_remote_data_source.dart';
 
 part 'profile_remote_data_source_impl.g.dart';
 
-class ProfileRemoteDataSourceImpl with BaseRemoteDataSource implements ProfileRemoteDataSource {
-  ProfileRemoteDataSourceImpl(this._dio);
-
-  final Dio _dio;
-
+class ProfileRemoteDataSourceImpl(final Dio _dio) with BaseRemoteDataSource implements ProfileRemoteDataSource {
   @override
   Future<ProfileDataModel> getMe() => safeApiCall(() async {
     final response = await _dio.get<Map<String, dynamic>>(ApiEndpoints.me);

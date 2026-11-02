@@ -4,14 +4,14 @@ import 'app_sizes.dart';
 
 /// Window-width thresholds, in logical pixels, where the layout changes from one
 /// [SizeClass] to the next.
-abstract final class Breakpoints {
+abstract final class Breakpoints() {
   static const medium = 600.0;
   static const expanded = 840.0;
 }
 
 /// Layout class of the window, which sets the grid columns, screen margin and
 /// gutter.
-enum SizeClass {
+enum SizeClass() {
   compact,
   medium,
   expanded;
@@ -57,13 +57,13 @@ extension SizeClassX on BuildContext {
 
 /// Centers content and caps its width (560 for reading, 1200 for boards).
 class MaxWidth extends StatelessWidget {
-  const MaxWidth({
+  const new({
     super.key,
     required this.child,
     this.width = AppSizes.contentMax,
   });
 
-  const MaxWidth.board({super.key, required this.child}) : width = AppSizes.boardMax;
+  const new board({super.key, required this.child}) : width = AppSizes.boardMax;
 
   final Widget child;
   final double width;

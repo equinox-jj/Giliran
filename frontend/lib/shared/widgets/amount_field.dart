@@ -7,26 +7,17 @@ import 'app_text_field.dart';
 
 /// Rupiah amount field: `amountLg` digits, a fixed small "Rp" prefix and live
 /// dot grouping. Read the value with [AmountField.parse].
-class AmountField extends StatelessWidget {
-  const AmountField({
-    super.key,
-    required this.controller,
-    this.label,
-    this.helper,
-    this.errorText,
-    this.onChanged,
-    this.textInputAction = TextInputAction.done,
-  });
-
-  final TextEditingController controller;
-  final String? label;
-  final String? helper;
-  final String? errorText;
+class const AmountField({
+  super.key,
+  required final TextEditingController controller,
+  final String? label,
+  final String? helper,
+  final String? errorText,
 
   /// Called with the parsed integer amount (null when empty).
-  final ValueChanged<int?>? onChanged;
-  final TextInputAction textInputAction;
-
+  final ValueChanged<int?>? onChanged,
+  final TextInputAction textInputAction = TextInputAction.done,
+}) extends StatelessWidget {
   static int? parse(String text) => RupiahInputFormatter.parse(text);
 
   @override

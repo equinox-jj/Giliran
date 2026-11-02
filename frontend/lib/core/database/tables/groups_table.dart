@@ -6,7 +6,7 @@ import 'sync_columns.dart';
 /// `Group` (detail). Fields only one of them sends are nullable so either
 /// payload can upsert without wiping the other's columns.
 @DataClassName('GroupRow')
-class Groups extends Table with SyncColumns {
+class Groups() extends Table with SyncColumns {
   TextColumn get id => text()();
   TextColumn get name => text()();
   IntColumn get amount => integer()();

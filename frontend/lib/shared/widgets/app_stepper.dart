@@ -12,33 +12,23 @@ import 'pressable.dart';
 /// minus · editable value · plus right. Long-press repeats every 120 ms; at a
 /// limit the button disables and a caption states the range. [helper] shows
 /// the live consequence ("10 periode · selesai Agu 2027").
-class AppStepper extends StatefulWidget {
-  const AppStepper({
-    super.key,
-    required this.label,
-    required this.value,
-    required this.min,
-    required this.max,
-    required this.onChanged,
-    this.unit,
-    this.helper,
-  });
-
-  final String label;
-  final int value;
-  final int min;
-  final int max;
-  final ValueChanged<int> onChanged;
+class const AppStepper({
+  super.key,
+  required final String label,
+  required final int value,
+  required final int min,
+  required final int max,
+  required final ValueChanged<int> onChanged,
 
   /// Used in the limit caption: "Maksimal 50 slot".
-  final String? unit;
-  final String? helper;
-
+  final String? unit,
+  final String? helper,
+}) extends StatefulWidget {
   @override
   State<AppStepper> createState() => _AppStepperState();
 }
 
-class _AppStepperState extends State<AppStepper> {
+class _AppStepperState() extends State<AppStepper> {
   late final _controller = TextEditingController(text: '${widget.value}');
   final _focus = FocusNode();
   Timer? _repeat;
@@ -187,21 +177,13 @@ class _AppStepperState extends State<AppStepper> {
 
 /// Round minus/plus button; long-press repeats via [onRepeatStart].
 /// [onTap] null disables it.
-class _StepButton extends StatelessWidget {
-  const _StepButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    required this.onRepeatStart,
-    required this.onRepeatEnd,
-  });
-
-  final String icon;
-  final String label;
-  final VoidCallback? onTap;
-  final VoidCallback? onRepeatStart;
-  final VoidCallback onRepeatEnd;
-
+class const _StepButton({
+  required final String icon,
+  required final String label,
+  required final VoidCallback? onTap,
+  required final VoidCallback? onRepeatStart,
+  required final VoidCallback onRepeatEnd,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;

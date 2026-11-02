@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 /// Animation durations and curves shared across the app.
-abstract final class AppMotion {
+abstract final class AppMotion() {
   /// Press, chip select, toggles.
   static const quick = Duration(milliseconds: 120);
 

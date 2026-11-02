@@ -5,22 +5,15 @@ import '../../core/themes/themes.dart';
 /// Section header: `title` text with an optional `caption` subtitle and a
 /// trailing action (text button, circle icon button or count chip).
 /// Spacing 32 above (24 in tablet panes), 12 below.
-class SectionHeader extends StatelessWidget {
-  const SectionHeader({
-    super.key,
-    required this.title,
-    this.subtitle,
-    this.trailing,
-    this.top,
-  });
-
-  final String title;
-  final String? subtitle;
-  final Widget? trailing;
+class const SectionHeader({
+  super.key,
+  required final String title,
+  final String? subtitle,
+  final Widget? trailing,
 
   /// Overrides the space above (default 32 on compact, 24 otherwise).
-  final double? top;
-
+  final double? top,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -60,16 +53,11 @@ class SectionHeader extends StatelessWidget {
 }
 
 /// Text button used in section headers and inline actions ("Lihat semua").
-class AppTextButton extends StatelessWidget {
-  const AppTextButton({
-    super.key,
-    required this.label,
-    required this.onPressed,
-  });
-
-  final String label;
-  final VoidCallback? onPressed;
-
+class const AppTextButton({
+  super.key,
+  required final String label,
+  required final VoidCallback? onPressed,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;

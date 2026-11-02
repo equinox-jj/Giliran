@@ -11,7 +11,7 @@ import 'sync_columns.dart';
   name: 'payments_period_slot_idx',
   columns: {#periodId, #memberSlotNo},
 )
-class Payments extends Table with SyncColumns {
+class Payments() extends Table with SyncColumns {
   TextColumn get id => text()();
   TextColumn get groupId => text().references(Groups, #id, onDelete: KeyAction.cascade)();
   TextColumn get periodId => text()();

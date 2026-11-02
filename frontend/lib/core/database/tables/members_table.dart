@@ -7,7 +7,7 @@ import 'sync_columns.dart';
 /// slot in the MVP, so slot fields live here instead of a separate table.
 @DataClassName('MemberRow')
 @TableIndex(name: 'members_group_slot_idx', columns: {#groupId, #slotNo})
-class Members extends Table with SyncColumns {
+class Members() extends Table with SyncColumns {
   TextColumn get id => text()();
   TextColumn get groupId => text().references(Groups, #id, onDelete: KeyAction.cascade)();
   TextColumn get userId => text().nullable()();

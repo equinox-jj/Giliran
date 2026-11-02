@@ -6,22 +6,14 @@ import 'pressable.dart';
 
 /// Radio card with an explanation (draw method, period type). Selected: 2 px
 /// ink border, ink radio, and the icon circle turns ink.
-class ChoiceCard extends StatelessWidget {
-  const ChoiceCard({
-    super.key,
-    required this.icon,
-    required this.title,
-    required this.description,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String icon;
-  final String title;
-  final String description;
-  final bool selected;
-  final VoidCallback? onTap;
-
+class const ChoiceCard({
+  super.key,
+  required final String icon,
+  required final String title,
+  required final String description,
+  required final bool selected,
+  required final VoidCallback? onTap,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -111,33 +103,20 @@ class ChoiceCard extends StatelessWidget {
 }
 
 /// One option of a [ChoiceCardGroup].
-class ChoiceOption<T> {
-  const ChoiceOption({
-    required this.value,
-    required this.icon,
-    required this.title,
-    required this.description,
-  });
-
-  final T value;
-  final String icon;
-  final String title;
-  final String description;
-}
+class const ChoiceOption<T>({
+  required final T value,
+  required final String icon,
+  required final String title,
+  required final String description,
+}) {}
 
 /// Choice cards stacked on phone, side by side from medium.
-class ChoiceCardGroup<T> extends StatelessWidget {
-  const ChoiceCardGroup({
-    super.key,
-    required this.options,
-    required this.value,
-    required this.onChanged,
-  });
-
-  final List<ChoiceOption<T>> options;
-  final T? value;
-  final ValueChanged<T>? onChanged;
-
+class const ChoiceCardGroup<T>({
+  super.key,
+  required final List<ChoiceOption<T>> options,
+  required final T? value,
+  required final ValueChanged<T>? onChanged,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cards = [

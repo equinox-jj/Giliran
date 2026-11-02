@@ -11,7 +11,7 @@ part 'email_otp_challenge_model.g.dart';
 /// resent. Also cached in secure storage so S04 can be resumed.
 @freezed
 abstract class EmailOtpChallengeModel with _$EmailOtpChallengeModel {
-  const factory EmailOtpChallengeModel({
+  const factory({
     @JsonKey(name: 'id') String? id,
     @JsonKey(
       name: 'purpose',
@@ -25,7 +25,7 @@ abstract class EmailOtpChallengeModel with _$EmailOtpChallengeModel {
     @JsonKey(name: 'attempts_remaining') int? attemptsRemaining,
   }) = _EmailOtpChallengeModel;
 
-  factory EmailOtpChallengeModel.fromJson(Map<String, dynamic> json) => _$EmailOtpChallengeModelFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$EmailOtpChallengeModelFromJson(json);
 }
 
 /// An unfinished code request saved on the device: the challenge plus the
@@ -34,10 +34,10 @@ abstract class EmailOtpChallengeModel with _$EmailOtpChallengeModel {
 @freezed
 abstract class PendingOtpModel with _$PendingOtpModel {
   @JsonSerializable(explicitToJson: true)
-  const factory PendingOtpModel({
+  const factory({
     @JsonKey(name: 'email') String? email,
     @JsonKey(name: 'challenge') EmailOtpChallengeModel? challenge,
   }) = _PendingOtpModel;
 
-  factory PendingOtpModel.fromJson(Map<String, dynamic> json) => _$PendingOtpModelFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$PendingOtpModelFromJson(json);
 }

@@ -6,17 +6,17 @@ part 'profile_model.g.dart';
 /// JSON shape of the profile API response, using the backend's field names.
 @freezed
 abstract class ProfileModel with _$ProfileModel {
-  const factory ProfileModel({
+  const factory({
     @JsonKey(name: "data") ProfileDataModel? data,
   }) = _ProfileModel;
 
-  factory ProfileModel.fromJson(Map<String, dynamic> json) => _$ProfileModelFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$ProfileModelFromJson(json);
 }
 
 /// JSON shape of the profile payload inside [ProfileModel].
 @freezed
 abstract class ProfileDataModel with _$ProfileDataModel {
-  const factory ProfileDataModel({
+  const factory({
     @JsonKey(name: "id") String? id,
     @JsonKey(name: "email") String? email,
     @JsonKey(name: "phone") String? phone,
@@ -26,5 +26,5 @@ abstract class ProfileDataModel with _$ProfileDataModel {
     @JsonKey(name: "created_at") DateTime? createdAt,
   }) = _ProfileDataModel;
 
-  factory ProfileDataModel.fromJson(Map<String, dynamic> json) => _$ProfileDataModelFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$ProfileDataModelFromJson(json);
 }

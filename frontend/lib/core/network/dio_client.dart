@@ -11,12 +11,12 @@ import 'session_manager.dart';
 part 'dio_client.g.dart';
 
 /// Builds and owns the configured [Dio] instance used across the app.
-class DioClient {
-  DioClient({
-    required AuthInterceptor authInterceptor,
-    required RefreshInterceptor refreshInterceptor,
-    Dio? dio,
-  }) : dio = dio ?? Dio(baseOptions()) {
+class DioClient({
+  required AuthInterceptor authInterceptor,
+  required RefreshInterceptor refreshInterceptor,
+  Dio? dio,
+}) {
+  this : dio = dio ?? Dio(baseOptions()) {
     this.dio.interceptors.addAll([
       authInterceptor,
       refreshInterceptor,

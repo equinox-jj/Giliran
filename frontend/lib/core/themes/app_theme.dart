@@ -9,7 +9,7 @@ import 'app_spacing.dart';
 import 'app_typography.dart';
 
 /// Builds the light and dark [ThemeData] from the Tikar colors and type scale.
-abstract final class AppTheme {
+abstract final class AppTheme() {
   static ThemeData light() => _build(Brightness.light, GiliranColors.light);
 
   static ThemeData dark() => _build(Brightness.dark, GiliranColors.dark);

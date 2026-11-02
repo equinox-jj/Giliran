@@ -2,11 +2,15 @@
 ///
 /// The generic `T` is decoded through a caller-supplied `fromJsonT`
 /// converter, so it works with json_serializable models.
-class ApiResponse<T> {
-  const ApiResponse({this.data, this.message});
+class const ApiResponse<T>({
+  /// The decoded payload, or null when the body carried no `data`.
+  final T? data,
 
+  /// Optional feedback from the server, sent only when it adds something.
+  final String? message,
+}) {
   /// Parses [json], decoding the `data` member with [fromJsonT].
-  factory ApiResponse.fromJson(
+  factory fromJson(
     Map<String, dynamic> json,
     T Function(Object? json) fromJsonT,
   ) {
@@ -16,25 +20,22 @@ class ApiResponse<T> {
       message: json['message'] as String?,
     );
   }
-
-  /// The decoded payload, or null when the body carried no `data`.
-  final T? data;
-
-  /// Optional feedback from the server, sent only when it adds something.
-  final String? message;
 }
 
 /// Envelope for a cursor-paginated list:
 /// `{"data": [...], "meta": {"next_cursor": "…", "has_more": true}}`.
-class CursorPage<T> {
-  const CursorPage({
-    required this.items,
-    this.nextCursor,
-    this.hasMore = false,
-  });
+class const CursorPage<T>({
+  /// Decoded page items. Empty lists come back as `[]`, never null.
+  required final List<T> items,
 
+  /// Pass as `cursor` to fetch the next page; null on the last page.
+  final String? nextCursor,
+
+  /// True when another page exists.
+  final bool hasMore = false,
+}) {
   /// Parses [json], decoding each element of `data` with [fromJsonT].
-  factory CursorPage.fromJson(
+  factory fromJson(
     Map<String, dynamic> json,
     T Function(Object? json) fromJsonT,
   ) {
@@ -46,13 +47,4 @@ class CursorPage<T> {
       hasMore: meta['has_more'] as bool? ?? false,
     );
   }
-
-  /// Decoded page items. Empty lists come back as `[]`, never null.
-  final List<T> items;
-
-  /// Pass as `cursor` to fetch the next page; null on the last page.
-  final String? nextCursor;
-
-  /// True when another page exists.
-  final bool hasMore;
 }

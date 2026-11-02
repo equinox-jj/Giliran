@@ -9,14 +9,12 @@ import '../shared/widgets/widgets.dart';
 
 /// Debug gallery of the Tikar components in light and dark, used to compare
 /// against the design system previews. Remove once real screens exist.
-class ComponentGalleryPage extends StatefulWidget {
-  const ComponentGalleryPage({super.key});
-
+class const ComponentGalleryPage({super.key}) extends StatefulWidget {
   @override
   State<ComponentGalleryPage> createState() => _ComponentGalleryPageState();
 }
 
-class _ComponentGalleryPageState extends State<ComponentGalleryPage> {
+class _ComponentGalleryPageState() extends State<ComponentGalleryPage> {
   bool? _dark;
 
   @override
@@ -35,17 +33,12 @@ class _ComponentGalleryPageState extends State<ComponentGalleryPage> {
 
 const _gap = SizedBox(height: AppSpace.s3);
 
-class _Gallery extends StatefulWidget {
-  const _Gallery({required this.dark, required this.onToggleTheme});
-
-  final bool dark;
-  final VoidCallback onToggleTheme;
-
+class const _Gallery({required final bool dark, required final VoidCallback onToggleTheme}) extends StatefulWidget {
   @override
   State<_Gallery> createState() => _GalleryState();
 }
 
-class _GalleryState extends State<_Gallery> {
+class _GalleryState() extends State<_Gallery> {
   static const _sections = [
     _HeroSection(),
     _ButtonsSection(),
@@ -120,9 +113,7 @@ class _GalleryState extends State<_Gallery> {
   }
 }
 
-class _HeroSection extends StatelessWidget {
-  const _HeroSection();
-
+class const _HeroSection() extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -181,9 +172,7 @@ class _HeroSection extends StatelessWidget {
   }
 }
 
-class _ButtonsSection extends StatelessWidget {
-  const _ButtonsSection();
-
+class const _ButtonsSection() extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -269,9 +258,7 @@ class _ButtonsSection extends StatelessWidget {
   }
 }
 
-class _StatusSection extends StatelessWidget {
-  const _StatusSection();
-
+class const _StatusSection() extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -331,9 +318,7 @@ class _StatusSection extends StatelessWidget {
   }
 }
 
-class _PeopleSection extends StatelessWidget {
-  const _PeopleSection();
-
+class const _PeopleSection() extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -393,9 +378,7 @@ class _PeopleSection extends StatelessWidget {
   }
 }
 
-class _DoodlesSection extends StatelessWidget {
-  const _DoodlesSection();
-
+class const _DoodlesSection() extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -426,9 +409,7 @@ class _DoodlesSection extends StatelessWidget {
   }
 }
 
-class _OnboardingSection extends StatelessWidget {
-  const _OnboardingSection();
-
+class const _OnboardingSection() extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -474,9 +455,7 @@ class _OnboardingSection extends StatelessWidget {
   }
 }
 
-class _CardsSection extends StatelessWidget {
-  const _CardsSection();
-
+class const _CardsSection() extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -532,14 +511,12 @@ class _CardsSection extends StatelessWidget {
   }
 }
 
-class _ChipsSection extends StatefulWidget {
-  const _ChipsSection();
-
+class const _ChipsSection() extends StatefulWidget {
   @override
   State<_ChipsSection> createState() => _ChipsSectionState();
 }
 
-class _ChipsSectionState extends State<_ChipsSection> {
+class _ChipsSectionState() extends State<_ChipsSection> {
   int _chip = 0;
   int _tab = 0;
   int _segment = 0;
@@ -587,14 +564,12 @@ class _ChipsSectionState extends State<_ChipsSection> {
   }
 }
 
-class _InputsSection extends StatefulWidget {
-  const _InputsSection();
-
+class const _InputsSection() extends StatefulWidget {
   @override
   State<_InputsSection> createState() => _InputsSectionState();
 }
 
-class _InputsSectionState extends State<_InputsSection> {
+class _InputsSectionState() extends State<_InputsSection> {
   final _now = DateTime.now();
   final _email = TextEditingController();
   final _phone = TextEditingController();
@@ -694,14 +669,12 @@ class _InputsSectionState extends State<_InputsSection> {
   }
 }
 
-class _CodeSection extends StatefulWidget {
-  const _CodeSection();
-
+class const _CodeSection() extends StatefulWidget {
   @override
   State<_CodeSection> createState() => _CodeSectionState();
 }
 
-class _CodeSectionState extends State<_CodeSection> {
+class _CodeSectionState() extends State<_CodeSection> {
   // Set once so rebuilds don't restart the countdown.
   final _resendAt = DateTime.now().add(const Duration(seconds: 42));
   final _pin = PinPadController();
@@ -749,14 +722,12 @@ class _CodeSectionState extends State<_CodeSection> {
   }
 }
 
-class _ListsSection extends StatefulWidget {
-  const _ListsSection();
-
+class const _ListsSection() extends StatefulWidget {
   @override
   State<_ListsSection> createState() => _ListsSectionState();
 }
 
-class _ListsSectionState extends State<_ListsSection> {
+class _ListsSectionState() extends State<_ListsSection> {
   bool _toggle = true;
 
   @override

@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'app_breakpoints.dart';
 
 /// Font family names declared in `pubspec.yaml`.
-abstract final class AppFonts {
+abstract final class AppFonts() {
   static const sans = 'PlusJakartaSans';
   static const mono = 'JetBrainsMono';
 }
@@ -14,14 +14,13 @@ abstract final class AppFonts {
 /// `DefaultTextStyle` / theme, so apply them with `copyWith(color: …)`.
 @immutable
 class AppTextStyles {
-  const AppTextStyles._(this.isLarge);
+  const new _(this.isLarge);
 
-  const AppTextStyles.phone() : isLarge = false;
+  const new phone() : isLarge = false;
 
-  const AppTextStyles.tablet() : isLarge = true;
+  const new tablet() : isLarge = true;
 
-  factory AppTextStyles.of(BuildContext context) =>
-      AppTextStyles._(MediaQuery.sizeOf(context).width >= Breakpoints.medium);
+  factory of(BuildContext context) => AppTextStyles._(MediaQuery.sizeOf(context).width >= Breakpoints.medium);
 
   /// True from the `medium` breakpoint.
   final bool isLarge;
@@ -91,7 +90,7 @@ class AppTextStyles {
 }
 
 /// Rupiah formatting: `Rp200.000`, no decimals, no space.
-abstract final class Rupiah {
+abstract final class Rupiah() {
   static final _fmt = NumberFormat.decimalPattern('id_ID');
 
   /// 200000 -> "200.000"

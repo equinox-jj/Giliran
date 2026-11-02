@@ -1,7 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 /// 4-point spacing scale.
-abstract final class AppSpace {
+abstract final class AppSpace() {
   static const s1 = 4.0;
   static const s2 = 8.0;
   static const s3 = 12.0;
@@ -15,7 +15,7 @@ abstract final class AppSpace {
 }
 
 /// Corner radius scale.
-abstract final class AppRadius {
+abstract final class AppRadius() {
   static const xs = 8.0;
   static const sm = 12.0;
   static const md = 20.0;
@@ -28,7 +28,7 @@ abstract final class AppRadius {
 }
 
 /// Border and outline widths.
-abstract final class AppStroke {
+abstract final class AppStroke() {
   /// Ink outline on kunyit shapes, circle buttons and tokens.
   static const ink = 1.5;
 
@@ -43,7 +43,7 @@ abstract final class AppStroke {
 }
 
 /// Builders for continuous-corner (squircle) shapes.
-abstract final class AppShapes {
+abstract final class AppShapes() {
   /// Continuous (squircle) corners that look like [radius] circular corners.
   static ContinuousRectangleBorder squircle(
     double radius, {

@@ -11,7 +11,7 @@ part 'email_otp_request_model.g.dart';
 @freezed
 abstract class EmailOtpRequestModel with _$EmailOtpRequestModel {
   @JsonSerializable(includeIfNull: false)
-  const factory EmailOtpRequestModel({
+  const factory({
     @JsonKey(name: 'purpose') OtpPurpose? purpose,
     @JsonKey(name: 'email') String? email,
     @JsonKey(name: 'device_name') String? deviceName,
@@ -20,5 +20,5 @@ abstract class EmailOtpRequestModel with _$EmailOtpRequestModel {
     @JsonKey(name: 'pin') String? pin,
   }) = _EmailOtpRequestModel;
 
-  factory EmailOtpRequestModel.fromJson(Map<String, dynamic> json) => _$EmailOtpRequestModelFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$EmailOtpRequestModelFromJson(json);
 }

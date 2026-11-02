@@ -19,7 +19,7 @@ import 'log_redactor.dart';
 ///
 /// Log through this class rather than a raw [Logger], which would skip the
 /// redaction.
-abstract final class AppLogger {
+abstract final class AppLogger() {
   static const rootName = 'Giliran';
 
   static StreamSubscription<LogRecord>? _subscription;

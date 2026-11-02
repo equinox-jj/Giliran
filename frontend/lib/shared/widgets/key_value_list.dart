@@ -6,41 +6,31 @@ import 'app_toast.dart';
 import 'section_header.dart';
 
 /// One row of a [KeyValueList].
-class KeyValueItem {
-  const KeyValueItem(
-    this.label,
-    this.value, {
-    this.mono = false,
-    this.long = false,
-    this.copyable = false,
-    this.valueWidget,
-  });
-
-  final String label;
-  final String value;
+class const KeyValueItem(
+  final String label,
+  final String value, {
 
   /// Codes and hashes in JetBrains Mono.
-  final bool mono;
+  final bool mono = false,
 
   /// Wraps the value below the label at full width (hashes, seeds, links).
-  final bool long;
+  final bool long = false,
 
   /// Adds a "Salin" text button that copies the value without spaces.
-  final bool copyable;
+  final bool copyable = false,
 
   /// Replaces the value text (a status chip, an amount span).
-  final Widget? valueWidget;
-}
+  final Widget? valueWidget,
+}) {}
 
 /// Label/value rows inside a `radius.md` card with hairlines between rows.
-class KeyValueList extends StatelessWidget {
-  const KeyValueList({super.key, required this.items, this.color});
-
-  final List<KeyValueItem> items;
+class const KeyValueList({
+  super.key,
+  required final List<KeyValueItem> items,
 
   /// Card fill (default `bg.surface`).
-  final Color? color;
-
+  final Color? color,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -62,11 +52,7 @@ class KeyValueList extends StatelessWidget {
   }
 }
 
-class _KeyValueRow extends StatelessWidget {
-  const _KeyValueRow(this.item);
-
-  final KeyValueItem item;
-
+class const _KeyValueRow(final KeyValueItem item) extends StatelessWidget {
   void _copy(BuildContext context) {
     Clipboard.setData(ClipboardData(text: item.value.replaceAll(' ', '')));
     HapticFeedback.lightImpact();

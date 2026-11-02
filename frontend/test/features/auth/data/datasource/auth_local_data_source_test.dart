@@ -9,7 +9,7 @@ import 'package:giliran/features/auth/data/datasource/model/token_pair_model.dar
 import 'package:giliran/features/profile/data/datasource/model/profile_model.dart';
 
 /// In-memory [SecureStorage]; [throwOnRead] simulates a Keystore failure.
-class _FakeSecureStorage implements SecureStorage {
+class _FakeSecureStorage() implements SecureStorage {
   String? access;
   String? refresh;
   String? pendingOtp;
@@ -59,7 +59,7 @@ class _FakeSecureStorage implements SecureStorage {
   Future<void> clearCurrentUser() async => currentUser = null;
 }
 
-class _FakePreferences implements Preferences {
+class _FakePreferences() implements Preferences {
   bool biometricEnabled = false;
   bool biometricPrompted = false;
 

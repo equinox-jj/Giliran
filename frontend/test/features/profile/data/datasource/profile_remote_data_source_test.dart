@@ -8,7 +8,7 @@ import 'package:giliran/features/profile/data/datasource/model/update_me_request
 import 'package:giliran/features/profile/data/datasource/profile_remote_data_source_impl.dart';
 
 /// Records each request and answers with [status] and [body].
-class _RecordingAdapter implements HttpClientAdapter {
+class _RecordingAdapter() implements HttpClientAdapter {
   int status = 200;
   Object? body;
   final requests = <RequestOptions>[];

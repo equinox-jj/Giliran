@@ -7,9 +7,7 @@ part 'members_dao.g.dart';
 
 /// Reads and writes cached [Members].
 @DriftAccessor(tables: [Members])
-class MembersDao extends DatabaseAccessor<AppDatabase> with _$MembersDaoMixin {
-  MembersDao(super.attachedDatabase);
-
+class MembersDao(super.attachedDatabase) extends DatabaseAccessor<AppDatabase> with _$MembersDaoMixin {
   /// A group's members ordered by slot number.
   Stream<List<MemberRow>> watchByGroup(String groupId) =>
       (select(members)

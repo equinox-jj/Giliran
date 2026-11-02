@@ -5,7 +5,7 @@ import 'sync_columns.dart';
 
 /// Cached payouts (one per period) from the API `Payout` resource.
 @DataClassName('PayoutRow')
-class Payouts extends Table with SyncColumns {
+class Payouts() extends Table with SyncColumns {
   TextColumn get id => text()();
   TextColumn get groupId => text().references(Groups, #id, onDelete: KeyAction.cascade)();
   TextColumn get periodId => text().unique()();

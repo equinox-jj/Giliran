@@ -5,7 +5,7 @@ import 'app_badge.dart';
 import 'app_icon.dart';
 import 'pressable.dart';
 
-enum CircleIconButtonVariant {
+enum CircleIconButtonVariant() {
   /// 44 transparent circle with a 1.5 px hairline ring: back, menu, bell.
   outline,
 
@@ -22,7 +22,7 @@ enum CircleIconButtonVariant {
 /// Circle icon button. Always give it a [semanticLabel] ("Kembali",
 /// "Menu grup", "Notifikasi, 3 belum dibaca"). The hit area is at least 48.
 class CircleIconButton extends StatelessWidget {
-  const CircleIconButton({
+  const new({
     super.key,
     required this.icon,
     required this.onPressed,
@@ -31,7 +31,7 @@ class CircleIconButton extends StatelessWidget {
     this.showDot = false,
   });
 
-  const CircleIconButton.ink({
+  const new ink({
     super.key,
     required this.icon,
     required this.onPressed,
@@ -39,7 +39,7 @@ class CircleIconButton extends StatelessWidget {
   }) : variant = CircleIconButtonVariant.ink,
        showDot = false;
 
-  const CircleIconButton.cream({
+  const new cream({
     super.key,
     required this.icon,
     required this.onPressed,
@@ -47,7 +47,7 @@ class CircleIconButton extends StatelessWidget {
   }) : variant = CircleIconButtonVariant.cream,
        showDot = false;
 
-  const CircleIconButton.draw({
+  const new draw({
     super.key,
     required this.icon,
     required this.onPressed,

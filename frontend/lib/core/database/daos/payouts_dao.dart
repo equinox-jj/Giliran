@@ -7,9 +7,7 @@ part 'payouts_dao.g.dart';
 
 /// Reads and writes cached [Payouts].
 @DriftAccessor(tables: [Payouts])
-class PayoutsDao extends DatabaseAccessor<AppDatabase> with _$PayoutsDaoMixin {
-  PayoutsDao(super.attachedDatabase);
-
+class PayoutsDao(super.attachedDatabase) extends DatabaseAccessor<AppDatabase> with _$PayoutsDaoMixin {
   Stream<PayoutRow?> watchByPeriod(String periodId) => (select(
     payouts,
   )..where((p) => p.periodId.equals(periodId))).watchSingleOrNull();

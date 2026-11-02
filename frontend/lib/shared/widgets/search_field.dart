@@ -6,25 +6,18 @@ import 'app_icon.dart';
 import 'app_text_field.dart';
 
 /// Search pill: 52 high on `bg.subtle` with a leading magnifying glass.
-class SearchField extends StatefulWidget {
-  const SearchField({
-    super.key,
-    required this.controller,
-    this.hint = 'Cari',
-    this.onChanged,
-    this.autofocus = false,
-  });
-
-  final TextEditingController controller;
-  final String hint;
-  final ValueChanged<String>? onChanged;
-  final bool autofocus;
-
+class const SearchField({
+  super.key,
+  required final TextEditingController controller,
+  final String hint = 'Cari',
+  final ValueChanged<String>? onChanged,
+  final bool autofocus = false,
+}) extends StatefulWidget {
   @override
   State<SearchField> createState() => _SearchFieldState();
 }
 
-class _SearchFieldState extends State<SearchField> {
+class _SearchFieldState() extends State<SearchField> {
   @override
   void initState() {
     super.initState();

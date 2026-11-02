@@ -11,7 +11,7 @@ part 'email_otp_result_model.g.dart';
 /// set for `sign_in` and `reset_pin`, [user] for `change_email`.
 @freezed
 abstract class EmailOtpResultModel with _$EmailOtpResultModel {
-  const factory EmailOtpResultModel({
+  const factory({
     @JsonKey(
       name: 'purpose',
       unknownEnumValue: JsonKey.nullForUndefinedEnumValue,
@@ -21,19 +21,19 @@ abstract class EmailOtpResultModel with _$EmailOtpResultModel {
     @JsonKey(name: 'user') ProfileDataModel? user,
   }) = _EmailOtpResultModel;
 
-  factory EmailOtpResultModel.fromJson(Map<String, dynamic> json) => _$EmailOtpResultModelFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$EmailOtpResultModelFromJson(json);
 }
 
 /// JSON shape of `AuthResult`: the signed-in user, their tokens, and whether
 /// the app must still ask for a name (new user) or a PIN.
 @freezed
 abstract class AuthResultModel with _$AuthResultModel {
-  const factory AuthResultModel({
+  const factory({
     @JsonKey(name: 'user') ProfileDataModel? user,
     @JsonKey(name: 'tokens') TokenPairModel? tokens,
     @JsonKey(name: 'is_new_user') bool? isNewUser,
     @JsonKey(name: 'pin_set') bool? pinSet,
   }) = _AuthResultModel;
 
-  factory AuthResultModel.fromJson(Map<String, dynamic> json) => _$AuthResultModelFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$AuthResultModelFromJson(json);
 }

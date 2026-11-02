@@ -3,9 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../../shared/widgets/widgets.dart';
 
 /// Placeholder until the Profil screen is built.
-class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
-
+class const ProfilePage({super.key}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

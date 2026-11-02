@@ -11,12 +11,12 @@ part 'email_otp_verify_request_model.g.dart';
 @freezed
 abstract class EmailOtpVerifyRequestModel with _$EmailOtpVerifyRequestModel {
   @JsonSerializable(includeIfNull: false)
-  const factory EmailOtpVerifyRequestModel({
+  const factory({
     @JsonKey(name: 'code') String? code,
     @JsonKey(name: 'pin') String? pin,
     @JsonKey(name: 'new_pin') String? newPin,
     @JsonKey(name: 'new_pin_confirmation') String? newPinConfirmation,
   }) = _EmailOtpVerifyRequestModel;
 
-  factory EmailOtpVerifyRequestModel.fromJson(Map<String, dynamic> json) => _$EmailOtpVerifyRequestModelFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$EmailOtpVerifyRequestModelFromJson(json);
 }

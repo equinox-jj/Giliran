@@ -6,32 +6,32 @@ part 'pin_request_models.g.dart';
 /// Body of `POST /auth/pin/verify` (unlock).
 @freezed
 abstract class PinRequestModel with _$PinRequestModel {
-  const factory PinRequestModel({
+  const factory({
     @JsonKey(name: 'pin') String? pin,
   }) = _PinRequestModel;
 
-  factory PinRequestModel.fromJson(Map<String, dynamic> json) => _$PinRequestModelFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$PinRequestModelFromJson(json);
 }
 
 /// Body of `POST /auth/pin` (first PIN, S06).
 @freezed
 abstract class SetPinRequestModel with _$SetPinRequestModel {
-  const factory SetPinRequestModel({
+  const factory({
     @JsonKey(name: 'pin') String? pin,
     @JsonKey(name: 'pin_confirmation') String? pinConfirmation,
   }) = _SetPinRequestModel;
 
-  factory SetPinRequestModel.fromJson(Map<String, dynamic> json) => _$SetPinRequestModelFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$SetPinRequestModelFromJson(json);
 }
 
 /// Body of `PUT /auth/pin` (change PIN, S45).
 @freezed
 abstract class ChangePinRequestModel with _$ChangePinRequestModel {
-  const factory ChangePinRequestModel({
+  const factory({
     @JsonKey(name: 'current_pin') String? currentPin,
     @JsonKey(name: 'new_pin') String? newPin,
     @JsonKey(name: 'new_pin_confirmation') String? newPinConfirmation,
   }) = _ChangePinRequestModel;
 
-  factory ChangePinRequestModel.fromJson(Map<String, dynamic> json) => _$ChangePinRequestModelFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$ChangePinRequestModelFromJson(json);
 }

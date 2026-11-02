@@ -6,11 +6,7 @@ part 'device_info_service.g.dart';
 
 /// Describes this device for `POST /auth/email/otp`, so the session shows up
 /// as "Samsung Galaxy A54" in the active devices list (S44).
-class DeviceInfoService {
-  DeviceInfoService(this._plugin);
-
-  final DeviceInfoPlugin _plugin;
-
+class DeviceInfoService(final DeviceInfoPlugin _plugin) {
   String? _cachedName;
 
   /// API `device_platform`: `android` or `ios`.

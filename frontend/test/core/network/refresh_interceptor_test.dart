@@ -9,7 +9,7 @@ import 'package:giliran/core/network/interceptors/refresh_interceptor.dart';
 import 'package:giliran/core/network/session_manager.dart';
 import 'package:giliran/core/storage/secure_storage.dart';
 
-class _FakeStorage implements SecureStorage {
+class _FakeStorage() implements SecureStorage {
   String? access = 'old';
   String? refresh = 'refresh-1';
 
@@ -56,14 +56,10 @@ class _FakeStorage implements SecureStorage {
 
 /// Answers `/auth/refresh` with [refreshStatus] and protected paths with 200
 /// only for `Bearer new`; otherwise with [unauthorizedBody] as a 401.
-class _FakeAdapter implements HttpClientAdapter {
-  _FakeAdapter({
-    this.refreshStatus = 200,
-    this.unauthorizedBody = const {'status': 401, 'code': 'unauthorized'},
-  });
-
-  final int refreshStatus;
-  final Map<String, Object?> unauthorizedBody;
+class _FakeAdapter({
+  final int refreshStatus = 200,
+  final Map<String, Object?> unauthorizedBody = const {'status': 401, 'code': 'unauthorized'},
+}) implements HttpClientAdapter {
   int refreshCalls = 0;
 
   @override

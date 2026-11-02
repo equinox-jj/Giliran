@@ -10,10 +10,10 @@ part 'update_me_request_model.g.dart';
 @freezed
 abstract class UpdateMeRequestModel with _$UpdateMeRequestModel {
   @JsonSerializable(includeIfNull: false)
-  const factory UpdateMeRequestModel({
+  const factory({
     @JsonKey(name: 'name') String? name,
     @JsonKey(name: 'phone') String? phone,
   }) = _UpdateMeRequestModel;
 
-  factory UpdateMeRequestModel.fromJson(Map<String, dynamic> json) => _$UpdateMeRequestModelFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$UpdateMeRequestModelFromJson(json);
 }

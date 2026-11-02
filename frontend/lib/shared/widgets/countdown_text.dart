@@ -11,7 +11,7 @@ import '../../core/utils/date_formatter.dart';
 /// Inline: "Kocokan dalam 2 hari 04:12:30"; on the day itself, "Hari ini,
 /// 19.30". Lock: a large "14:52" with a caption (PIN locked, resend wait).
 class CountdownText extends StatefulWidget {
-  const CountdownText({
+  const new({
     super.key,
     required this.until,
     this.prefix = '',
@@ -19,7 +19,7 @@ class CountdownText extends StatefulWidget {
   }) : lock = false,
        caption = null;
 
-  const CountdownText.lock({
+  const new lock({
     super.key,
     required this.until,
     this.caption = 'Coba lagi setelah waktu habis',
@@ -55,7 +55,7 @@ class CountdownText extends StatefulWidget {
   State<CountdownText> createState() => _CountdownTextState();
 }
 
-class _CountdownTextState extends State<CountdownText> {
+class _CountdownTextState() extends State<CountdownText> {
   Timer? _timer;
   late Duration _left = _remaining();
   bool _finished = false;

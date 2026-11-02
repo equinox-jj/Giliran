@@ -5,12 +5,7 @@ import 'app_palette.dart';
 
 /// A status color pair: foreground (icon, label) on background (chip fill).
 @immutable
-class StatusColors {
-  const StatusColors({required this.fg, required this.bg});
-
-  final Color fg;
-  final Color bg;
-
+class const StatusColors({required final Color fg, required final Color bg}) {
   static StatusColors lerp(StatusColors a, StatusColors b, double t) => StatusColors(
     fg: Color.lerp(a.fg, b.fg, t)!,
     bg: Color.lerp(a.bg, b.bg, t)!,
@@ -25,12 +20,7 @@ class StatusColors {
 
 /// One group tone: the card / hero fill and its ring / accent color.
 @immutable
-class GroupTone {
-  const GroupTone({required this.surface, required this.accent});
-
-  final Color surface;
-  final Color accent;
-
+class const GroupTone({required final Color surface, required final Color accent}) {
   static GroupTone lerp(GroupTone a, GroupTone b, double t) => GroupTone(
     surface: Color.lerp(a.surface, b.surface, t)!,
     accent: Color.lerp(a.accent, b.accent, t)!,
@@ -45,57 +35,72 @@ class GroupTone {
 
 /// Semantic colors of the Tikar design system, light and dark.
 @immutable
-class GiliranColors extends ThemeExtension<GiliranColors> {
-  const GiliranColors({
-    required this.page,
-    required this.surface,
-    required this.surfaceRaised,
-    required this.subtle,
-    required this.hero,
-    required this.inverse,
-    required this.textPrimary,
-    required this.textSecondary,
-    required this.textTertiary,
-    required this.textOnInverse,
-    required this.link,
-    required this.hairline,
-    required this.borderStrong,
-    required this.turn,
-    required this.focus,
-    required this.scrim,
-    required this.dangerFill,
-    required this.onDanger,
-    required this.ink,
-    required this.ticketBody,
-    required this.ticketStub,
-    required this.viewerBg,
-    required this.paid,
-    required this.pending,
-    required this.unpaid,
-    required this.rejected,
-    required this.info,
-    required this.won,
-    required this.tones,
-  });
+class const GiliranColors({
+  /// Backgrounds: page, cards and rows, sheets and nav, fields and skeletons,
+  /// the home hero, and ink (primary button, "you" row, selected chip).
+  required final Color page,
 
   /// Backgrounds: page, cards and rows, sheets and nav, fields and skeletons,
   /// the home hero, and ink (primary button, "you" row, selected chip).
-  final Color page, surface, surfaceRaised, subtle, hero, inverse;
-  final Color textPrimary, textSecondary, textTertiary, textOnInverse, link;
-  final Color hairline, borderStrong, turn, focus, scrim;
+  required final Color surface,
+
+  /// Backgrounds: page, cards and rows, sheets and nav, fields and skeletons,
+  /// the home hero, and ink (primary button, "you" row, selected chip).
+  required final Color surfaceRaised,
+
+  /// Backgrounds: page, cards and rows, sheets and nav, fields and skeletons,
+  /// the home hero, and ink (primary button, "you" row, selected chip).
+  required final Color subtle,
+
+  /// Backgrounds: page, cards and rows, sheets and nav, fields and skeletons,
+  /// the home hero, and ink (primary button, "you" row, selected chip).
+  required final Color hero,
+
+  /// Backgrounds: page, cards and rows, sheets and nav, fields and skeletons,
+  /// the home hero, and ink (primary button, "you" row, selected chip).
+  required final Color inverse,
+  required final Color textPrimary,
+  required final Color textSecondary,
+  required final Color textTertiary,
+  required final Color textOnInverse,
+  required final Color link,
+  required final Color hairline,
+  required final Color borderStrong,
+  required final Color turn,
+  required final Color focus,
+  required final Color scrim,
 
   /// Destructive button fill and its label.
-  final Color dangerFill, onDanger;
+  required final Color dangerFill,
+
+  /// Destructive button fill and its label.
+  required final Color onDanger,
 
   /// Fixed in both themes: ink content on kunyit, the Bukti Kocok ticket and
   /// the image viewer backdrop, because they are exported as images.
-  final Color ink, ticketBody, ticketStub, viewerBg;
+  required final Color ink,
 
-  final StatusColors paid, pending, unpaid, rejected, info, won;
+  /// Fixed in both themes: ink content on kunyit, the Bukti Kocok ticket and
+  /// the image viewer backdrop, because they are exported as images.
+  required final Color ticketBody,
+
+  /// Fixed in both themes: ink content on kunyit, the Bukti Kocok ticket and
+  /// the image viewer backdrop, because they are exported as images.
+  required final Color ticketStub,
+
+  /// Fixed in both themes: ink content on kunyit, the Bukti Kocok ticket and
+  /// the image viewer backdrop, because they are exported as images.
+  required final Color viewerBg,
+  required final StatusColors paid,
+  required final StatusColors pending,
+  required final StatusColors unpaid,
+  required final StatusColors rejected,
+  required final StatusColors info,
+  required final StatusColors won,
 
   /// Order: pandan, telang, jambu, kunyit, kopi.
-  final List<GroupTone> tones;
-
+  required final List<GroupTone> tones,
+}) extends ThemeExtension<GiliranColors> {
   /// Light tones regardless of theme, for exported images (WhatsApp recap).
   static const List<GroupTone> exportTones = _lightTones;
 

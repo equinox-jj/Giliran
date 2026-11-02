@@ -3,9 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../../shared/widgets/widgets.dart';
 
 /// Placeholder until the Aktivitas screen is built.
-class ActivityPage extends StatelessWidget {
-  const ActivityPage({super.key});
-
+class const ActivityPage({super.key}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

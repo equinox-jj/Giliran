@@ -3,9 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../../shared/widgets/widgets.dart';
 
 /// Placeholder until the Masuk screen is built.
-class SignInPage extends StatelessWidget {
-  const SignInPage({super.key});
-
+class const SignInPage({super.key}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

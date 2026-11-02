@@ -1,5 +1,5 @@
 /// Component sizes from the Tikar size tokens.
-abstract final class AppSizes {
+abstract final class AppSizes() {
   /// Minimum hit area on both platforms.
   static const tapMin = 48.0;
 

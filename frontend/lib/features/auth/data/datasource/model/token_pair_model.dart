@@ -7,12 +7,12 @@ part 'token_pair_model.g.dart';
 /// 30-day refresh token. Stays in the data layer; only secure storage sees it.
 @freezed
 abstract class TokenPairModel with _$TokenPairModel {
-  const factory TokenPairModel({
+  const factory({
     @JsonKey(name: 'access_token') String? accessToken,
     @JsonKey(name: 'refresh_token') String? refreshToken,
     @JsonKey(name: 'token_type') String? tokenType,
     @JsonKey(name: 'expires_in') int? expiresIn,
   }) = _TokenPairModel;
 
-  factory TokenPairModel.fromJson(Map<String, dynamic> json) => _$TokenPairModelFromJson(json);
+  factory fromJson(Map<String, dynamic> json) => _$TokenPairModelFromJson(json);
 }

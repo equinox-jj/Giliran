@@ -8,41 +8,26 @@ import '../../core/themes/themes.dart';
 ///
 /// [hitPadding] grows the tappable area around the visual (e.g. a 44 circle
 /// with a 48 hit area) without moving the press and focus visuals.
-class Pressable extends StatefulWidget {
-  const Pressable({
-    super.key,
-    required this.child,
-    required this.onTap,
-    this.onLongPress,
-    this.onLongPressStart,
-    this.onLongPressEnd,
-    this.shape = AppShapes.pill,
-    this.hitPadding = EdgeInsets.zero,
-    this.semanticLabel,
-    this.isButton = true,
-    this.selected,
-    this.tint = true,
-    this.scale = true,
-  });
-
-  final Widget child;
-  final VoidCallback? onTap;
-  final VoidCallback? onLongPress;
-  final GestureLongPressStartCallback? onLongPressStart;
-  final GestureLongPressEndCallback? onLongPressEnd;
-  final ShapeBorder shape;
-  final EdgeInsets hitPadding;
-  final String? semanticLabel;
-  final bool isButton;
-  final bool? selected;
-  final bool tint;
-  final bool scale;
-
+class const Pressable({
+  super.key,
+  required final Widget child,
+  required final VoidCallback? onTap,
+  final VoidCallback? onLongPress,
+  final GestureLongPressStartCallback? onLongPressStart,
+  final GestureLongPressEndCallback? onLongPressEnd,
+  final ShapeBorder shape = AppShapes.pill,
+  final EdgeInsets hitPadding = EdgeInsets.zero,
+  final String? semanticLabel,
+  final bool isButton = true,
+  final bool? selected,
+  final bool tint = true,
+  final bool scale = true,
+}) extends StatefulWidget {
   @override
   State<Pressable> createState() => _PressableState();
 }
 
-class _PressableState extends State<Pressable> {
+class _PressableState() extends State<Pressable> {
   bool _pressed = false;
   bool _focused = false;
 
@@ -109,19 +94,12 @@ class _PressableState extends State<Pressable> {
   }
 }
 
-class _PressPainter extends CustomPainter {
-  _PressPainter({
-    required this.shape,
-    required this.tint,
-    required this.focus,
-    required this.textDirection,
-  });
-
-  final ShapeBorder shape;
-  final Color? tint;
-  final Color? focus;
-  final TextDirection textDirection;
-
+class _PressPainter({
+  required final ShapeBorder shape,
+  required final Color? tint,
+  required final Color? focus,
+  required final TextDirection textDirection,
+}) extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Offset.zero & size;

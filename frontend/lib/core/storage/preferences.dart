@@ -6,11 +6,7 @@ part 'preferences.g.dart';
 /// Non-secret, per-device settings stored in shared preferences.
 ///
 /// Every shared-preferences key is declared here and nowhere else.
-class Preferences {
-  const Preferences(this._prefs);
-
-  final SharedPreferencesAsync _prefs;
-
+class const Preferences(final SharedPreferencesAsync _prefs) {
   static const _biometricEnabledKey = 'biometric_enabled';
   static const _biometricPromptedKey = 'biometric_prompted';
 

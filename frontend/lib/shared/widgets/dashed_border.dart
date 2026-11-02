@@ -7,7 +7,7 @@ import '../../core/themes/app_spacing.dart';
 /// Paints a dashed outline (dash 4, gap 3) around [child]. Used for unpaid
 /// and upcoming states, guest avatar rings, empty PIN dots and empty slots.
 class DashedBorder extends StatelessWidget {
-  const DashedBorder({
+  const new({
     super.key,
     required this.color,
     this.child,
@@ -17,7 +17,7 @@ class DashedBorder extends StatelessWidget {
   });
 
   /// Circular dashed ring.
-  const DashedBorder.circle({
+  const new circle({
     super.key,
     required this.color,
     this.child,
@@ -47,19 +47,12 @@ class DashedBorder extends StatelessWidget {
 
 /// Paints a dashed outline around a rounded rectangle, or around a circle when
 /// [circle] is `true`.
-class DashedBorderPainter extends CustomPainter {
-  const DashedBorderPainter({
-    required this.color,
-    this.radius,
-    this.circle = false,
-    this.strokeWidth = AppStroke.regular,
-  });
-
-  final Color color;
-  final double? radius;
-  final bool circle;
-  final double strokeWidth;
-
+class const DashedBorderPainter({
+  required final Color color,
+  final double? radius,
+  final bool circle = false,
+  final double strokeWidth = AppStroke.regular,
+}) extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final rect = (Offset.zero & size).deflate(strokeWidth / 2);

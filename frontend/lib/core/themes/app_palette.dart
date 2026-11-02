@@ -2,7 +2,7 @@ import 'package:flutter/painting.dart';
 
 /// Primitive colors of the Tikar design system. Only this file may contain
 /// hex values; widgets read semantic colors from `context.colors`.
-abstract final class AppPalette {
+abstract final class AppPalette() {
   // Kopi — warm neutrals.
   static const kopi50 = Color(0xFFFBF7F1);
   static const kopi100 = Color(0xFFF2ECE3);

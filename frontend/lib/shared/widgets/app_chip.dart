@@ -7,26 +7,18 @@ import 'app_icon.dart';
 import 'pressable.dart';
 
 /// Filter chip: 40 high, ink when selected.
-class AppChip extends StatelessWidget {
-  const AppChip({
-    super.key,
-    required this.label,
-    required this.selected,
-    required this.onSelected,
-    this.icon,
-    this.count,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback? onSelected;
+class const AppChip({
+  super.key,
+  required final String label,
+  required final bool selected,
+  required final VoidCallback? onSelected,
 
   /// Optional 20 px leading icon asset.
-  final String? icon;
+  final String? icon,
 
   /// Optional count badge after the label (pending proofs).
-  final int? count;
-
+  final int? count,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -76,11 +68,7 @@ class AppChip extends StatelessWidget {
   }
 }
 
-class _InvertedCount extends StatelessWidget {
-  const _InvertedCount(this.count);
-
-  final int count;
-
+class const _InvertedCount(final int count) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -104,30 +92,17 @@ class _InvertedCount extends StatelessWidget {
 }
 
 /// One tab of [PillTabs].
-class PillTab {
-  const PillTab(this.label, {this.icon, this.count});
-
-  final String label;
-  final String? icon;
-  final int? count;
-}
+class const PillTab(final String label, {final String? icon, final int? count});
 
 /// Pill tabs (Pembayaran · Jadwal · Anggota · Aktivitas). Scrolls
 /// horizontally on compact; laid out in a wrapping row from medium.
-class PillTabs extends StatelessWidget {
-  const PillTabs({
-    super.key,
-    required this.tabs,
-    required this.selectedIndex,
-    required this.onChanged,
-    this.padding = EdgeInsets.zero,
-  });
-
-  final List<PillTab> tabs;
-  final int selectedIndex;
-  final ValueChanged<int> onChanged;
-  final EdgeInsets padding;
-
+class const PillTabs({
+  super.key,
+  required final List<PillTab> tabs,
+  required final int selectedIndex,
+  required final ValueChanged<int> onChanged,
+  final EdgeInsets padding = EdgeInsets.zero,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final chips = [
@@ -168,18 +143,12 @@ class PillTabs extends StatelessWidget {
 
 /// Segmented control (Periode · Bulan, Aktif · Selesai): a `bg.subtle` track
 /// holding pills; the selected pill is `bg.surface` with float elevation.
-class SegmentedPills extends StatelessWidget {
-  const SegmentedPills({
-    super.key,
-    required this.segments,
-    required this.selectedIndex,
-    required this.onChanged,
-  });
-
-  final List<String> segments;
-  final int selectedIndex;
-  final ValueChanged<int> onChanged;
-
+class const SegmentedPills({
+  super.key,
+  required final List<String> segments,
+  required final int selectedIndex,
+  required final ValueChanged<int> onChanged,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;

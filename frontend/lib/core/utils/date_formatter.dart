@@ -2,7 +2,7 @@ import 'package:intl/intl.dart';
 
 /// Indonesian date and time display. Call `initializeDateFormatting('id_ID')`
 /// at startup before using these.
-abstract final class AppDate {
+abstract final class AppDate() {
   static const _locale = 'id_ID';
 
   /// "Sab, 1 Nov 2026" (date fields).

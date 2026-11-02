@@ -8,19 +8,12 @@ import 'pressable.dart';
 
 /// A navigation destination. [icon] is the Regular asset, [activeIcon] the
 /// Fill asset.
-class AppNavDestination {
-  const AppNavDestination({
-    required this.label,
-    required this.icon,
-    required this.activeIcon,
-    this.showDot = false,
-  });
-
-  final String label;
-  final String icon;
-  final String activeIcon;
-  final bool showDot;
-
+class const AppNavDestination({
+  required final String label,
+  required final String icon,
+  required final String activeIcon,
+  final bool showDot = false,
+}) {
   /// Beranda · Grup · Aktivitas · Profil.
   static const main = [
     AppNavDestination(
@@ -46,17 +39,11 @@ class AppNavDestination {
   ];
 }
 
-class _NavItem extends StatelessWidget {
-  const _NavItem({
-    required this.destination,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final AppNavDestination destination;
-  final bool selected;
-  final VoidCallback onTap;
-
+class const _NavItem({
+  required final AppNavDestination destination,
+  required final bool selected,
+  required final VoidCallback onTap,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -116,18 +103,12 @@ class _NavItem extends StatelessWidget {
 
 /// Floating pill bottom bar for compact windows: 64 high, 16 from the bottom
 /// safe area, `bg.surfaceRaised`, float elevation and a hairline.
-class AppBottomNavBar extends StatelessWidget {
-  const AppBottomNavBar({
-    super.key,
-    required this.destinations,
-    required this.selectedIndex,
-    required this.onSelected,
-  });
-
-  final List<AppNavDestination> destinations;
-  final int selectedIndex;
-  final ValueChanged<int> onSelected;
-
+class const AppBottomNavBar({
+  super.key,
+  required final List<AppNavDestination> destinations,
+  required final int selectedIndex,
+  required final ValueChanged<int> onSelected,
+}) extends StatelessWidget {
   /// Bottom padding lists need so nothing hides behind the bar:
   /// bar height + 16 gap + safe area + 16.
   static double contentInset(BuildContext context) =>
@@ -172,20 +153,13 @@ class AppBottomNavBar extends StatelessWidget {
 
 /// 88-wide navigation rail for medium and expanded windows. [leading] holds
 /// the app mark and the "Buat grup" action.
-class AppNavRail extends StatelessWidget {
-  const AppNavRail({
-    super.key,
-    required this.destinations,
-    required this.selectedIndex,
-    required this.onSelected,
-    this.leading,
-  });
-
-  final List<AppNavDestination> destinations;
-  final int selectedIndex;
-  final ValueChanged<int> onSelected;
-  final Widget? leading;
-
+class const AppNavRail({
+  super.key,
+  required final List<AppNavDestination> destinations,
+  required final int selectedIndex,
+  required final ValueChanged<int> onSelected,
+  final Widget? leading,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -222,22 +196,14 @@ class AppNavRail extends StatelessWidget {
 
 /// App shell that shows the floating bar on compact windows and the rail
 /// from medium up. Pair with a go_router `StatefulShellRoute`.
-class AppNavShell extends StatelessWidget {
-  const AppNavShell({
-    super.key,
-    required this.body,
-    required this.selectedIndex,
-    required this.onSelected,
-    this.destinations = AppNavDestination.main,
-    this.railLeading,
-  });
-
-  final Widget body;
-  final int selectedIndex;
-  final ValueChanged<int> onSelected;
-  final List<AppNavDestination> destinations;
-  final Widget? railLeading;
-
+class const AppNavShell({
+  super.key,
+  required final Widget body,
+  required final int selectedIndex,
+  required final ValueChanged<int> onSelected,
+  final List<AppNavDestination> destinations = AppNavDestination.main,
+  final Widget? railLeading,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (context.isCompact) {

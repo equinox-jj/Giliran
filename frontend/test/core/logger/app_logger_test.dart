@@ -95,4 +95,4 @@ void main() {
   });
 }
 
-class _Repository with BaseRepository {}
+class _Repository() with BaseRepository;

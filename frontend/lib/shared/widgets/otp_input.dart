@@ -10,33 +10,22 @@ import 'shake.dart';
 ///
 /// Set [error] to true after `otp_invalid`: the boxes turn bata, shake and
 /// clear. Set [checking] while verifying: boxes dim and input is disabled.
-class OtpInput extends StatefulWidget {
-  const OtpInput({
-    super.key,
-    required this.onCompleted,
-    this.controller,
-    this.length = 6,
-    this.onChanged,
-    this.error = false,
-    this.checking = false,
-    this.autofocus = true,
-    this.semanticLabel = 'Kode 6 digit',
-  });
-
-  final ValueChanged<String> onCompleted;
-  final TextEditingController? controller;
-  final int length;
-  final ValueChanged<String>? onChanged;
-  final bool error;
-  final bool checking;
-  final bool autofocus;
-  final String semanticLabel;
-
+class const OtpInput({
+  super.key,
+  required final ValueChanged<String> onCompleted,
+  final TextEditingController? controller,
+  final int length = 6,
+  final ValueChanged<String>? onChanged,
+  final bool error = false,
+  final bool checking = false,
+  final bool autofocus = true,
+  final String semanticLabel = 'Kode 6 digit',
+}) extends StatefulWidget {
   @override
   State<OtpInput> createState() => _OtpInputState();
 }
 
-class _OtpInputState extends State<OtpInput> {
+class _OtpInputState() extends State<OtpInput> {
   late final TextEditingController _controller = widget.controller ?? TextEditingController();
   final _focus = FocusNode();
   int _shakes = 0;
@@ -155,17 +144,11 @@ class _OtpInputState extends State<OtpInput> {
 }
 
 /// One 48 × 56 code box. [current] marks where the next digit lands.
-class _OtpBox extends StatelessWidget {
-  const _OtpBox({
-    required this.digit,
-    required this.current,
-    required this.error,
-  });
-
-  final String digit;
-  final bool current;
-  final bool error;
-
+class const _OtpBox({
+  required final String digit,
+  required final bool current,
+  required final bool error,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;

@@ -7,13 +7,8 @@ import '../../core/themes/themes.dart';
 /// the light palette and its colors are mapped to the current theme (cream
 /// strokes and dark tone spots in dark mode). Always decorative: excluded
 /// from semantics.
-class Illustration extends StatelessWidget {
-  const Illustration(this.asset, {super.key, this.width, this.height});
-
-  final String asset;
-  final double? width;
-  final double? height;
-
+class const Illustration(final String asset, {super.key, final double? width, final double? height})
+    extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ExcludeSemantics(
@@ -29,11 +24,7 @@ class Illustration extends StatelessWidget {
 
 /// Maps the light-palette colors an illustration is drawn with to [colors].
 @immutable
-class IllustrationColorMapper extends ColorMapper {
-  const IllustrationColorMapper(this.colors);
-
-  final GiliranColors colors;
-
+class const IllustrationColorMapper(final GiliranColors colors) extends ColorMapper {
   @override
   Color substitute(
     String? id,

@@ -3,22 +3,15 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 /// Renders an SVG icon from `assets/icons/` (see `AppIcons`), tinted with
 /// [color] or the ambient [IconTheme] color.
-class AppIcon extends StatelessWidget {
-  const AppIcon(
-    this.asset, {
-    super.key,
-    this.size,
-    this.color,
-    this.semanticLabel,
-  });
-
-  final String asset;
-  final double? size;
-  final Color? color;
+class const AppIcon(
+  final String asset, {
+  super.key,
+  final double? size,
+  final Color? color,
 
   /// Null means decorative: the icon is excluded from semantics.
-  final String? semanticLabel;
-
+  final String? semanticLabel,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = IconTheme.of(context);

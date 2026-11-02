@@ -7,9 +7,7 @@ part 'periods_dao.g.dart';
 
 /// Reads and writes cached [Periods].
 @DriftAccessor(tables: [Periods])
-class PeriodsDao extends DatabaseAccessor<AppDatabase> with _$PeriodsDaoMixin {
-  PeriodsDao(super.attachedDatabase);
-
+class PeriodsDao(super.attachedDatabase) extends DatabaseAccessor<AppDatabase> with _$PeriodsDaoMixin {
   /// A group's periods ordered by period number.
   Stream<List<PeriodRow>> watchByGroup(String groupId) =>
       (select(periods)

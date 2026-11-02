@@ -4,7 +4,7 @@ import '../../core/themes/themes.dart';
 import 'app_icon.dart';
 import 'pressable.dart';
 
-enum AppButtonVariant {
+enum AppButtonVariant() {
   /// The one main action on a screen (`bg.inverse`). Max one per viewport.
   ink,
 
@@ -21,7 +21,7 @@ enum AppButtonVariant {
   destructive,
 }
 
-enum AppButtonSize {
+enum AppButtonSize() {
   /// 52 high (44 for tonal and ghost).
   regular,
 
@@ -37,7 +37,7 @@ enum AppButtonSize {
 /// Disabled when [onPressed] is null or [disabledReason] is set; the reason is
 /// shown in a caption under the button ("Lengkapi info rekening dulu").
 class AppButton extends StatelessWidget {
-  const AppButton({
+  const new({
     super.key,
     required this.label,
     required this.onPressed,
@@ -51,7 +51,7 @@ class AppButton extends StatelessWidget {
     this.semanticLabel,
   });
 
-  const AppButton.secondary({
+  const new secondary({
     super.key,
     required this.label,
     required this.onPressed,
@@ -64,7 +64,7 @@ class AppButton extends StatelessWidget {
     this.semanticLabel,
   }) : variant = AppButtonVariant.secondary;
 
-  const AppButton.tonal({
+  const new tonal({
     super.key,
     required this.label,
     required this.onPressed,
@@ -77,7 +77,7 @@ class AppButton extends StatelessWidget {
     this.semanticLabel,
   }) : variant = AppButtonVariant.tonal;
 
-  const AppButton.ghost({
+  const new ghost({
     super.key,
     required this.label,
     required this.onPressed,
@@ -90,7 +90,7 @@ class AppButton extends StatelessWidget {
     this.semanticLabel,
   }) : variant = AppButtonVariant.ghost;
 
-  const AppButton.destructive({
+  const new destructive({
     super.key,
     required this.label,
     required this.onPressed,

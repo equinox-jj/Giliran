@@ -7,9 +7,7 @@ part 'groups_dao.g.dart';
 
 /// Reads and writes cached [Groups].
 @DriftAccessor(tables: [Groups])
-class GroupsDao extends DatabaseAccessor<AppDatabase> with _$GroupsDaoMixin {
-  GroupsDao(super.attachedDatabase);
-
+class GroupsDao(super.attachedDatabase) extends DatabaseAccessor<AppDatabase> with _$GroupsDaoMixin {
   /// The home list: every cached group, newest-first by status then name.
   Stream<List<GroupRow>> watchAll() =>
       (select(groups)..orderBy([

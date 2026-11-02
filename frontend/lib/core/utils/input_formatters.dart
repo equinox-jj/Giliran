@@ -3,11 +3,7 @@ import 'package:flutter/services.dart';
 import '../themes/app_typography.dart';
 
 /// Live dot grouping for Rupiah amounts while typing: "200000" -> "200.000".
-class RupiahInputFormatter extends TextInputFormatter {
-  const RupiahInputFormatter({this.maxDigits = 12});
-
-  final int maxDigits;
-
+class const RupiahInputFormatter({final int maxDigits = 12}) extends TextInputFormatter {
   /// Parses a grouped value back to an int ("2.000.000" -> 2000000).
   static int? parse(String text) {
     final digits = text.replaceAll(RegExp(r'\D'), '');
@@ -33,12 +29,7 @@ class RupiahInputFormatter extends TextInputFormatter {
 
 /// Groups digits by [groupSize] with spaces while typing (account numbers:
 /// "1234 5678 90").
-class DigitGroupingFormatter extends TextInputFormatter {
-  const DigitGroupingFormatter({this.groupSize = 4, this.maxDigits = 20});
-
-  final int groupSize;
-  final int maxDigits;
-
+class const DigitGroupingFormatter({final int groupSize = 4, final int maxDigits = 20}) extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
     TextEditingValue oldValue,

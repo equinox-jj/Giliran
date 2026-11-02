@@ -10,11 +10,7 @@ part 'biometric_service.g.dart';
 ///
 /// The PIN is always the fallback, so every platform failure ends as "not
 /// available" or "not authenticated" instead of an error.
-class BiometricService {
-  const BiometricService(this._auth);
-
-  final LocalAuthentication _auth;
-
+class const BiometricService(final LocalAuthentication _auth) {
   static const _tag = 'biometric';
 
   /// The enrolled biometric the app can use, or null when there is none.

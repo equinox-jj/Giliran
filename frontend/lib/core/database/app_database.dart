@@ -34,10 +34,10 @@ part 'app_database.g.dart';
     ActivityLogsDao,
   ],
 )
-class AppDatabase extends _$AppDatabase {
+class AppDatabase([QueryExecutor? executor]) extends _$AppDatabase {
   /// Opens the app database file, or [executor] when given (tests pass
   /// `NativeDatabase.memory()`).
-  AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
+  this : super(executor ?? _openConnection());
 
   static const _fileName = 'giliran';
 

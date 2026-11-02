@@ -7,30 +7,19 @@ import 'app_button.dart';
 /// `title.lg` headline, a short `body` explanation and up to two buttons.
 /// [compact] (inside tabs and panes) shrinks the illustration to 120 and
 /// keeps one secondary button.
-class EmptyState extends StatelessWidget {
-  const EmptyState({
-    super.key,
-    required this.title,
-    this.message,
-    this.illustration,
-    this.primaryLabel,
-    this.onPrimary,
-    this.secondaryLabel,
-    this.onSecondary,
-    this.compact = false,
-  });
-
-  final String title;
-  final String? message;
+class const EmptyState({
+  super.key,
+  required final String title,
+  final String? message,
 
   /// A decorative doodle (SVG), excluded from semantics.
-  final Widget? illustration;
-  final String? primaryLabel;
-  final VoidCallback? onPrimary;
-  final String? secondaryLabel;
-  final VoidCallback? onSecondary;
-  final bool compact;
-
+  final Widget? illustration,
+  final String? primaryLabel,
+  final VoidCallback? onPrimary,
+  final String? secondaryLabel,
+  final VoidCallback? onSecondary,
+  final bool compact = false,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;

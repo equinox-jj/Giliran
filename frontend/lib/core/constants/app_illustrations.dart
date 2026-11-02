@@ -2,7 +2,7 @@
 /// Each SVG is drawn in the light palette (ink strokes, page and surface
 /// fills, kunyit, pandan and tone spots); `Illustration` swaps those colors
 /// for the current theme, so one file serves light and dark.
-abstract final class AppIllustrations {
+abstract final class AppIllustrations() {
   /// Small kaleng with a kunyit lid: splash (S01).
   static const splashKaleng = 'assets/images/illustrations/splash_kaleng.svg';
 

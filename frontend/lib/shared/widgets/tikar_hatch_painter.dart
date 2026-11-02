@@ -2,14 +2,12 @@ import 'package:flutter/widgets.dart';
 
 /// The tikar hatch: 45° lines, 2 px wide, 6 px apart, at 22% of [color].
 /// Used only for "waiting" states, always with the hourglass icon and a word.
-class TikarHatchPainter extends CustomPainter {
-  const TikarHatchPainter(this.color, {this.background});
-
-  final Color color;
+class const TikarHatchPainter(
+  final Color color, {
 
   /// Optional fill painted under the lines.
-  final Color? background;
-
+  final Color? background,
+}) extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (background != null) {
@@ -34,22 +32,15 @@ class TikarHatchPainter extends CustomPainter {
 }
 
 /// Paints the tikar hatch behind [child], clipped to [borderRadius].
-class TikarHatch extends StatelessWidget {
-  const TikarHatch({
-    super.key,
-    required this.color,
-    required this.child,
-    this.background,
-    this.borderRadius = BorderRadius.zero,
-  });
-
-  final Color color;
-  final Widget child;
+class const TikarHatch({
+  super.key,
+  required final Color color,
+  required final Widget child,
 
   /// Fill under the hatch; the child should then have no background itself.
-  final Color? background;
-  final BorderRadius borderRadius;
-
+  final Color? background,
+  final BorderRadius borderRadius = BorderRadius.zero,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ClipRRect(
     borderRadius: borderRadius,

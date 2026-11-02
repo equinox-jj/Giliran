@@ -8,14 +8,10 @@ import 'router.dart';
 ///
 /// Applies the light and dark [AppTheme] and navigates through the app router.
 /// [themeMode] picks which of the two themes is shown.
-class GiliranApp extends ConsumerWidget {
-  const GiliranApp({
-    super.key,
-    this.themeMode = ThemeMode.system,
-  });
-
-  final ThemeMode themeMode;
-
+class const GiliranApp({
+  super.key,
+  final ThemeMode themeMode = ThemeMode.system,
+}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp.router(

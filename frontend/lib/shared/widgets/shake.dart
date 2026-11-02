@@ -6,27 +6,19 @@ import '../../core/themes/app_motion.dart';
 
 /// Shakes [child] horizontally each time [trigger] changes (wrong code or
 /// PIN). Skipped under reduced motion.
-class Shake extends StatefulWidget {
-  const Shake({
-    super.key,
-    required this.trigger,
-    required this.child,
-    this.distance = 8,
-    this.oscillations = 2,
-    this.duration = const Duration(milliseconds: 360),
-  });
-
-  final Object? trigger;
-  final Widget child;
-  final double distance;
-  final int oscillations;
-  final Duration duration;
-
+class const Shake({
+  super.key,
+  required final Object? trigger,
+  required final Widget child,
+  final double distance = 8,
+  final int oscillations = 2,
+  final Duration duration = const Duration(milliseconds: 360),
+}) extends StatefulWidget {
   @override
   State<Shake> createState() => _ShakeState();
 }
 
-class _ShakeState extends State<Shake> with SingleTickerProviderStateMixin {
+class _ShakeState() extends State<Shake> with SingleTickerProviderStateMixin {
   late final _controller = AnimationController(
     vsync: this,
     duration: widget.duration,

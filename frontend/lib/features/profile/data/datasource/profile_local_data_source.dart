@@ -1,1 +1,1 @@
-abstract class ProfileLocalDataSource {}
+abstract class ProfileLocalDataSource();

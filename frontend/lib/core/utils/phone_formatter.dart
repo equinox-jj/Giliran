@@ -1,5 +1,5 @@
 /// Indonesian phone numbers: input accepts 08…, 62…, +62…; storage is E.164.
-abstract final class PhoneFormatter {
+abstract final class PhoneFormatter() {
   /// "0812-3456-7890" / "62812…" / "+62 812…" -> "+6281234567890".
   /// Returns null when the input has no usable digits.
   static String? normalize(String input) {

@@ -5,7 +5,7 @@ part 'profile.freezed.dart';
 /// The signed-in user's profile as the rest of the app sees it.
 @freezed
 abstract class Profile with _$Profile {
-  factory Profile({
+  factory({
     ProfileData? data,
   }) = _Profile;
 }
@@ -14,7 +14,7 @@ abstract class Profile with _$Profile {
 /// has been set.
 @freezed
 abstract class ProfileData with _$ProfileData {
-  factory ProfileData({
+  factory({
     String? id,
     String? email,
     String? phone,

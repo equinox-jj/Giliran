@@ -8,11 +8,7 @@ part 'secure_storage.g.dart';
 ///
 /// Every secure-storage key is declared here and nowhere else. Values are raw
 /// strings; callers encode and decode JSON themselves.
-class SecureStorage {
-  const SecureStorage(this._storage);
-
-  final FlutterSecureStorage _storage;
-
+class const SecureStorage(final FlutterSecureStorage _storage) {
   static const _accessTokenKey = 'access_token';
   static const _refreshTokenKey = 'refresh_token';
   static const _pendingOtpKey = 'pending_otp';

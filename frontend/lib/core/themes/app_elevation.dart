@@ -4,7 +4,7 @@ import 'app_palette.dart';
 
 /// Shadows exist only for floating layers. In dark mode there are no
 /// shadows; a 1 px hairline border separates layers instead.
-abstract final class AppElevation {
+abstract final class AppElevation() {
   static const _floatLight = [
     BoxShadow(
       color: Color.fromRGBO(28, 22, 17, 0.10),

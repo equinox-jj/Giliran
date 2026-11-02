@@ -3,12 +3,12 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/themes/themes.dart';
 
 /// 8 px bata dot with a 2 px page-colored ring, for unread items.
-class CountDot extends StatelessWidget {
-  const CountDot({super.key, this.ringColor});
+class const CountDot({
+  super.key,
 
   /// Defaults to `bg.page`; pass the surface color when placed on a card.
-  final Color? ringColor;
-
+  final Color? ringColor,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -25,12 +25,7 @@ class CountDot extends StatelessWidget {
 }
 
 /// Count badge: min 20 × 20, ink fill, `micro` digits, "9+" above 9.
-class CountBadge extends StatelessWidget {
-  const CountBadge(this.count, {super.key, this.max = 9});
-
-  final int count;
-  final int max;
-
+class const CountBadge(final int count, {super.key, final int max = 9}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -56,11 +51,7 @@ class CountBadge extends StatelessWidget {
 
 /// Label badge: `micro` text in a 20-high pill on `bg.subtle`
 /// ("Tamu", "Pengurus", "Kamu").
-class LabelBadge extends StatelessWidget {
-  const LabelBadge(this.label, {super.key});
-
-  final String label;
-
+class const LabelBadge(final String label, {super.key}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;

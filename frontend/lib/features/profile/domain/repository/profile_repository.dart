@@ -1,1 +1,1 @@
-abstract class ProfileRepository {}
+abstract class ProfileRepository();

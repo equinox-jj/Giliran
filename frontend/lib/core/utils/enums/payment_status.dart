@@ -1,13 +1,9 @@
 /// Payment status as stored by the API (`payments.status`).
-enum PaymentStatus {
+enum PaymentStatus(final String apiValue) {
   unpaid('unpaid'),
   pendingReview('pending_review'),
   paid('paid'),
   rejected('rejected');
-
-  const PaymentStatus(this.apiValue);
-
-  final String apiValue;
 
   /// Returns the status for an API [value]; unrecognized values become
   /// [PaymentStatus.unpaid].

@@ -7,11 +7,11 @@ import 'package:giliran/core/data/base_repository.dart';
 import 'package:giliran/core/error/error_mapper.dart';
 import 'package:giliran/core/error/exceptions.dart';
 
-class _Remote with BaseRemoteDataSource {}
+class _Remote() with BaseRemoteDataSource;
 
-class _Local with BaseLocalDataSource {}
+class _Local() with BaseLocalDataSource;
 
-class _Repository with BaseRepository {}
+class _Repository() with BaseRepository;
 
 void main() {
   final remote = _Remote();

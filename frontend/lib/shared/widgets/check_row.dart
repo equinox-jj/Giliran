@@ -8,22 +8,14 @@ import 'pressable.dart';
 /// Check box (22, radius 6, 1.5 px `border.strong`; checked = ink fill with
 /// a cream bold check). The whole row is the hit area. Required consent rows
 /// keep the primary button disabled until ticked.
-class CheckRow extends StatelessWidget {
-  const CheckRow({
-    super.key,
-    required this.label,
-    required this.value,
-    required this.onChanged,
-    this.subtitle,
-    this.trailing,
-  });
-
-  final String label;
-  final String? subtitle;
-  final bool value;
-  final ValueChanged<bool>? onChanged;
-  final Widget? trailing;
-
+class const CheckRow({
+  super.key,
+  required final String label,
+  required final bool value,
+  required final ValueChanged<bool>? onChanged,
+  final String? subtitle,
+  final Widget? trailing,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;

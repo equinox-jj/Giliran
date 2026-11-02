@@ -42,20 +42,13 @@ Future<T?> showAppSheet<T>(
 
 /// Standard sheet body: optional `title`, content, and bottom padding that
 /// follows the keyboard and the safe area.
-class AppSheetBody extends StatelessWidget {
-  const AppSheetBody({
-    super.key,
-    this.title,
-    this.subtitle,
-    required this.child,
-    this.scrollable = true,
-  });
-
-  final String? title;
-  final String? subtitle;
-  final Widget child;
-  final bool scrollable;
-
+class const AppSheetBody({
+  super.key,
+  final String? title,
+  final String? subtitle,
+  required final Widget child,
+  final bool scrollable = true,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;

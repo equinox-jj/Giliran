@@ -12,21 +12,19 @@ part 'failure.freezed.dart';
 /// and data, never UI copy; `displayMessage` in `failure_message.dart` gives
 /// the default Indonesian message and features override it per [apiCode].
 @freezed
-sealed class Failure with _$Failure {
-  const Failure._();
-
+sealed class const Failure._() with _$Failure {
   /// No connection or a bad certificate. Shows the offline banner.
-  const factory Failure.network() = NetworkFailure;
+  const factory network() = NetworkFailure;
 
   /// A connect, send or receive timeout.
-  const factory Failure.timeout() = TimeoutFailure;
+  const factory timeout() = TimeoutFailure;
 
   /// The API rejected the request for a reason the user can act on: HTTP
   /// 400, or any 4xx whose [code] is not a session, permission, not-found,
   /// conflict or field-validation error. Examples: `otp_invalid` (422),
   /// `pin_required` (422), `pin_invalid` (401), `otp_expired` (410),
   /// `pin_locked` (423), `file_too_large` (413). Branch on [code].
-  const factory Failure.badRequest({
+  const factory badRequest({
     required ApiErrorCode code,
     required int status,
     String? requestId,
@@ -36,45 +34,45 @@ sealed class Failure with _$Failure {
 
   /// `unauthorized` or `refresh_token_invalid`: the session is gone and the
   /// user must sign in again.
-  const factory Failure.unauthorized({
+  const factory unauthorized({
     @Default(ApiErrorCode.unauthorized) ApiErrorCode code,
     String? requestId,
   }) = UnauthorizedFailure;
 
   /// HTTP 403, such as `forbidden_role`.
-  const factory Failure.forbidden({
+  const factory forbidden({
     @Default(ApiErrorCode.forbiddenRole) ApiErrorCode code,
     String? requestId,
   }) = ForbiddenFailure;
 
   /// HTTP 404, such as `group_not_found`.
-  const factory Failure.notFound({
+  const factory notFound({
     @Default(ApiErrorCode.notFound) ApiErrorCode code,
     String? requestId,
   }) = NotFoundFailure;
 
   /// HTTP 409, such as `group_full` or `payments_incomplete`.
-  const factory Failure.conflict({
+  const factory conflict({
     required ApiErrorCode code,
     String? requestId,
     @Default(<String, Object?>{}) Map<String, Object?> extensions,
   }) = ConflictFailure;
 
   /// `validation_error`: map [fieldErrors] to form fields by `field`.
-  const factory Failure.validation({
+  const factory validation({
     @Default(<FieldError>[]) List<FieldError> fieldErrors,
     String? requestId,
   }) = ValidationFailure;
 
   /// HTTP 429 (`rate_limit_exceeded`, `otp_too_many_attempts`).
-  const factory Failure.tooManyRequests({
+  const factory tooManyRequests({
     @Default(ApiErrorCode.rateLimitExceeded) ApiErrorCode code,
     String? requestId,
     Duration? retryAfter,
   }) = TooManyRequestsFailure;
 
   /// HTTP 5xx.
-  const factory Failure.server({
+  const factory server({
     @Default(ApiErrorCode.internalError) ApiErrorCode code,
     required int status,
     String? requestId,
@@ -82,11 +80,11 @@ sealed class Failure with _$Failure {
   }) = ServerFailure;
 
   /// A local store (Drift, secure storage, shared preferences) failed.
-  const factory Failure.cache([Object? cause]) = CacheFailure;
+  const factory cache([Object? cause]) = CacheFailure;
 
   /// Anything the mapper does not recognise, such as a malformed body or a
   /// cancelled request. Keeps the original error for crash reporting.
-  const factory Failure.unknown([Object? cause, StackTrace? stackTrace]) = UnknownFailure;
+  const factory unknown([Object? cause, StackTrace? stackTrace]) = UnknownFailure;
 
   /// The Problem Details `code`, or null for failures that never reached the
   /// API.

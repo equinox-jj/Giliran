@@ -10,11 +10,7 @@ import '../../../../shared/widgets/widgets.dart';
 /// Phone: a swipeable pager; "Lanjut" steps through, "Lewati" jumps to the
 /// last page, which swaps in "Masuk dengan email". Tablet: one page with the
 /// first illustration left and the three points stacked right.
-class WelcomePage extends StatefulWidget {
-  const WelcomePage({super.key, required this.onSignIn});
-
-  final VoidCallback onSignIn;
-
+class const WelcomePage({super.key, required final VoidCallback onSignIn}) extends StatefulWidget {
   static const pages = [
     OnboardingPageData(
       illustration: AppIllustrations.onboardingTikar,
@@ -46,7 +42,7 @@ class WelcomePage extends StatefulWidget {
   State<WelcomePage> createState() => _WelcomePageState();
 }
 
-class _WelcomePageState extends State<WelcomePage> {
+class _WelcomePageState() extends State<WelcomePage> {
   final _controller = PageController();
   int _index = 0;
 
@@ -100,25 +96,15 @@ class _WelcomePageState extends State<WelcomePage> {
 }
 
 /// Phone: the pager, then "Lanjut" (or sign-in on the last page).
-class _PhoneLayout extends StatelessWidget {
-  const _PhoneLayout({
-    required this.controller,
-    required this.index,
-    required this.isLast,
-    required this.onPageChanged,
-    required this.onSkip,
-    required this.onNext,
-    required this.onSignIn,
-  });
-
-  final PageController controller;
-  final int index;
-  final bool isLast;
-  final ValueChanged<int> onPageChanged;
-  final VoidCallback onSkip;
-  final VoidCallback onNext;
-  final VoidCallback onSignIn;
-
+class const _PhoneLayout({
+  required final PageController controller,
+  required final int index,
+  required final bool isLast,
+  required final ValueChanged<int> onPageChanged,
+  required final VoidCallback onSkip,
+  required final VoidCallback onNext,
+  required final VoidCallback onSignIn,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -175,11 +161,7 @@ class _PhoneLayout extends StatelessWidget {
 }
 
 /// Tablet: the first illustration left, the three points stacked right.
-class _WideLayout extends StatelessWidget {
-  const _WideLayout({required this.onSignIn});
-
-  final VoidCallback onSignIn;
-
+class const _WideLayout({required final VoidCallback onSignIn}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final first = WelcomePage.pages.first;
@@ -223,11 +205,7 @@ class _WideLayout extends StatelessWidget {
 }
 
 /// One promise on the tablet layout: headline, body, then a gap.
-class _WidePoint extends StatelessWidget {
-  const _WidePoint(this.page);
-
-  final OnboardingPageData page;
-
+class const _WidePoint(final OnboardingPageData page) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = AppTextStyles.of(context);
@@ -250,11 +228,7 @@ class _WidePoint extends StatelessWidget {
 }
 
 /// Wordmark left, optional action right, 48 high.
-class _TopRow extends StatelessWidget {
-  const _TopRow({this.trailing});
-
-  final Widget? trailing;
-
+class const _TopRow({final Widget? trailing}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = AppTextStyles.of(context);
@@ -279,11 +253,7 @@ class _TopRow extends StatelessWidget {
   }
 }
 
-class _SignInButton extends StatelessWidget {
-  const _SignInButton({required this.onPressed});
-
-  final VoidCallback onPressed;
-
+class const _SignInButton({required final VoidCallback onPressed}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => AppButton(
     label: 'Masuk dengan email',

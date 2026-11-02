@@ -21,7 +21,7 @@ import 'package:giliran/features/profile/data/datasource/model/profile_model.dar
 import 'package:giliran/features/profile/domain/entity/profile.dart';
 
 /// Records each call and answers with the queued values, or throws [error].
-class _FakeRemote implements AuthRemoteDataSource {
+class _FakeRemote() implements AuthRemoteDataSource {
   Object? error;
   EmailOtpChallengeModel challenge = const EmailOtpChallengeModel(id: 'otp-1');
   EmailOtpResultModel result = const EmailOtpResultModel();
@@ -80,7 +80,7 @@ class _FakeRemote implements AuthRemoteDataSource {
 }
 
 /// In-memory local store that can be made to throw [error].
-class _FakeLocal implements AuthLocalDataSource {
+class _FakeLocal() implements AuthLocalDataSource {
   Object? error;
   TokenPairModel? tokens;
   ProfileDataModel? user;
@@ -131,8 +131,8 @@ class _FakeLocal implements AuthLocalDataSource {
   Future<void> saveBiometricPrompted(bool prompted) => _run(() => biometricPrompted = prompted);
 }
 
-class _FakeDeviceInfo extends DeviceInfoService {
-  _FakeDeviceInfo() : super(DeviceInfoPlugin());
+class _FakeDeviceInfo() extends DeviceInfoService {
+  this : super(DeviceInfoPlugin());
 
   @override
   String get platform => 'android';

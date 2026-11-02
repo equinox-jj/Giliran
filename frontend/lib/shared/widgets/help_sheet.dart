@@ -22,19 +22,12 @@ Future<void> showHelpSheet(
   ),
 );
 
-class _HelpSheet extends StatelessWidget {
-  const _HelpSheet({
-    required this.title,
-    required this.paragraphs,
-    required this.diagram,
-    required this.dismissLabel,
-  });
-
-  final String title;
-  final List<String> paragraphs;
-  final Widget? diagram;
-  final String dismissLabel;
-
+class const _HelpSheet({
+  required final String title,
+  required final List<String> paragraphs,
+  required final Widget? diagram,
+  required final String dismissLabel,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;

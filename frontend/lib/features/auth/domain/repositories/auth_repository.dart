@@ -10,7 +10,7 @@ import '../entities/email_otp_result.dart';
 ///
 /// Methods map one-to-one to the data sources; rules that combine them (such
 /// as clearing the pending code after a verify) belong in the usecases.
-abstract interface class AuthRepository {
+abstract interface class AuthRepository() {
   /// Sends a code to [email]. [pin] is required only for `change_email`.
   /// Device name and platform are added from this device.
   Future<Either<Failure, EmailOtpChallenge>> requestEmailOtp({

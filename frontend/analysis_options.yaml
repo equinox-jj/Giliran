@@ -17,3 +17,5 @@ formatter:
 linter: 
   rules:
   - prefer_relative_imports
+  - use_primary_constructors
+  - use_declaring_parameters

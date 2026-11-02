@@ -6,17 +6,17 @@ import 'dashed_border.dart';
 /// Loading placeholder in the shape of the content it replaces, on
 /// `bg.subtle` with a slow 1.2 s shimmer (static under reduced motion).
 class Skeleton extends StatefulWidget {
-  const Skeleton({
+  const new({
     super.key,
     this.width,
     required this.height,
     this.radius = AppRadius.md,
   }) : circle = false;
 
-  const Skeleton.circle({super.key, required double size}) : width = size, height = size, radius = 0, circle = true;
+  const new circle({super.key, required double size}) : width = size, height = size, radius = 0, circle = true;
 
   /// One text line of [height] (default 14) in a pill.
-  const Skeleton.line({super.key, this.width, this.height = 14}) : radius = AppRadius.full, circle = false;
+  const new line({super.key, this.width, this.height = 14}) : radius = AppRadius.full, circle = false;
 
   final double? width;
   final double height;
@@ -27,7 +27,7 @@ class Skeleton extends StatefulWidget {
   State<Skeleton> createState() => _SkeletonState();
 }
 
-class _SkeletonState extends State<Skeleton> with SingleTickerProviderStateMixin {
+class _SkeletonState() extends State<Skeleton> with SingleTickerProviderStateMixin {
   late final _controller = AnimationController(
     vsync: this,
     duration: AppMotion.shimmer,
@@ -83,11 +83,7 @@ class _SkeletonState extends State<Skeleton> with SingleTickerProviderStateMixin
 }
 
 /// Rings load as a dashed circle.
-class SkeletonRing extends StatelessWidget {
-  const SkeletonRing({super.key, required this.size});
-
-  final double size;
-
+class const SkeletonRing({super.key, required final double size}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ExcludeSemantics(
     child: DashedBorder.circle(

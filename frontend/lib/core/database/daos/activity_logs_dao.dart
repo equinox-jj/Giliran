@@ -8,9 +8,7 @@ part 'activity_logs_dao.g.dart';
 /// Reads and writes cached [ActivityLogs], keeping only the latest
 /// [maxPerGroup] entries per group (DB_SCHEME §9).
 @DriftAccessor(tables: [ActivityLogs])
-class ActivityLogsDao extends DatabaseAccessor<AppDatabase> with _$ActivityLogsDaoMixin {
-  ActivityLogsDao(super.attachedDatabase);
-
+class ActivityLogsDao(super.attachedDatabase) extends DatabaseAccessor<AppDatabase> with _$ActivityLogsDaoMixin {
   static const maxPerGroup = 200;
 
   /// A group's newest entries first.

@@ -9,7 +9,7 @@ part 'email_otp_result.freezed.dart';
 /// `reset_pin`, [user] for `change_email`.
 @freezed
 abstract class EmailOtpResult with _$EmailOtpResult {
-  const factory EmailOtpResult({
+  const factory({
     OtpPurpose? purpose,
     AuthResult? auth,
     ProfileData? user,
@@ -21,7 +21,7 @@ abstract class EmailOtpResult with _$EmailOtpResult {
 /// data layer.
 @freezed
 abstract class AuthResult with _$AuthResult {
-  const factory AuthResult({
+  const factory({
     ProfileData? user,
     bool? isNewUser,
     bool? pinSet,

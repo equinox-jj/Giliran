@@ -6,7 +6,7 @@ part 'session_manager.g.dart';
 
 /// Broadcasts a "session expired" signal from the network layer to the router
 /// without coupling networking to navigation.
-class SessionManager {
+class SessionManager() {
   final _controller = StreamController<void>.broadcast();
 
   /// Emits when refresh fails and the user must sign in again.

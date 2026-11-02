@@ -9,24 +9,15 @@ import 'app_text_field.dart';
 /// pasted) and keeps only the local part. Read the value with
 /// [PhoneField.e164]. Used for guest numbers and the optional WhatsApp number,
 /// never for sign-in.
-class PhoneField extends StatefulWidget {
-  const PhoneField({
-    super.key,
-    required this.controller,
-    this.label = 'Nomor WhatsApp (opsional)',
-    this.helper,
-    this.errorText,
-    this.onChanged,
-    this.textInputAction = TextInputAction.done,
-  });
-
-  final TextEditingController controller;
-  final String label;
-  final String? helper;
-  final String? errorText;
-  final ValueChanged<String>? onChanged;
-  final TextInputAction textInputAction;
-
+class const PhoneField({
+  super.key,
+  required final TextEditingController controller,
+  final String label = 'Nomor WhatsApp (opsional)',
+  final String? helper,
+  final String? errorText,
+  final ValueChanged<String>? onChanged,
+  final TextInputAction textInputAction = TextInputAction.done,
+}) extends StatefulWidget {
   /// "812 3456 7890" -> "+6281234567890"; null when empty.
   static String? e164(String text) => PhoneFormatter.normalize(text);
 
@@ -34,7 +25,7 @@ class PhoneField extends StatefulWidget {
   State<PhoneField> createState() => _PhoneFieldState();
 }
 
-class _PhoneFieldState extends State<PhoneField> {
+class _PhoneFieldState() extends State<PhoneField> {
   @override
   void initState() {
     super.initState();
@@ -95,9 +86,7 @@ class _PhoneFieldState extends State<PhoneField> {
 }
 
 /// Strips everything but digits and a leading 0 / 62 country prefix.
-class _LocalPhoneFormatter extends TextInputFormatter {
-  const _LocalPhoneFormatter();
-
+class const _LocalPhoneFormatter() extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
     TextEditingValue oldValue,

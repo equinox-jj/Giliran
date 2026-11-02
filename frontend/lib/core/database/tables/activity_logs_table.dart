@@ -11,7 +11,7 @@ import 'sync_columns.dart';
   'CREATE INDEX activity_logs_group_created_idx '
   'ON activity_logs (group_id, created_at DESC, id DESC)',
 )
-class ActivityLogs extends Table with SyncColumns {
+class ActivityLogs() extends Table with SyncColumns {
   /// Opaque server id (a stringified bigint).
   TextColumn get id => text()();
   TextColumn get groupId => text().references(Groups, #id, onDelete: KeyAction.cascade)();

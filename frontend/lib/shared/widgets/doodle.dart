@@ -7,7 +7,7 @@ import '../../core/themes/themes.dart';
 /// dark mode). Always decorative: excluded from semantics. Never place one on
 /// a money decision (proof review, payout, delete account).
 class Doodle extends StatelessWidget {
-  const Doodle(
+  const new(
     this.asset, {
     super.key,
     this.size = 120,
@@ -16,7 +16,7 @@ class Doodle extends StatelessWidget {
   });
 
   /// Hero corner doodle: 120 px at 40% opacity.
-  const Doodle.corner(this.asset, {super.key, this.color}) : size = 120, opacity = 0.4;
+  const new corner(this.asset, {super.key, this.color}) : size = 120, opacity = 0.4;
 
   final String asset;
   final double size;

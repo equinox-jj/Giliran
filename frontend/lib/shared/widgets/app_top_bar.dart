@@ -41,32 +41,24 @@ mixin _ScrolledUnder<T extends StatefulWidget> on State<T> {
 ///
 /// For the headline variant set [collapseTitle]: the title stays hidden
 /// until the [HeadlineBlock] below scrolls away.
-class AppTopBar extends StatefulWidget implements PreferredSizeWidget {
-  const AppTopBar({
-    super.key,
-    this.title,
-    this.actions = const [],
-    this.leading,
-    this.modal = false,
-    this.showBack = true,
-    this.collapseTitle = false,
-    this.onBack,
-  }) : assert(actions.length <= 2, 'At most two circle actions');
-
-  final String? title;
-  final List<Widget> actions;
+class const AppTopBar({
+  super.key,
+  final String? title,
+  final List<Widget> actions = const [],
 
   /// Replaces the back / close button.
-  final Widget? leading;
+  final Widget? leading,
 
   /// Shows `X` instead of `ArrowLeft` (create group, upload proof, review).
-  final bool modal;
-  final bool showBack;
-  final bool collapseTitle;
+  final bool modal = false,
+  final bool showBack = true,
+  final bool collapseTitle = false,
 
   /// Defaults to `Navigator.maybePop`, which keeps the native iOS swipe and
   /// Android predictive back working.
-  final VoidCallback? onBack;
+  final VoidCallback? onBack,
+}) extends StatefulWidget implements PreferredSizeWidget {
+  this : assert(actions.length <= 2, 'At most two circle actions');
 
   @override
   Size get preferredSize => const Size.fromHeight(AppSizes.topBarH);
@@ -75,7 +67,7 @@ class AppTopBar extends StatefulWidget implements PreferredSizeWidget {
   State<AppTopBar> createState() => _AppTopBarState();
 }
 
-class _AppTopBarState extends State<AppTopBar> with _ScrolledUnder {
+class _AppTopBarState() extends State<AppTopBar> with _ScrolledUnder {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -142,28 +134,18 @@ class _AppTopBarState extends State<AppTopBar> with _ScrolledUnder {
 
 /// Greeting bar (Beranda only): 72 high, avatar 48 + "Halo, {first name}"
 /// + a caption, and the bell with a bata dot when there is unread activity.
-class GreetingTopBar extends StatefulWidget implements PreferredSizeWidget {
-  const GreetingTopBar({
-    super.key,
-    required this.name,
-    this.avatarUrl,
-    this.subtitle,
-    this.unread = false,
-    this.unreadCount,
-    this.onBell,
-    this.onAvatar,
-  });
-
-  final String name;
-  final String? avatarUrl;
+class const GreetingTopBar({
+  super.key,
+  required final String name,
+  final String? avatarUrl,
 
   /// e.g. "3 arisan aktif".
-  final String? subtitle;
-  final bool unread;
-  final int? unreadCount;
-  final VoidCallback? onBell;
-  final VoidCallback? onAvatar;
-
+  final String? subtitle,
+  final bool unread = false,
+  final int? unreadCount,
+  final VoidCallback? onBell,
+  final VoidCallback? onAvatar,
+}) extends StatefulWidget implements PreferredSizeWidget {
   @override
   Size get preferredSize => const Size.fromHeight(AppSizes.greetingBarH);
 
@@ -171,7 +153,7 @@ class GreetingTopBar extends StatefulWidget implements PreferredSizeWidget {
   State<GreetingTopBar> createState() => _GreetingTopBarState();
 }
 
-class _GreetingTopBarState extends State<GreetingTopBar> with _ScrolledUnder {
+class _GreetingTopBarState() extends State<GreetingTopBar> with _ScrolledUnder {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -248,11 +230,7 @@ class _GreetingTopBarState extends State<GreetingTopBar> with _ScrolledUnder {
 
 /// Drawn over the bar's bottom edge so it doesn't add to `preferredSize`.
 /// Fades in once content scrolls under the bar.
-class _Hairline extends StatelessWidget {
-  const _Hairline({required this.visible});
-
-  final bool visible;
-
+class const _Hairline({required final bool visible}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Positioned(
     left: 0,

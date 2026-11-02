@@ -12,20 +12,15 @@ import '../session_manager.dart';
 ///
 /// 401s with another `code`, such as `pin_invalid`, are business errors and
 /// pass through untouched.
-class RefreshInterceptor extends Interceptor {
+class RefreshInterceptor({
+  required final SecureStorage _storage,
+  required final SessionManager _sessionManager,
+  required final Dio _refreshDio,
+  required final Dio _retryDio,
+}) extends Interceptor {
   /// [refreshDio] and [retryDio] are bare Dio instances (no interceptors) so
   /// the refresh call and the replay can't recurse into this interceptor.
-  RefreshInterceptor({
-    required this._storage,
-    required this._sessionManager,
-    required this._refreshDio,
-    required this._retryDio,
-  });
-
-  final SecureStorage _storage;
-  final SessionManager _sessionManager;
-  final Dio _refreshDio;
-  final Dio _retryDio;
+  this;
 
   /// Single-flight lock. Non-null while a refresh is in progress; completes
   /// with the new access token, or null if the refresh failed.

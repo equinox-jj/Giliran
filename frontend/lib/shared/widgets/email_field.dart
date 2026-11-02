@@ -5,32 +5,21 @@ import 'app_text_field.dart';
 /// Email field for sign-in and change email. No autocorrect or
 /// capitalization; checks a basic `name@domain` shape after the user leaves
 /// the field or submits. The server is the final judge.
-class EmailField extends StatefulWidget {
-  const EmailField({
-    super.key,
-    required this.controller,
-    this.label = 'Email',
-    this.hint = 'nama@email.com',
-    this.helper,
-    this.errorText,
-    this.onSubmitted,
-    this.autofocus = false,
-    this.textInputAction = TextInputAction.done,
-  });
-
-  final TextEditingController controller;
-  final String label;
-  final String hint;
-  final String? helper;
+class const EmailField({
+  super.key,
+  required final TextEditingController controller,
+  final String label = 'Email',
+  final String hint = 'nama@email.com',
+  final String? helper,
 
   /// Server-side error; takes precedence over the inline format check.
-  final String? errorText;
+  final String? errorText,
 
   /// Called with the normalized (trimmed, lowercased) address.
-  final ValueChanged<String>? onSubmitted;
-  final bool autofocus;
-  final TextInputAction textInputAction;
-
+  final ValueChanged<String>? onSubmitted,
+  final bool autofocus = false,
+  final TextInputAction textInputAction = TextInputAction.done,
+}) extends StatefulWidget {
   static final _shape = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
 
   static String normalize(String input) => input.trim().toLowerCase();
@@ -45,7 +34,7 @@ class EmailField extends StatefulWidget {
   State<EmailField> createState() => _EmailFieldState();
 }
 
-class _EmailFieldState extends State<EmailField> {
+class _EmailFieldState() extends State<EmailField> {
   final _focus = FocusNode();
   bool _checked = false;
 

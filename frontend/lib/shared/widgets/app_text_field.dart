@@ -9,70 +9,41 @@ import 'app_icon.dart';
 /// `border.strong`, helper or error below. Focus = 2 px ink border; error =
 /// 2 px bata border + `WarningCircle` message. Map API `422` `errors[].field`
 /// straight to [errorText].
-class AppTextField extends StatelessWidget {
-  const AppTextField({
-    super.key,
-    this.controller,
-    this.focusNode,
-    this.label,
-    this.hint,
-    this.helper,
-    this.errorText,
-    this.keyboardType,
-    this.textInputAction,
-    this.autofillHints,
-    this.inputFormatters,
-    this.onChanged,
-    this.onSubmitted,
-    this.onTap,
-    this.obscureText = false,
-    this.enabled = true,
-    this.readOnly = false,
-    this.autofocus = false,
-    this.autocorrect = true,
-    this.enableSuggestions = true,
-    this.textCapitalization = TextCapitalization.sentences,
-    this.prefix,
-    this.suffix,
-    this.style,
-    this.maxLines = 1,
-    this.minLines,
-    this.semanticLabel,
-  });
-
-  final TextEditingController? controller;
-  final FocusNode? focusNode;
-  final String? label;
-  final String? hint;
-  final String? helper;
-  final String? errorText;
-  final TextInputType? keyboardType;
-  final TextInputAction? textInputAction;
-  final Iterable<String>? autofillHints;
-  final List<TextInputFormatter>? inputFormatters;
-  final ValueChanged<String>? onChanged;
-  final ValueChanged<String>? onSubmitted;
-  final VoidCallback? onTap;
-  final bool obscureText;
-  final bool enabled;
-  final bool readOnly;
-  final bool autofocus;
-  final bool autocorrect;
-  final bool enableSuggestions;
-  final TextCapitalization textCapitalization;
+class const AppTextField({
+  super.key,
+  final TextEditingController? controller,
+  final FocusNode? focusNode,
+  final String? label,
+  final String? hint,
+  final String? helper,
+  final String? errorText,
+  final TextInputType? keyboardType,
+  final TextInputAction? textInputAction,
+  final Iterable<String>? autofillHints,
+  final List<TextInputFormatter>? inputFormatters,
+  final ValueChanged<String>? onChanged,
+  final ValueChanged<String>? onSubmitted,
+  final VoidCallback? onTap,
+  final bool obscureText = false,
+  final bool enabled = true,
+  final bool readOnly = false,
+  final bool autofocus = false,
+  final bool autocorrect = true,
+  final bool enableSuggestions = true,
+  final TextCapitalization textCapitalization = TextCapitalization.sentences,
 
   /// Leading widget inside the field (e.g. the +62 chip or the Rp prefix).
-  final Widget? prefix;
+  final Widget? prefix,
 
   /// Trailing widget inside the field (clear button, calendar icon).
-  final Widget? suffix;
+  final Widget? suffix,
 
   /// Overrides the value style (default `bodyLg`).
-  final TextStyle? style;
-  final int? maxLines;
-  final int? minLines;
-  final String? semanticLabel;
-
+  final TextStyle? style,
+  final int? maxLines = 1,
+  final int? minLines,
+  final String? semanticLabel,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -160,12 +131,7 @@ class AppTextField extends StatelessWidget {
 
 /// Helper or error line under a field. Errors get a `WarningCircle` and are
 /// announced as a live region.
-class FieldMessage extends StatelessWidget {
-  const FieldMessage({super.key, required this.text, this.isError = false});
-
-  final String text;
-  final bool isError;
-
+class const FieldMessage({super.key, required final String text, final bool isError = false}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -194,11 +160,7 @@ class FieldMessage extends StatelessWidget {
 }
 
 /// Small 48-hit clear button for field suffixes.
-class FieldClearButton extends StatelessWidget {
-  const FieldClearButton({super.key, required this.onPressed});
-
-  final VoidCallback onPressed;
-
+class const FieldClearButton({super.key, required final VoidCallback onPressed}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Semantics(
     button: true,

@@ -4,16 +4,12 @@ import '../../core/constants/app_icons.dart';
 import '../../core/themes/themes.dart';
 import 'app_icon.dart';
 
-enum AppBannerVariant {
+enum AppBannerVariant(final String icon) {
   info(AppIcons.info),
   warning(AppIcons.hourglassMedium),
   error(AppIcons.warningCircle),
   offline(AppIcons.cloudSlash),
   success(AppIcons.checkCircle);
-
-  const AppBannerVariant(this.icon);
-
-  final String icon;
 
   StatusColors colorsOf(GiliranColors c) => switch (this) {
     AppBannerVariant.info => c.info,
@@ -26,26 +22,17 @@ enum AppBannerVariant {
 
 /// Full-width inline message at the top of content. Dismissible only when
 /// the information isn't needed to act.
-class AppBanner extends StatelessWidget {
-  const AppBanner({
-    super.key,
-    required this.message,
-    this.variant = AppBannerVariant.info,
-    this.icon,
-    this.actionLabel,
-    this.onAction,
-    this.onDismiss,
-  });
-
-  final String message;
-  final AppBannerVariant variant;
+class const AppBanner({
+  super.key,
+  required final String message,
+  final AppBannerVariant variant = AppBannerVariant.info,
 
   /// Overrides the variant's default icon.
-  final String? icon;
-  final String? actionLabel;
-  final VoidCallback? onAction;
-  final VoidCallback? onDismiss;
-
+  final String? icon,
+  final String? actionLabel,
+  final VoidCallback? onAction,
+  final VoidCallback? onDismiss,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = variant.colorsOf(context.colors);

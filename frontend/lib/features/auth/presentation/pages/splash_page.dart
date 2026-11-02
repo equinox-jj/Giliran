@@ -8,23 +8,22 @@ import '../../../../shared/widgets/widgets.dart';
 
 /// S01 launch gate: the kaleng and wordmark on `bg.page`, held for [hold],
 /// then [onReady] picks the next route.
-class SplashPage extends StatefulWidget {
-  const SplashPage({super.key, required this.onReady, this.hold = minHold});
-
+class const SplashPage({
+  super.key,
+  required final VoidCallback onReady,
+  final Duration hold = minHold,
+}) extends StatefulWidget {
   /// Long enough to read the wordmark, short enough not to feel like a wait.
   static const minHold = Duration(milliseconds: 900);
 
   /// Matches the native splash image (288 px at xxxhdpi).
   static const kalengSize = 72.0;
 
-  final VoidCallback onReady;
-  final Duration hold;
-
   @override
   State<SplashPage> createState() => _SplashPageState();
 }
 
-class _SplashPageState extends State<SplashPage> {
+class _SplashPageState() extends State<SplashPage> {
   Timer? _timer;
 
   @override
