@@ -23,8 +23,7 @@ enum ChipStatus {
 
   /// Overdue is derived: unpaid or rejected with `due_date` before today.
   static ChipStatus fromPayment(PaymentStatus status, {bool overdue = false}) {
-    if (overdue &&
-        (status == PaymentStatus.unpaid || status == PaymentStatus.rejected)) {
+    if (overdue && (status == PaymentStatus.unpaid || status == PaymentStatus.rejected)) {
       return ChipStatus.overdue;
     }
     return switch (status) {
@@ -68,9 +67,7 @@ class StatusChip extends StatelessWidget {
         // Pending: the hatch paints the fill so the lines sit under the label.
         color: status == ChipStatus.pendingReview ? null : colors.bg,
         shape: StadiumBorder(
-          side: status == ChipStatus.won
-              ? BorderSide(color: c.ink, width: AppStroke.ink)
-              : BorderSide.none,
+          side: status == ChipStatus.won ? BorderSide(color: c.ink, width: AppStroke.ink) : BorderSide.none,
         ),
       ),
       child: Row(

@@ -39,11 +39,9 @@ class EmptyState extends StatelessWidget {
 
     final buttons = <Widget>[
       if (compact) ...[
-        if (primaryLabel != null)
-          AppButton.secondary(label: primaryLabel!, onPressed: onPrimary),
+        if (primaryLabel != null) AppButton.secondary(label: primaryLabel!, onPressed: onPrimary),
       ] else ...[
-        if (primaryLabel != null)
-          AppButton(label: primaryLabel!, onPressed: onPrimary, block: true),
+        if (primaryLabel != null) AppButton(label: primaryLabel!, onPressed: onPrimary, block: true),
         if (secondaryLabel != null)
           AppButton.secondary(
             label: secondaryLabel!,

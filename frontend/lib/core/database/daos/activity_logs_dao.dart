@@ -8,8 +8,7 @@ part 'activity_logs_dao.g.dart';
 /// Reads and writes cached [ActivityLogs], keeping only the latest
 /// [maxPerGroup] entries per group (DB_SCHEME §9).
 @DriftAccessor(tables: [ActivityLogs])
-class ActivityLogsDao extends DatabaseAccessor<AppDatabase>
-    with _$ActivityLogsDaoMixin {
+class ActivityLogsDao extends DatabaseAccessor<AppDatabase> with _$ActivityLogsDaoMixin {
   ActivityLogsDao(super.attachedDatabase);
 
   static const maxPerGroup = 200;
@@ -30,28 +29,26 @@ class ActivityLogsDao extends DatabaseAccessor<AppDatabase>
             ..where(
               (a) =>
                   a.createdAt.isSmallerThanValue(before.createdAt) |
-                  (a.createdAt.equals(before.createdAt) &
-                      a.id.isSmallerThanValue(before.id)),
+                  (a.createdAt.equals(before.createdAt) & a.id.isSmallerThanValue(before.id)),
             )
             ..limit(limit))
           .get();
 
   /// Inserts or updates [rows] for [groupId], then trims the group to the
   /// latest [maxPerGroup] entries.
-  Future<void> upsertAll(String groupId, List<ActivityLogsCompanion> rows) =>
-      transaction(() async {
-        final now = DateTime.now().toUtc();
-        for (final row in rows) {
-          await into(activityLogs).insertOnConflictUpdate(
-            row.copyWith(
-              groupId: Value(groupId),
-              syncedAt: Value(now),
-              pendingSync: const Value(false),
-            ),
-          );
-        }
-        await trimToLatest(groupId, maxPerGroup);
-      });
+  Future<void> upsertAll(String groupId, List<ActivityLogsCompanion> rows) => transaction(() async {
+    final now = DateTime.now().toUtc();
+    for (final row in rows) {
+      await into(activityLogs).insertOnConflictUpdate(
+        row.copyWith(
+          groupId: Value(groupId),
+          syncedAt: Value(now),
+          pendingSync: const Value(false),
+        ),
+      );
+    }
+    await trimToLatest(groupId, maxPerGroup);
+  });
 
   /// Deletes all but the newest [keep] entries of [groupId].
   Future<void> trimToLatest(String groupId, int keep) => customUpdate(

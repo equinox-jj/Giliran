@@ -123,8 +123,7 @@ class SettingsRow extends StatelessWidget {
       _SettingsRowKind.locked => Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (value != null)
-            Text(value!, style: t.body.copyWith(color: c.textTertiary)),
+          if (value != null) Text(value!, style: t.body.copyWith(color: c.textTertiary)),
           const SizedBox(width: AppSpace.s1),
           AppIcon(
             AppIcons.lockSimple,
@@ -138,9 +137,7 @@ class SettingsRow extends StatelessWidget {
 
     final row = Container(
       constraints: BoxConstraints(
-        minHeight: subtitle == null
-            ? AppSizes.settingsRowH
-            : AppSizes.settingsRowHWithSubtitle,
+        minHeight: subtitle == null ? AppSizes.settingsRowH : AppSizes.settingsRowHWithSubtitle,
       ),
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpace.s4,

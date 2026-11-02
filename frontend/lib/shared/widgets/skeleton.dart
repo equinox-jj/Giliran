@@ -13,16 +13,10 @@ class Skeleton extends StatefulWidget {
     this.radius = AppRadius.md,
   }) : circle = false;
 
-  const Skeleton.circle({super.key, required double size})
-    : width = size,
-      height = size,
-      radius = 0,
-      circle = true;
+  const Skeleton.circle({super.key, required double size}) : width = size, height = size, radius = 0, circle = true;
 
   /// One text line of [height] (default 14) in a pill.
-  const Skeleton.line({super.key, this.width, this.height = 14})
-    : radius = AppRadius.full,
-      circle = false;
+  const Skeleton.line({super.key, this.width, this.height = 14}) : radius = AppRadius.full, circle = false;
 
   final double? width;
   final double height;
@@ -33,8 +27,7 @@ class Skeleton extends StatefulWidget {
   State<Skeleton> createState() => _SkeletonState();
 }
 
-class _SkeletonState extends State<Skeleton>
-    with SingleTickerProviderStateMixin {
+class _SkeletonState extends State<Skeleton> with SingleTickerProviderStateMixin {
   late final _controller = AnimationController(
     vsync: this,
     duration: AppMotion.shimmer,

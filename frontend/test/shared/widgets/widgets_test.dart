@@ -181,8 +181,7 @@ void main() {
       const dark = IllustrationColorMapper(GiliranColors.dark);
 
       // Act
-      Color map(IllustrationColorMapper m, Color c) =>
-          m.substitute(null, 'path', 'stroke', c);
+      Color map(IllustrationColorMapper m, Color c) => m.substitute(null, 'path', 'stroke', c);
 
       // Assert
       expect(map(light, AppPalette.kopi900), AppPalette.kopi900);

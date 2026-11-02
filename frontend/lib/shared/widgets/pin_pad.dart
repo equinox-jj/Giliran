@@ -110,8 +110,7 @@ class _PinPadState extends State<PinPad> {
                 mainAxisSize: MainAxisSize.min,
                 spacing: AppSpace.s4,
                 children: [
-                  for (var i = 0; i < widget.length; i++)
-                    _PinDot(filled: i < entered, error: widget.error),
+                  for (var i = 0; i < widget.length; i++) _PinDot(filled: i < entered, error: widget.error),
                 ],
               ),
             ),

@@ -29,9 +29,7 @@ Future<T?> showAppSheet<T>(
     ),
     constraints: BoxConstraints(
       maxWidth: AppSizes.contentMax,
-      maxHeight: tall
-          ? MediaQuery.sizeOf(context).height * 0.9
-          : double.infinity,
+      maxHeight: tall ? MediaQuery.sizeOf(context).height * 0.9 : double.infinity,
     ),
     builder: (context) => tall
         ? SizedBox(
@@ -87,8 +85,7 @@ class AppSheetBody extends StatelessWidget {
             const SizedBox(height: AppSpace.s1),
             Text(subtitle!, style: t.body.copyWith(color: c.textSecondary)),
           ],
-          if (title != null || subtitle != null)
-            const SizedBox(height: AppSpace.s4),
+          if (title != null || subtitle != null) const SizedBox(height: AppSpace.s4),
           child,
         ],
       ),

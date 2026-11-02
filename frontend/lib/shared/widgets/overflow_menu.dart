@@ -36,11 +36,9 @@ class OverflowMenuButton extends StatelessWidget {
   final List<OverflowMenuItem> items;
   final String semanticLabel;
 
-  List<OverflowMenuItem> get _regular =>
-      items.where((i) => !i.destructive).toList();
+  List<OverflowMenuItem> get _regular => items.where((i) => !i.destructive).toList();
 
-  List<OverflowMenuItem> get _destructive =>
-      items.where((i) => i.destructive).toList();
+  List<OverflowMenuItem> get _destructive => items.where((i) => i.destructive).toList();
 
   Future<void> _open(BuildContext context) async {
     if (context.isCompact) {
@@ -66,8 +64,7 @@ class OverflowMenuButton extends StatelessWidget {
     }
 
     final box = context.findRenderObject()! as RenderBox;
-    final overlay =
-        Navigator.of(context).overlay!.context.findRenderObject()! as RenderBox;
+    final overlay = Navigator.of(context).overlay!.context.findRenderObject()! as RenderBox;
     final position = RelativeRect.fromRect(
       Rect.fromPoints(
         box.localToGlobal(box.size.bottomLeft(Offset.zero), ancestor: overlay),
@@ -75,12 +72,11 @@ class OverflowMenuButton extends StatelessWidget {
       ),
       Offset.zero & overlay.size,
     );
-    PopupMenuItem<OverflowMenuItem> entry(OverflowMenuItem item) =>
-        PopupMenuItem(
-          value: item,
-          height: AppSizes.tapMin,
-          child: _MenuRow(item),
-        );
+    PopupMenuItem<OverflowMenuItem> entry(OverflowMenuItem item) => PopupMenuItem(
+      value: item,
+      height: AppSizes.tapMin,
+      child: _MenuRow(item),
+    );
 
     final selected = await showMenu<OverflowMenuItem>(
       context: context,

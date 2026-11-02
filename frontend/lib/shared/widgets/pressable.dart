@@ -61,9 +61,7 @@ class _PressableState extends State<Pressable> {
     Widget visual = CustomPaint(
       foregroundPainter: _PressPainter(
         shape: widget.shape,
-        tint: widget.tint && pressed
-            ? c.textPrimary.withValues(alpha: 0.06)
-            : null,
+        tint: widget.tint && pressed ? c.textPrimary.withValues(alpha: 0.06) : null,
         focus: _focused ? c.focus : null,
         textDirection: Directionality.of(context),
       ),
@@ -146,6 +144,5 @@ class _PressPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_PressPainter old) =>
-      old.tint != tint || old.focus != focus || old.shape != shape;
+  bool shouldRepaint(_PressPainter old) => old.tint != tint || old.focus != focus || old.shape != shape;
 }

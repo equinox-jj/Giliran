@@ -39,8 +39,7 @@ class CountdownText extends StatefulWidget {
   static String formatInline(Duration d) {
     String two(int n) => n.toString().padLeft(2, '0');
     final days = d.inDays;
-    final clock =
-        '${two(d.inHours % 24)}:${two(d.inMinutes % 60)}:${two(d.inSeconds % 60)}';
+    final clock = '${two(d.inHours % 24)}:${two(d.inMinutes % 60)}:${two(d.inSeconds % 60)}';
     return days > 0 ? '$days hari $clock' : clock;
   }
 
@@ -122,10 +121,7 @@ class _CountdownTextState extends State<CountdownText> {
     }
 
     final now = DateTime.now();
-    final sameDay =
-        now.year == widget.until.year &&
-        now.month == widget.until.month &&
-        now.day == widget.until.day;
+    final sameDay = now.year == widget.until.year && now.month == widget.until.month && now.day == widget.until.day;
     final text = sameDay
         ? 'Hari ini, ${AppDate.time(widget.until)}'
         : '${widget.prefix}${CountdownText.formatInline(_left)}';

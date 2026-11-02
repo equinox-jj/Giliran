@@ -85,9 +85,7 @@ class _KeyValueRow extends StatelessWidget {
         ? t.mono.copyWith(color: c.textPrimary)
         : t.body.copyWith(color: c.textPrimary, fontWeight: FontWeight.w500);
     final value = item.valueWidget ?? Text(item.value, style: valueStyle);
-    final copy = item.copyable
-        ? AppTextButton(label: 'Salin', onPressed: () => _copy(context))
-        : null;
+    final copy = item.copyable ? AppTextButton(label: 'Salin', onPressed: () => _copy(context)) : null;
 
     return MergeSemantics(
       child: ConstrainedBox(

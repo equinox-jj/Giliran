@@ -9,8 +9,7 @@ import 'sync_columns.dart';
 @TableIndex(name: 'members_group_slot_idx', columns: {#groupId, #slotNo})
 class Members extends Table with SyncColumns {
   TextColumn get id => text()();
-  TextColumn get groupId =>
-      text().references(Groups, #id, onDelete: KeyAction.cascade)();
+  TextColumn get groupId => text().references(Groups, #id, onDelete: KeyAction.cascade)();
   TextColumn get userId => text().nullable()();
   TextColumn get displayName => text()();
   TextColumn get avatarUrl => text().nullable()();

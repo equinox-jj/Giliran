@@ -32,8 +32,7 @@ const sensitiveKeys = {
 
 /// Lower-cases [key] and drops `_` and `-`, so `refresh_token`,
 /// `refreshToken` and `Refresh-Token` compare equal.
-String normalizeKey(String key) =>
-    key.toLowerCase().replaceAll(RegExp('[_-]'), '');
+String normalizeKey(String key) => key.toLowerCase().replaceAll(RegExp('[_-]'), '');
 
 /// Returns a copy of [value] that is safe to log.
 ///
@@ -43,9 +42,7 @@ String normalizeKey(String key) =>
 Object? redact(Object? value) => switch (value) {
   Map() => {
     for (final entry in value.entries)
-      '${entry.key}': sensitiveKeys.contains(normalizeKey('${entry.key}'))
-          ? redactedValue
-          : redact(entry.value),
+      '${entry.key}': sensitiveKeys.contains(normalizeKey('${entry.key}')) ? redactedValue : redact(entry.value),
   },
   Iterable() => [for (final item in value) redact(item)],
   String() => scrub(value),

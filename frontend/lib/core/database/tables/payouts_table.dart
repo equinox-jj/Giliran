@@ -7,8 +7,7 @@ import 'sync_columns.dart';
 @DataClassName('PayoutRow')
 class Payouts extends Table with SyncColumns {
   TextColumn get id => text()();
-  TextColumn get groupId =>
-      text().references(Groups, #id, onDelete: KeyAction.cascade)();
+  TextColumn get groupId => text().references(Groups, #id, onDelete: KeyAction.cascade)();
   TextColumn get periodId => text().unique()();
 
   TextColumn get winnerMemberId => text()();

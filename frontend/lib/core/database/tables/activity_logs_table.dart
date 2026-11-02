@@ -14,8 +14,7 @@ import 'sync_columns.dart';
 class ActivityLogs extends Table with SyncColumns {
   /// Opaque server id (a stringified bigint).
   TextColumn get id => text()();
-  TextColumn get groupId =>
-      text().references(Groups, #id, onDelete: KeyAction.cascade)();
+  TextColumn get groupId => text().references(Groups, #id, onDelete: KeyAction.cascade)();
   TextColumn get action => text()();
   TextColumn get entityType => text()();
   TextColumn get entityId => text().nullable()();

@@ -52,9 +52,7 @@ class AppChip extends StatelessWidget {
         decoration: ShapeDecoration(
           color: selected ? c.inverse : (dark ? c.subtle : c.surface),
           shape: StadiumBorder(
-            side: selected || dark
-                ? BorderSide.none
-                : BorderSide(color: c.hairline, width: AppStroke.regular),
+            side: selected || dark ? BorderSide.none : BorderSide(color: c.hairline, width: AppStroke.regular),
           ),
         ),
         child: ExcludeSemantics(
@@ -186,9 +184,7 @@ class SegmentedPills extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     final t = AppTextStyles.of(context);
-    final duration = AppMotion.reduced(context)
-        ? Duration.zero
-        : AppMotion.base;
+    final duration = AppMotion.reduced(context) ? Duration.zero : AppMotion.base;
 
     return Container(
       height: AppSizes.tapMin,
@@ -215,18 +211,14 @@ class SegmentedPills extends StatelessWidget {
                   decoration: ShapeDecoration(
                     color: i == selectedIndex ? c.surface : null,
                     shape: AppShapes.pill,
-                    shadows: i == selectedIndex
-                        ? AppElevation.float(context)
-                        : const [],
+                    shadows: i == selectedIndex ? AppElevation.float(context) : const [],
                   ),
                   alignment: Alignment.center,
                   child: ExcludeSemantics(
                     child: Text(
                       segments[i],
                       style: t.label.copyWith(
-                        color: i == selectedIndex
-                            ? c.textPrimary
-                            : c.textSecondary,
+                        color: i == selectedIndex ? c.textPrimary : c.textSecondary,
                       ),
                     ),
                   ),

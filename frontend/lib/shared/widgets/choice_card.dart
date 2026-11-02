@@ -26,9 +26,7 @@ class ChoiceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.colors;
     final t = AppTextStyles.of(context);
-    final duration = AppMotion.reduced(context)
-        ? Duration.zero
-        : AppMotion.quick;
+    final duration = AppMotion.reduced(context) ? Duration.zero : AppMotion.quick;
 
     return Semantics(
       inMutuallyExclusiveGroup: true,

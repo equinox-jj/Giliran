@@ -14,13 +14,12 @@ class PayoutsDao extends DatabaseAccessor<AppDatabase> with _$PayoutsDaoMixin {
     payouts,
   )..where((p) => p.periodId.equals(periodId))).watchSingleOrNull();
 
-  Future<void> upsert(PayoutsCompanion row) =>
-      into(payouts)
-          .insertOnConflictUpdate(
-            row.copyWith(
-              syncedAt: Value(DateTime.now().toUtc()),
-              pendingSync: const Value(false),
-            ),
-          )
-          .then((_) {});
+  Future<void> upsert(PayoutsCompanion row) => into(payouts)
+      .insertOnConflictUpdate(
+        row.copyWith(
+          syncedAt: Value(DateTime.now().toUtc()),
+          pendingSync: const Value(false),
+        ),
+      )
+      .then((_) {});
 }

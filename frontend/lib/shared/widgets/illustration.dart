@@ -57,8 +57,7 @@ class IllustrationColorMapper extends ColorMapper {
   }
 
   @override
-  bool operator ==(Object other) =>
-      other is IllustrationColorMapper && other.colors == colors;
+  bool operator ==(Object other) => other is IllustrationColorMapper && other.colors == colors;
 
   @override
   int get hashCode => colors.hashCode;

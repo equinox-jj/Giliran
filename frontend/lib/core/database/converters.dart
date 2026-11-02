@@ -7,8 +7,7 @@ class JsonMapConverter extends TypeConverter<Map<String, Object?>, String> {
   const JsonMapConverter();
 
   @override
-  Map<String, Object?> fromSql(String fromDb) =>
-      (jsonDecode(fromDb) as Map).cast<String, Object?>();
+  Map<String, Object?> fromSql(String fromDb) => (jsonDecode(fromDb) as Map).cast<String, Object?>();
 
   @override
   String toSql(Map<String, Object?> value) => jsonEncode(value);

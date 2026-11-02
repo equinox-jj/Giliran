@@ -105,11 +105,10 @@ void main() {
   });
 
   group('RupiahInputFormatter', () {
-    TextEditingValue format(String text) =>
-        const RupiahInputFormatter().formatEditUpdate(
-          TextEditingValue.empty,
-          TextEditingValue(text: text),
-        );
+    TextEditingValue format(String text) => const RupiahInputFormatter().formatEditUpdate(
+      TextEditingValue.empty,
+      TextEditingValue(text: text),
+    );
 
     test('groups digits with dots while typing', () {
       expect(format('200000').text, '200.000');

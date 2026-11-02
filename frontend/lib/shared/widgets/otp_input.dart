@@ -37,8 +37,7 @@ class OtpInput extends StatefulWidget {
 }
 
 class _OtpInputState extends State<OtpInput> {
-  late final TextEditingController _controller =
-      widget.controller ?? TextEditingController();
+  late final TextEditingController _controller = widget.controller ?? TextEditingController();
   final _focus = FocusNode();
   int _shakes = 0;
 
@@ -89,8 +88,7 @@ class _OtpInputState extends State<OtpInput> {
         for (var i = 0; i < widget.length; i++)
           _OtpBox(
             digit: i < text.length ? text[i] : '',
-            current:
-                _focus.hasFocus && i == text.length.clamp(0, widget.length - 1),
+            current: _focus.hasFocus && i == text.length.clamp(0, widget.length - 1),
             error: widget.error,
           ),
       ],

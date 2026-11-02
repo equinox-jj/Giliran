@@ -1,6 +1,5 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:cupertino_ui/cupertino_ui.dart'
-    show CupertinoPageTransitionsBuilder;
+import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/services.dart';
 
 import 'app_colors.dart';
@@ -45,8 +44,7 @@ abstract final class AppTheme {
       surfaceTint: Colors.transparent,
     );
 
-    TextStyle colored(TextStyle s, [Color? color]) =>
-        s.copyWith(color: color ?? c.textPrimary);
+    TextStyle colored(TextStyle s, [Color? color]) => s.copyWith(color: color ?? c.textPrimary);
 
     final textTheme = TextTheme(
       displayLarge: colored(t.display),

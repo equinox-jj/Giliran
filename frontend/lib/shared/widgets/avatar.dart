@@ -38,11 +38,7 @@ class AppAvatar extends StatelessWidget {
   /// Returns the uppercase initials of the first two words of [name], or `?` when
   /// [name] is blank.
   static String initials(String name) {
-    final words = name
-        .trim()
-        .split(RegExp(r'\s+'))
-        .where((w) => w.isNotEmpty)
-        .toList();
+    final words = name.trim().split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
     if (words.isEmpty) return '?';
     final first = words.first.characters.first;
     final second = words.length > 1 ? words[1].characters.first : '';
@@ -54,9 +50,7 @@ class AppAvatar extends StatelessWidget {
     final c = context.colors;
     final t = AppTextStyles.of(context);
     final dark = Theme.of(context).brightness == Brightness.dark;
-    final fill = guest
-        ? c.subtle
-        : tone?.surface ?? (dark ? AppPalette.pandan800 : AppPalette.pandan100);
+    final fill = guest ? c.subtle : tone?.surface ?? (dark ? AppPalette.pandan800 : AppPalette.pandan100);
 
     final initialsText = Center(
       child: Text(

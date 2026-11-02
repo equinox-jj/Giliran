@@ -18,8 +18,7 @@ Future<bool> showAppDialog(
   bool destructive = true,
 }) async {
   final platform = Theme.of(context).platform;
-  final isCupertino =
-      platform == TargetPlatform.iOS || platform == TargetPlatform.macOS;
+  final isCupertino = platform == TargetPlatform.iOS || platform == TargetPlatform.macOS;
 
   final result = await showAdaptiveDialog<bool>(
     context: context,
@@ -89,9 +88,7 @@ Future<bool> showAppDialog(
                     AppButton(
                       label: confirmLabel,
                       size: AppButtonSize.small,
-                      variant: destructive
-                          ? AppButtonVariant.destructive
-                          : AppButtonVariant.ink,
+                      variant: destructive ? AppButtonVariant.destructive : AppButtonVariant.ink,
                       onPressed: () => Navigator.of(context).pop(true),
                     ),
                   ],

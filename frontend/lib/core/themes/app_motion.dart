@@ -26,6 +26,5 @@ abstract final class AppMotion {
 
   /// Whether the user asked the system to reduce animations. Callers should skip
   /// or shorten motion when this is `true`.
-  static bool reduced(BuildContext context) =>
-      MediaQuery.disableAnimationsOf(context);
+  static bool reduced(BuildContext context) => MediaQuery.disableAnimationsOf(context);
 }

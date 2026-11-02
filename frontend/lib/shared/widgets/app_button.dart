@@ -127,9 +127,7 @@ class AppButton extends StatelessWidget {
     AppButtonSize.xsmall => AppSizes.buttonHXs,
     AppButtonSize.small => AppSizes.buttonHSm,
     AppButtonSize.regular =>
-      variant == AppButtonVariant.tonal || variant == AppButtonVariant.ghost
-          ? AppSizes.buttonHSm
-          : AppSizes.buttonH,
+      variant == AppButtonVariant.tonal || variant == AppButtonVariant.ghost ? AppSizes.buttonHSm : AppSizes.buttonH,
   };
 
   double get _padding => switch (size) {
@@ -168,11 +166,7 @@ class AppButton extends StatelessWidget {
       side = BorderSide.none;
     }
 
-    final style =
-        (size == AppButtonSize.xsmall
-                ? t.label.copyWith(fontSize: 13)
-                : t.label)
-            .copyWith(color: fg);
+    final style = (size == AppButtonSize.xsmall ? t.label.copyWith(fontSize: 13) : t.label).copyWith(color: fg);
 
     final spinner = SizedBox.square(
       dimension: AppSizes.iconSm,
@@ -195,9 +189,7 @@ class AppButton extends StatelessWidget {
           SizedBox.square(
             dimension: AppSizes.iconMd,
             child: Center(
-              child: loading
-                  ? spinner
-                  : AppIcon(icon!, size: AppSizes.iconMd, color: fg),
+              child: loading ? spinner : AppIcon(icon!, size: AppSizes.iconMd, color: fg),
             ),
           ),
           const SizedBox(width: AppSpace.s2),
@@ -213,9 +205,7 @@ class AppButton extends StatelessWidget {
           SizedBox.square(
             dimension: AppSizes.iconMd,
             child: Center(
-              child: loading
-                  ? spinner
-                  : AppIcon(trailingIcon!, size: AppSizes.iconMd, color: fg),
+              child: loading ? spinner : AppIcon(trailingIcon!, size: AppSizes.iconMd, color: fg),
             ),
           ),
         ],
@@ -254,9 +244,7 @@ class AppButton extends StatelessWidget {
     if (disabledReason == null) return button;
     return Column(
       mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: block
-          ? CrossAxisAlignment.stretch
-          : CrossAxisAlignment.center,
+      crossAxisAlignment: block ? CrossAxisAlignment.stretch : CrossAxisAlignment.center,
       children: [
         button,
         const SizedBox(height: 6),

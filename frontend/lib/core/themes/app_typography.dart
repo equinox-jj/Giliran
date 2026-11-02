@@ -52,8 +52,7 @@ class AppTextStyles {
 
   TextStyle get display => _s(34, 44, 40, 50, FontWeight.w800, tracking: -1.0);
   TextStyle get headline => _s(26, 32, 32, 38, FontWeight.w400, tracking: -0.6);
-  TextStyle get headlineStrong =>
-      headline.copyWith(fontWeight: FontWeight.w700);
+  TextStyle get headlineStrong => headline.copyWith(fontWeight: FontWeight.w700);
   TextStyle get titleLg => _s(20, 22, 26, 28, FontWeight.w700, tracking: -0.3);
   TextStyle get title => _s(17, 18, 22, 24, FontWeight.w600, tracking: -0.2);
   TextStyle get bodyLg => _s(16, 16, 24, 24, FontWeight.w400);
@@ -79,8 +78,7 @@ class AppTextStyles {
     tracking: -0.5,
     features: tabularFigures,
   );
-  TextStyle get amount =>
-      _s(16, 16, 20, 20, FontWeight.w600, features: tabularFigures);
+  TextStyle get amount => _s(16, 16, 20, 20, FontWeight.w600, features: tabularFigures);
   TextStyle get mono => _s(
     13,
     14,
@@ -100,14 +98,11 @@ abstract final class Rupiah {
   static String digits(int amount) => _fmt.format(amount);
 
   /// 200000 -> "Rp200.000"
-  static String format(int amount) =>
-      amount < 0 ? '-Rp${digits(-amount)}' : 'Rp${digits(amount)}';
+  static String format(int amount) => amount < 0 ? '-Rp${digits(-amount)}' : 'Rp${digits(amount)}';
 
   /// Compact form for cards narrower than 160 px: "Rp2 jt", "Rp350 rb".
   static String compact(int amount) {
-    String trim(double v) => v == v.roundToDouble()
-        ? v.toStringAsFixed(0)
-        : v.toStringAsFixed(1).replaceAll('.', ',');
+    String trim(double v) => v == v.roundToDouble() ? v.toStringAsFixed(0) : v.toStringAsFixed(1).replaceAll('.', ',');
     if (amount >= 1000000000) return 'Rp${trim(amount / 1000000000)} M';
     if (amount >= 1000000) return 'Rp${trim(amount / 1000000)} jt';
     if (amount >= 1000) return 'Rp${trim(amount / 1000)} rb';

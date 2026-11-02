@@ -68,9 +68,7 @@ class _EmailFieldState extends State<EmailField> {
   @override
   Widget build(BuildContext context) {
     final text = widget.controller.text;
-    final inline = _checked && text.isNotEmpty && !EmailField.isValidShape(text)
-        ? EmailField.formatError
-        : null;
+    final inline = _checked && text.isNotEmpty && !EmailField.isValidShape(text) ? EmailField.formatError : null;
 
     return AppTextField(
       controller: widget.controller,

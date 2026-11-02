@@ -17,8 +17,7 @@ class PeriodsDao extends DatabaseAccessor<AppDatabase> with _$PeriodsDaoMixin {
             ..orderBy([(p) => OrderingTerm.asc(p.periodNo)]))
           .watch();
 
-  Stream<PeriodRow?> watchById(String id) =>
-      (select(periods)..where((p) => p.id.equals(id))).watchSingleOrNull();
+  Stream<PeriodRow?> watchById(String id) => (select(periods)..where((p) => p.id.equals(id))).watchSingleOrNull();
 
   Future<void> upsertAll(List<PeriodsCompanion> rows) => transaction(() async {
     final now = DateTime.now().toUtc();

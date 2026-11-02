@@ -86,8 +86,5 @@ class DashedBorderPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(DashedBorderPainter old) =>
-      old.color != color ||
-      old.radius != radius ||
-      old.circle != circle ||
-      old.strokeWidth != strokeWidth;
+      old.color != color || old.radius != radius || old.circle != circle || old.strokeWidth != strokeWidth;
 }

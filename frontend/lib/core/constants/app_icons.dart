@@ -23,8 +23,7 @@ abstract final class AppIcons {
   static const checkCircleFill = 'assets/icons/check-circle-fill.svg';
   static const circle = 'assets/icons/circle.svg';
   static const circleDashed = 'assets/icons/circle-dashed.svg';
-  static const clockCounterClockwise =
-      'assets/icons/clock-counter-clockwise.svg';
+  static const clockCounterClockwise = 'assets/icons/clock-counter-clockwise.svg';
   static const cloudSlash = 'assets/icons/cloud-slash.svg';
   static const copy = 'assets/icons/copy.svg';
   static const crown = 'assets/icons/crown.svg';

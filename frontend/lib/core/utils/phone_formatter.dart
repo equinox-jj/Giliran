@@ -14,8 +14,7 @@ abstract final class PhoneFormatter {
   }
 
   /// Local part without the country code, for the field after the +62 chip.
-  static String localPart(String e164) =>
-      e164.startsWith('+62') ? e164.substring(3) : e164;
+  static String localPart(String e164) => e164.startsWith('+62') ? e164.substring(3) : e164;
 
   /// "+6281234567890" -> "+62 812-3456-7890".
   static String display(String e164) {

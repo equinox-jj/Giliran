@@ -6,8 +6,7 @@ abstract final class AppDate {
   static const _locale = 'id_ID';
 
   /// "Sab, 1 Nov 2026" (date fields).
-  static String full(DateTime d) =>
-      DateFormat('EEE, d MMM y', _locale).format(d);
+  static String full(DateTime d) => DateFormat('EEE, d MMM y', _locale).format(d);
 
   /// "Sab, 25 Okt" this year, "25 Okt 2025" other years.
   static String short(DateTime d, {DateTime? now}) {

@@ -33,6 +33,25 @@ class _FakeStorage implements SecureStorage {
     access = null;
     refresh = null;
   }
+
+  // Not used by the interceptors.
+  @override
+  Future<String?> readPendingOtp() async => null;
+
+  @override
+  Future<void> savePendingOtp(String json) async {}
+
+  @override
+  Future<void> clearPendingOtp() async {}
+
+  @override
+  Future<String?> readCurrentUser() async => null;
+
+  @override
+  Future<void> saveCurrentUser(String json) async {}
+
+  @override
+  Future<void> clearCurrentUser() async {}
 }
 
 /// Answers `/auth/refresh` with [refreshStatus] and protected paths with 200

@@ -17,8 +17,7 @@ void main() {
   test('keeps only the latest entries per group', () async {
     // Arrange
     final rows = [
-      for (var i = 0; i < ActivityLogsDao.maxPerGroup + 5; i++)
-        activityRow('$i', 'g1', base.add(Duration(minutes: i))),
+      for (var i = 0; i < ActivityLogsDao.maxPerGroup + 5; i++) activityRow('$i', 'g1', base.add(Duration(minutes: i))),
     ];
 
     // Act
@@ -33,12 +32,9 @@ void main() {
   test('pageBefore returns older entries newest first', () async {
     // Arrange
     await db.activityLogsDao.upsertAll('g1', [
-      for (var i = 0; i < 5; i++)
-        activityRow('$i', 'g1', base.add(Duration(minutes: i))),
+      for (var i = 0; i < 5; i++) activityRow('$i', 'g1', base.add(Duration(minutes: i))),
     ]);
-    final firstPage = await db.activityLogsDao
-        .watchByGroup('g1', limit: 2)
-        .first;
+    final firstPage = await db.activityLogsDao.watchByGroup('g1', limit: 2).first;
 
     // Act
     final next = await db.activityLogsDao.pageBefore(

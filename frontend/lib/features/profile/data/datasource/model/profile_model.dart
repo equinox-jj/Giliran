@@ -10,8 +10,7 @@ abstract class ProfileModel with _$ProfileModel {
     @JsonKey(name: "data") ProfileDataModel? data,
   }) = _ProfileModel;
 
-  factory ProfileModel.fromJson(Map<String, dynamic> json) =>
-      _$ProfileModelFromJson(json);
+  factory ProfileModel.fromJson(Map<String, dynamic> json) => _$ProfileModelFromJson(json);
 }
 
 /// JSON shape of the profile payload inside [ProfileModel].
@@ -27,6 +26,5 @@ abstract class ProfileDataModel with _$ProfileDataModel {
     @JsonKey(name: "created_at") DateTime? createdAt,
   }) = _ProfileDataModel;
 
-  factory ProfileDataModel.fromJson(Map<String, dynamic> json) =>
-      _$ProfileDataModelFromJson(json);
+  factory ProfileDataModel.fromJson(Map<String, dynamic> json) => _$ProfileDataModelFromJson(json);
 }

@@ -8,8 +8,7 @@ import 'sync_columns.dart';
 @DataClassName('PeriodRow')
 class Periods extends Table with SyncColumns {
   TextColumn get id => text()();
-  TextColumn get groupId =>
-      text().references(Groups, #id, onDelete: KeyAction.cascade)();
+  TextColumn get groupId => text().references(Groups, #id, onDelete: KeyAction.cascade)();
   IntColumn get periodNo => integer()();
 
   /// `yyyy-MM-dd`, Asia/Jakarta business date.
@@ -36,10 +35,8 @@ class Periods extends Table with SyncColumns {
   IntColumn get summaryCollectedAmount => integer().nullable()();
   IntColumn get summaryExpectedAmount => integer().nullable()();
 
-  BoolColumn get payoutRecorded =>
-      boolean().withDefault(const Constant(false))();
-  BoolColumn get payoutConfirmed =>
-      boolean().withDefault(const Constant(false))();
+  BoolColumn get payoutRecorded => boolean().withDefault(const Constant(false))();
+  BoolColumn get payoutConfirmed => boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column<Object>> get primaryKey => {id};

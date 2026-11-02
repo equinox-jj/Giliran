@@ -81,8 +81,7 @@ class _AppStepperState extends State<AppStepper> {
   void _commit(String text) {
     final parsed = int.tryParse(text);
     _set(parsed ?? widget.value);
-    _controller.text =
-        '${(parsed ?? widget.value).clamp(widget.min, widget.max)}';
+    _controller.text = '${(parsed ?? widget.value).clamp(widget.min, widget.max)}';
   }
 
   void _startRepeat(int delta) {

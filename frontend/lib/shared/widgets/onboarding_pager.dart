@@ -171,13 +171,9 @@ class PageDots extends StatelessWidget {
                 width: i == index ? _active : _dot,
                 height: _dot,
                 decoration: ShapeDecoration(
-                  color: i == index
-                      ? c.turn
-                      : c.borderStrong.withValues(alpha: 0.5),
+                  color: i == index ? c.turn : c.borderStrong.withValues(alpha: 0.5),
                   shape: StadiumBorder(
-                    side: i == index
-                        ? BorderSide(color: c.ink, width: AppStroke.ink)
-                        : BorderSide.none,
+                    side: i == index ? BorderSide(color: c.ink, width: AppStroke.ink) : BorderSide.none,
                   ),
                 ),
               ),

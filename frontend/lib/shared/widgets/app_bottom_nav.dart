@@ -84,8 +84,7 @@ class _NavItem extends StatelessWidget {
                     size: AppSizes.iconLg,
                     color: color,
                   ),
-                  if (destination.showDot)
-                    const Positioned(top: -3, right: -5, child: CountDot()),
+                  if (destination.showDot) const Positioned(top: -3, right: -5, child: CountDot()),
                 ],
               ),
               const SizedBox(height: 3),
@@ -132,9 +131,7 @@ class AppBottomNavBar extends StatelessWidget {
   /// Bottom padding lists need so nothing hides behind the bar:
   /// bar height + 16 gap + safe area + 16.
   static double contentInset(BuildContext context) =>
-      AppSizes.navH +
-      AppSizes.navBottomGap * 2 +
-      MediaQuery.paddingOf(context).bottom;
+      AppSizes.navH + AppSizes.navBottomGap * 2 + MediaQuery.paddingOf(context).bottom;
 
   @override
   Widget build(BuildContext context) {

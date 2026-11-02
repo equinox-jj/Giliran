@@ -54,12 +54,11 @@ abstract final class AppShapes {
   );
 
   /// Squircle with only the top corners rounded (bottom sheets).
-  static ContinuousRectangleBorder squircleTop(double radius) =>
-      ContinuousRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(radius * 2.2),
-        ),
-      );
+  static ContinuousRectangleBorder squircleTop(double radius) => ContinuousRectangleBorder(
+    borderRadius: BorderRadius.vertical(
+      top: Radius.circular(radius * 2.2),
+    ),
+  );
 
   static const pill = StadiumBorder();
 }

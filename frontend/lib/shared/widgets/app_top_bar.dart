@@ -29,8 +29,7 @@ mixin _ScrolledUnder<T extends StatefulWidget> on State<T> {
     if (n is! ScrollUpdateNotification || n.depth != 0) return;
     if (n.metrics.axis != Axis.vertical) return;
     final offset = n.metrics.extentBefore;
-    if ((offset > 0) != (scrollOffset > 0) ||
-        (offset < 64 || scrollOffset < 64)) {
+    if ((offset > 0) != (scrollOffset > 0) || (offset < 64 || scrollOffset < 64)) {
       setState(() => scrollOffset = offset);
     }
   }
@@ -90,8 +89,7 @@ class _AppTopBarState extends State<AppTopBar> with _ScrolledUnder {
             ? CircleIconButton(
                 icon: widget.modal ? AppIcons.x : AppIcons.arrowLeft,
                 semanticLabel: widget.modal ? 'Tutup' : 'Kembali',
-                onPressed:
-                    widget.onBack ?? () => Navigator.of(context).maybePop(),
+                onPressed: widget.onBack ?? () => Navigator.of(context).maybePop(),
               )
             : null);
 
@@ -113,9 +111,7 @@ class _AppTopBarState extends State<AppTopBar> with _ScrolledUnder {
                       ? null
                       : AnimatedOpacity(
                           opacity: titleVisible ? 1 : 0,
-                          duration: AppMotion.reduced(context)
-                              ? Duration.zero
-                              : AppMotion.base,
+                          duration: AppMotion.reduced(context) ? Duration.zero : AppMotion.base,
                           child: Semantics(
                             header: true,
                             child: Text(
@@ -232,8 +228,7 @@ class _GreetingTopBarState extends State<GreetingTopBar> with _ScrolledUnder {
                     ),
                     CircleIconButton(
                       icon: AppIcons.bellSimple,
-                      semanticLabel:
-                          widget.unreadCount != null && widget.unreadCount! > 0
+                      semanticLabel: widget.unreadCount != null && widget.unreadCount! > 0
                           ? 'Notifikasi, ${widget.unreadCount} belum dibaca'
                           : 'Notifikasi',
                       showDot: widget.unread,

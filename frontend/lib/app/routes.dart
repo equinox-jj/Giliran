@@ -106,16 +106,14 @@ class ActivityRoute extends GoRouteData with $ActivityRoute {
   const ActivityRoute();
 
   @override
-  Widget build(BuildContext context, GoRouterState state) =>
-      const ActivityPage();
+  Widget build(BuildContext context, GoRouterState state) => const ActivityPage();
 }
 
 class ProfileRoute extends GoRouteData with $ProfileRoute {
   const ProfileRoute();
 
   @override
-  Widget build(BuildContext context, GoRouterState state) =>
-      const ProfilePage();
+  Widget build(BuildContext context, GoRouterState state) => const ProfilePage();
 }
 
 /// S01 launch gate. Until auth state exists every launch goes to Welcome;
@@ -155,10 +153,8 @@ class GalleryRoute extends GoRouteData with $GalleryRoute {
   const GalleryRoute();
 
   @override
-  String? redirect(BuildContext context, GoRouterState state) =>
-      kDebugMode ? null : const HomeRoute().location;
+  String? redirect(BuildContext context, GoRouterState state) => kDebugMode ? null : const HomeRoute().location;
 
   @override
-  Widget build(BuildContext context, GoRouterState state) =>
-      const ComponentGalleryPage();
+  Widget build(BuildContext context, GoRouterState state) => const ComponentGalleryPage();
 }

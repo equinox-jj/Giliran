@@ -120,8 +120,7 @@ abstract final class AppLogger {
   /// API failures are described by code and request id only, since
   /// `detail` and `extensions` may echo user input.
   static String _describe(Object error) => switch (error) {
-    UnknownFailure(:final cause) ||
-    CacheFailure(:final cause) => '${error.runtimeType}(${scrub('$cause')})',
+    UnknownFailure(:final cause) || CacheFailure(:final cause) => '${error.runtimeType}(${scrub('$cause')})',
     Failure(:final apiCode?) =>
       '${error.runtimeType}(code: ${apiCode.apiValue}, '
           'requestId: ${error.apiRequestId})',

@@ -73,8 +73,7 @@ sealed class ApiException extends AppException {
   String? get requestId => problem?.requestId;
 
   @override
-  String toString() =>
-      '$runtimeType($statusCode ${problem?.rawCode}, request_id: $requestId)';
+  String toString() => '$runtimeType($statusCode ${problem?.rawCode}, request_id: $requestId)';
 }
 
 /// HTTP 400, and any 4xx without its own type (413, 415, 423, …).
@@ -117,8 +116,7 @@ final class ValidationException extends ApiException {
 
 /// HTTP 429.
 final class TooManyRequestsException extends ApiException {
-  const TooManyRequestsException({super.problem, super.retryAfter})
-    : super(429);
+  const TooManyRequestsException({super.problem, super.retryAfter}) : super(429);
 }
 
 /// HTTP 5xx.

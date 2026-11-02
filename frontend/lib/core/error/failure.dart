@@ -86,8 +86,7 @@ sealed class Failure with _$Failure {
 
   /// Anything the mapper does not recognise, such as a malformed body or a
   /// cancelled request. Keeps the original error for crash reporting.
-  const factory Failure.unknown([Object? cause, StackTrace? stackTrace]) =
-      UnknownFailure;
+  const factory Failure.unknown([Object? cause, StackTrace? stackTrace]) = UnknownFailure;
 
   /// The Problem Details `code`, or null for failures that never reached the
   /// API.

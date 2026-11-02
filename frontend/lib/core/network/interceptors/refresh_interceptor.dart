@@ -123,10 +123,8 @@ class RefreshInterceptor extends Interceptor {
   }
 
   Future<Response<dynamic>> _retry(RequestOptions options, String newToken) {
-    final headers = Map<String, dynamic>.of(options.headers)
-      ..['Authorization'] = 'Bearer $newToken';
-    final extra = Map<String, dynamic>.of(options.extra)
-      ..[ApiEndpoints.kRetried] = true;
+    final headers = Map<String, dynamic>.of(options.headers)..['Authorization'] = 'Bearer $newToken';
+    final extra = Map<String, dynamic>.of(options.extra)..[ApiEndpoints.kRetried] = true;
     return _retryDio.fetch<dynamic>(
       options.copyWith(headers: headers, extra: extra),
     );

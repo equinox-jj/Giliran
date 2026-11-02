@@ -16,9 +16,7 @@ class Doodle extends StatelessWidget {
   });
 
   /// Hero corner doodle: 120 px at 40% opacity.
-  const Doodle.corner(this.asset, {super.key, this.color})
-    : size = 120,
-      opacity = 0.4;
+  const Doodle.corner(this.asset, {super.key, this.color}) : size = 120, opacity = 0.4;
 
   final String asset;
   final double size;

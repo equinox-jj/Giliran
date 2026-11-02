@@ -8,8 +8,7 @@ part 'payments_dao.g.dart';
 /// Reads and writes cached [Payments], including offline cash marks waiting
 /// to sync (PRD §9, "Organizer offline when marking cash payment").
 @DriftAccessor(tables: [Payments])
-class PaymentsDao extends DatabaseAccessor<AppDatabase>
-    with _$PaymentsDaoMixin {
+class PaymentsDao extends DatabaseAccessor<AppDatabase> with _$PaymentsDaoMixin {
   PaymentsDao(super.attachedDatabase);
 
   /// A period's payment board ordered by slot number.
@@ -19,15 +18,12 @@ class PaymentsDao extends DatabaseAccessor<AppDatabase>
             ..orderBy([(p) => OrderingTerm.asc(p.memberSlotNo)]))
           .watch();
 
-  Stream<PaymentRow?> watchById(String id) =>
-      (select(payments)..where((p) => p.id.equals(id))).watchSingleOrNull();
+  Stream<PaymentRow?> watchById(String id) => (select(payments)..where((p) => p.id.equals(id))).watchSingleOrNull();
 
   /// Every payment with a local change waiting to be sent.
-  Stream<List<PaymentRow>> watchPending() =>
-      (select(payments)..where((p) => p.pendingSync.equals(true))).watch();
+  Stream<List<PaymentRow>> watchPending() => (select(payments)..where((p) => p.pendingSync.equals(true))).watch();
 
-  Future<List<PaymentRow>> getPending() =>
-      (select(payments)..where((p) => p.pendingSync.equals(true))).get();
+  Future<List<PaymentRow>> getPending() => (select(payments)..where((p) => p.pendingSync.equals(true))).get();
 
   /// Replaces a period's board with a full server fetch. Rows still waiting
   /// to sync are left alone until the sync resolves them.
@@ -39,8 +35,7 @@ class PaymentsDao extends DatabaseAccessor<AppDatabase>
         await (selectOnly(payments)
               ..addColumns([payments.id])
               ..where(
-                payments.periodId.equals(periodId) &
-                    payments.pendingSync.equals(true),
+                payments.periodId.equals(periodId) & payments.pendingSync.equals(true),
               ))
             .map((r) => r.read(payments.id)!)
             .get();
@@ -97,11 +92,10 @@ class PaymentsDao extends DatabaseAccessor<AppDatabase>
 
   /// Drops the pending flag on [id] without touching its data, for a change
   /// the server rejected (the next fetch restores server state).
-  Future<void> clearPending(String id) =>
-      (update(payments)..where((p) => p.id.equals(id))).write(
-        const PaymentsCompanion(
-          pendingSync: Value(false),
-          pendingIdempotencyKey: Value(null),
-        ),
-      );
+  Future<void> clearPending(String id) => (update(payments)..where((p) => p.id.equals(id))).write(
+    const PaymentsCompanion(
+      pendingSync: Value(false),
+      pendingIdempotencyKey: Value(null),
+    ),
+  );
 }

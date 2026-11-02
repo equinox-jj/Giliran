@@ -7,14 +7,11 @@ abstract final class AppIllustrations {
   static const splashKaleng = 'assets/images/illustrations/splash_kaleng.svg';
 
   /// People on a tikar around a kaleng: Welcome page 1 (S02).
-  static const onboardingTikar =
-      'assets/images/illustrations/onboarding_tikar.svg';
+  static const onboardingTikar = 'assets/images/illustrations/onboarding_tikar.svg';
 
   /// Kocokan glass beside a sealed Bukti Kocok: Welcome page 2 (S02).
-  static const onboardingProof =
-      'assets/images/illustrations/onboarding_proof.svg';
+  static const onboardingProof = 'assets/images/illustrations/onboarding_proof.svg';
 
   /// Money passing hand to hand, the app beside it: Welcome page 3 (S02).
-  static const onboardingTrust =
-      'assets/images/illustrations/onboarding_trust.svg';
+  static const onboardingTrust = 'assets/images/illustrations/onboarding_trust.svg';
 }

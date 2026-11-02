@@ -208,9 +208,8 @@ class _WideLayout extends StatelessWidget {
                     child: ListView.builder(
                       shrinkWrap: true,
                       itemCount: pages.length + 1,
-                      itemBuilder: (context, i) => i < pages.length
-                          ? _WidePoint(pages[i])
-                          : _SignInButton(onPressed: onSignIn),
+                      itemBuilder: (context, i) =>
+                          i < pages.length ? _WidePoint(pages[i]) : _SignInButton(onPressed: onSignIn),
                     ),
                   ),
                 ),

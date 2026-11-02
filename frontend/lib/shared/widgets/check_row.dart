@@ -45,9 +45,7 @@ class CheckRow extends StatelessWidget {
               ),
       ),
       alignment: Alignment.center,
-      child: value
-          ? AppIcon(AppIcons.checkBold, size: 14, color: c.textOnInverse)
-          : null,
+      child: value ? AppIcon(AppIcons.checkBold, size: 14, color: c.textOnInverse) : null,
     );
 
     return MergeSemantics(
@@ -64,9 +62,7 @@ class CheckRow extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: AppSpace.s2),
               child: Row(
-                crossAxisAlignment: subtitle == null
-                    ? CrossAxisAlignment.center
-                    : CrossAxisAlignment.start,
+                crossAxisAlignment: subtitle == null ? CrossAxisAlignment.center : CrossAxisAlignment.start,
                 children: [
                   box,
                   const SizedBox(width: AppSpace.s3),

@@ -112,9 +112,7 @@ class _ConfirmationSheetState extends State<_ConfirmationSheet> {
           AppButton(
             label: widget.confirmLabel,
             block: true,
-            onPressed: !needsConsent || _consent
-                ? () => Navigator.of(context).pop(true)
-                : null,
+            onPressed: !needsConsent || _consent ? () => Navigator.of(context).pop(true) : null,
           ),
           const SizedBox(height: AppSpace.s1),
           AppButton.ghost(

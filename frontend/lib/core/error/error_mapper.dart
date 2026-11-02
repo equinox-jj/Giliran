@@ -37,9 +37,7 @@ AppException mapDioException(DioException e) {
 AppException _fromResponse(Response<dynamic> response) {
   final status = response.statusCode ?? 0;
   final data = response.data;
-  final problem = data is Map<String, Object?> && data['code'] is String
-      ? ProblemDetails.fromJson(data)
-      : null;
+  final problem = data is Map<String, Object?> && data['code'] is String ? ProblemDetails.fromJson(data) : null;
   final retryAfter = _retryAfter(response.headers);
 
   return switch (status) {
@@ -86,14 +84,11 @@ Failure mapExceptionToFailure(Object error, [StackTrace? stackTrace]) {
       stackTrace,
     ),
     CacheException(:final cause) => Failure.cache(cause),
-    UnauthorizedException(:final code) when _isSessionError(code) =>
-      Failure.unauthorized(
-        code: code == ApiErrorCode.unknown ? ApiErrorCode.unauthorized : code,
-        requestId: error.requestId,
-      ),
-    ValidationException(:final code)
-        when code == ApiErrorCode.validationError ||
-            code == ApiErrorCode.unknown =>
+    UnauthorizedException(:final code) when _isSessionError(code) => Failure.unauthorized(
+      code: code == ApiErrorCode.unknown ? ApiErrorCode.unauthorized : code,
+      requestId: error.requestId,
+    ),
+    ValidationException(:final code) when code == ApiErrorCode.validationError || code == ApiErrorCode.unknown =>
       Failure.validation(
         fieldErrors: error.fieldErrors,
         requestId: error.requestId,
@@ -145,9 +140,6 @@ Failure mapExceptionToFailure(Object error, [StackTrace? stackTrace]) {
 }
 
 bool _isSessionError(ApiErrorCode code) =>
-    code == ApiErrorCode.unauthorized ||
-    code == ApiErrorCode.refreshTokenInvalid ||
-    code == ApiErrorCode.unknown;
+    code == ApiErrorCode.unauthorized || code == ApiErrorCode.refreshTokenInvalid || code == ApiErrorCode.unknown;
 
-ApiErrorCode _codeOr(ApiException e, ApiErrorCode fallback) =>
-    e.code == ApiErrorCode.unknown ? fallback : e.code;
+ApiErrorCode _codeOr(ApiException e, ApiErrorCode fallback) => e.code == ApiErrorCode.unknown ? fallback : e.code;

@@ -30,8 +30,7 @@ class TikarHatchPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(TikarHatchPainter old) =>
-      old.color != color || old.background != background;
+  bool shouldRepaint(TikarHatchPainter old) => old.color != color || old.background != background;
 }
 
 /// Paints the tikar hatch behind [child], clipped to [borderRadius].

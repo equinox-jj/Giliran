@@ -26,16 +26,13 @@ abstract final class AppElevation {
     ),
   ];
 
-  static bool _isDark(BuildContext context) =>
-      Theme.of(context).brightness == Brightness.dark;
+  static bool _isDark(BuildContext context) => Theme.of(context).brightness == Brightness.dark;
 
   /// Bottom bar, floating pills, toasts, dragged rows.
-  static List<BoxShadow> float(BuildContext context) =>
-      _isDark(context) ? const [] : _floatLight;
+  static List<BoxShadow> float(BuildContext context) => _isDark(context) ? const [] : _floatLight;
 
   /// Bottom sheets.
-  static List<BoxShadow> sheet(BuildContext context) =>
-      _isDark(context) ? const [] : _sheetLight;
+  static List<BoxShadow> sheet(BuildContext context) => _isDark(context) ? const [] : _sheetLight;
 
   /// Whether floating layers need a hairline border (dark mode).
   static bool needsHairline(BuildContext context) => _isDark(context);

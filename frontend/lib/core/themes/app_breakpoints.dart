@@ -63,8 +63,7 @@ class MaxWidth extends StatelessWidget {
     this.width = AppSizes.contentMax,
   });
 
-  const MaxWidth.board({super.key, required this.child})
-    : width = AppSizes.boardMax;
+  const MaxWidth.board({super.key, required this.child}) : width = AppSizes.boardMax;
 
   final Widget child;
   final double width;

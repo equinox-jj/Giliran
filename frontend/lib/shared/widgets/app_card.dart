@@ -41,9 +41,7 @@ class AppCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    final pad =
-        padding ??
-        EdgeInsets.all(context.isCompact ? AppSpace.s4 : AppSpace.s6);
+    final pad = padding ?? EdgeInsets.all(context.isCompact ? AppSpace.s4 : AppSpace.s6);
 
     Widget card = switch (style) {
       AppCardStyle.dashed => DashedBorder(
@@ -110,9 +108,7 @@ class AppListRow extends StatelessWidget {
     final c = context.colors;
     final t = AppTextStyles.of(context);
     final fg = inverse ? c.textOnInverse : c.textPrimary;
-    final fg2 = inverse
-        ? c.textOnInverse.withValues(alpha: 0.75)
-        : c.textSecondary;
+    final fg2 = inverse ? c.textOnInverse.withValues(alpha: 0.75) : c.textSecondary;
 
     final row = Container(
       constraints: const BoxConstraints(minHeight: AppSizes.rowH),
@@ -141,8 +137,7 @@ class AppListRow extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-                if (subtitle != null)
-                  Text(subtitle!, style: t.body.copyWith(color: fg2)),
+                if (subtitle != null) Text(subtitle!, style: t.body.copyWith(color: fg2)),
               ],
             ),
           ),
@@ -154,8 +149,7 @@ class AppListRow extends StatelessWidget {
       ),
     );
 
-    final label =
-        semanticLabel ?? [title, if (subtitle != null) subtitle].join(', ');
+    final label = semanticLabel ?? [title, if (subtitle != null) subtitle].join(', ');
     if (onTap == null) {
       return Semantics(container: true, label: label, child: row);
     }
@@ -207,9 +201,7 @@ class HeroPanel extends StatelessWidget {
               ),
             ),
           Padding(
-            padding:
-                padding ??
-                EdgeInsets.all(context.isCompact ? AppSpace.s6 : AppSpace.s8),
+            padding: padding ?? EdgeInsets.all(context.isCompact ? AppSpace.s6 : AppSpace.s8),
             child: child,
           ),
         ],

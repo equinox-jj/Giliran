@@ -11,15 +11,13 @@ class StatusColors {
   final Color fg;
   final Color bg;
 
-  static StatusColors lerp(StatusColors a, StatusColors b, double t) =>
-      StatusColors(
-        fg: Color.lerp(a.fg, b.fg, t)!,
-        bg: Color.lerp(a.bg, b.bg, t)!,
-      );
+  static StatusColors lerp(StatusColors a, StatusColors b, double t) => StatusColors(
+    fg: Color.lerp(a.fg, b.fg, t)!,
+    bg: Color.lerp(a.bg, b.bg, t)!,
+  );
 
   @override
-  bool operator ==(Object other) =>
-      other is StatusColors && other.fg == fg && other.bg == bg;
+  bool operator ==(Object other) => other is StatusColors && other.fg == fg && other.bg == bg;
 
   @override
   int get hashCode => Object.hash(fg, bg);
@@ -39,8 +37,7 @@ class GroupTone {
   );
 
   @override
-  bool operator ==(Object other) =>
-      other is GroupTone && other.surface == surface && other.accent == accent;
+  bool operator ==(Object other) => other is GroupTone && other.surface == surface && other.accent == accent;
 
   @override
   int get hashCode => Object.hash(surface, accent);
@@ -106,8 +103,7 @@ class GiliranColors extends ThemeExtension<GiliranColors> {
   ///
   /// With [overdue], an unpaid or rejected payment uses the rejected colors.
   StatusColors forPayment(PaymentStatus status, {bool overdue = false}) {
-    if (overdue &&
-        (status == PaymentStatus.unpaid || status == PaymentStatus.rejected)) {
+    if (overdue && (status == PaymentStatus.unpaid || status == PaymentStatus.rejected)) {
       return rejected;
     }
     return switch (status) {
@@ -129,8 +125,7 @@ class GiliranColors extends ThemeExtension<GiliranColors> {
   }
 
   /// Returns the tone assigned to [groupId]; a group always gets the same tone.
-  GroupTone toneFor(String groupId) =>
-      tones[toneIndexFor(groupId, count: tones.length)];
+  GroupTone toneFor(String groupId) => tones[toneIndexFor(groupId, count: tones.length)];
 
   static const _lightTones = [
     GroupTone(surface: AppPalette.pandan200, accent: AppPalette.pandan700),
@@ -307,8 +302,7 @@ class GiliranColors extends ThemeExtension<GiliranColors> {
       info: StatusColors.lerp(info, other.info, t),
       won: StatusColors.lerp(won, other.won, t),
       tones: [
-        for (var i = 0; i < tones.length; i++)
-          GroupTone.lerp(tones[i], other.tones[i], t),
+        for (var i = 0; i < tones.length; i++) GroupTone.lerp(tones[i], other.tones[i], t),
       ],
     );
   }

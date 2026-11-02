@@ -13,8 +13,7 @@ import 'sync_columns.dart';
 )
 class Payments extends Table with SyncColumns {
   TextColumn get id => text()();
-  TextColumn get groupId =>
-      text().references(Groups, #id, onDelete: KeyAction.cascade)();
+  TextColumn get groupId => text().references(Groups, #id, onDelete: KeyAction.cascade)();
   TextColumn get periodId => text()();
 
   TextColumn get memberId => text()();

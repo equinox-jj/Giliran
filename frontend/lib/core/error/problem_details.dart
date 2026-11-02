@@ -36,10 +36,7 @@ final class ProblemDetails extends Equatable {
       rawCode: rawCode,
       requestId: json['request_id'] as String?,
       fieldErrors: errors is List
-          ? errors
-                .whereType<Map<String, Object?>>()
-                .map(FieldError.fromJson)
-                .toList(growable: false)
+          ? errors.whereType<Map<String, Object?>>().map(FieldError.fromJson).toList(growable: false)
           : const [],
       extensions: {
         for (final entry in json.entries)

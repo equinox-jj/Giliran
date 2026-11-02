@@ -21,8 +21,7 @@ class _ComponentGalleryPageState extends State<ComponentGalleryPage> {
 
   @override
   Widget build(BuildContext context) {
-    final platformDark =
-        MediaQuery.platformBrightnessOf(context) == Brightness.dark;
+    final platformDark = MediaQuery.platformBrightnessOf(context) == Brightness.dark;
     final dark = _dark ?? platformDark;
     return Theme(
       data: dark ? AppTheme.dark() : AppTheme.light(),
@@ -111,9 +110,7 @@ class _GalleryState extends State<_Gallery> {
             context.screenMargin,
             0,
             context.screenMargin,
-            context.isCompact
-                ? AppBottomNavBar.contentInset(context)
-                : AppSpace.s8,
+            context.isCompact ? AppBottomNavBar.contentInset(context) : AppSpace.s8,
           ),
           itemCount: _sections.length,
           itemBuilder: (context, i) => MaxWidth(child: _sections[i]),
