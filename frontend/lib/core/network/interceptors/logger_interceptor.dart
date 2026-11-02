@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 
-import '../../logger/app_logger.dart';
+import '../../utils/logger/app_logger.dart';
 
 /// Logs each request's method, URI and status through [AppLogger], which is
 /// silent outside debug builds. Bodies and headers are never logged.

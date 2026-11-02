@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 
-import '../logger/app_logger.dart';
+import '../utils/logger/app_logger.dart';
 import '../utils/enums/api_error_code.dart';
 import 'exceptions.dart';
 import 'failure.dart';

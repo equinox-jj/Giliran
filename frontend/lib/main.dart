@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'app/app.dart';
-import 'core/logger/app_logger.dart';
+import 'core/utils/logger/app_logger.dart';
 
 /// Initializes logging and Indonesian (`id_ID`) date formatting, then runs
 /// [GiliranApp] inside a Riverpod [ProviderScope].

@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:giliran/core/data/base_repository.dart';
 import 'package:giliran/core/error/error_mapper.dart';
 import 'package:giliran/core/error/exceptions.dart';
-import 'package:giliran/core/logger/logger.dart';
+import 'package:giliran/core/utils/logger/logger.dart';
 import 'package:giliran/core/utils/enums/api_error_code.dart';
 import 'package:logging/logging.dart';
 

@@ -5,7 +5,7 @@ import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 
-import '../error/failure.dart';
+import '../../error/failure.dart';
 import 'log_redactor.dart';
 
 /// The app logger, built on `package:logging`. Debug builds and
