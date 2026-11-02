@@ -71,6 +71,25 @@ void main() {
     expect(find.text('4'), findsOneWidget);
   });
 
+  testWidgets('OtpInput shrinks its boxes to fit a narrow width', (
+    tester,
+  ) async {
+    // Arrange
+    final widget = Center(
+      child: SizedBox(
+        width: 260,
+        child: OtpInput(onCompleted: (_) {}),
+      ),
+    );
+
+    // Act
+    await tester.pumpApp(widget);
+
+    // Assert
+    expect(tester.takeException(), isNull);
+    expect(tester.getSize(find.byType(OtpInput)).width, lessThanOrEqualTo(260));
+  });
+
   testWidgets('PinPad completes after six digits and supports delete', (
     tester,
   ) async {
@@ -92,6 +111,85 @@ void main() {
     }
     expect(pin, '123456');
     controller.dispose();
+  });
+
+  testWidgets('PinPad shows a spinner and ignores keys while checking', (
+    tester,
+  ) async {
+    // Arrange
+    final controller = PinPadController()..value = '12';
+    await tester.pumpApp(
+      SingleChildScrollView(
+        child: PinPad(controller: controller, checking: true, onCompleted: (_) {}),
+      ),
+    );
+
+    // Act
+    await tester.tap(find.bySemanticsLabel('3'), warnIfMissed: false);
+    await tester.pump();
+
+    // Assert
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(controller.value, '12');
+    controller.dispose();
+  });
+
+  group('PinPad.keySizeFor', () {
+    test('is the design size on a typical phone', () {
+      // Arrange
+      const size = Size(390, 844);
+
+      // Act
+      final key = PinPad.keySizeFor(size, margin: 20);
+
+      // Assert
+      expect(key, closeTo(AppSizes.pinKey, 0.01));
+    });
+
+    test('shrinks on a short phone', () {
+      // Arrange
+      const size = Size(375, 667);
+
+      // Act
+      final key = PinPad.keySizeFor(size, margin: 20);
+
+      // Assert
+      expect(key, lessThan(AppSizes.pinKey));
+      expect(key, greaterThanOrEqualTo(AppSizes.pinKeyMin));
+    });
+
+    test('is limited by width on a narrow phone', () {
+      // Arrange
+      const size = Size(300, 900);
+
+      // Act
+      final key = PinPad.keySizeFor(size, margin: 20);
+
+      // Assert
+      expect(key, lessThan(AppSizes.pinKey));
+    });
+
+    test('grows on a tablet but stops at the max', () {
+      // Arrange
+      const size = Size(820, 1180);
+
+      // Act
+      final key = PinPad.keySizeFor(size, margin: 32);
+
+      // Assert
+      expect(key, AppSizes.pinKeyMax);
+    });
+
+    test('never drops below the min', () {
+      // Arrange
+      const size = Size(320, 480);
+
+      // Act
+      final key = PinPad.keySizeFor(size, margin: 20);
+
+      // Assert
+      expect(key, AppSizes.pinKeyMin);
+    });
   });
 
   testWidgets('AppStepper clamps and disables at the limit', (tester) async {

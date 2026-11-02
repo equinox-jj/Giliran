@@ -34,30 +34,46 @@ GoRouter router(Ref ref) {
 
 /// Global guard, run before every navigation and whenever [status] changes.
 ///
-/// Signed-out users (including an open code request or an unfinished
-/// onboarding) only reach Welcome and sign-in; signed-in users skip them for
-/// Home. The splash and the debug gallery are never redirected, and other
-/// routes wait on the splash while the session is still loading.
+/// Each status only reaches its own screens (design system 10.2):
+/// signed out → Welcome, S03, S04 and S09; an open code request → S03, S04
+/// and S09 (else S04); no name → S05; no PIN → S06; locked → S08 and S09.
+/// An unlocked user leaving a sign-in step goes to S07, which moves on to
+/// Home when there is nothing to offer; other sign-in screens send them Home.
+/// The splash and the debug gallery are never redirected, and other routes
+/// wait on the splash while the session is still loading.
 ///
-/// Until their routes exist, `locked` opens Home instead of `/lock` (S08),
-/// and `otpPending`, `needsName` and `needsPin` go to Welcome instead of
-/// S04, S05 and S06. After sign-in, a pending invite link should open the
-/// join screen (PRD 8.1).
+/// After sign-in, a pending invite link should open the join screen
+/// (PRD 8.1), and the lock should return to the route it covered.
 String? authRedirect(AsyncValue<AuthStatus> status, Uri uri) {
   final path = uri.path;
   if (path == const SplashRoute().location || path == const GalleryRoute().location) {
     return null;
   }
 
-  final isPublic = path == const WelcomeRoute().location || path == const SignInRoute().location;
+  final welcome = const WelcomeRoute().location;
+  final signIn = const SignInRoute().location;
+  final code = const VerifyOtpRoute().location;
+  final name = const FillNameRoute().location;
+  final newPin = const SetPinRoute().location;
+  final biometric = const BiometricRoute().location;
+  final lock = const LockRoute().location;
+  final forgotPin = const ForgotPinRoute().location;
+
+  final signedOutPaths = {welcome, signIn, code, forgotPin};
   if (!status.hasValue && !status.hasError) {
-    return isPublic ? null : const SplashRoute().location;
+    return signedOutPaths.contains(path) ? null : const SplashRoute().location;
   }
 
-  final signedIn = switch (status.value) {
-    AuthLocked() || AuthUnlocked() => true,
-    _ => false,
+  String? only(Set<String> allowed, String fallback) => allowed.contains(path) ? null : fallback;
+
+  return switch (status.value) {
+    null || AuthSignedOut() => only(signedOutPaths, welcome),
+    AuthOtpPending() => only({signIn, code, forgotPin}, code),
+    AuthNeedsName() => only({name}, name),
+    AuthNeedsPin() => only({newPin}, newPin),
+    AuthLocked() => only({lock, forgotPin}, lock),
+    AuthUnlocked() when {code, name, newPin, forgotPin}.contains(path) => biometric,
+    AuthUnlocked() when {welcome, signIn, lock}.contains(path) => const HomeRoute().location,
+    AuthUnlocked() => null,
   };
-  if (!signedIn) return isPublic ? null : const WelcomeRoute().location;
-  return isPublic ? const HomeRoute().location : null;
 }

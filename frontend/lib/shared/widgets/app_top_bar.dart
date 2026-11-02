@@ -44,6 +44,9 @@ mixin _ScrolledUnder<T extends StatefulWidget> on State<T> {
 class const AppTopBar({
   super.key,
   final String? title,
+
+  /// Overrides the `title` style, e.g. the small step label on S06.
+  final TextStyle? titleStyle,
   final List<Widget> actions = const [],
 
   /// Replaces the back / close button.
@@ -108,7 +111,7 @@ class _AppTopBarState() extends State<AppTopBar> with _ScrolledUnder {
                             header: true,
                             child: Text(
                               widget.title!,
-                              style: t.title.copyWith(color: c.textPrimary),
+                              style: (widget.titleStyle ?? t.title).copyWith(color: c.textPrimary),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),

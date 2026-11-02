@@ -55,6 +55,11 @@ class PinLockController() extends _$PinLockController {
     }
   }
 
+  /// Drops the shown error once the user starts a new entry.
+  void clearFailure() {
+    if (state.failure != null) state = state.copyWith(failure: null);
+  }
+
   /// Shows the biometric prompt with [reason]; a pass unlocks. A cancel or
   /// an unavailable biometric leaves the PIN pad as it is.
   Future<void> unlockWithBiometric(String reason) async {

@@ -104,7 +104,9 @@ class EmailOtpController() extends _$EmailOtpController {
       return;
     }
 
-    state = AsyncData(current.copyWith(resending: true, failure: null));
+    // Keep the failure while sending, so an expired card shows the spinner
+    // on "Kirim kode baru" instead of flipping back to empty boxes early.
+    state = AsyncData(current.copyWith(resending: true));
 
     final result = await ref.read(resendEmailOtpUseCaseProvider)((
       otpId: otpId,
@@ -118,8 +120,11 @@ class EmailOtpController() extends _$EmailOtpController {
           resending: false,
           failure: failure,
         ),
+        // A new code reopens the card: drop the old failure (such as
+        // otp_expired) so the code boxes come back.
         Right(value: final sent) => current.copyWith(
           resending: false,
+          failure: null,
           pending: current.pending?.copyWith(challenge: sent),
         ),
       },

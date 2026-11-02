@@ -22,6 +22,7 @@ export 'confirmation_sheet.dart';
 export 'countdown_text.dart';
 export 'dashed_border.dart';
 export 'doodle.dart';
+export 'email_code_card.dart';
 export 'email_field.dart';
 export 'empty_state.dart';
 export 'headline_text.dart';

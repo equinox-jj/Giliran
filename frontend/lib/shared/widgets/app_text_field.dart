@@ -14,8 +14,17 @@ class const AppTextField({
   final TextEditingController? controller,
   final FocusNode? focusNode,
   final String? label,
+
+  /// A lighter note after [label], such as "(opsional)".
+  final String? labelHint,
   final String? hint,
   final String? helper,
+
+  /// An `AppIcons` asset in front of [helper].
+  final String? helperIcon,
+
+  /// Right-aligned under the field, such as the "22/50" character count.
+  final String? counter,
   final String? errorText,
   final TextInputType? keyboardType,
   final TextInputAction? textInputAction,
@@ -32,8 +41,12 @@ class const AppTextField({
   final bool enableSuggestions = true,
   final TextCapitalization textCapitalization = TextCapitalization.sentences,
 
-  /// Leading widget inside the field (e.g. the +62 chip or the Rp prefix).
+  /// Leading widget inside the field (e.g. the +62 segment or the Rp prefix).
   final Widget? prefix,
+
+  /// Lays [prefix] against the field's start edge with no padding, for a
+  /// segment that fills the field's height (the +62 of `PhoneField`).
+  final bool prefixFlush = false,
 
   /// Trailing widget inside the field (clear button, calendar icon).
   final Widget? suffix,
@@ -82,9 +95,9 @@ class const AppTextField({
         prefixIcon: prefix == null
             ? null
             : Padding(
-                padding: const EdgeInsetsDirectional.only(
-                  start: AppSpace.s3,
-                  end: AppSpace.s2,
+                padding: EdgeInsetsDirectional.only(
+                  start: prefixFlush ? 0 : AppSpace.s3,
+                  end: prefixFlush ? 0 : AppSpace.s2,
                 ),
                 // The decorator forces the prefix to the full field height;
                 // center it and keep it at its own width.
@@ -106,8 +119,17 @@ class const AppTextField({
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (label != null) ...[
-            Text(
-              label!,
+            Text.rich(
+              TextSpan(
+                text: label,
+                children: [
+                  if (labelHint case final labelHint?)
+                    TextSpan(
+                      text: ' $labelHint',
+                      style: TextStyle(color: c.textTertiary, fontWeight: FontWeight.w500),
+                    ),
+                ],
+              ),
               style: t.caption.copyWith(
                 color: c.textPrimary,
                 fontWeight: FontWeight.w600,
@@ -116,11 +138,13 @@ class const AppTextField({
             const SizedBox(height: 6),
           ],
           field,
-          if (hasError || helper != null) ...[
+          if (hasError || helper != null || counter != null) ...[
             const SizedBox(height: 6),
             FieldMessage(
-              text: hasError ? errorText! : helper!,
+              text: hasError ? errorText! : helper ?? '',
               isError: hasError,
+              icon: hasError ? null : helperIcon,
+              trailing: counter,
             ),
           ],
         ],
@@ -130,29 +154,46 @@ class const AppTextField({
 }
 
 /// Helper or error line under a field. Errors get a `WarningCircle` and are
-/// announced as a live region.
-class const FieldMessage({super.key, required final String text, final bool isError = false}) extends StatelessWidget {
+/// announced as a live region; a helper may carry its own [icon]. [trailing]
+/// sits at the end in tabular figures (the character count).
+class const FieldMessage({
+  super.key,
+  required final String text,
+  final bool isError = false,
+  final String? icon,
+  final String? trailing,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
     final t = AppTextStyles.of(context);
     final color = isError ? c.rejected.fg : c.textSecondary;
+    final icon = isError ? AppIcons.warningCircle : this.icon;
     return Semantics(
       liveRegion: isError,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (isError) ...[
-            AppIcon(
-              AppIcons.warningCircle,
-              size: AppSizes.iconSm,
-              color: color,
+          if (icon != null) ...[
+            Padding(
+              padding: const EdgeInsets.only(top: 1),
+              child: AppIcon(icon, size: AppSizes.iconSm, color: color),
             ),
-            const SizedBox(width: AppSpace.s1),
+            const SizedBox(width: 6),
           ],
           Expanded(
             child: Text(text, style: t.caption.copyWith(color: color)),
           ),
+          if (trailing case final trailing?) ...[
+            const SizedBox(width: AppSpace.s2),
+            Text(
+              trailing,
+              style: t.caption.copyWith(
+                color: c.textTertiary,
+                fontFeatures: AppTextStyles.tabularFigures,
+              ),
+            ),
+          ],
         ],
       ),
     );

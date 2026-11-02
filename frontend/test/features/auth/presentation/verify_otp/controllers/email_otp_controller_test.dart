@@ -120,4 +120,21 @@ void main() {
     expect(state().pending?.challenge, sent);
     expect(state().resending, isFalse);
   });
+
+  test('a new code after otp_expired clears the failure', () async {
+    // Arrange
+    repository.verifyResult = const Left(
+      Failure.badRequest(code: ApiErrorCode.otpExpired, status: 422),
+    );
+    await controller().verify('123456');
+    repository.challengeResult = Right(
+      EmailOtpChallenge(id: 'otp-1', attemptsRemaining: 5, codeLength: 6),
+    );
+
+    // Act
+    await controller().resend();
+
+    // Assert
+    expect(state().failure, isNull);
+  });
 }

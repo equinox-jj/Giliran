@@ -50,9 +50,15 @@ class SetPinController() extends _$SetPinController {
       case Left(value: final failure):
         state = SetPinState(failure: failure);
       case Right():
-        state = const SetPinState(done: true);
+        // Keeps the "Ulangi PIN" step on screen while the session reloads.
+        state = SetPinState(firstPin: firstPin, done: true);
         await ref.read(authSessionControllerProvider.notifier).refresh(unlocked: true);
     }
+  }
+
+  /// Drops the shown error once the user starts a new entry.
+  void clearFailure() {
+    if (state.failure != null) state = state.copyWith(failure: null);
   }
 
   /// Back to the first entry, such as from the app bar's back on step 2.

@@ -4,9 +4,15 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../core/error/failure.dart';
+import '../features/auth/presentation/biometric_opt_in/page/biometric_opt_in_page.dart';
+import '../features/auth/presentation/fill_name/page/fill_name_page.dart';
+import '../features/auth/presentation/forgot_pin/page/forgot_pin_page.dart';
+import '../features/auth/presentation/pin_lock/page/pin_lock_page.dart';
+import '../features/auth/presentation/set_pin/page/set_pin_page.dart';
 import '../features/auth/presentation/shared/controllers/auth_session_controller.dart';
 import '../features/auth/presentation/sign_in/page/sign_in_page.dart';
 import '../features/auth/presentation/splash/page/splash_page.dart';
+import '../features/auth/presentation/verify_otp/page/verify_otp_page.dart';
 import '../features/auth/presentation/welcome/page/welcome_page.dart';
 import '../features/group/presentation/pages/groups_page.dart';
 import '../features/history/presentation/pages/activity_page.dart';
@@ -102,9 +108,12 @@ class const ProfileRoute() extends GoRouteData with $ProfileRoute {
 }
 
 /// S01 launch gate. After the hold it waits for the session to load, then
-/// heads for Home; the guard (`authRedirect`) sends signed-out users to
-/// Welcome instead.
-@TypedGoRoute<SplashRoute>(name: 'splash', path: '/')
+/// heads for Home; the guard (`authRedirect`) sends the user to Welcome, an
+/// unfinished sign-in step or the lock instead.
+@TypedGoRoute<SplashRoute>(
+  name: 'splash',
+  path: '/',
+)
 class const SplashRoute() extends GoRouteData with $SplashRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) => SplashPage(
@@ -123,7 +132,10 @@ class const SplashRoute() extends GoRouteData with $SplashRoute {
 }
 
 /// S02 onboarding pager for signed-out users.
-@TypedGoRoute<WelcomeRoute>(name: 'welcome', path: '/welcome')
+@TypedGoRoute<WelcomeRoute>(
+  name: 'welcome',
+  path: '/welcome',
+)
 class const WelcomeRoute() extends GoRouteData with $WelcomeRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) => WelcomePage(
@@ -131,14 +143,105 @@ class const WelcomeRoute() extends GoRouteData with $WelcomeRoute {
   );
 }
 
-@TypedGoRoute<SignInRoute>(name: 'signIn', path: '/sign-in')
-class const SignInRoute() extends GoRouteData with $SignInRoute {
+/// S03 Sign in with email. [$extra] prefills the address when coming back
+/// from S04 ("Ubah").
+@TypedGoRoute<SignInRoute>(
+  name: 'signIn',
+  path: '/auth/email',
+)
+class const SignInRoute({final String? $extra}) extends GoRouteData with $SignInRoute {
   @override
-  Widget build(BuildContext context, GoRouterState state) => const SignInPage();
+  Widget build(BuildContext context, GoRouterState state) => SignInPage(
+    initialEmail: $extra,
+    onCodeSent: () => const VerifyOtpRoute().push<void>(context),
+  );
+}
+
+/// S04 Enter code (and PIN), for the request kept on the device.
+@TypedGoRoute<VerifyOtpRoute>(
+  name: 'verifyOtp',
+  path: '/auth/email/code',
+)
+class const VerifyOtpRoute() extends GoRouteData with $VerifyOtpRoute {
+  @override
+  Widget build(BuildContext context, GoRouterState state) => VerifyOtpPage(
+    onChangeEmail: (email) {
+      // Back to S03 when it is underneath (it still holds the address).
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        SignInRoute($extra: email).go(context);
+      }
+    },
+    onForgotPin: (email) => ForgotPinRoute($extra: email).push<void>(context),
+  );
+}
+
+/// S05 Fill in name, for a new account.
+@TypedGoRoute<FillNameRoute>(
+  name: 'fillName',
+  path: '/auth/name',
+)
+class const FillNameRoute() extends GoRouteData with $FillNameRoute {
+  @override
+  Widget build(BuildContext context, GoRouterState state) => const FillNamePage();
+}
+
+/// S06 Set PIN, for an account without one.
+@TypedGoRoute<SetPinRoute>(
+  name: 'setPin',
+  path: '/auth/pin/new',
+)
+class const SetPinRoute() extends GoRouteData with $SetPinRoute {
+  @override
+  Widget build(BuildContext context, GoRouterState state) => const SetPinPage();
+}
+
+/// S07 Biometric opt-in. The guard opens it after every sign-in step; it
+/// goes on to Home at once when there is nothing to offer.
+@TypedGoRoute<BiometricRoute>(
+  name: 'biometric',
+  path: '/auth/biometric',
+)
+class const BiometricRoute() extends GoRouteData with $BiometricRoute {
+  @override
+  Widget build(BuildContext context, GoRouterState state) => BiometricOptInPage(
+    onDone: () => const HomeRoute().go(context),
+  );
+}
+
+/// S08 PIN lock for a session on this device.
+@TypedGoRoute<LockRoute>(
+  name: 'lock',
+  path: '/lock',
+)
+class const LockRoute() extends GoRouteData with $LockRoute {
+  @override
+  Widget build(BuildContext context, GoRouterState state) => PinLockPage(
+    onForgotPin: (email) => ForgotPinRoute($extra: email).push<void>(context),
+  );
+}
+
+/// S09 Forgot PIN, from S08 or the PIN step of S04. [$extra] is the account
+/// email the code goes to.
+@TypedGoRoute<ForgotPinRoute>(
+  name: 'forgotPin',
+  path: '/auth/pin/forgot',
+)
+class const ForgotPinRoute({final String? $extra}) extends GoRouteData with $ForgotPinRoute {
+  @override
+  Widget build(BuildContext context, GoRouterState state) => ForgotPinPage(
+    email: $extra,
+    // The splash hands over to the guard, which picks the right screen.
+    onBack: () => context.canPop() ? context.pop() : const SplashRoute().go(context),
+  );
 }
 
 /// Debug-only component gallery; release builds land on Home instead.
-@TypedGoRoute<GalleryRoute>(name: 'gallery', path: '/gallery')
+@TypedGoRoute<GalleryRoute>(
+  name: 'gallery',
+  path: '/gallery',
+)
 class const GalleryRoute() extends GoRouteData with $GalleryRoute {
   @override
   String? redirect(BuildContext context, GoRouterState state) => kDebugMode ? null : const HomeRoute().location;

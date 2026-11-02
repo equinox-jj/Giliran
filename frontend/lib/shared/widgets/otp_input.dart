@@ -4,7 +4,8 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/themes/themes.dart';
 import 'shake.dart';
 
-/// Six code boxes (48 × 56) driven by ONE hidden text field, so paste,
+/// Six code boxes (48 × 58, spread across the width and shrinking to fit
+/// narrow screens) driven by ONE hidden text field, so paste,
 /// one-time-code autofill and screen readers treat the code as one value
 /// ("Kode 6 digit"). Auto-submits on the last digit.
 ///
@@ -70,16 +71,21 @@ class _OtpInputState() extends State<OtpInput> {
     final text = _controller.text;
     final enabled = !widget.checking;
 
+    // Boxes keep 48 × 58 and spread across the width; on narrow screens
+    // they shrink evenly (same ratio) so six of them never overflow.
     final boxes = Row(
-      mainAxisSize: MainAxisSize.min,
-      spacing: AppSpace.s2,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        for (var i = 0; i < widget.length; i++)
-          _OtpBox(
-            digit: i < text.length ? text[i] : '',
-            current: _focus.hasFocus && i == text.length.clamp(0, widget.length - 1),
-            error: widget.error,
+        for (var i = 0; i < widget.length; i++) ...[
+          if (i > 0) const SizedBox(width: AppSpace.s1),
+          Flexible(
+            child: _OtpBox(
+              digit: i < text.length ? text[i] : '',
+              current: _focus.hasFocus && i == text.length.clamp(0, widget.length - 1),
+              error: widget.error,
+            ),
           ),
+        ],
       ],
     );
 
@@ -130,11 +136,14 @@ class _OtpInputState() extends State<OtpInput> {
         ),
         if (widget.checking) ...[
           const SizedBox(height: AppSpace.s3),
-          SizedBox.square(
-            dimension: AppSizes.iconSm,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: c.textPrimary,
+          // Its own layer, so the spinner's frames don't repaint the boxes.
+          RepaintBoundary(
+            child: SizedBox.square(
+              dimension: AppSizes.iconSm,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: c.textPrimary,
+              ),
             ),
           ),
         ],
@@ -143,7 +152,8 @@ class _OtpInputState() extends State<OtpInput> {
   }
 }
 
-/// One 48 × 56 code box. [current] marks where the next digit lands.
+/// One code box, at most 48 × 58. [current] marks where the next digit
+/// lands: a 2 px ink border with a blinking caret while it is empty.
 class const _OtpBox({
   required final String digit,
   required final bool current,
@@ -152,26 +162,77 @@ class const _OtpBox({
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
-    final (Color color, double width) = error
+    final (Color borderColor, double stroke) = error
         ? (c.rejected.fg, AppStroke.strong)
         : current
         ? (c.textPrimary, AppStroke.strong)
-        : (c.borderStrong, AppStroke.regular);
-    return Container(
-      width: AppSizes.otpBoxW,
-      height: AppSizes.otpBoxH,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: c.surface,
-        borderRadius: BorderRadius.circular(AppRadius.sm),
-        border: Border.all(color: color, width: width),
-      ),
-      child: Text(
-        digit,
-        style: AppTextStyles.of(context).amountLg.copyWith(
-          color: c.textPrimary,
+        : digit.isNotEmpty
+        ? (c.borderStrong, AppStroke.regular)
+        : (c.hairline, AppStroke.regular);
+
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: AppSizes.otpBoxW),
+      child: AspectRatio(
+        aspectRatio: AppSizes.otpBoxW / AppSizes.otpBoxH,
+        child: Container(
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: c.surface,
+            borderRadius: BorderRadius.circular(AppRadius.sm),
+            border: Border.all(color: borderColor, width: stroke),
+          ),
+          child: current && digit.isEmpty && !error
+              ? const _Caret()
+              : FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    digit,
+                    style: AppTextStyles.of(context).amountLg.copyWith(
+                      color: c.textPrimary,
+                    ),
+                  ),
+                ),
         ),
       ),
     );
   }
+}
+
+/// The 2 × 28 blinking caret in the current empty box. Stays on when the
+/// platform asks for reduced motion.
+class const _Caret() extends StatefulWidget {
+  @override
+  State<_Caret> createState() => _CaretState();
+}
+
+class _CaretState() extends State<_Caret> with SingleTickerProviderStateMixin {
+  late final AnimationController _blink = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 500),
+  );
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (AppMotion.reduced(context)) {
+      _blink
+        ..stop()
+        ..value = 1;
+    } else if (!_blink.isAnimating) {
+      _blink.repeat(reverse: true);
+    }
+  }
+
+  @override
+  void dispose() {
+    _blink.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => FadeTransition(
+    // A hard on/off blink rather than a fade.
+    opacity: _blink.drive(CurveTween(curve: const Threshold(0.5))),
+    child: Container(width: 2, height: 28, color: context.colors.textPrimary),
+  );
 }

@@ -5,9 +5,11 @@ import 'package:giliran/app/app.dart';
 import 'package:giliran/app/router.dart';
 import 'package:giliran/app/routes.dart';
 import 'package:giliran/core/error/failure.dart';
+import 'package:giliran/core/services/biometric_service.dart';
 import 'package:giliran/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:giliran/features/auth/domain/entities/auth_status.dart';
 import 'package:giliran/features/auth/presentation/shared/controllers/auth_session_controller.dart';
+import 'package:giliran/features/auth/presentation/pin_lock/page/pin_lock_page.dart';
 import 'package:giliran/features/auth/presentation/sign_in/page/sign_in_page.dart';
 import 'package:giliran/features/auth/presentation/splash/page/splash_page.dart';
 import 'package:giliran/features/auth/presentation/welcome/page/welcome_page.dart';
@@ -27,7 +29,10 @@ void main() {
     // Signed out by default.
     repository = FakeAuthRepository()..hasSessionResult = const Right(false);
     container = ProviderContainer(
-      overrides: [authRepositoryProvider.overrideWithValue(repository)],
+      overrides: [
+        authRepositoryProvider.overrideWithValue(repository),
+        biometricServiceProvider.overrideWithValue(FakeBiometricService()),
+      ],
     );
   });
   tearDown(() => container.dispose());
@@ -47,6 +52,11 @@ void main() {
     );
     // Let the splash hold run out so no timer is left pending.
     await tester.pump(SplashPage.minHold);
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> unlock(WidgetTester tester) async {
+    container.read(authSessionControllerProvider.notifier).unlock();
     await tester.pumpAndSettle();
   }
 
@@ -105,14 +115,17 @@ void main() {
   });
 
   group('signed in', () {
-    testWidgets('the splash leaves for Home inside the nav shell', (tester) async {
+    testWidgets('the splash leaves for the lock, and unlocking opens Home', (tester) async {
       // Arrange
       signIn();
+      await pumpRouterApp(tester);
+      final lockShown = find.byType(PinLockPage).evaluate().isNotEmpty;
 
       // Act
-      await pumpRouterApp(tester);
+      await unlock(tester);
 
       // Assert
+      expect(lockShown, isTrue);
       expect(find.byType(HomePage), findsOneWidget);
       expect(find.byType(AppNavShell), findsOneWidget);
     });
@@ -121,6 +134,7 @@ void main() {
       // Arrange
       signIn();
       await pumpRouterApp(tester);
+      await unlock(tester);
 
       // Act
       await tester.tap(find.text('Grup').last);
@@ -135,6 +149,7 @@ void main() {
       // Arrange
       signIn();
       await pumpRouterApp(tester);
+      await unlock(tester);
 
       // Act
       await go(tester, const ProfileRoute().location);
@@ -164,6 +179,13 @@ void main() {
   group('authRedirect', () {
     final home = Uri.parse(const HomeRoute().location);
     final welcome = Uri.parse(const WelcomeRoute().location);
+    final signIn = Uri.parse(const SignInRoute().location);
+    final code = Uri.parse(const VerifyOtpRoute().location);
+    final name = Uri.parse(const FillNameRoute().location);
+    final newPin = Uri.parse(const SetPinRoute().location);
+    final biometric = Uri.parse(const BiometricRoute().location);
+    final lock = Uri.parse(const LockRoute().location);
+    final forgotPin = Uri.parse(const ForgotPinRoute().location);
     final splash = const SplashRoute().location;
 
     test('holds protected routes on the splash while loading', () {
@@ -173,10 +195,12 @@ void main() {
       // Act
       final onHome = authRedirect(status, home);
       final onWelcome = authRedirect(status, welcome);
+      final onCode = authRedirect(status, code);
 
       // Assert
       expect(onHome, splash);
       expect(onWelcome, isNull);
+      expect(onCode, isNull);
     });
 
     test('never redirects the splash or the gallery', () {
@@ -195,34 +219,108 @@ void main() {
       expect(onGallery, isNull);
     });
 
-    test('sends every unfinished status to Welcome', () {
+    test('keeps a signed-out user on Welcome, sign-in, code and forgot PIN', () {
       // Arrange
       const statuses = [
         AsyncData<AuthStatus>(AuthStatus.signedOut()),
-        AsyncData<AuthStatus>(AuthStatus.otpPending()),
-        AsyncData<AuthStatus>(AuthStatus.needsName()),
-        AsyncData<AuthStatus>(AuthStatus.needsPin()),
         AsyncError<AuthStatus>(Failure.cache(), StackTrace.empty),
       ];
 
       // Act
-      final targets = [for (final s in statuses) authRedirect(s, home)];
+      final targets = [
+        for (final s in statuses) ...[
+          authRedirect(s, home),
+          authRedirect(s, lock),
+          authRedirect(s, signIn),
+          authRedirect(s, code),
+          authRedirect(s, forgotPin),
+        ],
+      ];
 
       // Assert
-      expect(targets, everyElement(const WelcomeRoute().location));
+      final w = const WelcomeRoute().location;
+      expect(targets, [w, w, null, null, null, w, w, null, null, null]);
     });
 
-    test('sends a signed-in user from Welcome to Home', () {
+    test('resumes an open code request on the code screen', () {
       // Arrange
-      const locked = AsyncData<AuthStatus>(AuthStatus.locked());
-      const unlocked = AsyncData<AuthStatus>(AuthStatus.unlocked());
+      const status = AsyncData<AuthStatus>(AuthStatus.otpPending());
 
       // Act
-      final fromWelcome = authRedirect(locked, welcome);
-      final onHome = authRedirect(unlocked, home);
+      final fromHome = authRedirect(status, home);
+      final fromWelcome = authRedirect(status, welcome);
+      final onSignIn = authRedirect(status, signIn);
+      final onCode = authRedirect(status, code);
 
       // Assert
-      expect(fromWelcome, const HomeRoute().location);
+      expect(fromHome, code.path);
+      expect(fromWelcome, code.path);
+      expect(onSignIn, isNull);
+      expect(onCode, isNull);
+    });
+
+    test('sends onboarding statuses to their step only', () {
+      // Arrange
+      const needsName = AsyncData<AuthStatus>(AuthStatus.needsName());
+      const needsPin = AsyncData<AuthStatus>(AuthStatus.needsPin());
+
+      // Act
+      final nameFromHome = authRedirect(needsName, home);
+      final nameOnName = authRedirect(needsName, name);
+      final pinFromName = authRedirect(needsPin, name);
+      final pinOnPin = authRedirect(needsPin, newPin);
+
+      // Assert
+      expect(nameFromHome, name.path);
+      expect(nameOnName, isNull);
+      expect(pinFromName, newPin.path);
+      expect(pinOnPin, isNull);
+    });
+
+    test('a locked session reaches only the lock and forgot PIN', () {
+      // Arrange
+      const status = AsyncData<AuthStatus>(AuthStatus.locked());
+
+      // Act
+      final fromHome = authRedirect(status, home);
+      final fromWelcome = authRedirect(status, welcome);
+      final onLock = authRedirect(status, lock);
+      final onForgot = authRedirect(status, forgotPin);
+
+      // Assert
+      expect(fromHome, lock.path);
+      expect(fromWelcome, lock.path);
+      expect(onLock, isNull);
+      expect(onForgot, isNull);
+    });
+
+    test('an unlocked user leaves sign-in steps for the biometric offer', () {
+      // Arrange
+      const status = AsyncData<AuthStatus>(AuthStatus.unlocked());
+
+      // Act
+      final fromSteps = [
+        for (final uri in [code, name, newPin, forgotPin]) authRedirect(status, uri),
+      ];
+      final onBiometric = authRedirect(status, biometric);
+
+      // Assert
+      expect(fromSteps, everyElement(biometric.path));
+      expect(onBiometric, isNull);
+    });
+
+    test('an unlocked user skips Welcome, sign-in and the lock for Home', () {
+      // Arrange
+      const status = AsyncData<AuthStatus>(AuthStatus.unlocked());
+
+      // Act
+      final targets = [
+        for (final uri in [welcome, signIn, lock]) authRedirect(status, uri),
+      ];
+      final onHome = authRedirect(status, home);
+
+      // Assert
+      expect(targets, everyElement(const HomeRoute().location));
       expect(onHome, isNull);
     });
   });

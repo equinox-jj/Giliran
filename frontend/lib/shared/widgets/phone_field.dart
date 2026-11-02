@@ -5,15 +5,21 @@ import '../../core/themes/themes.dart';
 import '../../core/utils/phone_formatter.dart';
 import 'app_text_field.dart';
 
-/// Phone field with a fixed +62 chip. Accepts 08…, 62…, +62… (typed or
+/// Phone field with a fixed +62 segment. Accepts 08…, 62…, +62… (typed or
 /// pasted) and keeps only the local part. Read the value with
 /// [PhoneField.e164]. Used for guest numbers and the optional WhatsApp number,
 /// never for sign-in.
 class const PhoneField({
   super.key,
   required final TextEditingController controller,
-  final String label = 'Nomor WhatsApp (opsional)',
+  final String label = 'Nomor WhatsApp',
+
+  /// The lighter note after [label].
+  final String? labelHint = '(opsional)',
   final String? helper,
+
+  /// An `AppIcons` asset in front of [helper].
+  final String? helperIcon,
   final String? errorText,
   final ValueChanged<String>? onChanged,
   final TextInputAction textInputAction = TextInputAction.done,
@@ -48,7 +54,9 @@ class _PhoneFieldState() extends State<PhoneField> {
     return AppTextField(
       controller: widget.controller,
       label: widget.label,
+      labelHint: widget.labelHint,
       helper: widget.helper,
+      helperIcon: widget.helperIcon,
       errorText: widget.errorText,
       hint: '812-3456-7890',
       keyboardType: TextInputType.phone,
@@ -58,18 +66,41 @@ class _PhoneFieldState() extends State<PhoneField> {
       enableSuggestions: false,
       inputFormatters: const [_LocalPhoneFormatter()],
       onChanged: widget.onChanged,
-      prefix: Container(
-        height: 32,
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        decoration: ShapeDecoration(color: c.subtle, shape: AppShapes.pill),
-        child: Center(
-          widthFactor: 1,
-          child: Text(
-            '+62',
-            style: t.label.copyWith(
-              color: c.textPrimary,
-              fontFeatures: AppTextStyles.tabularFigures,
-            ),
+      prefixFlush: true,
+      prefix: Padding(
+        // Inset by the focus stroke so the segment never covers the border.
+        padding: const EdgeInsetsDirectional.only(
+          start: AppStroke.strong,
+          top: AppStroke.strong,
+          bottom: AppStroke.strong,
+          end: AppSpace.s3,
+        ),
+        child: SizedBox(
+          height: AppSizes.inputH - 2 * AppStroke.strong,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14),
+                decoration: BoxDecoration(
+                  color: c.subtle,
+                  borderRadius: const BorderRadiusDirectional.horizontal(
+                    start: Radius.circular(AppRadius.sm - AppStroke.strong),
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  '+62',
+                  style: t.bodyLg.copyWith(
+                    color: c.textPrimary,
+                    fontWeight: FontWeight.w600,
+                    fontFeatures: AppTextStyles.tabularFigures,
+                  ),
+                ),
+              ),
+              Container(width: 1, color: c.hairline),
+            ],
           ),
         ),
       ),

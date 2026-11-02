@@ -2,8 +2,9 @@
 /// keys.
 abstract final class ApiEndpoints() {
   /// Base URL for all requests. Override with
-  /// `--dart-define=API_BASE_URL=http://10.0.2.2:8080/api/v1` for a local
-  /// backend.
+  /// `--dart-define=API_BASE_URL=http://10.0.2.2:8080/api/v1` android
+  /// `--dart-define=API_BASE_URL=http://localhost:8080/api/v1` ios
+  /// for a local backend.
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
     defaultValue: 'https://giliran.monai.my.id/api/v1',

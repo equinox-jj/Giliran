@@ -32,6 +32,10 @@ class const AppBanner({
   final String? actionLabel,
   final VoidCallback? onAction,
   final VoidCallback? onDismiss,
+
+  /// A tighter strip (12 radius, 10 vertical padding) for one-line hints
+  /// under an input, such as the weak PIN hint on S06.
+  final bool compact = false,
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -43,13 +47,13 @@ class const AppBanner({
       container: true,
       liveRegion: variant == AppBannerVariant.error,
       child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpace.s4,
-          vertical: AppSpace.s3,
+        padding: EdgeInsets.symmetric(
+          horizontal: compact ? 14 : AppSpace.s4,
+          vertical: compact ? 10 : AppSpace.s3,
         ),
         decoration: BoxDecoration(
           color: colors.bg,
-          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderRadius: BorderRadius.circular(compact ? AppRadius.sm : AppRadius.md),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,

@@ -17,6 +17,9 @@ enum AppButtonVariant() {
   /// Low emphasis: Batal, Nanti saja, Lewati.
   ghost,
 
+  /// A text action in `text.link`: Ubah, Lupa PIN?.
+  link,
+
   /// Only inside a confirmation dialog.
   destructive,
 }
@@ -90,6 +93,19 @@ class AppButton extends StatelessWidget {
     this.semanticLabel,
   }) : variant = AppButtonVariant.ghost;
 
+  const new link({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.size = AppButtonSize.regular,
+    this.icon,
+    this.trailingIcon,
+    this.loading = false,
+    this.block = false,
+    this.disabledReason,
+    this.semanticLabel,
+  }) : variant = AppButtonVariant.link;
+
   const new destructive({
     super.key,
     required this.label,
@@ -126,8 +142,10 @@ class AppButton extends StatelessWidget {
   double get _height => switch (size) {
     AppButtonSize.xsmall => AppSizes.buttonHXs,
     AppButtonSize.small => AppSizes.buttonHSm,
-    AppButtonSize.regular =>
-      variant == AppButtonVariant.tonal || variant == AppButtonVariant.ghost ? AppSizes.buttonHSm : AppSizes.buttonH,
+    AppButtonSize.regular => switch (variant) {
+      AppButtonVariant.tonal || AppButtonVariant.ghost || AppButtonVariant.link => AppSizes.buttonHSm,
+      _ => AppSizes.buttonH,
+    },
   };
 
   double get _padding => switch (size) {
@@ -154,6 +172,7 @@ class AppButton extends StatelessWidget {
         BorderSide.none,
       ),
       AppButtonVariant.ghost => (null, c.textPrimary, BorderSide.none),
+      AppButtonVariant.link => (null, c.link, BorderSide.none),
       AppButtonVariant.destructive => (
         c.dangerFill,
         c.onDanger,
@@ -161,7 +180,7 @@ class AppButton extends StatelessWidget {
       ),
     };
     if (!_enabled) {
-      fill = variant == AppButtonVariant.ghost ? null : c.subtle;
+      fill = variant == AppButtonVariant.ghost || variant == AppButtonVariant.link ? null : c.subtle;
       fg = c.textTertiary;
       side = BorderSide.none;
     }

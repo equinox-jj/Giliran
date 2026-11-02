@@ -24,8 +24,13 @@ abstract final class AppSizes() {
   static const greetingBarH = 72.0;
   static const heroMinH = 200.0;
   static const otpBoxW = 48.0;
-  static const otpBoxH = 56.0;
+  static const otpBoxH = 58.0;
+
+  /// PIN key on a typical phone; `PinPad` scales it between [pinKeyMin] and
+  /// [pinKeyMax] with the screen.
   static const pinKey = 72.0;
+  static const pinKeyMin = 56.0;
+  static const pinKeyMax = 88.0;
   static const pinDot = 16.0;
   static const checkbox = 22.0;
   static const radio = 24.0;

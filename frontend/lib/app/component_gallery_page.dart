@@ -46,6 +46,7 @@ class _GalleryState() extends State<_Gallery> {
     _ChipsSection(),
     _InputsSection(),
     _CodeSection(),
+    _EmailCodeSection(),
     _PeopleSection(),
     _ListsSection(),
     _DoodlesSection(),
@@ -215,6 +216,7 @@ class const _ButtonsSection() extends StatelessWidget {
               onPressed: () {},
             ),
             AppButton.ghost(label: 'Batal', onPressed: () {}),
+            AppButton.link(label: 'Lupa PIN?', onPressed: () {}),
             AppButton.destructive(
               label: 'Hapus akun',
               onPressed: () {},
@@ -679,6 +681,16 @@ class _CodeSectionState() extends State<_CodeSection> {
   final _resendAt = DateTime.now().add(const Duration(seconds: 42));
   final _pin = PinPadController();
   bool _otpError = false;
+  bool _pinChecking = false;
+
+  /// Shows the pad's checking state for a moment, then empties it.
+  Future<void> _checkPin(String _) async {
+    setState(() => _pinChecking = true);
+    await Future<void>.delayed(const Duration(milliseconds: 1500));
+    if (!mounted) return;
+    _pin.clear();
+    setState(() => _pinChecking = false);
+  }
 
   @override
   void dispose() {
@@ -713,8 +725,62 @@ class _CodeSectionState() extends State<_CodeSection> {
         Center(
           child: PinPad(
             controller: _pin,
+            checking: _pinChecking,
             onBiometric: () {},
-            onCompleted: (_) => _pin.clear(),
+            onCompleted: _checkPin,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// The email code card (8.35); tap a state chip to preview it.
+class const _EmailCodeSection() extends StatefulWidget {
+  @override
+  State<_EmailCodeSection> createState() => _EmailCodeSectionState();
+}
+
+class _EmailCodeSectionState() extends State<_EmailCodeSection> {
+  final _resendAt = DateTime.now().add(const Duration(seconds: 42));
+  var _state = EmailCodeCardState.waiting;
+
+  String? get _message => switch (_state) {
+    EmailCodeCardState.wrong => 'Kode salah. Sisa 2 kali coba.',
+    EmailCodeCardState.success => 'Kode benar',
+    _ => null,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SectionHeader(title: 'Kode email'),
+        Wrap(
+          spacing: AppSpace.s2,
+          runSpacing: AppSpace.s2,
+          children: [
+            for (final state in EmailCodeCardState.values)
+              AppChip(
+                label: state.name,
+                selected: state == _state,
+                onSelected: () => setState(() => _state = state),
+              ),
+          ],
+        ),
+        _gap,
+        EmailCodeCard(
+          emailMasked: 'ri•••••@gmail.com',
+          state: _state,
+          message: _message,
+          resendAvailableAt: _resendAt,
+          onChangeEmail: () => showAppToast(context, 'Ubah email'),
+          onResend: () => showAppToast(context, 'Kirim ulang'),
+          onRequestNew: () => setState(() => _state = EmailCodeCardState.waiting),
+          onRestart: () => setState(() => _state = EmailCodeCardState.waiting),
+          onCompleted: (code) => setState(
+            () => _state = code == '482913' ? EmailCodeCardState.success : EmailCodeCardState.wrong,
           ),
         ),
       ],
