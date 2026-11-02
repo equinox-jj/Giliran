@@ -102,6 +102,9 @@ class GiliranColors extends ThemeExtension<GiliranColors> {
   /// Light tones regardless of theme, for exported images (WhatsApp recap).
   static const List<GroupTone> exportTones = _lightTones;
 
+  /// Returns the colors for a payment [status].
+  ///
+  /// With [overdue], an unpaid or rejected payment uses the rejected colors.
   StatusColors forPayment(PaymentStatus status, {bool overdue = false}) {
     if (overdue &&
         (status == PaymentStatus.unpaid || status == PaymentStatus.rejected)) {
@@ -125,6 +128,7 @@ class GiliranColors extends ThemeExtension<GiliranColors> {
     return hash % count;
   }
 
+  /// Returns the tone assigned to [groupId]; a group always gets the same tone.
   GroupTone toneFor(String groupId) =>
       tones[toneIndexFor(groupId, count: tones.length)];
 
@@ -310,6 +314,7 @@ class GiliranColors extends ThemeExtension<GiliranColors> {
   }
 }
 
+/// Shortcut to the [GiliranColors] theme extension, used as `context.colors`.
 extension GiliranColorsX on BuildContext {
   GiliranColors get colors => Theme.of(this).extension<GiliranColors>()!;
 }

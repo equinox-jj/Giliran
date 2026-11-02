@@ -1,3 +1,6 @@
+// Package dto defines the JSON request and response bodies of the HTTP API
+// and converts service results into them, so the wire format stays separate
+// from the service and model types.
 package dto
 
 import (

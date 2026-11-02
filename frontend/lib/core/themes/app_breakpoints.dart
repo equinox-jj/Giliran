@@ -2,16 +2,23 @@ import 'package:flutter/widgets.dart';
 
 import 'app_sizes.dart';
 
+/// Window-width thresholds, in logical pixels, where the layout changes from one
+/// [SizeClass] to the next.
 abstract final class Breakpoints {
   static const medium = 600.0;
   static const expanded = 840.0;
 }
 
+/// Layout class of the window, which sets the grid columns, screen margin and
+/// gutter.
 enum SizeClass {
   compact,
   medium,
   expanded;
 
+  /// Returns the class for a window [width]: [SizeClass.expanded] from
+  /// [Breakpoints.expanded], [SizeClass.medium] from [Breakpoints.medium], otherwise
+  /// [SizeClass.compact].
   static SizeClass fromWidth(double width) {
     if (width >= Breakpoints.expanded) return SizeClass.expanded;
     if (width >= Breakpoints.medium) return SizeClass.medium;

@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 
+/// Animation durations and curves shared across the app.
 abstract final class AppMotion {
   /// Press, chip select, toggles.
   static const quick = Duration(milliseconds: 120);
@@ -23,6 +24,8 @@ abstract final class AppMotion {
   /// Pressed scale for buttons and tappable surfaces.
   static const pressScale = 0.97;
 
+  /// Whether the user asked the system to reduce animations. Callers should skip
+  /// or shorten motion when this is `true`.
   static bool reduced(BuildContext context) =>
       MediaQuery.disableAnimationsOf(context);
 }

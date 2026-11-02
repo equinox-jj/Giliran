@@ -1,3 +1,6 @@
+// Package model defines the domain entities and typed domain errors shared by
+// the repository, service and controller layers. It imports neither net/http
+// nor a database driver.
 package model
 
 import (

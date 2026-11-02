@@ -5,7 +5,7 @@ import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 
-import '../errors/failures.dart';
+import '../error/failure.dart';
 import 'log_redactor.dart';
 
 /// The app logger, built on `package:logging`. Debug builds and
@@ -36,6 +36,10 @@ abstract final class AppLogger {
     _subscription ??= Logger.root.onRecord.listen(_toDeveloper);
   }
 
+  /// Logs a debug message (`Level.FINE`).
+  ///
+  /// [tag] selects the `Giliran.<tag>` logger. [data] is redacted and appended as
+  /// indented JSON.
   static void d(String message, {String? tag, Object? data}) => _log(
     Level.FINE,
     message,
@@ -43,6 +47,7 @@ abstract final class AppLogger {
     data: data,
   );
 
+  /// Logs an informational message (`Level.INFO`); arguments work as in [d].
   static void i(String message, {String? tag, Object? data}) => _log(
     Level.INFO,
     message,
@@ -50,6 +55,8 @@ abstract final class AppLogger {
     data: data,
   );
 
+  /// Logs a warning (`Level.WARNING`); arguments work as in [d]. A [Failure]
+  /// passed as [error] is described by its code and request id only.
   static void w(
     String message, {
     String? tag,
@@ -65,6 +72,7 @@ abstract final class AppLogger {
     stackTrace: stackTrace,
   );
 
+  /// Logs an error (`Level.SEVERE`); arguments work as in [w].
   static void e(
     String message, {
     String? tag,
@@ -109,14 +117,14 @@ abstract final class AppLogger {
     }
   }
 
-  /// [ServerFailure] is described by its fields, since `detail` and
-  /// `extensions` may echo user input.
+  /// API failures are described by code and request id only, since
+  /// `detail` and `extensions` may echo user input.
   static String _describe(Object error) => switch (error) {
-    ServerFailure(:final code, :final status, :final requestId) =>
-      '${error.runtimeType}(code: ${code.apiValue}, status: $status, '
-          'requestId: $requestId)',
-    UnexpectedFailure(error: final inner) =>
-      'UnexpectedFailure(${scrub('$inner')})',
+    UnknownFailure(:final cause) ||
+    CacheFailure(:final cause) => '${error.runtimeType}(${scrub('$cause')})',
+    Failure(:final apiCode?) =>
+      '${error.runtimeType}(code: ${apiCode.apiValue}, '
+          'requestId: ${error.apiRequestId})',
     _ => scrub('$error'),
   };
 }

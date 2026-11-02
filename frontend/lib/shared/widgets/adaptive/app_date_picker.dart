@@ -8,6 +8,8 @@ import 'app_sheet.dart';
 /// Platform date picker: the themed Material picker on Android, a
 /// `CupertinoDatePicker` in a sheet on iOS.
 abstract final class AppDatePicker {
+  /// Shows the platform date picker and returns the chosen date, or `null` when
+  /// it is dismissed.
   static Future<DateTime?> show(
     BuildContext context, {
     required DateTime initialDate,

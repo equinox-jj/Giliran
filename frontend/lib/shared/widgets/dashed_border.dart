@@ -45,6 +45,8 @@ class DashedBorder extends StatelessWidget {
   );
 }
 
+/// Paints a dashed outline around a rounded rectangle, or around a circle when
+/// [circle] is `true`.
 class DashedBorderPainter extends CustomPainter {
   const DashedBorderPainter({
     required this.color,

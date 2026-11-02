@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:giliran/core/errors/errors.dart';
+import 'package:giliran/core/data/base_repository.dart';
+import 'package:giliran/core/error/error_mapper.dart';
+import 'package:giliran/core/error/exceptions.dart';
 import 'package:giliran/core/logger/logger.dart';
 import 'package:giliran/core/utils/enums/api_error_code.dart';
 import 'package:logging/logging.dart';
@@ -47,21 +49,22 @@ void main() {
     expect(records.single.message, 'x\n0:00:00.000000');
   });
 
-  test('describes a ServerFailure without detail or extensions', () {
-    AppLogger.e(
-      'failed',
-      error: const ServerFailure(
-        code: ApiErrorCode.unknown,
-        status: 500,
-        requestId: 'req-1',
-        detail: 'pin 482913 for sari@example.com',
-        extensions: {'pin': '482913'},
-      ),
+  test('describes an API failure by code and request id only', () {
+    // Arrange
+    const failure = Failure.badRequest(
+      code: ApiErrorCode.otpInvalid,
+      status: 422,
+      requestId: 'req-1',
+      extensions: {'pin': '482913'},
     );
 
+    // Act
+    AppLogger.e('failed', error: failure);
+
+    // Assert
     expect(
       records.single.error,
-      'ServerFailure(code: unknown, status: 500, requestId: req-1)',
+      'BadRequestFailure(code: otp_invalid, requestId: req-1)',
     );
   });
 
@@ -70,19 +73,26 @@ void main() {
     expect(records.single.error, 'Exception: no user «email»');
   });
 
-  test('guard logs unexpected failures only', () async {
-    await expectLater(
-      guard<void>(() async => throw const FormatException('bad body')),
-      throwsA(isA<UnexpectedFailure>()),
+  test('safeCall logs unexpected failures only', () async {
+    // Arrange
+    final repository = _Repository();
+
+    // Act
+    final unexpected = await repository.safeCall<void>(
+      () async => throw const FormatException('bad body'),
     );
-    await expectLater(
-      guard<void>(() async => throw const NetworkException()),
-      throwsA(isA<NetworkFailure>()),
+    final network = await repository.safeCall<void>(
+      () async => throw const NetworkException(),
     );
 
+    // Assert
+    expect(unexpected.getLeft().toNullable(), isA<UnknownFailure>());
+    expect(network.getLeft().toNullable(), const Failure.network());
     expect(records, hasLength(1));
     expect(records.single.loggerName, 'Giliran.data');
     expect(records.single.error, contains('bad body'));
     expect(records.single.stackTrace, isNotNull);
   });
 }
+
+class _Repository with BaseRepository {}

@@ -35,6 +35,8 @@ class EmailField extends StatefulWidget {
 
   static String normalize(String input) => input.trim().toLowerCase();
 
+  /// Whether [input], once normalized, looks like an email address. Checks the
+  /// shape only, not that the address exists.
   static bool isValidShape(String input) => _shape.hasMatch(normalize(input));
 
   static const formatError = 'Format email belum benar';

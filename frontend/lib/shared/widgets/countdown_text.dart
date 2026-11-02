@@ -33,6 +33,8 @@ class CountdownText extends StatefulWidget {
   final String? caption;
   final VoidCallback? onFinished;
 
+  /// Formats [d] as `HH:mm:ss`, with a leading day count (`2 hari 04:12:30`) when
+  /// it is a day or more.
   @visibleForTesting
   static String formatInline(Duration d) {
     String two(int n) => n.toString().padLeft(2, '0');
@@ -42,6 +44,7 @@ class CountdownText extends StatefulWidget {
     return days > 0 ? '$days hari $clock' : clock;
   }
 
+  /// Formats [d] as `mm:ss`. Minutes are not wrapped at 60.
   @visibleForTesting
   static String formatLock(Duration d) {
     String two(int n) => n.toString().padLeft(2, '0');

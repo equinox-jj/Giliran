@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import 'app_breakpoints.dart';
 
+/// Font family names declared in `pubspec.yaml`.
 abstract final class AppFonts {
   static const sans = 'PlusJakartaSans';
   static const mono = 'JetBrainsMono';

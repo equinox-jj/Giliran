@@ -35,6 +35,8 @@ class AppAvatar extends StatelessWidget {
   /// Defaults to [name]; pass an empty string to make it decorative.
   final String? semanticLabel;
 
+  /// Returns the uppercase initials of the first two words of [name], or `?` when
+  /// [name] is blank.
   static String initials(String name) {
     final words = name
         .trim()

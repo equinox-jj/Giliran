@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:giliran/core/errors/errors.dart';
+import 'package:giliran/core/error/problem_details.dart';
 import 'package:giliran/core/utils/enums/api_error_code.dart';
 
 void main() {

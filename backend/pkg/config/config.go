@@ -53,6 +53,7 @@ const (
 	SMTPTLSNone     = "none"
 )
 
+// App identifies the service and the environment it runs in.
 type App struct {
 	Name          string `koanf:"app_name"`
 	Env           string `koanf:"app_env"`
@@ -67,6 +68,7 @@ func (a App) IsProduction() bool {
 	return a.Env == EnvProduction
 }
 
+// HTTP configures the API listener, its timeouts and request limits.
 type HTTP struct {
 	Host             string        `koanf:"http_host"`
 	Port             int           `koanf:"http_port"`
@@ -84,11 +86,13 @@ func (h HTTP) Addr() string {
 	return net.JoinHostPort(h.Host, strconv.Itoa(h.Port))
 }
 
+// Log sets the logger level and output format.
 type Log struct {
 	Level  string `koanf:"log_level"`
 	Format string `koanf:"log_format"`
 }
 
+// Database configures the PostgreSQL connection pool.
 type Database struct {
 	URL             string        `koanf:"database_url"`
 	MaxConns        int32         `koanf:"database_max_conns"`
@@ -97,6 +101,7 @@ type Database struct {
 	MaxConnIdleTime time.Duration `koanf:"database_max_conn_idle_time"`
 }
 
+// JWT configures how access and refresh tokens are signed and how long they last.
 type JWT struct {
 	Secret     string        `koanf:"jwt_secret"`
 	Issuer     string        `koanf:"jwt_issuer"`
@@ -105,6 +110,7 @@ type JWT struct {
 	RefreshTTL time.Duration `koanf:"jwt_refresh_ttl"`
 }
 
+// PIN configures Argon2 hashing of user PINs and the failed-attempt lockout.
 type PIN struct {
 	Argon2MemoryKiB   uint32        `koanf:"pin_argon2_memory_kib"`
 	Argon2Iterations  uint32        `koanf:"pin_argon2_iterations"`
@@ -152,6 +158,7 @@ type Firebase struct {
 	CredentialsFile string `koanf:"firebase_credentials_file"`
 }
 
+// MinIO configures the object store that holds uploaded files.
 type MinIO struct {
 	Endpoint string `koanf:"minio_endpoint"`
 	// PublicURL is the origin clients reach MinIO at, e.g.
@@ -167,6 +174,7 @@ type MinIO struct {
 	UploadMaxBytes int           `koanf:"upload_max_bytes"`
 }
 
+// RateLimit sets the request cap and time window for each rate-limited endpoint group.
 type RateLimit struct {
 	OTPMax       int           `koanf:"rate_limit_otp_max"`
 	OTPWindow    time.Duration `koanf:"rate_limit_otp_window"`
@@ -195,6 +203,8 @@ type Worker struct {
 	OTPExpireCron      string `koanf:"worker_otp_expire_cron"`
 }
 
+// Retention sets how long revoked sessions, payment proofs and OTP requests are kept
+// before the cleanup job removes them.
 type Retention struct {
 	RevokedSessions time.Duration `koanf:"retention_revoked_sessions"`
 	PaymentProofs   time.Duration `koanf:"retention_payment_proofs"`

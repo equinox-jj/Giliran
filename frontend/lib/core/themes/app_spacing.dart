@@ -14,6 +14,7 @@ abstract final class AppSpace {
   static const s16 = 64.0;
 }
 
+/// Corner radius scale.
 abstract final class AppRadius {
   static const xs = 8.0;
   static const sm = 12.0;
@@ -26,6 +27,7 @@ abstract final class AppRadius {
   static const checkbox = 6.0;
 }
 
+/// Border and outline widths.
 abstract final class AppStroke {
   /// Ink outline on kunyit shapes, circle buttons and tokens.
   static const ink = 1.5;
@@ -40,6 +42,7 @@ abstract final class AppStroke {
   static const dashGap = 3.0;
 }
 
+/// Builders for continuous-corner (squircle) shapes.
 abstract final class AppShapes {
   /// Continuous (squircle) corners that look like [radius] circular corners.
   static ContinuousRectangleBorder squircle(

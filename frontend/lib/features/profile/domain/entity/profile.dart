@@ -2,6 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'profile.freezed.dart';
 
+/// The signed-in user's profile as the rest of the app sees it.
 @freezed
 abstract class Profile with _$Profile {
   factory Profile({
@@ -9,6 +10,8 @@ abstract class Profile with _$Profile {
   }) = _Profile;
 }
 
+/// Account details of a user: identity, contact info, avatar, and whether a PIN
+/// has been set.
 @freezed
 abstract class ProfileData with _$ProfileData {
   factory ProfileData({

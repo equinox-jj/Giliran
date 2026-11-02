@@ -9,6 +9,8 @@ enum PaymentStatus {
 
   final String apiValue;
 
+  /// Returns the status for an API [value]; unrecognized values become
+  /// [PaymentStatus.unpaid].
   static PaymentStatus fromApi(String value) => PaymentStatus.values.firstWhere(
     (s) => s.apiValue == value,
     orElse: () => PaymentStatus.unpaid,

@@ -3,6 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'profile_model.freezed.dart';
 part 'profile_model.g.dart';
 
+/// JSON shape of the profile API response, using the backend's field names.
 @freezed
 abstract class ProfileModel with _$ProfileModel {
   const factory ProfileModel({
@@ -13,6 +14,7 @@ abstract class ProfileModel with _$ProfileModel {
       _$ProfileModelFromJson(json);
 }
 
+/// JSON shape of the profile payload inside [ProfileModel].
 @freezed
 abstract class ProfileDataModel with _$ProfileDataModel {
   const factory ProfileDataModel({

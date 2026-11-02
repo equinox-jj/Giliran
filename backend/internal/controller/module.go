@@ -1,3 +1,6 @@
+// Package controller holds the HTTP handlers. Each controller parses and
+// validates a request, calls one service, and writes the reply through
+// pkg/response; business rules live in internal/service.
 package controller
 
 import (

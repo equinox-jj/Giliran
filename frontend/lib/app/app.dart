@@ -4,6 +4,10 @@ import 'package:material_ui/material_ui.dart';
 import '../core/themes/themes.dart';
 import 'router.dart';
 
+/// Root widget of the app.
+///
+/// Applies the light and dark [AppTheme] and navigates through the app router.
+/// [themeMode] picks which of the two themes is shown.
 class GiliranApp extends ConsumerWidget {
   const GiliranApp({
     super.key,
