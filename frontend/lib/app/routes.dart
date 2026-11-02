@@ -1,10 +1,13 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../features/auth/presentation/pages/sign_in_page.dart';
-import '../features/auth/presentation/pages/splash_page.dart';
-import '../features/auth/presentation/pages/welcome_page.dart';
+import '../core/error/failure.dart';
+import '../features/auth/presentation/shared/controllers/auth_session_controller.dart';
+import '../features/auth/presentation/sign_in/page/sign_in_page.dart';
+import '../features/auth/presentation/splash/page/splash_page.dart';
+import '../features/auth/presentation/welcome/page/welcome_page.dart';
 import '../features/group/presentation/pages/groups_page.dart';
 import '../features/history/presentation/pages/activity_page.dart';
 import '../features/home/presentation/pages/home_page.dart';
@@ -98,14 +101,25 @@ class const ProfileRoute() extends GoRouteData with $ProfileRoute {
   Widget build(BuildContext context, GoRouterState state) => const ProfilePage();
 }
 
-/// S01 launch gate. Until auth state exists every launch goes to Welcome;
-/// later the gate applies the redirect rules of design system 10.2.
+/// S01 launch gate. After the hold it waits for the session to load, then
+/// heads for Home; the guard (`authRedirect`) sends signed-out users to
+/// Welcome instead.
 @TypedGoRoute<SplashRoute>(name: 'splash', path: '/')
 class const SplashRoute() extends GoRouteData with $SplashRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) => SplashPage(
-    onReady: () => const WelcomeRoute().go(context),
+    onReady: () => _leave(context),
   );
+
+  Future<void> _leave(BuildContext context) async {
+    final container = ProviderScope.containerOf(context, listen: false);
+    try {
+      await container.read(authSessionControllerProvider.future);
+    } on Failure {
+      // The guard treats a failed session read as signed out.
+    }
+    if (context.mounted) const HomeRoute().go(context);
+  }
 }
 
 /// S02 onboarding pager for signed-out users.

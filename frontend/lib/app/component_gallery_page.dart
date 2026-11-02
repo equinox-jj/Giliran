@@ -4,7 +4,7 @@ import '../core/constants/app_doodles.dart';
 import '../core/constants/app_icons.dart';
 import '../core/constants/app_illustrations.dart';
 import '../core/themes/themes.dart';
-import '../features/auth/presentation/pages/welcome_page.dart';
+import '../features/auth/presentation/welcome/page/welcome_page.dart';
 import '../shared/widgets/widgets.dart';
 
 /// Debug gallery of the Tikar components in light and dark, used to compare

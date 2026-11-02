@@ -2,152 +2,38 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:giliran/core/error/failure.dart';
 import 'package:giliran/core/usecase/usecase.dart';
+import 'package:giliran/core/utils/enums/biometric_kind.dart';
 import 'package:giliran/core/utils/enums/otp_purpose.dart';
+import 'package:giliran/features/auth/domain/entities/auth_status.dart';
+import 'package:giliran/features/auth/domain/entities/biometric_status.dart';
 import 'package:giliran/features/auth/domain/entities/email_otp_challenge.dart';
 import 'package:giliran/features/auth/domain/entities/email_otp_result.dart';
-import 'package:giliran/features/auth/domain/repositories/auth_repository.dart';
-import 'package:giliran/features/auth/domain/usecases/change_pin.dart';
-import 'package:giliran/features/auth/domain/usecases/get_biometric_enabled.dart';
-import 'package:giliran/features/auth/domain/usecases/get_current_user.dart';
-import 'package:giliran/features/auth/domain/usecases/get_pending_otp.dart';
-import 'package:giliran/features/auth/domain/usecases/has_session.dart';
-import 'package:giliran/features/auth/domain/usecases/logout.dart';
-import 'package:giliran/features/auth/domain/usecases/request_email_otp.dart';
-import 'package:giliran/features/auth/domain/usecases/resend_email_otp.dart';
-import 'package:giliran/features/auth/domain/usecases/set_biometric_enabled.dart';
-import 'package:giliran/features/auth/domain/usecases/set_pin.dart';
-import 'package:giliran/features/auth/domain/usecases/should_offer_biometric.dart';
-import 'package:giliran/features/auth/domain/usecases/verify_email_otp.dart';
-import 'package:giliran/features/auth/domain/usecases/verify_pin.dart';
+import 'package:giliran/features/auth/domain/usecases/change_pin_usecase.dart';
+import 'package:giliran/features/auth/domain/usecases/get_biometric_enabled_usecase.dart';
+import 'package:giliran/features/auth/domain/usecases/get_biometric_status_usecase.dart';
+import 'package:giliran/features/auth/domain/usecases/get_current_user_usecase.dart';
+import 'package:giliran/features/auth/domain/usecases/get_pending_otp_usecase.dart';
+import 'package:giliran/features/auth/domain/usecases/has_session_usecase.dart';
+import 'package:giliran/features/auth/domain/usecases/logout_usecase.dart';
+import 'package:giliran/features/auth/domain/usecases/request_email_otp_usecase.dart';
+import 'package:giliran/features/auth/domain/usecases/resend_email_otp_usecase.dart';
+import 'package:giliran/features/auth/domain/usecases/resolve_auth_status_usecase.dart';
+import 'package:giliran/features/auth/domain/usecases/set_biometric_enabled_usecase.dart';
+import 'package:giliran/features/auth/domain/usecases/set_pin_usecase.dart';
+import 'package:giliran/features/auth/domain/usecases/should_offer_biometric_usecase.dart';
+import 'package:giliran/features/auth/domain/usecases/unlock_with_biometric_usecase.dart';
+import 'package:giliran/features/auth/domain/usecases/verify_email_otp_usecase.dart';
+import 'package:giliran/features/auth/domain/usecases/verify_pin_usecase.dart';
 import 'package:giliran/features/profile/domain/entity/profile.dart';
 
-/// Records each call by name and answers with the configured results.
-class _FakeAuthRepository() implements AuthRepository {
-  final calls = <String>[];
-
-  Either<Failure, EmailOtpChallenge> challengeResult = const Right(
-    EmailOtpChallenge(id: 'otp-1'),
-  );
-  Either<Failure, EmailOtpResult> verifyResult = const Right(
-    EmailOtpResult(purpose: OtpPurpose.signIn),
-  );
-  Either<Failure, Unit> unitResult = const Right(unit);
-  Either<Failure, Unit> logoutResult = const Right(unit);
-  Either<Failure, Unit> clearSessionResult = const Right(unit);
-  Either<Failure, Unit> savePendingResult = const Right(unit);
-  Either<Failure, Unit> saveBiometricEnabledResult = const Right(unit);
-  Either<Failure, bool> hasSessionResult = const Right(true);
-  Either<Failure, ProfileData?> userResult = const Right(null);
-  Either<Failure, PendingOtp?> pendingResult = const Right(null);
-  Either<Failure, bool> biometricEnabledResult = const Right(false);
-  Either<Failure, bool> biometricPromptedResult = const Right(false);
-
-  PendingOtp? savedPending;
-  bool? savedBiometricEnabled;
-  bool? savedBiometricPrompted;
-  Object? lastArgs;
-
-  Future<T> _record<T>(String name, T value, [Object? args]) async {
-    calls.add(name);
-    lastArgs = args;
-    return value;
-  }
-
-  @override
-  Future<Either<Failure, EmailOtpChallenge>> requestEmailOtp({
-    required OtpPurpose purpose,
-    required String email,
-    String? pin,
-  }) => _record('requestEmailOtp', challengeResult, (purpose, email, pin));
-
-  @override
-  Future<Either<Failure, EmailOtpChallenge>> resendEmailOtp(
-    String otpId, {
-    required OtpPurpose purpose,
-  }) => _record('resendEmailOtp', challengeResult, (otpId, purpose));
-
-  @override
-  Future<Either<Failure, EmailOtpResult>> verifyEmailOtp(
-    String otpId, {
-    required OtpPurpose purpose,
-    required String code,
-    String? pin,
-    String? newPin,
-    String? newPinConfirmation,
-  }) => _record('verifyEmailOtp', verifyResult, (otpId, purpose, code, pin));
-
-  @override
-  Future<Either<Failure, Unit>> setPin({
-    required String pin,
-    required String pinConfirmation,
-  }) => _record('setPin', unitResult, (pin, pinConfirmation));
-
-  @override
-  Future<Either<Failure, Unit>> changePin({
-    required String currentPin,
-    required String newPin,
-    required String newPinConfirmation,
-  }) => _record(
-    'changePin',
-    unitResult,
-    (currentPin, newPin, newPinConfirmation),
-  );
-
-  @override
-  Future<Either<Failure, Unit>> verifyPin(String pin) => _record('verifyPin', unitResult, pin);
-
-  @override
-  Future<Either<Failure, Unit>> logout() => _record('logout', logoutResult);
-
-  @override
-  Future<Either<Failure, Unit>> clearSession() => _record('clearSession', clearSessionResult);
-
-  @override
-  Future<Either<Failure, bool>> hasSession() => _record('hasSession', hasSessionResult);
-
-  @override
-  Future<Either<Failure, ProfileData?>> readCurrentUser() => _record('readCurrentUser', userResult);
-
-  @override
-  Future<Either<Failure, Unit>> saveCurrentUser(ProfileData user) => _record('saveCurrentUser', unitResult, user);
-
-  @override
-  Future<Either<Failure, PendingOtp?>> readPendingOtp() => _record('readPendingOtp', pendingResult);
-
-  @override
-  Future<Either<Failure, Unit>> savePendingOtp(PendingOtp pending) {
-    savedPending = pending;
-    return _record('savePendingOtp', savePendingResult, pending);
-  }
-
-  @override
-  Future<Either<Failure, Unit>> clearPendingOtp() => _record('clearPendingOtp', unitResult);
-
-  @override
-  Future<Either<Failure, bool>> readBiometricEnabled() => _record('readBiometricEnabled', biometricEnabledResult);
-
-  @override
-  Future<Either<Failure, Unit>> saveBiometricEnabled(bool enabled) {
-    savedBiometricEnabled = enabled;
-    return _record('saveBiometricEnabled', saveBiometricEnabledResult);
-  }
-
-  @override
-  Future<Either<Failure, bool>> readBiometricPrompted() => _record('readBiometricPrompted', biometricPromptedResult);
-
-  @override
-  Future<Either<Failure, Unit>> saveBiometricPrompted(bool prompted) {
-    savedBiometricPrompted = prompted;
-    return _record('saveBiometricPrompted', unitResult);
-  }
-}
+import '../../../../helpers/fake_auth_repository.dart';
 
 void main() {
-  late _FakeAuthRepository repository;
+  late FakeAuthRepository repository;
 
-  setUp(() => repository = _FakeAuthRepository());
+  setUp(() => repository = FakeAuthRepository());
 
-  group('RequestEmailOtp', () {
+  group('RequestEmailOtpUseCase', () {
     const params = (
       purpose: OtpPurpose.signIn,
       email: 'ana@example.com',
@@ -156,7 +42,7 @@ void main() {
 
     test('saves the sent code as the pending code', () async {
       // Arrange
-      final useCase = RequestEmailOtp(repository);
+      final useCase = RequestEmailOtpUseCase(repository);
 
       // Act
       final result = await useCase(params);
@@ -180,7 +66,7 @@ void main() {
     test('still succeeds when saving the pending code fails', () async {
       // Arrange
       repository.savePendingResult = const Left(Failure.cache());
-      final useCase = RequestEmailOtp(repository);
+      final useCase = RequestEmailOtpUseCase(repository);
 
       // Act
       final result = await useCase(params);
@@ -192,7 +78,7 @@ void main() {
     test('returns the failure and saves nothing when the request fails', () async {
       // Arrange
       repository.challengeResult = const Left(Failure.network());
-      final useCase = RequestEmailOtp(repository);
+      final useCase = RequestEmailOtpUseCase(repository);
 
       // Act
       final result = await useCase(params);
@@ -203,7 +89,7 @@ void main() {
     });
   });
 
-  group('ResendEmailOtp', () {
+  group('ResendEmailOtpUseCase', () {
     const params = (otpId: 'otp-1', purpose: OtpPurpose.signIn);
     const resent = EmailOtpChallenge(id: 'otp-1', attemptsRemaining: 4);
 
@@ -217,7 +103,7 @@ void main() {
             challenge: EmailOtpChallenge(id: 'otp-1'),
           ),
         );
-      final useCase = ResendEmailOtp(repository);
+      final useCase = ResendEmailOtpUseCase(repository);
 
       // Act
       final result = await useCase(params);
@@ -235,7 +121,7 @@ void main() {
       repository.pendingResult = const Right(
         PendingOtp(challenge: EmailOtpChallenge(id: 'otp-other')),
       );
-      final useCase = ResendEmailOtp(repository);
+      final useCase = ResendEmailOtpUseCase(repository);
 
       // Act
       await useCase(params);
@@ -247,7 +133,7 @@ void main() {
     test('still succeeds when reading the pending code fails', () async {
       // Arrange
       repository.pendingResult = const Left(Failure.cache());
-      final useCase = ResendEmailOtp(repository);
+      final useCase = ResendEmailOtpUseCase(repository);
 
       // Act
       final result = await useCase(params);
@@ -260,7 +146,7 @@ void main() {
     test('returns the failure when the resend fails', () async {
       // Arrange
       repository.challengeResult = const Left(Failure.network());
-      final useCase = ResendEmailOtp(repository);
+      final useCase = ResendEmailOtpUseCase(repository);
 
       // Act
       final result = await useCase(params);
@@ -271,7 +157,7 @@ void main() {
     });
   });
 
-  group('VerifyEmailOtp', () {
+  group('VerifyEmailOtpUseCase', () {
     const params = (
       otpId: 'otp-1',
       purpose: OtpPurpose.signIn,
@@ -283,7 +169,7 @@ void main() {
 
     test('clears the pending code after a verify', () async {
       // Arrange
-      final useCase = VerifyEmailOtp(repository);
+      final useCase = VerifyEmailOtpUseCase(repository);
 
       // Act
       final result = await useCase(params);
@@ -296,7 +182,7 @@ void main() {
     test('keeps the pending code when the verify fails', () async {
       // Arrange
       repository.verifyResult = const Left(Failure.network());
-      final useCase = VerifyEmailOtp(repository);
+      final useCase = VerifyEmailOtpUseCase(repository);
 
       // Act
       final result = await useCase(params);
@@ -307,7 +193,7 @@ void main() {
     });
   });
 
-  group('GetPendingOtp', () {
+  group('GetPendingOtpUseCase', () {
     final now = DateTime.utc(2026, 11, 2, 10);
 
     PendingOtp pendingExpiringAt(DateTime expiresAt) => PendingOtp(
@@ -319,7 +205,7 @@ void main() {
       // Arrange
       final pending = pendingExpiringAt(now.add(const Duration(minutes: 5)));
       repository.pendingResult = Right(pending);
-      final useCase = GetPendingOtp(repository, now: () => now);
+      final useCase = GetPendingOtpUseCase(repository, now: () => now);
 
       // Act
       final result = await useCase(const NoParams());
@@ -332,7 +218,7 @@ void main() {
     test('clears an expired code and returns null', () async {
       // Arrange
       repository.pendingResult = Right(pendingExpiringAt(now));
-      final useCase = GetPendingOtp(repository, now: () => now);
+      final useCase = GetPendingOtpUseCase(repository, now: () => now);
 
       // Act
       final result = await useCase(const NoParams());
@@ -344,7 +230,7 @@ void main() {
 
     test('returns null when nothing is pending', () async {
       // Arrange
-      final useCase = GetPendingOtp(repository, now: () => now);
+      final useCase = GetPendingOtpUseCase(repository, now: () => now);
 
       // Act
       final result = await useCase(const NoParams());
@@ -354,10 +240,10 @@ void main() {
     });
   });
 
-  group('Logout', () {
+  group('LogoutUseCase', () {
     test('revokes the session, then clears the device', () async {
       // Arrange
-      final useCase = Logout(repository);
+      final useCase = LogoutUseCase(repository);
 
       // Act
       final result = await useCase(const NoParams());
@@ -370,7 +256,7 @@ void main() {
     test('still clears the device when the server call fails', () async {
       // Arrange
       repository.logoutResult = const Left(Failure.network());
-      final useCase = Logout(repository);
+      final useCase = LogoutUseCase(repository);
 
       // Act
       final result = await useCase(const NoParams());
@@ -383,7 +269,7 @@ void main() {
     test('returns the failure when clearing the device fails', () async {
       // Arrange
       repository.clearSessionResult = const Left(Failure.cache());
-      final useCase = Logout(repository);
+      final useCase = LogoutUseCase(repository);
 
       // Act
       final result = await useCase(const NoParams());
@@ -393,7 +279,7 @@ void main() {
     });
   });
 
-  group('ShouldOfferBiometric', () {
+  group('ShouldOfferBiometricUseCase', () {
     for (final (enabled, prompted, expected) in [
       (false, false, true),
       (false, true, false),
@@ -405,7 +291,7 @@ void main() {
         repository
           ..biometricEnabledResult = Right(enabled)
           ..biometricPromptedResult = Right(prompted);
-        final useCase = ShouldOfferBiometric(repository);
+        final useCase = ShouldOfferBiometricUseCase(repository);
 
         // Act
         final result = await useCase(const NoParams());
@@ -418,7 +304,7 @@ void main() {
     test('returns the failure when reading fails', () async {
       // Arrange
       repository.biometricEnabledResult = const Left(Failure.cache());
-      final useCase = ShouldOfferBiometric(repository);
+      final useCase = ShouldOfferBiometricUseCase(repository);
 
       // Act
       final result = await useCase(const NoParams());
@@ -428,10 +314,10 @@ void main() {
     });
   });
 
-  group('SetBiometricEnabled', () {
+  group('SetBiometricEnabledUseCase', () {
     test('saves the choice and marks the opt-in as offered', () async {
       // Arrange
-      final useCase = SetBiometricEnabled(repository);
+      final useCase = SetBiometricEnabledUseCase(repository);
 
       // Act
       final result = await useCase(true);
@@ -445,7 +331,7 @@ void main() {
     test('does not mark as offered when saving the choice fails', () async {
       // Arrange
       repository.saveBiometricEnabledResult = const Left(Failure.cache());
-      final useCase = SetBiometricEnabled(repository);
+      final useCase = SetBiometricEnabledUseCase(repository);
 
       // Act
       final result = await useCase(false);
@@ -457,21 +343,21 @@ void main() {
   });
 
   group('pass-through usecases', () {
-    test('SetPin sends the PIN and confirmation', () async {
+    test('SetPinUseCase sends the PIN and saves nothing without a cached user', () async {
       // Arrange
-      final useCase = SetPin(repository);
+      final useCase = SetPinUseCase(repository);
 
       // Act
       await useCase((pin: '123456', pinConfirmation: '123456'));
 
       // Assert
-      expect(repository.calls, ['setPin']);
-      expect(repository.lastArgs, ('123456', '123456'));
+      expect(repository.calls.first, 'setPin');
+      expect(repository.calls, isNot(contains('saveCurrentUser')));
     });
 
-    test('ChangePin sends the current and new PIN', () async {
+    test('ChangePinUseCase sends the current and new PIN', () async {
       // Arrange
-      final useCase = ChangePin(repository);
+      final useCase = ChangePinUseCase(repository);
 
       // Act
       await useCase((
@@ -484,10 +370,10 @@ void main() {
       expect(repository.lastArgs, ('111111', '222222', '222222'));
     });
 
-    test('VerifyPin returns the repository failure', () async {
+    test('VerifyPinUseCase returns the repository failure', () async {
       // Arrange
       repository.unitResult = const Left(Failure.network());
-      final useCase = VerifyPin(repository);
+      final useCase = VerifyPinUseCase(repository);
 
       // Act
       final result = await useCase('123456');
@@ -497,9 +383,9 @@ void main() {
       expect(repository.lastArgs, '123456');
     });
 
-    test('HasSession returns the stored session flag', () async {
+    test('HasSessionUseCase returns the stored session flag', () async {
       // Arrange
-      final useCase = HasSession(repository);
+      final useCase = HasSessionUseCase(repository);
 
       // Act
       final result = await useCase(const NoParams());
@@ -508,9 +394,9 @@ void main() {
       expect(result, const Right<Failure, bool>(true));
     });
 
-    test('GetCurrentUser returns the cached user', () async {
+    test('GetCurrentUserUseCase returns the cached user', () async {
       // Arrange
-      final useCase = GetCurrentUser(repository);
+      final useCase = GetCurrentUserUseCase(repository);
 
       // Act
       final result = await useCase(const NoParams());
@@ -520,16 +406,255 @@ void main() {
       expect(repository.calls, ['readCurrentUser']);
     });
 
-    test('GetBiometricEnabled returns the stored flag', () async {
+    test('GetBiometricEnabledUseCase returns the stored flag', () async {
       // Arrange
       repository.biometricEnabledResult = const Right(true);
-      final useCase = GetBiometricEnabled(repository);
+      final useCase = GetBiometricEnabledUseCase(repository);
 
       // Act
       final result = await useCase(const NoParams());
 
       // Assert
       expect(result, const Right<Failure, bool>(true));
+    });
+  });
+
+  group('SetPinUseCase', () {
+    test('marks the cached user as having a PIN', () async {
+      // Arrange
+      repository.userResult = Right(ProfileData(name: 'Ana', pinSet: false));
+      final useCase = SetPinUseCase(repository);
+
+      // Act
+      final result = await useCase((pin: '135790', pinConfirmation: '135790'));
+
+      // Assert
+      expect(result.isRight(), isTrue);
+      expect(repository.savedUser?.pinSet, isTrue);
+      expect(repository.lastArgs, isA<ProfileData>());
+    });
+
+    test('leaves the cached user alone when the API rejects the PIN', () async {
+      // Arrange
+      repository
+        ..unitResult = const Left(Failure.network())
+        ..userResult = Right(ProfileData(name: 'Ana', pinSet: false));
+      final useCase = SetPinUseCase(repository);
+
+      // Act
+      final result = await useCase((pin: '123456', pinConfirmation: '123456'));
+
+      // Assert
+      expect(result.getLeft().toNullable(), isA<NetworkFailure>());
+      expect(repository.calls, ['setPin']);
+    });
+  });
+
+  group('VerifyEmailOtpUseCase change_email', () {
+    test('caches the updated user', () async {
+      // Arrange
+      final user = ProfileData(email: 'baru@example.com');
+      repository.verifyResult = Right(
+        EmailOtpResult(purpose: OtpPurpose.changeEmail, user: user),
+      );
+      final useCase = VerifyEmailOtpUseCase(repository);
+
+      // Act
+      await useCase((
+        otpId: 'otp-1',
+        purpose: OtpPurpose.changeEmail,
+        code: '123456',
+        pin: null,
+        newPin: null,
+        newPinConfirmation: null,
+      ));
+
+      // Assert
+      expect(repository.savedUser, user);
+    });
+  });
+
+  group('ResolveAuthStatusUseCase', () {
+    late ResolveAuthStatusUseCase useCase;
+
+    setUp(() => useCase = ResolveAuthStatusUseCase(repository, GetPendingOtpUseCase(repository)));
+
+    test('signs out with no session and no open code', () async {
+      // Arrange
+      repository.hasSessionResult = const Right(false);
+
+      // Act
+      final result = await useCase((unlocked: false));
+
+      // Assert
+      expect(result, const Right<Failure, AuthStatus>(AuthStatus.signedOut()));
+    });
+
+    test('resumes an open code request without a session', () async {
+      // Arrange
+      final pending = PendingOtp(
+        email: 'ana@example.com',
+        challenge: EmailOtpChallenge(
+          id: 'otp-1',
+          expiresAt: DateTime.now().add(const Duration(minutes: 5)),
+        ),
+      );
+      repository
+        ..hasSessionResult = const Right(false)
+        ..pendingResult = Right(pending);
+
+      // Act
+      final result = await useCase((unlocked: false));
+
+      // Assert
+      expect(
+        result,
+        Right<Failure, AuthStatus>(AuthStatus.otpPending(pending: pending)),
+      );
+    });
+
+    test('asks for a name when the cached user has none', () async {
+      // Arrange
+      final user = ProfileData(name: '  ', pinSet: true);
+      repository.userResult = Right(user);
+
+      // Act
+      final result = await useCase((unlocked: true));
+
+      // Assert
+      expect(result, Right<Failure, AuthStatus>(AuthStatus.needsName(user: user)));
+    });
+
+    test('asks for a PIN when the account has none', () async {
+      // Arrange
+      final user = ProfileData(name: 'Ana', pinSet: false);
+      repository.userResult = Right(user);
+
+      // Act
+      final result = await useCase((unlocked: false));
+
+      // Assert
+      expect(result, Right<Failure, AuthStatus>(AuthStatus.needsPin(user: user)));
+    });
+
+    test('locks a complete session unless the PIN was just proved', () async {
+      // Arrange
+      final user = ProfileData(name: 'Ana', pinSet: true);
+      repository.userResult = Right(user);
+
+      // Act
+      final onLaunch = await useCase((unlocked: false));
+      final afterPin = await useCase((unlocked: true));
+
+      // Assert
+      expect(onLaunch, Right<Failure, AuthStatus>(AuthStatus.locked(user: user)));
+      expect(afterPin, Right<Failure, AuthStatus>(AuthStatus.unlocked(user: user)));
+    });
+
+    test('returns the failure when the session cannot be read', () async {
+      // Arrange
+      repository.hasSessionResult = const Left(Failure.cache());
+
+      // Act
+      final result = await useCase((unlocked: false));
+
+      // Assert
+      expect(result.getLeft().toNullable(), isA<CacheFailure>());
+    });
+  });
+
+  group('GetBiometricStatusUseCase', () {
+    late FakeBiometricService biometric;
+
+    setUp(() => biometric = FakeBiometricService());
+
+    test('offers the opt-in when enrolled, off and never asked', () async {
+      // Arrange
+      final useCase = GetBiometricStatusUseCase(repository, biometric);
+
+      // Act
+      final result = await useCase(const NoParams());
+
+      // Assert
+      expect(
+        result,
+        const Right<Failure, BiometricStatus>(
+          BiometricStatus(
+            kind: BiometricKind.fingerprint,
+            enabled: false,
+            shouldOffer: true,
+          ),
+        ),
+      );
+    });
+
+    test('does not offer without an enrolled biometric', () async {
+      // Arrange
+      biometric.kind = null;
+      final useCase = GetBiometricStatusUseCase(repository, biometric);
+
+      // Act
+      final result = await useCase(const NoParams());
+
+      // Assert
+      expect(result.toNullable()?.shouldOffer, isFalse);
+    });
+
+    test('does not offer once it was asked', () async {
+      // Arrange
+      repository.biometricPromptedResult = const Right(true);
+      final useCase = GetBiometricStatusUseCase(repository, biometric);
+
+      // Act
+      final result = await useCase(const NoParams());
+
+      // Assert
+      expect(result.toNullable()?.shouldOffer, isFalse);
+    });
+  });
+
+  group('UnlockWithBiometricUseCase', () {
+    late FakeBiometricService biometric;
+
+    setUp(() => biometric = FakeBiometricService());
+
+    test('prompts when biometric unlock is on', () async {
+      // Arrange
+      repository.biometricEnabledResult = const Right(true);
+      final useCase = UnlockWithBiometricUseCase(repository, biometric);
+
+      // Act
+      final result = await useCase('Buka Giliran');
+
+      // Assert
+      expect(result, const Right<Failure, bool>(true));
+      expect(biometric.authenticateCalls, 1);
+    });
+
+    test('does not prompt when it is off', () async {
+      // Arrange
+      final useCase = UnlockWithBiometricUseCase(repository, biometric);
+
+      // Act
+      final result = await useCase('Buka Giliran');
+
+      // Assert
+      expect(result, const Right<Failure, bool>(false));
+      expect(biometric.authenticateCalls, 0);
+    });
+
+    test('does not prompt when nothing is enrolled', () async {
+      // Arrange
+      repository.biometricEnabledResult = const Right(true);
+      biometric.kind = null;
+      final useCase = UnlockWithBiometricUseCase(repository, biometric);
+
+      // Act
+      final result = await useCase('Buka Giliran');
+
+      // Assert
+      expect(result, const Right<Failure, bool>(false));
+      expect(biometric.authenticateCalls, 0);
     });
   });
 }
