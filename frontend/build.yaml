@@ -1,0 +1,9 @@
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          # UTC ISO-8601 text keeps milliseconds and the zone.
+          store_date_time_values_as_text: true
+          named_parameters: true
+          data_class_to_companions: true
