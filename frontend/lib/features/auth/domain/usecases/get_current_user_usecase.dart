@@ -15,5 +15,5 @@ class GetCurrentUserUseCase(final AuthRepository _repository) implements UseCase
   Future<Either<Failure, ProfileData?>> call(NoParams params) => _repository.readCurrentUser();
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 GetCurrentUserUseCase getCurrentUserUseCase(Ref ref) => GetCurrentUserUseCase(ref.watch(authRepositoryProvider));

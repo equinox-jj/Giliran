@@ -31,7 +31,7 @@ class GetBiometricStatusUseCase(
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 GetBiometricStatusUseCase getBiometricStatusUseCase(Ref ref) => GetBiometricStatusUseCase(
   ref.watch(authRepositoryProvider),
   ref.watch(biometricServiceProvider),

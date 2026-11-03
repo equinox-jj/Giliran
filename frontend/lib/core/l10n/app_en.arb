@@ -1,0 +1,6 @@
+{
+  "@@locale": "en",
+  "appName": "Giliran",
+  "offlineBanner": "Offline.",
+  "offlineBannerSynced": "Offline. Last updated {time}."
+}

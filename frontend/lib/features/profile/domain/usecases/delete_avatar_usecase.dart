@@ -27,7 +27,7 @@ class DeleteAvatarUseCase(
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 DeleteAvatarUseCase deleteAvatarUseCase(Ref ref) => DeleteAvatarUseCase(
   ref.watch(profileRepositoryProvider),
   ref.watch(authRepositoryProvider),

@@ -19,5 +19,5 @@ class const ShouldLockOnResumeUseCase() implements UseCase<bool, ShouldLockOnRes
       Right(params.now.difference(params.hiddenAt) >= autoLockAfter);
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 ShouldLockOnResumeUseCase shouldLockOnResumeUseCase(Ref ref) => const ShouldLockOnResumeUseCase();

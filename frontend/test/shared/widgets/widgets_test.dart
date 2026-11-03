@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:giliran/app/component_gallery_page.dart';
 import 'package:giliran/core/constants/app_icons.dart';
+import 'package:giliran/core/l10n/l10n.dart';
 import 'package:giliran/core/themes/themes.dart';
 import 'package:giliran/shared/widgets/widgets.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -380,15 +381,26 @@ void main() {
         tester.view.physicalSize = const Size(390, 6000);
         tester.view.devicePixelRatio = 1;
         addTearDown(tester.view.reset);
+        // The gallery picks its theme from the platform brightness.
+        tester.platformDispatcher.platformBrightnessTestValue = dark ? Brightness.dark : Brightness.light;
+        addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
         final handle = tester.ensureSemantics();
         await tester.pumpWidget(
           MaterialApp(
             theme: AppTheme.light(),
             darkTheme: AppTheme.dark(),
             themeMode: dark ? ThemeMode.dark : ThemeMode.light,
+            locale: const Locale('id'),
+            localizationsDelegates: appLocalizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: const ComponentGalleryPage(),
           ),
         );
+        await tester.pump(const Duration(milliseconds: 500));
+        // Grow the view to the whole gallery, so no section sits cut off at
+        // the bottom edge under the floating nav bar.
+        final scroll = tester.state<ScrollableState>(find.byType(Scrollable).first).position;
+        tester.view.physicalSize = Size(390, 6000 + scroll.maxScrollExtent);
         await tester.pump(const Duration(milliseconds: 500));
         await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
         await expectLater(tester, meetsGuideline(textContrastGuideline));

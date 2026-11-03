@@ -18,7 +18,7 @@ abstract final class AppPalette() {
   static const kopi950 = Color(0xFF15110D);
   static const cream = Color(0xFFF4EDE3);
   static const creamMuted = Color(0xFFBCAE9F);
-  static const creamFaint = Color(0xFF968878);
+  static const creamFaint = Color(0xFF9A8C7C);
   static const darkBorderStrong = Color(0xFF7E6F61);
   static const darkHairline = Color(0xFF3A2F26);
   static const darkSubtle = Color(0xFF2A221B);

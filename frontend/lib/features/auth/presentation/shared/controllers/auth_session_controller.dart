@@ -15,8 +15,9 @@ part 'auth_session_controller.g.dart';
 /// redirects from it, and the sign-in, PIN and lock controllers move it on.
 ///
 /// A failed read surfaces as an `AsyncError` holding the [Failure]; the guard
-/// treats it as signed out.
-@Riverpod(keepAlive: true)
+/// treats it as signed out. Riverpod's automatic retry is off, since it would
+/// keep the splash waiting on a read that keeps failing.
+@Riverpod(keepAlive: true, retry: _noRetry)
 class AuthSessionController() extends _$AuthSessionController {
   @override
   Future<AuthStatus> build() async {
@@ -83,3 +84,5 @@ class AuthSessionController() extends _$AuthSessionController {
     return result.fold((failure) => throw failure, (status) => status);
   }
 }
+
+Duration? _noRetry(int retryCount, Object error) => null;

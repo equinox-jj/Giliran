@@ -24,7 +24,7 @@ class UnlockWithBiometricUseCase(
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 UnlockWithBiometricUseCase unlockWithBiometricUseCase(Ref ref) => UnlockWithBiometricUseCase(
   ref.watch(authRepositoryProvider),
   ref.watch(biometricServiceProvider),

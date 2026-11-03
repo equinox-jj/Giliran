@@ -40,5 +40,5 @@ class RequestEmailOtpUseCase(
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 RequestEmailOtpUseCase requestEmailOtpUseCase(Ref ref) => RequestEmailOtpUseCase(ref.watch(authRepositoryProvider));

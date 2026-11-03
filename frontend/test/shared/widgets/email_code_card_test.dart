@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:giliran/core/themes/themes.dart';
 import 'package:giliran/shared/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -184,6 +185,9 @@ void main() {
     final withoutCallback = find.text('Buka aplikasi email').evaluate().length;
     var opened = 0;
     await pumpCard(tester, onOpenMail: () => opened++);
+    // The card grows to fit the button; tap once it has. (The resend
+    // countdown keeps ticking, so the tree never settles.)
+    await tester.pump(AppMotion.emphasis);
 
     // Act
     await tester.tap(find.text('Buka aplikasi email'));

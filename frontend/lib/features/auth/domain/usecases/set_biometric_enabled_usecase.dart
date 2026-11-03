@@ -19,6 +19,6 @@ class SetBiometricEnabledUseCase(final AuthRepository _repository) implements Us
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 SetBiometricEnabledUseCase setBiometricEnabledUseCase(Ref ref) =>
     SetBiometricEnabledUseCase(ref.watch(authRepositoryProvider));

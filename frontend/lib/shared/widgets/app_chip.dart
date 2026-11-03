@@ -157,7 +157,9 @@ class const SegmentedPills({
 
     return Container(
       height: AppSizes.tapMin,
-      padding: const EdgeInsets.all(AppSpace.s1),
+      // The vertical inset is each pill's hitPadding, so a segment's tap
+      // area is the full 48 track height while the pill stays 40.
+      padding: const EdgeInsets.symmetric(horizontal: AppSpace.s1),
       decoration: ShapeDecoration(color: c.subtle, shape: AppShapes.pill),
       child: Row(
         children: [
@@ -172,6 +174,7 @@ class const SegmentedPills({
                       },
                 selected: i == selectedIndex,
                 semanticLabel: segments[i],
+                hitPadding: const EdgeInsets.symmetric(vertical: AppSpace.s1),
                 scale: false,
                 tint: false,
                 child: AnimatedContainer(

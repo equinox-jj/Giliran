@@ -29,5 +29,5 @@ class GetPendingOtpUseCase(
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 GetPendingOtpUseCase getPendingOtpUseCase(Ref ref) => GetPendingOtpUseCase(ref.watch(authRepositoryProvider));

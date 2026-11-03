@@ -43,4 +43,8 @@ abstract final class ApiEndpoints() {
 
   /// `extra` flag: request was already retried after a refresh.
   static const String kRetried = 'retried';
+
+  /// `extra` key: the `IdempotencyKey` value to send as the `Idempotency-Key`
+  /// header (payment, payout, draw and reminder writes).
+  static const String kIdempotencyKey = 'idempotencyKey';
 }

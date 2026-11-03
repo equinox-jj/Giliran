@@ -168,11 +168,14 @@ class const _Greeting() extends ConsumerWidget {
     );
     final name = user?.name?.trim() ?? '';
     final firstName = name.split(RegExp(r'\s+')).first;
+    // A short window (a small phone, a phone on its side) drops the tall
+    // top gap so the pad and the links stay on screen.
+    final short = MediaQuery.sizeOf(context).height < Breakpoints.medium;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const SizedBox(height: 88),
+        SizedBox(height: short ? AppSpace.s6 : 88),
         AppAvatar(
           name: name.isEmpty ? '?' : name,
           imageUrl: user?.avatarUrl,

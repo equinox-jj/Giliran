@@ -5,6 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../storage/secure_storage.dart';
 import 'api_endpoints.dart';
 import 'interceptors/auth_interceptor.dart';
+import 'interceptors/idempotency_interceptor.dart';
 import 'interceptors/logger_interceptor.dart';
 import 'interceptors/refresh_interceptor.dart';
 import 'session_manager.dart';
@@ -19,6 +20,7 @@ class DioClient({
 }) {
   this : dio = dio ?? Dio(baseOptions()) {
     this.dio.interceptors.addAll([
+      IdempotencyInterceptor(),
       authInterceptor,
       refreshInterceptor,
       // Debug only: never log traffic in profile or release builds.

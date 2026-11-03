@@ -48,5 +48,5 @@ class VerifyEmailOtpUseCase(final AuthRepository _repository) implements UseCase
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 VerifyEmailOtpUseCase verifyEmailOtpUseCase(Ref ref) => VerifyEmailOtpUseCase(ref.watch(authRepositoryProvider));

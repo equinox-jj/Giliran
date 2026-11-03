@@ -18,4 +18,36 @@ abstract final class AppDate() {
 
   /// 24-hour time with a dot: "19.30".
   static String time(DateTime d) => DateFormat('HH.mm', _locale).format(d);
+
+  /// The Asia/Jakarta (WIB, UTC+7, no DST) wall-clock time of [d], for display
+  /// of API timestamps. The result is flagged UTC; read only its fields.
+  static DateTime jakarta(DateTime d) => d.toUtc().add(const Duration(hours: 7));
+
+  /// Relative within 48 hours ("Baru saja", "2 jam lalu", "Kemarin", "Besok",
+  /// "15 menit lagi"), otherwise [short], judged on Jakarta calendar days.
+  ///
+  /// Takes real instants (API UTC timestamps or local times) and converts
+  /// [d] and [now] to Jakarta itself. Don't pass a [jakarta] result: it is
+  /// already shifted and would be shifted again.
+  static String smart(DateTime d, {DateTime? now}) {
+    final at = jakarta(d);
+    final ref = jakarta(now ?? DateTime.now());
+    final diff = at.difference(ref);
+    if (diff.abs() >= const Duration(hours: 48)) return short(at, now: ref);
+
+    final dayOffset = _dayOnly(at).difference(_dayOnly(ref)).inDays;
+    final past = diff.isNegative;
+    final span = diff.abs();
+    if (dayOffset == 0) {
+      if (span < const Duration(minutes: 1)) return 'Baru saja';
+      final amount = span < const Duration(hours: 1) ? '${span.inMinutes} menit' : '${span.inHours} jam';
+      return past ? '$amount lalu' : '$amount lagi';
+    }
+    if (dayOffset == -1) return 'Kemarin';
+    if (dayOffset == 1) return 'Besok';
+    return short(at, now: ref);
+  }
+
+  // Calendar day at UTC midnight, so the day count ignores DST and zone flags.
+  static DateTime _dayOnly(DateTime d) => DateTime.utc(d.year, d.month, d.day);
 }

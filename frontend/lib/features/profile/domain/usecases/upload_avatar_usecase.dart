@@ -32,7 +32,7 @@ class UploadAvatarUseCase(
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 UploadAvatarUseCase uploadAvatarUseCase(Ref ref) => UploadAvatarUseCase(
   ref.watch(profileRepositoryProvider),
   ref.watch(authRepositoryProvider),

@@ -22,6 +22,6 @@ class ShouldOfferBiometricUseCase(final AuthRepository _repository) implements U
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 ShouldOfferBiometricUseCase shouldOfferBiometricUseCase(Ref ref) =>
     ShouldOfferBiometricUseCase(ref.watch(authRepositoryProvider));

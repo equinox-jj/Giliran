@@ -1,13 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:giliran/core/l10n/l10n.dart';
 import 'package:giliran/core/themes/themes.dart';
 import 'package:material_ui/material_ui.dart';
 
 extension PumpApp on WidgetTester {
-  /// Pumps [child] inside a themed app (light by default).
+  /// Pumps [child] inside a themed, Indonesian-localized app (light by
+  /// default).
   Future<void> pumpApp(Widget child, {bool dark = false}) => pumpWidget(
     MaterialApp(
       theme: dark ? AppTheme.dark() : AppTheme.light(),
+      locale: const Locale('id'),
+      localizationsDelegates: appLocalizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(body: Center(child: child)),
     ),
   );
@@ -26,7 +31,13 @@ extension PumpApp on WidgetTester {
     await pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: MaterialApp(theme: AppTheme.light(), home: page),
+        child: MaterialApp(
+          theme: AppTheme.light(),
+          locale: const Locale('id'),
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: page,
+        ),
       ),
     );
   }

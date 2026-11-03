@@ -307,10 +307,7 @@ class const _StatusSection() extends StatelessWidget {
           message: 'Bukti kamu ditolak. Upload lagi.',
         ),
         _gap,
-        const AppBanner(
-          variant: AppBannerVariant.offline,
-          message: 'Offline. Data terakhir 19.02.',
-        ),
+        OfflineBanner(lastSyncedAt: DateTime.utc(2026, 11, 3, 12, 2)),
         _gap,
         AppBanner(
           variant: AppBannerVariant.success,

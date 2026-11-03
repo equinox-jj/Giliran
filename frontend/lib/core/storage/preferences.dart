@@ -9,6 +9,8 @@ part 'preferences.g.dart';
 class const Preferences(final SharedPreferencesAsync _prefs) {
   static const _biometricEnabledKey = 'biometric_enabled';
   static const _biometricPromptedKey = 'biometric_prompted';
+  static const _languageKey = 'language';
+  static const _themeModeKey = 'theme_mode';
 
   Future<bool> readBiometricEnabled() async => await _prefs.getBool(_biometricEnabledKey) ?? false;
 
@@ -17,6 +19,16 @@ class const Preferences(final SharedPreferencesAsync _prefs) {
   Future<bool> readBiometricPrompted() async => await _prefs.getBool(_biometricPromptedKey) ?? false;
 
   Future<void> saveBiometricPrompted(bool value) => _prefs.setBool(_biometricPromptedKey, value);
+
+  /// App language code, `id` or `en`. Defaults to `id`.
+  Future<String> readLanguage() async => await _prefs.getString(_languageKey) ?? 'id';
+
+  Future<void> saveLanguage(String value) => _prefs.setString(_languageKey, value);
+
+  /// Theme choice, `system`, `light` or `dark`. Defaults to `system`.
+  Future<String> readThemeMode() async => await _prefs.getString(_themeModeKey) ?? 'system';
+
+  Future<void> saveThemeMode(String value) => _prefs.setString(_themeModeKey, value);
 }
 
 @Riverpod(keepAlive: true)

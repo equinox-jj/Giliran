@@ -47,7 +47,7 @@ class ResolveAuthStatusUseCase(
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 ResolveAuthStatusUseCase resolveAuthStatusUseCase(Ref ref) => ResolveAuthStatusUseCase(
   ref.watch(authRepositoryProvider),
   ref.watch(getPendingOtpUseCaseProvider),

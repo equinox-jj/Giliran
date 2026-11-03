@@ -15,5 +15,5 @@ class HasSessionUseCase(final AuthRepository _repository) implements UseCase<boo
   Future<Either<Failure, bool>> call(NoParams params) => _repository.hasSession();
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 HasSessionUseCase hasSessionUseCase(Ref ref) => HasSessionUseCase(ref.watch(authRepositoryProvider));

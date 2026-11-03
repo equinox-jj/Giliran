@@ -52,7 +52,7 @@ Object? redact(Object? value) => switch (value) {
 final _bearer = RegExp(r'\bBearer\s+[^\s,;"]+', caseSensitive: false);
 final _jwt = RegExp(r'\beyJ[\w-]+\.[\w-]+\.[\w-]+');
 final _email = RegExp(r'[\w.+-]+@[\w-]+(\.[\w-]+)+');
-final _phone = RegExp(r'(?<![\w.])(\+62|62|0)8[\d -]{7,14}\d(?!\w)');
+final _phone = RegExp(r'(?<![\w.])((\+?62)[ -]?|0)8[\d -]{7,14}\d(?!\w)');
 
 /// Masks secrets that appear in free text: bearer tokens, JWTs, emails and
 /// Indonesian phone numbers.

@@ -105,6 +105,8 @@ void main() {
     );
     await pumpName(tester);
     await tester.enterText(find.byType(TextField).first, 'Ri');
+    // Rebuild so "Lanjut" turns on before the tap.
+    await tester.pump();
 
     // Act
     await tester.tap(find.text('Lanjut'));

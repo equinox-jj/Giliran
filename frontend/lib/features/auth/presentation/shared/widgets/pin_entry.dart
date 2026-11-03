@@ -206,8 +206,10 @@ class const PinErrorLine({super.key, required final String? message}) extends St
 
     return Padding(
       padding: const EdgeInsets.only(top: 18),
-      child: SizedBox(
-        height: AppSizes.iconMd,
+      // A minimum height keeps the pad from jumping when a message appears,
+      // while a long message can still wrap.
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: AppSizes.iconMd),
         child: Semantics(
           liveRegion: true,
           child: message == null
@@ -217,9 +219,12 @@ class const PinErrorLine({super.key, required final String? message}) extends St
                   spacing: 6,
                   children: [
                     AppIcon(AppIcons.warningCircle, size: AppSizes.iconSm, color: c.rejected.fg),
-                    Text(
-                      message,
-                      style: t.label.copyWith(color: c.rejected.fg, fontSize: 13),
+                    Flexible(
+                      child: Text(
+                        message,
+                        textAlign: TextAlign.center,
+                        style: t.label.copyWith(color: c.rejected.fg, fontSize: 13),
+                      ),
                     ),
                   ],
                 ),

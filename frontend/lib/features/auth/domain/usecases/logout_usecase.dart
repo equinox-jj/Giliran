@@ -19,5 +19,5 @@ class LogoutUseCase(final AuthRepository _repository) implements UseCase<Unit, N
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 LogoutUseCase logoutUseCase(Ref ref) => LogoutUseCase(ref.watch(authRepositoryProvider));

@@ -30,6 +30,7 @@ export 'headline_text.dart';
 export 'help_sheet.dart';
 export 'illustration.dart';
 export 'key_value_list.dart';
+export 'offline_banner.dart';
 export 'onboarding_pager.dart';
 export 'otp_input.dart';
 export 'overflow_menu.dart';

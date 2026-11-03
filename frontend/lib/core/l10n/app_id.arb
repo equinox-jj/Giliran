@@ -1,0 +1,21 @@
+{
+  "@@locale": "id",
+  "appName": "Giliran",
+  "@appName": {
+    "description": "App name, used as the window and task-switcher title."
+  },
+  "offlineBanner": "Offline.",
+  "@offlineBanner": {
+    "description": "Offline banner when the app has never synced."
+  },
+  "offlineBannerSynced": "Offline. Data terakhir {time}.",
+  "@offlineBannerSynced": {
+    "description": "Offline banner with the time of the last successful sync, e.g. 19.02.",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "19.02"
+      }
+    }
+  }
+}

@@ -6,6 +6,7 @@ import 'package:giliran/app/router.dart';
 import 'package:giliran/app/routes.dart';
 import 'package:giliran/core/error/failure.dart';
 import 'package:giliran/core/services/biometric_service.dart';
+import 'package:giliran/core/storage/preferences.dart';
 import 'package:giliran/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:giliran/features/auth/domain/entities/auth_status.dart';
 import 'package:giliran/features/auth/presentation/shared/controllers/auth_session_controller.dart';
@@ -18,8 +19,10 @@ import 'package:giliran/features/home/presentation/pages/home_page.dart';
 import 'package:giliran/features/profile/domain/entity/profile.dart';
 import 'package:giliran/features/profile/presentation/pages/profile_page.dart';
 import 'package:giliran/shared/widgets/widgets.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../helpers/fake_auth_repository.dart';
+import '../helpers/fake_preferences.dart';
 
 void main() {
   late FakeAuthRepository repository;
@@ -32,6 +35,7 @@ void main() {
       overrides: [
         authRepositoryProvider.overrideWithValue(repository),
         biometricServiceProvider.overrideWithValue(FakeBiometricService()),
+        preferencesProvider.overrideWithValue(FakePreferences()),
       ],
     );
   });
@@ -89,6 +93,11 @@ void main() {
 
     testWidgets('Masuk dengan email opens sign-in from Welcome', (tester) async {
       // Arrange
+      // "Lewati" is on the phone layout only; the default surface is wide.
+      tester.view
+        ..physicalSize = const Size(390, 844)
+        ..devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
       await pumpRouterApp(tester);
       await tester.tap(find.text('Lewati'));
       await tester.pumpAndSettle();

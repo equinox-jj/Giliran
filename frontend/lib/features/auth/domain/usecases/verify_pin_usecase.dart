@@ -14,5 +14,5 @@ class VerifyPinUseCase(final AuthRepository _repository) implements UseCase<Unit
   Future<Either<Failure, Unit>> call(String pin) => _repository.verifyPin(pin);
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 VerifyPinUseCase verifyPinUseCase(Ref ref) => VerifyPinUseCase(ref.watch(authRepositoryProvider));

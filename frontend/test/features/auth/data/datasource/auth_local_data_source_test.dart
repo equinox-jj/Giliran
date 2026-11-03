@@ -1,12 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:giliran/core/error/exceptions.dart';
-import 'package:giliran/core/storage/preferences.dart';
 import 'package:giliran/core/storage/secure_storage.dart';
 import 'package:giliran/core/utils/enums/otp_purpose.dart';
 import 'package:giliran/features/auth/data/datasource/auth_local_data_source_impl.dart';
 import 'package:giliran/features/auth/data/datasource/model/email_otp_challenge_model.dart';
 import 'package:giliran/features/auth/data/datasource/model/token_pair_model.dart';
 import 'package:giliran/features/profile/data/datasource/model/profile_model.dart';
+
+import '../../../../helpers/fake_preferences.dart';
 
 /// In-memory [SecureStorage]; [throwOnRead] simulates a Keystore failure.
 class _FakeSecureStorage() implements SecureStorage {
@@ -59,31 +60,14 @@ class _FakeSecureStorage() implements SecureStorage {
   Future<void> clearCurrentUser() async => currentUser = null;
 }
 
-class _FakePreferences() implements Preferences {
-  bool biometricEnabled = false;
-  bool biometricPrompted = false;
-
-  @override
-  Future<bool> readBiometricEnabled() async => biometricEnabled;
-
-  @override
-  Future<void> saveBiometricEnabled(bool value) async => biometricEnabled = value;
-
-  @override
-  Future<bool> readBiometricPrompted() async => biometricPrompted;
-
-  @override
-  Future<void> saveBiometricPrompted(bool value) async => biometricPrompted = value;
-}
-
 void main() {
   late _FakeSecureStorage secure;
-  late _FakePreferences prefs;
+  late FakePreferences prefs;
   late AuthLocalDataSourceImpl dataSource;
 
   setUp(() {
     secure = _FakeSecureStorage();
-    prefs = _FakePreferences();
+    prefs = FakePreferences();
     dataSource = AuthLocalDataSourceImpl(
       secureStorage: secure,
       preferences: prefs,

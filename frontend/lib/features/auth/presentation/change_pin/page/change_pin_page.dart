@@ -91,7 +91,7 @@ class const _Entry({
     final pills = StepPills(
       labels: const ['PIN lama', 'PIN baru', 'Ulangi'],
       current: step.index,
-      alignment: MainAxisAlignment.center,
+      alignment: WrapAlignment.center,
     );
 
     return switch (step) {

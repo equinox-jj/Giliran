@@ -34,7 +34,7 @@ class UpdateMeUseCase(
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 UpdateMeUseCase updateMeUseCase(Ref ref) => UpdateMeUseCase(
   ref.watch(profileRepositoryProvider),
   ref.watch(authRepositoryProvider),

@@ -13,5 +13,5 @@ class const PickAvatarPhotoUseCase(final ImagePickerService _picker) implements 
   Future<Either<Failure, PickedPhoto>> call(PhotoSource params) async => Right(await _picker.pick(params));
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 PickAvatarPhotoUseCase pickAvatarPhotoUseCase(Ref ref) => PickAvatarPhotoUseCase(ref.watch(imagePickerServiceProvider));

@@ -30,5 +30,5 @@ class SetPinUseCase(final AuthRepository _repository) implements UseCase<Unit, S
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 SetPinUseCase setPinUseCase(Ref ref) => SetPinUseCase(ref.watch(authRepositoryProvider));

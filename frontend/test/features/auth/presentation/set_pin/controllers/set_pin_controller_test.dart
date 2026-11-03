@@ -42,7 +42,9 @@ void main() {
 
     // Assert
     expect(container.read(setPinControllerProvider).done, isTrue);
-    expect(repository.lastArgs, isA<ProfileData>());
+    // The session refresh that follows overwrites lastArgs; check the cache.
+    expect(repository.calls, contains('setPin'));
+    expect(repository.savedUser?.pinSet, isTrue);
     expect(
       container.read(authSessionControllerProvider).value,
       isA<AuthUnlocked>(),

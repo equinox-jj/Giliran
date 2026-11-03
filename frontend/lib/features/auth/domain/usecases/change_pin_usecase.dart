@@ -23,5 +23,5 @@ class ChangePinUseCase(final AuthRepository _repository) implements UseCase<Unit
   );
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 ChangePinUseCase changePinUseCase(Ref ref) => ChangePinUseCase(ref.watch(authRepositoryProvider));

@@ -91,14 +91,21 @@ void main() {
       'tablet': Size(820, 1180),
       'tablet landscape': Size(1180, 820),
     };
+    // Below the 360 dp floor the pad scrolls instead of shrinking its keys
+    // under the tap minimum: there, each part only has to scroll into view.
+    const scrolls = {'small phone', 'small phone landscape'};
     for (final MapEntry(key: name, value: size) in screens.entries) {
       testWidgets('on a $name', (tester) async {
         // Arrange
         await tester.pumpPage(const SetPinPage(), container: container, size: size);
+        final keypad = find.bySemanticsLabel('Hapus');
+        final hint = find.textContaining('Hindari angka');
 
         // Act
-        final keypadBottom = tester.getBottomLeft(find.bySemanticsLabel('Hapus')).dy;
-        final hintBottom = tester.getBottomLeft(find.textContaining('Hindari angka')).dy;
+        if (scrolls.contains(name)) await tester.ensureVisible(keypad);
+        final keypadBottom = tester.getBottomLeft(keypad).dy;
+        if (scrolls.contains(name)) await tester.ensureVisible(hint);
+        final hintBottom = tester.getBottomLeft(hint).dy;
 
         // Assert
         expect(tester.takeException(), isNull);

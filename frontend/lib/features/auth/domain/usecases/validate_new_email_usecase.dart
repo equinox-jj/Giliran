@@ -33,5 +33,5 @@ class ValidateNewEmailUseCase(final AuthRepository _repository) implements UseCa
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 ValidateNewEmailUseCase validateNewEmailUseCase(Ref ref) => ValidateNewEmailUseCase(ref.watch(authRepositoryProvider));

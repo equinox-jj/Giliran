@@ -70,7 +70,11 @@ void main() {
 
     // Assert
     expect(find.text('ana@example.com'), findsOneWidget);
-    expect(find.text('Email baru'), findsOneWidget);
+    // "Email baru" is also the first step pill; check the field's label.
+    expect(
+      find.descendant(of: find.byType(EmailField), matching: find.text('Email baru')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('the current address stays on step 1 with the reason', (tester) async {
@@ -148,7 +152,7 @@ void main() {
       repository.requestArgs,
       (OtpPurpose.changeEmail, 'baru@example.com', '246802'),
     );
-    expect(find.byType(EmailCodeCard), findsOneWidget);
+    expect(find.byType(OtpInput), findsOneWidget);
     expect(find.text('Buka aplikasi email'), findsOneWidget);
   });
 

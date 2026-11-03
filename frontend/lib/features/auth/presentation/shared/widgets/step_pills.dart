@@ -10,15 +10,18 @@ class const StepPills({
 
   /// Zero-based index of the step on screen.
   required final int current,
-  final MainAxisAlignment alignment = MainAxisAlignment.start,
+  final WrapAlignment alignment = WrapAlignment.start,
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Semantics(
     label: 'Langkah ${current + 1} dari ${labels.length}, ${labels[current]}',
     child: ExcludeSemantics(
-      child: Row(
-        mainAxisAlignment: alignment,
+      // Wraps instead of overflowing on narrow screens or large text.
+      child: Wrap(
+        alignment: alignment,
+        crossAxisAlignment: WrapCrossAlignment.center,
         spacing: 14,
+        runSpacing: AppSpace.s8,
         children: [
           for (var i = 0; i < labels.length; i++)
             _Pill(number: i + 1, label: labels[i], done: i < current, active: i == current),

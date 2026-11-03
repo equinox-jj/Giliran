@@ -13,6 +13,6 @@ class GetBiometricEnabledUseCase(final AuthRepository _repository) implements Us
   Future<Either<Failure, bool>> call(NoParams params) => _repository.readBiometricEnabled();
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 GetBiometricEnabledUseCase getBiometricEnabledUseCase(Ref ref) =>
     GetBiometricEnabledUseCase(ref.watch(authRepositoryProvider));

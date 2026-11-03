@@ -129,7 +129,14 @@ class SettingsRow extends StatelessWidget {
       _SettingsRowKind.locked => Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (value != null) Text(value!, style: t.body.copyWith(color: c.textTertiary)),
+          if (value != null)
+            Flexible(
+              child: Text(
+                value!,
+                style: t.body.copyWith(color: c.textTertiary),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           const SizedBox(width: AppSpace.s1),
           AppIcon(
             AppIcons.lockSimple,
