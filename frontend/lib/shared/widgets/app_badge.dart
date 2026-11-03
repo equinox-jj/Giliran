@@ -51,7 +51,13 @@ class const CountBadge(final int count, {super.key, final int max = 9}) extends 
 
 /// Label badge: `micro` text in a 20-high pill on `bg.subtle`
 /// ("Tamu", "Pengurus", "Kamu").
-class const LabelBadge(final String label, {super.key}) extends StatelessWidget {
+class const LabelBadge(
+  final String label, {
+  super.key,
+
+  /// On a group tone (the Groups list card): 70% surface fill, ink text.
+  final bool onTone = false,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -59,10 +65,13 @@ class const LabelBadge(final String label, {super.key}) extends StatelessWidget 
     return Container(
       height: 20,
       padding: const EdgeInsets.symmetric(horizontal: AppSpace.s2),
-      decoration: ShapeDecoration(color: c.subtle, shape: AppShapes.pill),
+      decoration: ShapeDecoration(
+        color: onTone ? c.surface.withValues(alpha: 0.7) : c.subtle,
+        shape: AppShapes.pill,
+      ),
       child: Center(
         widthFactor: 1,
-        child: Text(label, style: t.micro.copyWith(color: c.textSecondary)),
+        child: Text(label, style: t.micro.copyWith(color: onTone ? c.textPrimary : c.textSecondary)),
       ),
     );
   }

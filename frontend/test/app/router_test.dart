@@ -5,6 +5,7 @@ import 'package:giliran/app/app.dart';
 import 'package:giliran/app/router.dart';
 import 'package:giliran/app/routes.dart';
 import 'package:giliran/core/error/failure.dart';
+import 'package:giliran/core/network/connectivity_controller.dart';
 import 'package:giliran/core/services/biometric_service.dart';
 import 'package:giliran/core/storage/preferences.dart';
 import 'package:giliran/features/auth/data/repositories/auth_repository_impl.dart';
@@ -14,14 +15,17 @@ import 'package:giliran/features/auth/presentation/pin_lock/page/pin_lock_page.d
 import 'package:giliran/features/auth/presentation/sign_in/page/sign_in_page.dart';
 import 'package:giliran/features/auth/presentation/splash/page/splash_page.dart';
 import 'package:giliran/features/auth/presentation/welcome/page/welcome_page.dart';
-import 'package:giliran/features/group/presentation/pages/groups_page.dart';
-import 'package:giliran/features/home/presentation/pages/home_page.dart';
+import 'package:giliran/features/group/data/repositories/group_repository_impl.dart';
+import 'package:giliran/features/group/presentation/groups/page/groups_page.dart';
+import 'package:giliran/features/home/presentation/home/page/home_page.dart';
 import 'package:giliran/features/profile/domain/entity/profile.dart';
 import 'package:giliran/features/profile/presentation/profile/page/profile_page.dart';
 import 'package:giliran/shared/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../helpers/fake_auth_repository.dart';
+import '../helpers/fake_connectivity.dart';
+import '../helpers/fake_group_repository.dart';
 import '../helpers/fake_preferences.dart';
 
 void main() {
@@ -36,6 +40,8 @@ void main() {
         authRepositoryProvider.overrideWithValue(repository),
         biometricServiceProvider.overrideWithValue(FakeBiometricService()),
         preferencesProvider.overrideWithValue(FakePreferences()),
+        groupRepositoryProvider.overrideWithValue(FakeGroupRepository()),
+        connectivityControllerProvider.overrideWith(() => FakeConnectivityController(true)),
       ],
     );
   });

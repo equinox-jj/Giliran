@@ -52,13 +52,14 @@ class SettingsRow extends StatelessWidget {
        onToggle = null,
        onTap = null;
 
-  /// Disabled after the group starts: lock icon + the reason as subtitle.
+  /// Disabled after the group starts: grey label and value with a lock. The
+  /// reason goes once under the group ([SettingsGroup.footer]).
   const new locked({
     super.key,
     required this.label,
     this.icon,
     this.value,
-    this.subtitle = 'Terkunci setelah arisan dimulai',
+    this.subtitle,
   }) : _kind = _SettingsRowKind.locked,
        toggleValue = null,
        onToggle = null,
@@ -143,7 +144,7 @@ class SettingsRow extends StatelessWidget {
                 ],
                 AppIcon(
                   AppIcons.lockSimple,
-                  size: AppSizes.iconMd,
+                  size: AppSizes.iconSm,
                   color: c.textTertiary,
                 ),
               ],
@@ -169,7 +170,7 @@ class SettingsRow extends StatelessWidget {
                     if (subtitle != null)
                       Text(
                         subtitle!,
-                        style: t.caption.copyWith(color: c.textTertiary),
+                        style: t.caption.copyWith(color: destructive ? c.rejected.fg : c.textTertiary),
                       ),
                   ],
                 ),
@@ -205,9 +206,16 @@ class SettingsRow extends StatelessWidget {
 }
 
 /// Rows grouped into a `radius.md` card with hairlines inside, an optional
-/// `caption` header in `text.tertiary`, and 24 px below the group.
-class const SettingsGroup({super.key, final String? header, required final List<Widget> children})
-    extends StatelessWidget {
+/// `caption`/600 header in `text.tertiary`, an optional [footer] caption
+/// under the card, and 24 px below the group.
+class const SettingsGroup({
+  super.key,
+  final String? header,
+  required final List<Widget> children,
+
+  /// A note for the whole group, such as why its rows are locked.
+  final String? footer,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -220,14 +228,14 @@ class const SettingsGroup({super.key, final String? header, required final List<
           if (header != null)
             Padding(
               padding: const EdgeInsets.only(
-                left: AppSpace.s4,
+                left: AppSpace.s1,
                 bottom: AppSpace.s2,
               ),
               child: Semantics(
                 header: true,
                 child: Text(
                   header!,
-                  style: t.caption.copyWith(color: c.textTertiary),
+                  style: t.caption.copyWith(color: c.textTertiary, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -250,6 +258,11 @@ class const SettingsGroup({super.key, final String? header, required final List<
               ],
             ),
           ),
+          if (footer case final footer?)
+            Padding(
+              padding: const EdgeInsets.only(left: AppSpace.s1, top: AppSpace.s2, right: AppSpace.s1),
+              child: Text(footer, style: t.caption.copyWith(color: c.textTertiary)),
+            ),
         ],
       ),
     );

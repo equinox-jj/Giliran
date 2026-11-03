@@ -1,0 +1,367 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
+
+import '../../../../../core/constants/app_doodles.dart';
+import '../../../../../core/constants/app_icons.dart';
+import '../../../../../core/error/failure_message.dart';
+import '../../../../../core/l10n/l10n.dart';
+import '../../../../../core/themes/themes.dart';
+import '../../../../../core/utils/date_formatter.dart';
+import '../../../../../core/utils/enums/group_status.dart';
+import '../../../../../shared/widgets/widgets.dart';
+import '../../../domain/entities/group.dart';
+import '../../../domain/usecases/group_menu_actions_usecase.dart';
+import '../../../domain/usecases/pick_hero_action_usecase.dart';
+import '../controllers/group_detail_controller.dart';
+import '../widgets/detail_tabs.dart';
+import '../widgets/group_headline.dart';
+import '../widgets/group_menu.dart';
+
+/// The group detail frame (S20–S23): headline, Period Strip, Current Period
+/// Hero and the four tabs. [created] shows the "invite now?" prompt once,
+/// right after Create group.
+class const GroupDetailPage({
+  super.key,
+  required final String groupId,
+  final DetailTab initialTab = DetailTab.payments,
+  final bool created = false,
+  required final VoidCallback onEdit,
+  required final VoidCallback onPaymentInfo,
+}) extends ConsumerStatefulWidget {
+  @override
+  ConsumerState<GroupDetailPage> createState() => _GroupDetailPageState();
+}
+
+class _GroupDetailPageState() extends ConsumerState<GroupDetailPage> {
+  late DetailTab _tab = widget.initialTab;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.created) WidgetsBinding.instance.addPostFrameCallback((_) => _promptInvite());
+  }
+
+  Future<void> _promptInvite() async {
+    if (!mounted) return;
+    final l10n = context.l10n;
+    final invite = await showConfirmationSheet(
+      context,
+      icon: AppIcons.userPlus,
+      title: l10n.groupCreatedPrompt,
+      confirmLabel: l10n.inviteNowButton,
+      cancelLabel: l10n.laterButton,
+    );
+    // Invite (S16) comes with Members (Phase 3).
+    if (invite && mounted) showAppToast(context, l10n.comingSoon);
+  }
+
+  void _comingSoon() => showAppToast(context, context.l10n.comingSoon);
+
+  Future<void> _onMenu(GroupMenuAction action) async {
+    switch (action) {
+      case GroupMenuAction.edit:
+        widget.onEdit();
+      case GroupMenuAction.paymentInfo:
+        widget.onPaymentInfo();
+      case GroupMenuAction.close:
+        await _close();
+      case GroupMenuAction.share || GroupMenuAction.leave || GroupMenuAction.invite || GroupMenuAction.reminders:
+        _comingSoon();
+    }
+  }
+
+  Future<void> _close() async {
+    final l10n = context.l10n;
+    final provider = groupDetailControllerProvider(widget.groupId);
+    final name = ref.read(provider).value?.group?.name ?? '';
+    final confirmed = await showAppDialog(
+      context,
+      title: l10n.closeGroupTitle(name),
+      message: l10n.closeGroupMessage,
+      confirmLabel: l10n.menuClose,
+    );
+    if (!confirmed || !mounted) return;
+    final failure = await ref.read(provider.notifier).close();
+    if (!mounted) return;
+    showAppToast(context, failure?.displayMessage ?? l10n.groupClosedToast);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = groupDetailControllerProvider(widget.groupId);
+    return Scaffold(
+      appBar: _DetailTopBar(provider: provider, onShare: _comingSoon, onMenu: _onMenu),
+      body: _DetailBody(
+        provider: provider,
+        tab: _tab,
+        onTab: (t) => setState(() => _tab = t),
+        onHeroAction: _comingSoon,
+      ),
+    );
+  }
+}
+
+class const _DetailTopBar({
+  required final GroupDetailControllerProvider provider,
+  required final VoidCallback onShare,
+  required final ValueChanged<GroupMenuAction> onMenu,
+}) extends ConsumerWidget implements PreferredSizeWidget {
+  @override
+  Size get preferredSize => const Size.fromHeight(AppSizes.topBarH);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final name = ref.watch(provider.select((s) => s.value?.group?.name));
+    final menu = ref.watch(provider.select((s) => s.value?.menu ?? const <GroupMenuAction>[]));
+    final status = ref.watch(provider.select((s) => s.value?.group?.status));
+    return AppTopBar(
+      title: name,
+      collapseTitle: true,
+      actions: [
+        if (status != GroupStatus.closed)
+          CircleIconButton(
+            icon: AppIcons.linkSimple,
+            semanticLabel: context.l10n.inviteMembersSemantics,
+            onPressed: onShare,
+          ),
+        if (menu.isNotEmpty) GroupMenu(actions: menu, onSelected: onMenu),
+      ],
+    );
+  }
+}
+
+enum _Phase() {
+  loading,
+  notFound,
+  content,
+}
+
+class const _DetailBody({
+  required final GroupDetailControllerProvider provider,
+  required final DetailTab tab,
+  required final ValueChanged<DetailTab> onTab,
+  required final VoidCallback onHeroAction,
+}) extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final phase = ref.watch(
+      provider.select((s) {
+        final state = s.value;
+        if (state?.group != null) return _Phase.content;
+        if (state?.notFound ?? false) return _Phase.notFound;
+        return _Phase.loading;
+      }),
+    );
+    final margin = context.screenMargin;
+    final bottom = context.isCompact ? AppBottomNavBar.contentInset(context) : AppSpace.s8;
+
+    Future<void> refresh() async {
+      final failure = await ref.read(provider.notifier).refresh();
+      if (failure != null && context.mounted) showAppToast(context, failure.displayMessage);
+    }
+
+    if (phase == _Phase.notFound) {
+      final l10n = context.l10n;
+      return EmptyState(
+        illustration: const Doodle(AppDoodles.rantang, size: 160),
+        title: l10n.groupNotFoundTitle,
+        message: l10n.groupNotFoundMessage,
+      );
+    }
+    if (phase == _Phase.loading) return _DetailSkeleton(margin: margin);
+
+    final top = _TopSection(provider: provider, onHeroAction: onHeroAction);
+    final tabs = _TabsSection(provider: provider, tab: tab, onTab: onTab);
+
+    if (context.sizeClass == SizeClass.expanded) {
+      // Expanded: the shared top section on the left (5 of 12 columns), the
+      // tabs on the right (7 of 12).
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 5,
+            child: RefreshIndicator(
+              onRefresh: refresh,
+              child: ListView(
+                padding: EdgeInsets.fromLTRB(margin, 0, context.gutter / 2, bottom),
+                children: [top],
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 7,
+            child: ListView(
+              padding: EdgeInsets.fromLTRB(context.gutter / 2, AppSpace.s4, margin, bottom),
+              children: [tabs],
+            ),
+          ),
+        ],
+      );
+    }
+    return RefreshIndicator(
+      onRefresh: refresh,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.fromLTRB(margin, 0, margin, bottom),
+        children: [
+          top,
+          const SizedBox(height: AppSpace.s6),
+          tabs,
+        ],
+      ),
+    );
+  }
+}
+
+/// Headline, Period Strip and hero.
+class const _TopSection({
+  required final GroupDetailControllerProvider provider,
+  required final VoidCallback onHeroAction,
+}) extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final group = ref.watch(provider.select((s) => s.value?.group));
+    final action = ref.watch(provider.select((s) => s.value?.heroAction ?? HeroAction.none));
+    if (group == null) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: AppSpace.s2),
+        GroupHeadline(group: group),
+        if (group.status != GroupStatus.draft) ...[
+          const SizedBox(height: AppSpace.s4),
+          PeriodStrip(periods: _tokensFor(group), onSelect: (_) {}),
+        ],
+        const SizedBox(height: AppSpace.s4),
+        _Hero(group: group, action: action, onAction: onHeroAction),
+      ],
+    );
+  }
+
+  /// Tokens from the group alone until periods are loaded (Task 4.1): the
+  /// periods before the current one are done, the rest upcoming.
+  static List<PeriodTokenData> _tokensFor(GroupDetail group) {
+    final current = group.status == GroupStatus.active ? (group.currentPeriodNo ?? 1) : (group.totalSlots ?? 0) + 1;
+    return [
+      for (var n = 1; n <= (group.totalSlots ?? 0); n++)
+        PeriodTokenData(
+          id: n == current ? (group.currentPeriodId ?? 'p$n') : 'p$n',
+          periodNo: n,
+          state: n < current
+              ? SlotTokenState.done
+              : n == current
+              ? SlotTokenState.current
+              : SlotTokenState.upcoming,
+        ),
+    ];
+  }
+}
+
+class const _Hero({
+  required final GroupDetail group,
+  required final HeroAction action,
+  required final VoidCallback onAction,
+}) extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final l10n = context.l10n;
+    final tone = c.tones[group.toneIndex % c.tones.length];
+    final total = group.totalSlots ?? 0;
+    if (group.status == GroupStatus.draft) {
+      final filled = group.filledSlots ?? 0;
+      return CurrentPeriodHero(
+        title: group.name ?? '',
+        subtitle: l10n.heroSetupTitle,
+        ringValue: filled,
+        ringTotal: total,
+        ringSemantics: l10n.ringFillSemantics(filled, total),
+        tone: tone,
+        action: action == HeroAction.continueSetup
+            ? CurrentPeriodHeroAction(label: l10n.heroContinueSetup, onPressed: onAction)
+            : null,
+      );
+    }
+    final paid = group.paidCount ?? 0;
+    final pending = group.pendingReviewCount ?? 0;
+    final amount = group.amount ?? 0;
+    final due = group.nextDueDate;
+    final draw = group.nextDrawDate;
+    final now = DateTime.now();
+    return CurrentPeriodHero(
+      title: group.name ?? '',
+      subtitle: l10n.periodOf(group.currentPeriodNo ?? 1, total),
+      ringValue: paid,
+      ringTotal: total,
+      ringPending: pending,
+      ringSemantics: pending > 0
+          ? l10n.ringPaidPendingSemantics(paid, total, pending)
+          : l10n.ringPaidSemantics(paid, total),
+      amount: paid * amount,
+      amountCaption: l10n.heroCollectedOf(Rupiah.format(group.potAmount ?? amount * total)),
+      infoLine: due == null || draw == null
+          ? null
+          : l10n.heroInfoLine(AppDate.short(due, now: now), AppDate.short(draw, now: now)),
+      tone: tone,
+      note: action == HeroAction.waitForDraw ? l10n.heroWaitForDraw : null,
+      action: switch (action) {
+        HeroAction.uploadProof => CurrentPeriodHeroAction(label: l10n.heroUploadProof, onPressed: onAction),
+        HeroAction.viewMyProof => CurrentPeriodHeroAction(
+          label: l10n.heroViewMyProof,
+          onPressed: onAction,
+          secondary: true,
+        ),
+        HeroAction.reviewProofs => CurrentPeriodHeroAction(
+          label: l10n.nextActionReviewButton(pending),
+          onPressed: onAction,
+        ),
+        HeroAction.drawNow => CurrentPeriodHeroAction(label: l10n.nextActionDrawButton, onPressed: onAction),
+        HeroAction.recordPayout => CurrentPeriodHeroAction(label: l10n.heroRecordPayout, onPressed: onAction),
+        HeroAction.viewBuktiKocok => CurrentPeriodHeroAction(
+          label: l10n.heroViewBuktiKocok,
+          onPressed: onAction,
+          secondary: true,
+        ),
+        HeroAction.continueSetup || HeroAction.waitForDraw || HeroAction.none => null,
+      },
+    );
+  }
+}
+
+class const _TabsSection({
+  required final GroupDetailControllerProvider provider,
+  required final DetailTab tab,
+  required final ValueChanged<DetailTab> onTab,
+}) extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final pending = ref.watch(
+      provider.select((s) {
+        final group = s.value?.group;
+        final count = group?.pendingReviewCount ?? 0;
+        return (group?.isManager ?? false) && count > 0 ? count : null;
+      }),
+    );
+    return DetailTabs(selected: tab, onChanged: onTab, pendingCount: pending);
+  }
+}
+
+class const _DetailSkeleton({required final double margin}) extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: margin, vertical: AppSpace.s4),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Skeleton.line(width: 260, height: 28),
+          SizedBox(height: AppSpace.s4),
+          Skeleton(height: 66, radius: AppRadius.full),
+          SizedBox(height: AppSpace.s4),
+          Skeleton(height: AppSizes.heroMinH, radius: AppRadius.xl),
+        ],
+      ),
+    );
+  }
+}

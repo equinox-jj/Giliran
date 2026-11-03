@@ -5,8 +5,8 @@ import '../../core/themes/themes.dart';
 import '../../core/utils/input_formatters.dart';
 import 'app_text_field.dart';
 
-/// Rupiah amount field: `amountLg` digits, a fixed small "Rp" prefix and live
-/// dot grouping. Read the value with [AmountField.parse].
+/// Rupiah amount field: `amountLg` digits, a fixed `label` "Rp" prefix in
+/// `text.secondary` and live dot grouping. Read the value with [AmountField.parse].
 class const AmountField({
   super.key,
   required final TextEditingController controller,
@@ -46,15 +46,7 @@ class const AmountField({
       onChanged: (text) => onChanged?.call(parse(text)),
       prefix: Padding(
         padding: const EdgeInsetsDirectional.only(start: AppSpace.s1),
-        child: Text(
-          'Rp',
-          style: style.copyWith(
-            fontSize: style.fontSize! * 0.55,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0,
-            color: c.textPrimary,
-          ),
-        ),
+        child: Text('Rp', style: AppTextStyles.of(context).label.copyWith(color: c.textSecondary)),
       ),
     );
   }

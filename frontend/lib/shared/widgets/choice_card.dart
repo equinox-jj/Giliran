@@ -78,19 +78,24 @@ class const ChoiceCard({
                   ),
                 ),
                 const SizedBox(width: AppSpace.s3),
-                Padding(
-                  padding: const EdgeInsets.only(top: AppSpace.s2),
+                // Selected: a 2 px ink ring around a 12 px ink dot.
+                AnimatedContainer(
+                  duration: duration,
+                  width: AppSizes.radio,
+                  height: AppSizes.radio,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: selected ? c.textPrimary : c.borderStrong,
+                      width: selected ? AppStroke.strong : AppStroke.regular,
+                    ),
+                  ),
                   child: AnimatedContainer(
                     duration: duration,
-                    width: AppSizes.radio,
-                    height: AppSizes.radio,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: selected ? c.textPrimary : c.borderStrong,
-                        width: selected ? 7 : AppStroke.regular,
-                      ),
-                    ),
+                    width: selected ? 12 : 0,
+                    height: selected ? 12 : 0,
+                    decoration: BoxDecoration(color: c.textPrimary, shape: BoxShape.circle),
                   ),
                 ),
               ],
@@ -116,6 +121,9 @@ class const ChoiceCardGroup<T>({
   required final List<ChoiceOption<T>> options,
   required final T? value,
   required final ValueChanged<T>? onChanged,
+
+  /// Gap between the cards; form fields such as Create group's use 6.
+  final double spacing = AppSpace.s3,
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -134,7 +142,7 @@ class const ChoiceCardGroup<T>({
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           for (var i = 0; i < cards.length; i++) ...[
-            if (i > 0) const SizedBox(height: AppSpace.s3),
+            if (i > 0) SizedBox(height: spacing),
             cards[i],
           ],
         ],
@@ -145,7 +153,7 @@ class const ChoiceCardGroup<T>({
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           for (var i = 0; i < cards.length; i++) ...[
-            if (i > 0) const SizedBox(width: AppSpace.s3),
+            if (i > 0) SizedBox(width: spacing),
             Expanded(child: cards[i]),
           ],
         ],

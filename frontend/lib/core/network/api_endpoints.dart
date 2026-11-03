@@ -49,6 +49,24 @@ abstract final class ApiEndpoints() {
   /// Signs out one other device (`DELETE`).
   static String meSession(String sessionId) => '/me/sessions/$sessionId';
 
+  /// Groups I organize or belong to (`GET`, `?status=active|finished|all`).
+  static const String meGroups = '/me/groups';
+
+  /// Creates a group (`POST`).
+  static const String groups = '/groups';
+
+  /// One group (`GET`, `PATCH`).
+  static String group(String groupId) => '/groups/$groupId';
+
+  /// Closes a group for good (`POST`).
+  static String groupClose(String groupId) => '/groups/$groupId/close';
+
+  /// The organizer's bank account (`PUT`).
+  static String paymentInfo(String groupId) => '/groups/$groupId/payment-info';
+
+  /// The organizer's QRIS image (`PUT` multipart, `DELETE`).
+  static String paymentInfoQris(String groupId) => '/groups/$groupId/payment-info/qris';
+
   /// `extra` flag: skip attaching the access token (sign-in, refresh, public
   /// pages).
   static const String kNoAuth = 'noAuth';

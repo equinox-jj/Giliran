@@ -414,5 +414,1070 @@
   "deleteAccountDoneButton": "Selesai",
   "@deleteAccountDoneButton": {
     "description": "Step 3 button."
+  },
+  "periodUnitMonthly": "bulan",
+  "@periodUnitMonthly": {
+    "description": "Unit after an amount for a monthly group, e.g. Rp200.000 / bulan."
+  },
+  "periodUnitWeekly": "minggu",
+  "@periodUnitWeekly": {
+    "description": "Unit after an amount for a weekly group."
+  },
+  "amountPerPeriod": "{amount} / {unit}",
+  "@amountPerPeriod": {
+    "description": "Group dues per period, e.g. Rp200.000 / bulan.",
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "Rp200.000"
+      },
+      "unit": {
+        "type": "String",
+        "example": "bulan"
+      }
+    }
+  },
+  "groupCardDuesSlots": "{dues} · {slots} slot",
+  "@groupCardDuesSlots": {
+    "description": "Group list card dues line, e.g. Rp200.000 / bulan · 10 slot.",
+    "placeholders": {
+      "dues": {
+        "type": "String"
+      },
+      "slots": {
+        "type": "int"
+      }
+    }
+  },
+  "groupCardDrawOn": "Kocok {date}",
+  "@groupCardDrawOn": {
+    "description": "Group list card caption: the next draw date.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "groupCardStartsOn": "Mulai {date}",
+  "@groupCardStartsOn": {
+    "description": "Group list card caption: the start date of a group in setup.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "roleManagerBadge": "Pengurus",
+  "@roleManagerBadge": {
+    "description": "Micro chip on a group card when I organize or co-organize the group."
+  },
+  "groupStatusDraft": "Draf",
+  "@groupStatusDraft": {
+    "description": "Badge for a group that has not started."
+  },
+  "groupStatusCompleted": "Selesai",
+  "@groupStatusCompleted": {
+    "description": "Badge for a completed group."
+  },
+  "groupStatusClosed": "Ditutup",
+  "@groupStatusClosed": {
+    "description": "Badge for a closed group."
+  },
+  "ringCycleSemantics": "Periode {current} dari {total}",
+  "@ringCycleSemantics": {
+    "description": "Screen reader label for a cycle progress ring.",
+    "placeholders": {
+      "current": {
+        "type": "int",
+        "example": "3"
+      },
+      "total": {
+        "type": "int",
+        "example": "10"
+      }
+    }
+  },
+  "ringFillSemantics": "{filled} dari {total} slot terisi",
+  "@ringFillSemantics": {
+    "description": "Screen reader label for a draft group's fill ring.",
+    "placeholders": {
+      "filled": {
+        "type": "int",
+        "example": "8"
+      },
+      "total": {
+        "type": "int",
+        "example": "10"
+      }
+    }
+  },
+  "ringPaidSemantics": "{paid} dari {total} anggota sudah bayar",
+  "@ringPaidSemantics": {
+    "description": "Screen reader label for a payment progress ring.",
+    "placeholders": {
+      "paid": {
+        "type": "int",
+        "example": "8"
+      },
+      "total": {
+        "type": "int",
+        "example": "10"
+      }
+    }
+  },
+  "ringPaidPendingSemantics": "{paid} dari {total} anggota sudah bayar, {pending} menunggu dicek",
+  "@ringPaidPendingSemantics": {
+    "description": "Screen reader label for a payment ring with proofs waiting.",
+    "placeholders": {
+      "paid": {
+        "type": "int",
+        "example": "8"
+      },
+      "total": {
+        "type": "int",
+        "example": "10"
+      },
+      "pending": {
+        "type": "int",
+        "example": "1"
+      }
+    }
+  },
+  "groupCardPendingSemantics": "{count} bukti menunggu dicek",
+  "@groupCardPendingSemantics": {
+    "description": "Screen reader text for the pending dot on a group card.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "comingSoon": "Segera hadir",
+  "@comingSoon": {
+    "description": "Toast for a menu item whose screen is not built yet."
+  },
+  "homeTitle": "Beranda",
+  "@homeTitle": {
+    "description": "Title of the Beranda tab (S10)."
+  },
+  "homeActiveCount": "{count} arisan aktif",
+  "@homeActiveCount": {
+    "description": "Greeting bar subtitle on Home.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "homeHeadlineDue": "Halo, {name}. **{count} iuran** menunggu bulan ini.",
+  "@homeHeadlineDue": {
+    "description": "Home headline when I have unpaid dues. Keep the ** markers around the bold run.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Joshua"
+      },
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "homeHeadlineClear": "Semua iuran **sudah beres**.",
+  "@homeHeadlineClear": {
+    "description": "Home headline when every due is paid. Keep the ** markers."
+  },
+  "homeHeadlineEmpty": "Belum ada arisan. **Yuk mulai.**",
+  "@homeHeadlineEmpty": {
+    "description": "Home headline with no groups. Keep the ** markers."
+  },
+  "nextActionNothing": "Tidak ada yang perlu dilakukan",
+  "@nextActionNothing": {
+    "description": "Home hero when nothing is urgent."
+  },
+  "nextActionRejectedLabel": "Bukti kamu ditolak",
+  "@nextActionRejectedLabel": {
+    "description": "Home hero label: my payment proof was rejected."
+  },
+  "nextActionDueLabel": "Iuran segera jatuh tempo",
+  "@nextActionDueLabel": {
+    "description": "Home hero label: my payment is due within 3 days."
+  },
+  "nextActionReviewLabel": "Bukti menunggu dicek",
+  "@nextActionReviewLabel": {
+    "description": "Home hero label: proofs wait for my review."
+  },
+  "nextActionDrawLabel": "Hari ini kocokan",
+  "@nextActionDrawLabel": {
+    "description": "Home hero label: today is the draw date."
+  },
+  "nextActionPayoutLabel": "Uang arisan untukmu",
+  "@nextActionPayoutLabel": {
+    "description": "Home hero label: I won and must confirm the payout."
+  },
+  "nextActionRejectedButton": "Upload ulang bukti",
+  "@nextActionRejectedButton": {
+    "description": "Home hero button after a rejected proof."
+  },
+  "nextActionDueButton": "Upload bukti",
+  "@nextActionDueButton": {
+    "description": "Home hero button for a due payment."
+  },
+  "nextActionReviewButton": "Tinjau {count} bukti",
+  "@nextActionReviewButton": {
+    "description": "Home hero button for proofs to review.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "nextActionDrawButton": "Kocok sekarang",
+  "@nextActionDrawButton": {
+    "description": "Home hero button on draw day."
+  },
+  "nextActionPayoutButton": "Konfirmasi terima",
+  "@nextActionPayoutButton": {
+    "description": "Home hero button to confirm a payout."
+  },
+  "dueOn": "Jatuh tempo {date}",
+  "@dueOn": {
+    "description": "Due date line, e.g. Jatuh tempo Sab, 25 Okt.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "Sab, 25 Okt"
+      }
+    }
+  },
+  "homeSectionGroups": "Arisan kamu",
+  "@homeSectionGroups": {
+    "description": "Home section header above the group cards."
+  },
+  "filterAll": "Semua",
+  "@filterAll": {
+    "description": "Group filter chip: every group."
+  },
+  "filterManaging": "Saya pengurus",
+  "@filterManaging": {
+    "description": "Group filter chip: groups I organize."
+  },
+  "filterMember": "Saya anggota",
+  "@filterMember": {
+    "description": "Group filter chip: groups I'm a member of."
+  },
+  "filterUnpaid": "Belum bayar",
+  "@filterUnpaid": {
+    "description": "Group filter chip: groups where I haven't paid."
+  },
+  "filterEmpty": "Tidak ada arisan untuk filter ini.",
+  "@filterEmpty": {
+    "description": "Shown when a chip filter leaves no group."
+  },
+  "homeEmptyTitle": "Belum ada arisan",
+  "@homeEmptyTitle": {
+    "description": "Home empty state title."
+  },
+  "homeEmptyMessage": "Buat grup atau gabung lewat link dari teman.",
+  "@homeEmptyMessage": {
+    "description": "Home empty state message."
+  },
+  "createGroupButton": "Buat grup",
+  "@createGroupButton": {
+    "description": "Button that opens Create group (S13)."
+  },
+  "joinByLinkButton": "Gabung pakai link",
+  "@joinByLinkButton": {
+    "description": "Button that opens the paste-invite-link sheet."
+  },
+  "agendaDue": "Jatuh tempo {group}",
+  "@agendaDue": {
+    "description": "Agenda event: a group's due date.",
+    "placeholders": {
+      "group": {
+        "type": "String",
+        "example": "Arisan RT 05"
+      }
+    }
+  },
+  "agendaDraw": "Kocokan {group}",
+  "@agendaDraw": {
+    "description": "Agenda event: a group's draw.",
+    "placeholders": {
+      "group": {
+        "type": "String",
+        "example": "Arisan RT 05"
+      }
+    }
+  },
+  "agendaPayout": "Penyerahan {group}",
+  "@agendaPayout": {
+    "description": "Agenda event: a group's payout.",
+    "placeholders": {
+      "group": {
+        "type": "String",
+        "example": "Arisan RT 05"
+      }
+    }
+  },
+  "agendaNothing": "Tidak ada jadwal",
+  "@agendaNothing": {
+    "description": "Agenda day with no events."
+  },
+  "agendaDaySemantics": "{date}: {events}",
+  "@agendaDaySemantics": {
+    "description": "Screen reader label for an agenda day.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "Sab, 25 Okt"
+      },
+      "events": {
+        "type": "String",
+        "example": "Jatuh tempo Arisan RT 05"
+      }
+    }
+  },
+  "agendaToday": "Hari ini",
+  "@agendaToday": {
+    "description": "Screen reader prefix for today on the agenda strip."
+  },
+  "homeLoadErrorTitle": "Arisan belum bisa dimuat",
+  "@homeLoadErrorTitle": {
+    "description": "Home error state title when the cache cannot be read."
+  },
+  "homeLoadErrorMessage": "Coba lagi sebentar lagi.",
+  "@homeLoadErrorMessage": {
+    "description": "Home error state message."
+  },
+  "groupsTitle": "Grup",
+  "@groupsTitle": {
+    "description": "Title of the Grup tab (S11)."
+  },
+  "groupsHeadline": "Grup **kamu**",
+  "@groupsHeadline": {
+    "description": "Groups list headline. Keep the ** markers."
+  },
+  "groupsSegmentActive": "Aktif",
+  "@groupsSegmentActive": {
+    "description": "Groups list segment: draft and active groups."
+  },
+  "groupsSegmentFinished": "Selesai",
+  "@groupsSegmentFinished": {
+    "description": "Groups list segment: completed and closed groups."
+  },
+  "groupsEmptyActive": "Belum ada arisan aktif",
+  "@groupsEmptyActive": {
+    "description": "Groups list empty state for the Aktif segment."
+  },
+  "groupsEmptyFinished": "Belum ada arisan yang selesai",
+  "@groupsEmptyFinished": {
+    "description": "Groups list empty state for the Selesai segment."
+  },
+  "groupsEmptyFinishedMessage": "Arisan yang sudah selesai atau ditutup tampil di sini.",
+  "@groupsEmptyFinishedMessage": {
+    "description": "Message under the Selesai empty state."
+  },
+  "stepOf": "{step} dari {total}",
+  "@stepOf": {
+    "description": "Step label above a step progress bar.",
+    "placeholders": {
+      "step": {
+        "type": "int",
+        "example": "1"
+      },
+      "total": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "createGroupTitle": "Buat grup",
+  "@createGroupTitle": {
+    "description": "Create group modal title (S13, S14)."
+  },
+  "createGroupBasicsHeadline": "Arisan **apa** yang mau dibuat?",
+  "@createGroupBasicsHeadline": {
+    "description": "S13 headline. Keep the ** markers."
+  },
+  "createGroupScheduleHeadline": "Atur **jadwal & kocokan**",
+  "@createGroupScheduleHeadline": {
+    "description": "S14 headline. Keep the ** markers."
+  },
+  "groupNameLabel": "Nama grup",
+  "@groupNameLabel": {
+    "description": "Group name field label."
+  },
+  "groupNameHelper": "3–60 huruf. Bisa diubah nanti.",
+  "@groupNameHelper": {
+    "description": "Helper under the group name field (S13)."
+  },
+  "groupNameHint": "Contoh: Arisan RT 05",
+  "@groupNameHint": {
+    "description": "Group name field hint."
+  },
+  "groupAmountLabel": "Iuran per orang",
+  "@groupAmountLabel": {
+    "description": "Group amount field label."
+  },
+  "groupAmountHelper": "Minimal Rp10.000",
+  "@groupAmountHelper": {
+    "description": "Helper under the amount field."
+  },
+  "groupPeriodLabel": "Periode",
+  "@groupPeriodLabel": {
+    "description": "Label above the period choice cards."
+  },
+  "periodMonthly": "Bulanan",
+  "@periodMonthly": {
+    "description": "Period choice: monthly."
+  },
+  "periodMonthlyDescription": "Iuran sekali sebulan.",
+  "@periodMonthlyDescription": {
+    "description": "Monthly choice card description."
+  },
+  "periodWeekly": "Mingguan",
+  "@periodWeekly": {
+    "description": "Period choice: weekly."
+  },
+  "periodWeeklyDescription": "Iuran tiap minggu.",
+  "@periodWeeklyDescription": {
+    "description": "Weekly choice card description."
+  },
+  "groupSlotsLabel": "Jumlah slot",
+  "@groupSlotsLabel": {
+    "description": "Slots stepper label."
+  },
+  "groupSlotsUnit": "slot",
+  "@groupSlotsUnit": {
+    "description": "Unit in the slots stepper limit caption."
+  },
+  "createGroupSlotsPeriods": "{periods} periode",
+  "@createGroupSlotsPeriods": {
+    "description": "Helper under the slots stepper before a start date is picked.",
+    "placeholders": {
+      "periods": {
+        "type": "int"
+      }
+    }
+  },
+  "createGroupSlotsPeriodsEnd": "{periods} periode · selesai {date}",
+  "@createGroupSlotsPeriodsEnd": {
+    "description": "Helper under the slots stepper: periods and the last due date.",
+    "placeholders": {
+      "periods": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "createGroupTotalLabel": "Total per periode",
+  "@createGroupTotalLabel": {
+    "description": "Label of the pot summary on S13 and the review card on S14."
+  },
+  "nextButton": "Lanjut",
+  "@nextButton": {
+    "description": "Button to the next step."
+  },
+  "groupStartDateLabel": "Tanggal mulai",
+  "@groupStartDateLabel": {
+    "description": "Start date field label (first due date)."
+  },
+  "groupStartDateHelper": "Jatuh tempo pertama. Kocokan sehari setelahnya.",
+  "@groupStartDateHelper": {
+    "description": "Helper under the start date field."
+  },
+  "groupDrawMethodLabel": "Cara menentukan giliran",
+  "@groupDrawMethodLabel": {
+    "description": "Label above the draw method choice cards."
+  },
+  "drawRandom": "Kocok acak",
+  "@drawRandom": {
+    "description": "Draw method choice: random."
+  },
+  "drawRandomDescription": "Pemenang diundi tiap periode. Hasilnya bisa dicek semua anggota.",
+  "@drawRandomDescription": {
+    "description": "Random draw choice card description."
+  },
+  "drawFixedOrder": "Urutan tetap",
+  "@drawFixedOrder": {
+    "description": "Draw method choice: fixed order."
+  },
+  "drawFixedOrderDescription": "Urutan pemenang ditentukan dari awal.",
+  "@drawFixedOrderDescription": {
+    "description": "Fixed order choice card description."
+  },
+  "groupReminderLabel": "Pengingat",
+  "@groupReminderLabel": {
+    "description": "Reminder stepper label."
+  },
+  "groupReminderUnit": "hari",
+  "@groupReminderUnit": {
+    "description": "Unit in the reminder stepper limit caption."
+  },
+  "groupReminderSameDay": "Pada hari jatuh tempo",
+  "@groupReminderSameDay": {
+    "description": "Reminder helper when 0 days."
+  },
+  "createGroupReminderHelper": "Hari sebelum jatuh tempo, ke anggota yang belum bayar.",
+  "@createGroupReminderHelper": {
+    "description": "Helper under the reminder stepper on S14."
+  },
+  "createGroupReview": "Periksa lagi",
+  "@createGroupReview": {
+    "description": "Header of the review card on S14."
+  },
+  "createGroupReviewName": "Nama",
+  "@createGroupReviewName": {
+    "description": "Review card row label (S14)."
+  },
+  "createGroupReviewDues": "Iuran",
+  "@createGroupReviewDues": {
+    "description": "Review card row label (S14)."
+  },
+  "createGroupReviewSlots": "Slot",
+  "@createGroupReviewSlots": {
+    "description": "Review card row label (S14)."
+  },
+  "createGroupReviewSlotsValue": "{slots} orang · {periods} periode",
+  "@createGroupReviewSlotsValue": {
+    "description": "Review card slots value (S14).",
+    "placeholders": {
+      "slots": {
+        "type": "int"
+      },
+      "periods": {
+        "type": "int"
+      }
+    }
+  },
+  "createGroupReviewEditBasics": "Ubah langkah 1",
+  "@createGroupReviewEditBasics": {
+    "description": "Link on the review card back to step 1."
+  },
+  "createGroupOrganizerSlot": "Kamu otomatis memegang slot 01 sebagai pengurus.",
+  "@createGroupOrganizerSlot": {
+    "description": "Caption under the review card (S14)."
+  },
+  "editLink": "Ubah",
+  "@editLink": {
+    "description": "Text button that goes back to change values."
+  },
+  "createGroupSubmit": "Buat grup",
+  "@createGroupSubmit": {
+    "description": "Primary button on S14."
+  },
+  "groupNameError": "Nama grup 3–60 huruf.",
+  "@groupNameError": {
+    "description": "Error under the group name field."
+  },
+  "groupAmountError": "Iuran Rp10.000 sampai Rp100.000.000.",
+  "@groupAmountError": {
+    "description": "Error under the amount field."
+  },
+  "groupSlotsError": "Jumlah slot 2 sampai 50.",
+  "@groupSlotsError": {
+    "description": "Error under the slots stepper."
+  },
+  "groupStartDateError": "Pilih tanggal hari ini atau sesudahnya.",
+  "@groupStartDateError": {
+    "description": "Error under the start date field."
+  },
+  "groupCreatedPrompt": "Grup jadi! Undang anggota sekarang?",
+  "@groupCreatedPrompt": {
+    "description": "Prompt shown on the new group's page."
+  },
+  "inviteNowButton": "Undang sekarang",
+  "@inviteNowButton": {
+    "description": "Prompt button that opens Invite."
+  },
+  "laterButton": "Nanti saja",
+  "@laterButton": {
+    "description": "Prompt button that dismisses it."
+  },
+  "groupHeadlineActive": "Periode {period} dari {total}, **{paid} orang sudah bayar**.",
+  "@groupHeadlineActive": {
+    "description": "Group detail headline for an active group. Keep the ** markers.",
+    "placeholders": {
+      "period": {
+        "type": "int",
+        "example": "4"
+      },
+      "total": {
+        "type": "int",
+        "example": "10"
+      },
+      "paid": {
+        "type": "int",
+        "example": "8"
+      }
+    }
+  },
+  "groupHeadlineDraft": "**{filled} dari {total} slot** terisi. Undang {left} lagi.",
+  "@groupHeadlineDraft": {
+    "description": "Group detail headline for a draft group. Keep the ** markers.",
+    "placeholders": {
+      "filled": {
+        "type": "int",
+        "example": "8"
+      },
+      "total": {
+        "type": "int",
+        "example": "10"
+      },
+      "left": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "groupHeadlineDraftFull": "**{filled} dari {total} slot** terisi. Siap dimulai.",
+  "@groupHeadlineDraftFull": {
+    "description": "Draft headline when every slot is filled. Keep the ** markers.",
+    "placeholders": {
+      "filled": {
+        "type": "int",
+        "example": "10"
+      },
+      "total": {
+        "type": "int",
+        "example": "10"
+      }
+    }
+  },
+  "groupHeadlineCompleted": "Arisan **selesai**.",
+  "@groupHeadlineCompleted": {
+    "description": "Group detail headline for a completed group. Keep the ** markers."
+  },
+  "groupHeadlineClosed": "Arisan **ditutup**.",
+  "@groupHeadlineClosed": {
+    "description": "Group detail headline for a closed group. Keep the ** markers."
+  },
+  "periodOf": "Periode {period} dari {total}",
+  "@periodOf": {
+    "description": "Hero period label.",
+    "placeholders": {
+      "period": {
+        "type": "int",
+        "example": "4"
+      },
+      "total": {
+        "type": "int",
+        "example": "10"
+      }
+    }
+  },
+  "periodShort": "P{period}",
+  "@periodShort": {
+    "description": "Slot token label for a period.",
+    "placeholders": {
+      "period": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  },
+  "heroCollectedOf": "dari {amount}",
+  "@heroCollectedOf": {
+    "description": "Under the collected amount in the hero.",
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "Rp2.000.000"
+      }
+    }
+  },
+  "heroInfoLine": "Jatuh tempo {due} · Kocok {draw}",
+  "@heroInfoLine": {
+    "description": "Hero info line with the due and draw dates.",
+    "placeholders": {
+      "due": {
+        "type": "String",
+        "example": "Sab, 25 Okt"
+      },
+      "draw": {
+        "type": "String",
+        "example": "Sab, 25 Okt"
+      }
+    }
+  },
+  "heroSetupTitle": "Persiapan grup",
+  "@heroSetupTitle": {
+    "description": "Hero label for a draft group."
+  },
+  "heroUploadProof": "Upload bukti",
+  "@heroUploadProof": {
+    "description": "Hero button: upload my payment proof."
+  },
+  "heroViewMyProof": "Lihat bukti saya",
+  "@heroViewMyProof": {
+    "description": "Hero secondary button: my proof waits for review."
+  },
+  "heroWaitForDraw": "Tinggal tunggu kocokan",
+  "@heroWaitForDraw": {
+    "description": "Hero note when I have paid and the draw is not done."
+  },
+  "heroRecordPayout": "Catat penyerahan",
+  "@heroRecordPayout": {
+    "description": "Hero button: record the payout to the winner."
+  },
+  "heroViewBuktiKocok": "Lihat Bukti Kocok",
+  "@heroViewBuktiKocok": {
+    "description": "Hero secondary button after the payout."
+  },
+  "heroContinueSetup": "Lanjutkan persiapan",
+  "@heroContinueSetup": {
+    "description": "Hero button on a draft group."
+  },
+  "tabPayments": "Pembayaran",
+  "@tabPayments": {
+    "description": "Group detail tab."
+  },
+  "tabSchedule": "Jadwal",
+  "@tabSchedule": {
+    "description": "Group detail tab."
+  },
+  "tabMembers": "Anggota",
+  "@tabMembers": {
+    "description": "Group detail tab."
+  },
+  "tabActivity": "Aktivitas",
+  "@tabActivity": {
+    "description": "Group detail tab."
+  },
+  "menuShare": "Bagikan",
+  "@menuShare": {
+    "description": "Group menu item."
+  },
+  "menuLeave": "Minta keluar",
+  "@menuLeave": {
+    "description": "Group menu item for members."
+  },
+  "menuEdit": "Edit grup",
+  "@menuEdit": {
+    "description": "Group menu item."
+  },
+  "menuPaymentInfo": "Info rekening",
+  "@menuPaymentInfo": {
+    "description": "Group menu item."
+  },
+  "menuInvite": "Undang",
+  "@menuInvite": {
+    "description": "Group menu item and share button."
+  },
+  "menuReminders": "Pengingat",
+  "@menuReminders": {
+    "description": "Group menu item."
+  },
+  "menuClose": "Tutup grup",
+  "@menuClose": {
+    "description": "Destructive group menu item."
+  },
+  "inviteMembersSemantics": "Undang anggota",
+  "@inviteMembersSemantics": {
+    "description": "Screen reader label for the share button on a group."
+  },
+  "closeGroupTitle": "Tutup {name}?",
+  "@closeGroupTitle": {
+    "description": "Close group dialog title.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Arisan RT 05"
+      }
+    }
+  },
+  "closeGroupMessage": "Grup jadi arsip dan tidak bisa dibuka lagi.",
+  "@closeGroupMessage": {
+    "description": "Close group dialog message."
+  },
+  "groupClosedToast": "Grup ditutup.",
+  "@groupClosedToast": {
+    "description": "Toast after closing a group."
+  },
+  "groupNotFoundTitle": "Grup tidak ditemukan",
+  "@groupNotFoundTitle": {
+    "description": "Group detail empty state when the group is gone."
+  },
+  "groupNotFoundMessage": "Mungkin kamu sudah keluar atau grup dihapus.",
+  "@groupNotFoundMessage": {
+    "description": "Group detail not-found message."
+  },
+  "slotTokenDone": "Periode {period}, selesai",
+  "@slotTokenDone": {
+    "description": "Slot token screen reader label.",
+    "placeholders": {
+      "period": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "slotTokenDoneWinner": "Periode {period}, diterima {name}",
+  "@slotTokenDoneWinner": {
+    "description": "Slot token screen reader label with the winner.",
+    "placeholders": {
+      "period": {
+        "type": "int",
+        "example": "2"
+      },
+      "name": {
+        "type": "String",
+        "example": "Rina"
+      }
+    }
+  },
+  "slotTokenCurrent": "Periode {period}, sedang berjalan",
+  "@slotTokenCurrent": {
+    "description": "Slot token screen reader label.",
+    "placeholders": {
+      "period": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  },
+  "slotTokenUpcoming": "Periode {period}, belum mulai",
+  "@slotTokenUpcoming": {
+    "description": "Slot token screen reader label.",
+    "placeholders": {
+      "period": {
+        "type": "int",
+        "example": "6"
+      }
+    }
+  },
+  "slotTokenYouWon": "Periode {period}, kamu menang",
+  "@slotTokenYouWon": {
+    "description": "Slot token screen reader label when I won.",
+    "placeholders": {
+      "period": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "editGroupTitle": "Ubah grup",
+  "@editGroupTitle": {
+    "description": "Edit group screen title (S19)."
+  },
+  "editGroupGeneral": "Umum",
+  "@editGroupGeneral": {
+    "description": "Edit group section header."
+  },
+  "editGroupRules": "Aturan arisan",
+  "@editGroupRules": {
+    "description": "Edit group section header."
+  },
+  "editGroupManagers": "Pengurus",
+  "@editGroupManagers": {
+    "description": "Edit group section header."
+  },
+  "editGroupDanger": "Zona bahaya",
+  "@editGroupDanger": {
+    "description": "Edit group section header."
+  },
+  "editGroupLocked": "Terkunci setelah arisan dimulai, supaya adil untuk semua anggota.",
+  "@editGroupLocked": {
+    "description": "Caption under a group rule that can't change after start."
+  },
+  "editGroupDues": "Iuran",
+  "@editGroupDues": {
+    "description": "Edit group row label (S19)."
+  },
+  "editGroupDrawMethod": "Cara kocokan",
+  "@editGroupDrawMethod": {
+    "description": "Edit group row label (S19)."
+  },
+  "editGroupRemindersRecap": "Pengingat & rekap",
+  "@editGroupRemindersRecap": {
+    "description": "Edit group row label (S19)."
+  },
+  "editGroupLeaveRequests": "Permintaan keluar",
+  "@editGroupLeaveRequests": {
+    "description": "Edit group row label (S19)."
+  },
+  "closeGroupSubtitle": "Grup jadi arsip dan tidak bisa dibuka lagi",
+  "@closeGroupSubtitle": {
+    "description": "Subtitle of the close group row (S19)."
+  },
+  "editGroupFixedOrder": "Atur urutan",
+  "@editGroupFixedOrder": {
+    "description": "Edit group row that opens Fixed order (S17)."
+  },
+  "editGroupTransfer": "Serahkan pengurus",
+  "@editGroupTransfer": {
+    "description": "Edit group row that opens Transfer ownership (S32)."
+  },
+  "editGroupReminderValue": "{days} hari sebelum",
+  "@editGroupReminderValue": {
+    "description": "Reminder value on the Edit group row.",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "editGroupSaved": "Tersimpan.",
+  "@editGroupSaved": {
+    "description": "Toast after a group setting is saved."
+  },
+  "saveButton": "Simpan",
+  "@saveButton": {
+    "description": "Save button in an edit sheet."
+  },
+  "paymentInfoTitle": "Info rekening",
+  "@paymentInfoTitle": {
+    "description": "Payment info screen title (S15)."
+  },
+  "paymentInfoHeadline": "Ke mana anggota **transfer**?",
+  "@paymentInfoHeadline": {
+    "description": "S15 headline. Keep the ** markers."
+  },
+  "paymentInfoReadOnlyHeadline": "Bayar iuran **ke sini**",
+  "@paymentInfoReadOnlyHeadline": {
+    "description": "S15 headline for read-only viewers. Keep the ** markers."
+  },
+  "paymentInfoTrust": "Uang langsung masuk ke rekening kamu. Giliran tidak memegang uang.",
+  "@paymentInfoTrust": {
+    "description": "S15 trust banner."
+  },
+  "bankLabel": "Bank atau e-wallet",
+  "@bankLabel": {
+    "description": "Bank picker field label."
+  },
+  "bankHint": "Pilih bank atau e-wallet",
+  "@bankHint": {
+    "description": "Bank picker field hint."
+  },
+  "bankOther": "Lainnya",
+  "@bankOther": {
+    "description": "Last bank picker option: type the bank name."
+  },
+  "bankOtherLabel": "Nama bank",
+  "@bankOtherLabel": {
+    "description": "Text field label after choosing Lainnya."
+  },
+  "bankSearchHint": "Cari bank",
+  "@bankSearchHint": {
+    "description": "Search field hint in the bank picker."
+  },
+  "accountNumberLabel": "Nomor rekening",
+  "@accountNumberLabel": {
+    "description": "Account number field label."
+  },
+  "accountHolderLabel": "Atas nama",
+  "@accountHolderLabel": {
+    "description": "Account holder field label."
+  },
+  "accountHolderHelper": "Sesuai nama di buku tabungan, supaya anggota yakin.",
+  "@accountHolderHelper": {
+    "description": "Helper under the account holder field (S15)."
+  },
+  "accountHolderPrefix": "a.n. {name}",
+  "@accountHolderPrefix": {
+    "description": "Account holder line on the bank card.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Rina Wulandari"
+      }
+    }
+  },
+  "accountNumberError": "Nomor rekening 6–20 angka.",
+  "@accountNumberError": {
+    "description": "Error under the account number field."
+  },
+  "requiredError": "Wajib diisi.",
+  "@requiredError": {
+    "description": "Error under an empty required field."
+  },
+  "copyButton": "Salin",
+  "@copyButton": {
+    "description": "Small button that copies a value."
+  },
+  "accountNumberCopied": "Nomor rekening disalin",
+  "@accountNumberCopied": {
+    "description": "Toast after copying the account number."
+  },
+  "addAccountButton": "Tambahkan rekening",
+  "@addAccountButton": {
+    "description": "Button on the empty bank card (organizer)."
+  },
+  "noAccountYet": "Pengurus belum menambahkan rekening.",
+  "@noAccountYet": {
+    "description": "Empty bank card text for members."
+  },
+  "qrisSection": "QRIS",
+  "@qrisSection": {
+    "description": "S15 section header."
+  },
+  "qrisOptional": "Opsional",
+  "@qrisOptional": {
+    "description": "Caption beside the QRIS header (S15)."
+  },
+  "qrisUpload": "Upload QRIS",
+  "@qrisUpload": {
+    "description": "Dashed QRIS upload tile label."
+  },
+  "qrisValidated": "Disimpan & dicek",
+  "@qrisValidated": {
+    "description": "Caption under a validated QRIS."
+  },
+  "qrisInvalid": "QRIS tidak terbaca atau rusak. Coba gambar yang lebih jelas.",
+  "@qrisInvalid": {
+    "description": "Inline error when the QRIS is rejected."
+  },
+  "qrisSaveImage": "Simpan gambar",
+  "@qrisSaveImage": {
+    "description": "QRIS card action."
+  },
+  "qrisEnlarge": "Perbesar",
+  "@qrisEnlarge": {
+    "description": "QRIS card action."
+  },
+  "qrisReplace": "Ganti",
+  "@qrisReplace": {
+    "description": "QRIS card action for the organizer."
+  },
+  "qrisRemove": "Hapus",
+  "@qrisRemove": {
+    "description": "QRIS card action for the organizer."
+  },
+  "qrisImageSemantics": "Kode QRIS {name}",
+  "@qrisImageSemantics": {
+    "description": "Screen reader label for the QRIS image.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "RINA AYU"
+      }
+    }
+  },
+  "noQrisYet": "Belum ada QRIS.",
+  "@noQrisYet": {
+    "description": "QRIS section text when none is set (read-only)."
+  },
+  "paymentInfoChangeTitle": "Anggota akan melihat rekening baru. Perubahan ini tercatat di aktivitas.",
+  "@paymentInfoChangeTitle": {
+    "description": "Confirmation sheet title when changing the account on an active group."
+  },
+  "paymentInfoChangeConfirm": "Ganti rekening",
+  "@paymentInfoChangeConfirm": {
+    "description": "Confirm button for changing the account."
+  },
+  "paymentInfoSaved": "Rekening disimpan.",
+  "@paymentInfoSaved": {
+    "description": "Toast after saving the account."
+  },
+  "photoGalleryDenied": "Izinkan akses galeri di pengaturan HP.",
+  "@photoGalleryDenied": {
+    "description": "Toast when gallery access is denied."
   }
 }

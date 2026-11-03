@@ -69,4 +69,35 @@ void main() {
     final group = await db.groupsDao.getById('g1');
     expect(group?.startedAt?.toUtc(), startedAt);
   });
+
+  test('watchByStatuses filters by status, soonest due first', () async {
+    // Arrange
+    await db.groupsDao.upsertAll([
+      groupRow('late').copyWith(nextDueDate: const Value('2026-12-01')),
+      groupRow('none'),
+      groupRow('soon').copyWith(nextDueDate: const Value('2026-11-10')),
+      groupRow('done').copyWith(status: const Value('completed')),
+    ]);
+
+    // Act
+    final groups = await db.groupsDao.watchByStatuses({'draft', 'active'}).first;
+
+    // Assert
+    expect(groups.map((g) => g.id), ['soon', 'late', 'none']);
+  });
+
+  test('replaceWhere only drops stale groups with the given statuses', () async {
+    // Arrange
+    await db.groupsDao.upsertAll([
+      groupRow('stale'),
+      groupRow('done').copyWith(status: const Value('closed')),
+    ]);
+
+    // Act
+    await db.groupsDao.replaceWhere([groupRow('fresh')], {'draft', 'active'});
+
+    // Assert
+    final groups = await db.groupsDao.watchAll().first;
+    expect(groups.map((g) => g.id), unorderedEquals(['fresh', 'done']));
+  });
 }

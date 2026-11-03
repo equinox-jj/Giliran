@@ -110,7 +110,9 @@ class const AppTextField({
                 child: Center(widthFactor: 1, heightFactor: 1, child: prefix),
               ),
         prefixIconConstraints: const BoxConstraints(minHeight: AppSizes.inputH),
-        suffixIcon: suffix,
+        // The 48 min constraints below would stretch a bare icon to 48;
+        // center it so it keeps its own size inside the tap target.
+        suffixIcon: suffix == null ? null : Center(widthFactor: 1, heightFactor: 1, child: suffix),
         suffixIconConstraints: const BoxConstraints(
           minWidth: AppSizes.tapMin,
           minHeight: AppSizes.tapMin,

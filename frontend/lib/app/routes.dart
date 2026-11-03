@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../core/error/failure.dart';
+import '../core/l10n/l10n.dart';
 import '../features/auth/domain/entities/auth_status.dart';
 import '../features/auth/presentation/biometric_opt_in/page/biometric_opt_in_page.dart';
 import '../features/auth/presentation/change_email/page/change_email_page.dart';
@@ -17,9 +18,15 @@ import '../features/auth/presentation/sign_in/page/sign_in_page.dart';
 import '../features/auth/presentation/splash/page/splash_page.dart';
 import '../features/auth/presentation/verify_otp/page/verify_otp_page.dart';
 import '../features/auth/presentation/welcome/page/welcome_page.dart';
-import '../features/group/presentation/pages/groups_page.dart';
+import '../core/utils/enums/period_type.dart';
+import '../features/group/presentation/create_group/page/create_group_page.dart';
+import '../features/group/presentation/edit_group/page/edit_group_page.dart';
+import '../features/group/presentation/group_detail/page/group_detail_page.dart';
+import '../features/group/presentation/group_detail/widgets/detail_tabs.dart';
+import '../features/group/presentation/groups/page/groups_page.dart';
+import '../features/group/presentation/payment_info/page/payment_info_page.dart';
 import '../features/history/presentation/pages/activity_page.dart';
-import '../features/home/presentation/pages/home_page.dart';
+import '../features/home/presentation/home/page/home_page.dart';
 import '../features/profile/presentation/delete_account/page/delete_account_page.dart';
 import '../features/profile/presentation/edit_profile/page/edit_profile_page.dart';
 import '../features/profile/presentation/profile/page/profile_page.dart';
@@ -48,6 +55,26 @@ final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
         TypedGoRoute<GroupsRoute>(
           name: 'groups',
           path: '/groups',
+          routes: [
+            TypedGoRoute<CreateGroupRoute>(
+              name: 'createGroup',
+              path: 'new',
+            ),
+            TypedGoRoute<GroupDetailRoute>(
+              name: 'groupDetail',
+              path: ':gid',
+              routes: [
+                TypedGoRoute<EditGroupRoute>(
+                  name: 'editGroup',
+                  path: 'edit',
+                ),
+                TypedGoRoute<PaymentInfoRoute>(
+                  name: 'paymentInfo',
+                  path: 'payment-info',
+                ),
+              ],
+            ),
+          ],
         ),
       ],
     ),
@@ -132,12 +159,78 @@ class const ProfileBranch() extends StatefulShellBranchData;
 
 class const HomeRoute() extends GoRouteData with $HomeRoute {
   @override
-  Widget build(BuildContext context, GoRouterState state) => const HomePage();
+  Widget build(BuildContext context, GoRouterState state) => HomePage(
+    onOpenGroup: (id) => GroupDetailRoute(gid: id).go(context),
+    onCreateGroup: () => const CreateGroupRoute().push<void>(context),
+    // The paste-invite-link sheet comes with Members (Phase 3).
+    onJoinByLink: () => showAppToast(context, context.l10n.comingSoon),
+    onAvatar: () => const ProfileRoute().go(context),
+    onBell: () => const ActivityRoute().go(context),
+  );
 }
 
 class const GroupsRoute() extends GoRouteData with $GroupsRoute {
   @override
-  Widget build(BuildContext context, GoRouterState state) => const GroupsPage();
+  Widget build(BuildContext context, GoRouterState state) => GroupsPage(
+    onOpenGroup: (id) => GroupDetailRoute(gid: id).go(context),
+    onCreateGroup: () => const CreateGroupRoute().push<void>(context),
+  );
+}
+
+/// Create group (S13–S14), a full-screen modal over the tabs. The query
+/// carries the S24 "Buat arisan baru" prefill.
+class const CreateGroupRoute({final int? amount, final PeriodType? period, final int? slots})
+    extends GoRouteData
+    with $CreateGroupRoute {
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Page<void> buildPage(BuildContext context, GoRouterState state) => MaterialPage<void>(
+    key: state.pageKey,
+    fullscreenDialog: true,
+    child: CreateGroupPage(
+      prefillAmount: amount,
+      prefillPeriodType: period,
+      prefillTotalSlots: slots,
+      onCreated: (id) => GroupDetailRoute(gid: id, created: true).go(context),
+    ),
+  );
+}
+
+/// Group detail (S20–S23). `?tab=pembayaran|jadwal|anggota|aktivitas`
+/// picks the tab; `created` shows the invite prompt after Create group.
+class const GroupDetailRoute({required final String gid, final String? tab, final bool created = false})
+    extends GoRouteData
+    with $GroupDetailRoute {
+  @override
+  Widget build(BuildContext context, GoRouterState state) => GroupDetailPage(
+    key: ValueKey(gid),
+    groupId: gid,
+    initialTab: DetailTab.fromQuery(tab),
+    created: created,
+    onEdit: () => EditGroupRoute(gid: gid).push<void>(context),
+    onPaymentInfo: () => PaymentInfoRoute(gid: gid).push<void>(context),
+  );
+}
+
+/// Edit group (S19), over the tabs.
+class const EditGroupRoute({required final String gid}) extends GoRouteData with $EditGroupRoute {
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => EditGroupPage(
+    groupId: gid,
+    onPaymentInfo: () => PaymentInfoRoute(gid: gid).push<void>(context),
+    onClosed: () => _popOr(context, GroupDetailRoute(gid: gid).location),
+  );
+}
+
+/// Payment info (S15), over the tabs.
+class const PaymentInfoRoute({required final String gid}) extends GoRouteData with $PaymentInfoRoute {
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => PaymentInfoPage(groupId: gid);
 }
 
 class const ActivityRoute() extends GoRouteData with $ActivityRoute {

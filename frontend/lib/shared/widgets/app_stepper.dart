@@ -37,7 +37,13 @@ class _AppStepperState() extends State<AppStepper> {
   void initState() {
     super.initState();
     _focus.addListener(() {
-      if (!_focus.hasFocus) _commit(_controller.text);
+      if (_focus.hasFocus) {
+        // Typing replaces the value instead of splicing into it ("1|0" + 2
+        // would read 120).
+        _controller.selection = TextSelection(baseOffset: 0, extentOffset: _controller.text.length);
+      } else {
+        _commit(_controller.text);
+      }
     });
   }
 
@@ -72,6 +78,16 @@ class _AppStepperState() extends State<AppStepper> {
     final parsed = int.tryParse(text);
     _set(parsed ?? widget.value);
     _controller.text = '${(parsed ?? widget.value).clamp(widget.min, widget.max)}';
+  }
+
+  /// Pushes in-range values while typing so the helper and anything derived
+  /// from the value (pot, end date) follow the digits. Out-of-range or
+  /// partial input waits for [_commit] to clamp it.
+  void _onTyped(String text) {
+    final parsed = int.tryParse(text);
+    if (parsed != null && parsed >= widget.min && parsed <= widget.max) {
+      _set(parsed);
+    }
   }
 
   void _startRepeat(int delta) {
@@ -111,7 +127,7 @@ class _AppStepperState() extends State<AppStepper> {
             Expanded(
               child: Text(
                 widget.label,
-                style: t.bodyLg.copyWith(color: c.textPrimary),
+                style: t.bodyLg.copyWith(color: c.textPrimary, fontWeight: FontWeight.w600),
               ),
             ),
             _StepButton(
@@ -121,11 +137,11 @@ class _AppStepperState() extends State<AppStepper> {
               onRepeatStart: !atMin ? () => _startRepeat(-1) : null,
               onRepeatEnd: _stopRepeat,
             ),
-            const SizedBox(width: AppSpace.s2),
+            const SizedBox(width: AppSpace.s1),
             // A collapsed field is exactly one line tall, so Center can put
             // the digits on the buttons' midline.
             SizedBox(
-              width: 64,
+              width: 56,
               height: AppSizes.tapMin,
               child: Center(
                 child: Semantics(
@@ -137,12 +153,19 @@ class _AppStepperState() extends State<AppStepper> {
                     textAlign: TextAlign.center,
                     keyboardType: TextInputType.number,
                     textInputAction: TextInputAction.done,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter('${widget.max}'.length),
+                    ],
+                    onChanged: _onTyped,
                     onSubmitted: _commit,
                     style: t.amountLg.copyWith(color: c.textPrimary),
-                    // Empty constraints override the theme's 56 min height.
+                    // Empty constraints override the theme's 56 min height;
+                    // zero padding overrides the theme's 16 px vertical
+                    // padding, which isCollapsed alone doesn't clear.
                     decoration: const InputDecoration(
                       isCollapsed: true,
+                      contentPadding: EdgeInsets.zero,
                       filled: false,
                       border: InputBorder.none,
                       enabledBorder: InputBorder.none,
@@ -153,7 +176,7 @@ class _AppStepperState() extends State<AppStepper> {
                 ),
               ),
             ),
-            const SizedBox(width: AppSpace.s2),
+            const SizedBox(width: AppSpace.s1),
             _StepButton(
               icon: AppIcons.plusBold,
               label: 'Tambah',
@@ -199,11 +222,9 @@ class const _StepButton({
         width: AppSizes.circleButton,
         height: AppSizes.circleButton,
         decoration: BoxDecoration(
+          color: c.surface,
           shape: BoxShape.circle,
-          border: Border.all(
-            color: enabled ? c.borderStrong : c.hairline,
-            width: AppStroke.regular,
-          ),
+          border: Border.all(color: c.hairline, width: AppStroke.regular),
         ),
         alignment: Alignment.center,
         child: AppIcon(

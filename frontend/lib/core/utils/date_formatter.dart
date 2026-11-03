@@ -23,6 +23,13 @@ abstract final class AppDate() {
   /// of API timestamps. The result is flagged UTC; read only its fields.
   static DateTime jakarta(DateTime d) => d.toUtc().add(const Duration(hours: 7));
 
+  /// Today's Asia/Jakarta business date at UTC midnight, the form business
+  /// dates (`due_date`, `draw_date`) are parsed into.
+  static DateTime jakartaToday(DateTime now) {
+    final j = jakarta(now);
+    return DateTime.utc(j.year, j.month, j.day);
+  }
+
   /// Relative within 48 hours ("Baru saja", "2 jam lalu", "Kemarin", "Besok",
   /// "15 menit lagi"), otherwise [short], judged on Jakarta calendar days.
   ///

@@ -219,6 +219,86 @@ void main() {
     expect(value, 50);
   });
 
+  group('AppStepper typing', () {
+    Future<List<int>> pumpStepper(WidgetTester tester) async {
+      final changes = <int>[];
+      var value = 10;
+      await tester.pumpApp(
+        StatefulBuilder(
+          builder: (context, setState) => SizedBox(
+            width: 360,
+            child: AppStepper(
+              label: 'Jumlah slot',
+              value: value,
+              min: 2,
+              max: 50,
+              helper: '$value periode',
+              onChanged: (v) => setState(() {
+                value = v;
+                changes.add(v);
+              }),
+            ),
+          ),
+        ),
+      );
+      return changes;
+    }
+
+    testWidgets('replaces the current value instead of splicing into it', (
+      tester,
+    ) async {
+      // Arrange
+      final changes = await pumpStepper(tester);
+
+      // Act
+      await tester.tap(find.byType(TextField));
+      await tester.pump();
+      await tester.enterText(find.byType(TextField), '12');
+      await tester.pump();
+
+      // Assert
+      expect(find.text('12'), findsOneWidget);
+      expect(find.text('12 periode'), findsOneWidget);
+      expect(changes.last, 12);
+    });
+
+    testWidgets('selects the whole value on focus', (tester) async {
+      // Arrange
+      await pumpStepper(tester);
+
+      // Act
+      await tester.tap(find.byType(TextField));
+      await tester.pump();
+
+      // Assert
+      final field = tester.widget<TextField>(find.byType(TextField));
+      expect(
+        field.controller!.selection,
+        const TextSelection(baseOffset: 0, extentOffset: 2),
+      );
+    });
+
+    testWidgets('caps input at the digits of max and clamps on submit', (
+      tester,
+    ) async {
+      // Arrange
+      final changes = await pumpStepper(tester);
+      await tester.tap(find.byType(TextField));
+      await tester.pump();
+
+      // Act
+      await tester.enterText(find.byType(TextField), '120');
+      await tester.pump();
+      final typed = tester.widget<TextField>(find.byType(TextField)).controller!.text;
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pump();
+
+      // Assert
+      expect(typed, '12');
+      expect(changes.last, 12);
+    });
+  });
+
   group('SettingsRow', () {
     testWidgets('gives the label the row and pins the caret to the end', (
       tester,

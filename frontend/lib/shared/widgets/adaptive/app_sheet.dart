@@ -79,7 +79,9 @@ class const AppSheetBody({
             Text(subtitle!, style: t.body.copyWith(color: c.textSecondary)),
           ],
           if (title != null || subtitle != null) const SizedBox(height: AppSpace.s4),
-          child,
+          // A non-scrolling body may hold its own list (the bank picker), so
+          // bound it to the sheet's remaining height.
+          if (scrollable) child else Flexible(child: child),
         ],
       ),
     );

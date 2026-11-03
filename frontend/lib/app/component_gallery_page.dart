@@ -4,7 +4,14 @@ import '../core/constants/app_doodles.dart';
 import '../core/constants/app_icons.dart';
 import '../core/constants/app_illustrations.dart';
 import '../core/themes/themes.dart';
+import '../core/utils/enums/group_status.dart';
+import '../core/utils/enums/member_role.dart';
+import '../core/utils/enums/payment_status.dart';
+import '../core/utils/enums/period_type.dart';
 import '../features/auth/presentation/welcome/page/welcome_page.dart';
+import '../features/group/domain/entities/group.dart';
+import '../features/group/domain/entities/group_summary.dart';
+import '../features/home/domain/entities/agenda_day.dart';
 import '../shared/widgets/widgets.dart';
 import 'routes.dart';
 
@@ -42,6 +49,7 @@ class const _Gallery({required final bool dark, required final VoidCallback onTo
 class _GalleryState() extends State<_Gallery> {
   static const _sections = [
     _HeroSection(),
+    _GroupsSection(),
     _ButtonsSection(),
     _StatusSection(),
     _ChipsSection(),
@@ -170,6 +178,147 @@ class const _HeroSection() extends StatelessWidget {
             ],
           ),
         ),
+      ],
+    );
+  }
+}
+
+/// Group signature components: Giliran Ring and Group Card.
+class const _GroupsSection() extends StatelessWidget {
+  static const _active = GroupSummary(
+    id: 'g-gallery-1',
+    name: 'Arisan RT 05',
+    amount: 200000,
+    periodType: PeriodType.monthly,
+    status: GroupStatus.active,
+    myRole: MemberRole.organizer,
+    totalSlots: 10,
+    filledSlots: 10,
+    currentPeriodNo: 4,
+    myPaymentStatus: PaymentStatus.pendingReview,
+    pendingReviewCount: 2,
+  );
+
+  static const _draft = GroupSummary(
+    id: 'g-gallery-2',
+    name: 'Arisan Kantor',
+    amount: 500000,
+    periodType: PeriodType.weekly,
+    status: GroupStatus.draft,
+    myRole: MemberRole.member,
+    totalSlots: 10,
+    filledSlots: 8,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SectionHeader(title: 'Groups'),
+        const BankAccountCard(
+          info: PaymentInfo(bankName: 'BCA', accountNumber: '1234567890', accountHolder: 'Rina Wulandari'),
+        ),
+        _gap,
+        QrisCard(onUpload: () => showAppToast(context, 'Upload QRIS')),
+        _gap,
+        PeriodStrip(
+          periods: [
+            for (var n = 1; n <= 10; n++)
+              PeriodTokenData(
+                id: 'p$n',
+                periodNo: n,
+                state: n < 4 ? SlotTokenState.done : (n == 4 ? SlotTokenState.current : SlotTokenState.upcoming),
+                winnerName: n < 4 ? 'Anggota $n' : null,
+                iWon: n == 2,
+              ),
+          ],
+          onSelect: (_) {},
+        ),
+        _gap,
+        CurrentPeriodHero(
+          title: 'Arisan RT 05',
+          subtitle: 'Periode 4 dari 10',
+          ringValue: 8,
+          ringTotal: 10,
+          ringPending: 1,
+          ringSemantics: '8 dari 10 anggota sudah bayar, 1 menunggu dicek',
+          amount: 1600000,
+          amountCaption: 'dari Rp2.000.000',
+          infoLine: 'Jatuh tempo Sab, 25 Okt · Kocok Sab, 25 Okt',
+          tone: c.tones[0],
+          action: CurrentPeriodHeroAction(label: 'Tinjau 1 bukti', onPressed: () => showAppToast(context, 'Tinjau')),
+        ),
+        _gap,
+        const StepProgressBar(step: 1, total: 2),
+        _gap,
+        AgendaStrip(
+          days: [
+            for (var i = 0; i < 7; i++)
+              AgendaDay(
+                date: DateTime.utc(2026, 11, 2 + i),
+                isToday: i == 2,
+                events: [
+                  if (i == 3) const AgendaEvent(kind: AgendaEventKind.due, groupId: 'g1', groupName: 'Arisan RT 05'),
+                  if (i == 5) const AgendaEvent(kind: AgendaEventKind.draw, groupId: 'g1', groupName: 'Arisan RT 05'),
+                ],
+              ),
+          ],
+          selectedIndex: 3,
+          onSelect: (_) {},
+        ),
+        _gap,
+        Wrap(
+          spacing: AppSpace.s4,
+          runSpacing: AppSpace.s4,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            const GiliranRing(
+              value: 8,
+              total: 10,
+              pending: 1,
+              size: GiliranRingSize.s96,
+              caption: 'sudah bayar',
+              semanticsLabel: '8 dari 10 anggota sudah bayar, 1 menunggu dicek',
+            ),
+            GiliranRing(
+              value: 4,
+              total: 10,
+              size: GiliranRingSize.s64,
+              color: c.tones[1].accent,
+              semanticsLabel: 'Periode 4 dari 10',
+            ),
+            const GiliranRing(
+              value: 10,
+              total: 10,
+              size: GiliranRingSize.s48,
+              semanticsLabel: '10 dari 10 anggota sudah bayar',
+            ),
+            const GiliranRing(
+              value: 3,
+              total: 10,
+              size: GiliranRingSize.s120,
+              caption: 'sudah bayar',
+              semanticsLabel: '3 dari 10 anggota sudah bayar',
+            ),
+          ],
+        ),
+        _gap,
+        SizedBox(
+          height: GroupCard.carouselHeight,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: 2,
+            separatorBuilder: (_, _) => const SizedBox(width: AppSpace.s3),
+            itemBuilder: (context, i) => GroupCard(
+              group: i == 0 ? _active : _draft,
+              onTap: () => showAppToast(context, 'Buka grup'),
+            ),
+          ),
+        ),
+        _gap,
+        GroupCard(group: _active, layout: GroupCardLayout.list, onTap: () => showAppToast(context, 'Buka grup')),
       ],
     );
   }

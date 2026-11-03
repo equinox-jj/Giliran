@@ -3,6 +3,7 @@
 /// Regular weight by default, `*Fill` for active nav and status icons,
 /// `*Bold` for 16 px sizes. Render with `AppIcon`.
 abstract final class AppIcons() {
+  static const archive = 'assets/icons/archive.svg';
   static const arrowLeft = 'assets/icons/arrow-left.svg';
   static const arrowLeftBold = 'assets/icons/arrow-left-bold.svg';
   static const arrowRight = 'assets/icons/arrow-right.svg';
@@ -17,6 +18,7 @@ abstract final class AppIcons() {
   static const caretDown = 'assets/icons/caret-down.svg';
   static const caretRight = 'assets/icons/caret-right.svg';
   static const caretRightBold = 'assets/icons/caret-right-bold.svg';
+  static const chatCircle = 'assets/icons/chat-circle.svg';
   static const check = 'assets/icons/check.svg';
   static const checkBold = 'assets/icons/check-bold.svg';
   static const checkCircle = 'assets/icons/check-circle.svg';
@@ -36,6 +38,7 @@ abstract final class AppIcons() {
   static const eye = 'assets/icons/eye.svg';
   static const eyeSlash = 'assets/icons/eye-slash.svg';
   static const fingerprint = 'assets/icons/fingerprint.svg';
+  static const flag = 'assets/icons/flag.svg';
   static const gear = 'assets/icons/gear.svg';
   static const handCoins = 'assets/icons/hand-coins.svg';
   static const hourglassMedium = 'assets/icons/hourglass-medium.svg';
@@ -72,6 +75,7 @@ abstract final class AppIcons() {
   static const signOut = 'assets/icons/sign-out.svg';
   static const trash = 'assets/icons/trash.svg';
   static const uploadSimple = 'assets/icons/upload-simple.svg';
+  static const user = 'assets/icons/user.svg';
   static const userCircle = 'assets/icons/user-circle.svg';
   static const userCircleDashed = 'assets/icons/user-circle-dashed.svg';
   static const userCircleFill = 'assets/icons/user-circle-fill.svg';

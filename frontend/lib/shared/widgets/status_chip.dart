@@ -14,7 +14,10 @@ enum ChipStatus(final String label, final String icon) {
   unpaid('Belum bayar', AppIcons.circleDashed),
   rejected('Ditolak', AppIcons.xCircle),
   overdue('Lewat jatuh tempo', AppIcons.warningCircle),
-  won('Sudah dapat', AppIcons.scrollFill);
+  won('Sudah dapat', AppIcons.scrollFill),
+
+  /// A group still in setup (draft), on the Groups list card.
+  preparing('Persiapan', AppIcons.info);
 
   /// Overdue is derived: unpaid or rejected with `due_date` before today.
   static ChipStatus fromPayment(PaymentStatus status, {bool overdue = false}) {
@@ -35,6 +38,7 @@ enum ChipStatus(final String label, final String icon) {
     ChipStatus.unpaid => c.unpaid,
     ChipStatus.rejected || ChipStatus.overdue => c.rejected,
     ChipStatus.won => c.won,
+    ChipStatus.preparing => c.info,
   };
 }
 

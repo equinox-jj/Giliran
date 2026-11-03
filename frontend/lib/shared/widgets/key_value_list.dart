@@ -30,6 +30,12 @@ class const KeyValueList({
 
   /// Card fill (default `bg.surface`).
   final Color? color,
+
+  /// Values in w600 instead of w500 (Create group's "Periksa lagi").
+  final bool strongValues = false,
+
+  /// A last row under a hairline, such as a link back to an earlier step.
+  final Widget? footer,
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -44,7 +50,11 @@ class const KeyValueList({
         children: [
           for (var i = 0; i < items.length; i++) ...[
             if (i > 0) Divider(color: c.hairline),
-            _KeyValueRow(items[i]),
+            _KeyValueRow(items[i], strong: strongValues),
+          ],
+          if (footer case final footer?) ...[
+            Divider(color: c.hairline),
+            footer,
           ],
         ],
       ),
@@ -52,7 +62,7 @@ class const KeyValueList({
   }
 }
 
-class const _KeyValueRow(final KeyValueItem item) extends StatelessWidget {
+class const _KeyValueRow(final KeyValueItem item, {required final bool strong}) extends StatelessWidget {
   void _copy(BuildContext context) {
     Clipboard.setData(ClipboardData(text: item.value.replaceAll(' ', '')));
     HapticFeedback.lightImpact();
@@ -69,7 +79,7 @@ class const _KeyValueRow(final KeyValueItem item) extends StatelessWidget {
     );
     final valueStyle = item.mono
         ? t.mono.copyWith(color: c.textPrimary)
-        : t.body.copyWith(color: c.textPrimary, fontWeight: FontWeight.w500);
+        : t.body.copyWith(color: c.textPrimary, fontWeight: strong ? FontWeight.w600 : FontWeight.w500);
     final value = item.valueWidget ?? Text(item.value, style: valueStyle);
     final copy = item.copyable ? AppTextButton(label: 'Salin', onPressed: () => _copy(context)) : null;
 
