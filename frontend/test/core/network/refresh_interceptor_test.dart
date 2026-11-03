@@ -146,6 +146,22 @@ void main() {
     expect(storage.refresh, 'refresh-2');
   });
 
+  test('retries a multipart upload with a fresh FormData', () async {
+    // Arrange
+    final adapter = _FakeAdapter();
+    final dio = buildDio(adapter);
+    final form = FormData.fromMap({
+      'file': MultipartFile.fromBytes([1, 2, 3], filename: 'a.jpg'),
+    });
+
+    // Act
+    final response = await dio.put<Object?>('/me/avatar', data: form);
+
+    // Assert
+    expect(response.statusCode, 200);
+    expect(adapter.refreshCalls, 1);
+  });
+
   test('clears tokens and signals expiry when the refresh fails', () async {
     // Arrange
     final adapter = _FakeAdapter(refreshStatus: 401);

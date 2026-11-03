@@ -4,8 +4,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'device_info_service.g.dart';
 
-/// Describes this device for `POST /auth/email/otp`, so the session shows up
-/// as "Samsung Galaxy A54" in the active devices list (S44).
 class DeviceInfoService(final DeviceInfoPlugin _plugin) {
   String? _cachedName;
 

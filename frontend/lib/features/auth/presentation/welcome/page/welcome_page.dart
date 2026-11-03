@@ -5,11 +5,6 @@ import '../../../../../core/constants/app_illustrations.dart';
 import '../../../../../core/themes/themes.dart';
 import '../../../../../shared/widgets/widgets.dart';
 
-/// S02 Welcome: three pages on what Giliran promises, then sign-in.
-///
-/// Phone: a swipeable pager; "Lanjut" steps through, "Lewati" jumps to the
-/// last page, which swaps in "Masuk dengan email". Tablet: one page with the
-/// first illustration left and the three points stacked right.
 class const WelcomePage({super.key, required final VoidCallback onSignIn}) extends StatefulWidget {
   static const pages = [
     OnboardingPageData(
@@ -76,7 +71,7 @@ class _WelcomePageState() extends State<WelcomePage> {
             context.screenMargin,
             AppSpace.s4,
             context.screenMargin,
-            AppSpace.s6,
+            AppSpace.s8,
           ),
           child: context.isCompact
               ? _PhoneLayout(
@@ -178,10 +173,12 @@ class const _WideLayout({required final VoidCallback onSignIn}) extends Stateles
               spacing: context.gutter,
               children: [
                 Expanded(
-                  child: OnboardingPanel(
-                    illustration: first.illustration,
-                    toneIndex: first.toneIndex,
-                    height: double.infinity,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) => OnboardingPanel(
+                      illustration: first.illustration,
+                      toneIndex: first.toneIndex,
+                      height: constraints.maxHeight,
+                    ),
                   ),
                 ),
                 Expanded(
@@ -246,7 +243,9 @@ class const _TopRow({final Widget? trailing}) extends StatelessWidget {
             ),
           ),
           const Spacer(),
-          ?trailing,
+          // The ghost button's 18 px padding would sit the label 6 px further
+          // in than the design's 12; pull it out to the margin line.
+          if (trailing case final trailing?) Transform.translate(offset: const Offset(6, 0), child: trailing),
         ],
       ),
     );

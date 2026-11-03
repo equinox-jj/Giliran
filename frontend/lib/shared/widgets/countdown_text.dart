@@ -9,12 +9,14 @@ import '../../core/utils/date_formatter.dart';
 /// get a label that updates once a minute.
 ///
 /// Inline: "Kocokan dalam 2 hari 04:12:30"; on the day itself, "Hari ini,
-/// 19.30". Lock: a large "14:52" with a caption (PIN locked, resend wait).
+/// 19.30" (unless [showTimeOnSameDay] is off). Lock: a large "14:52" with a
+/// caption (PIN locked, resend wait).
 class CountdownText extends StatefulWidget {
   const new({
     super.key,
     required this.until,
     this.prefix = '',
+    this.showTimeOnSameDay = true,
     this.onFinished,
   }) : lock = false,
        caption = null;
@@ -25,10 +27,16 @@ class CountdownText extends StatefulWidget {
     this.caption = 'Coba lagi setelah waktu habis',
     this.onFinished,
   }) : lock = true,
-       prefix = '';
+       prefix = '',
+       showTimeOnSameDay = false;
 
   final DateTime until;
   final String prefix;
+
+  /// Whether the inline countdown switches to "Hari ini, 19.30" when [until]
+  /// is today. Off for short waits (a `429` retry), where the ticking
+  /// countdown is the message.
+  final bool showTimeOnSameDay;
   final bool lock;
   final String? caption;
   final VoidCallback? onFinished;
@@ -121,7 +129,11 @@ class _CountdownTextState() extends State<CountdownText> {
     }
 
     final now = DateTime.now();
-    final sameDay = now.year == widget.until.year && now.month == widget.until.month && now.day == widget.until.day;
+    final sameDay =
+        widget.showTimeOnSameDay &&
+        now.year == widget.until.year &&
+        now.month == widget.until.month &&
+        now.day == widget.until.day;
     final text = sameDay
         ? 'Hari ini, ${AppDate.time(widget.until)}'
         : '${widget.prefix}${CountdownText.formatInline(_left)}';

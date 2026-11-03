@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../core/constants/app_icons.dart';
 import '../../core/themes/themes.dart';
 import 'app_icon.dart';
+import 'headline_text.dart';
 
 enum AppBannerVariant(final String icon) {
   info(AppIcons.info),
@@ -21,7 +22,8 @@ enum AppBannerVariant(final String icon) {
 }
 
 /// Full-width inline message at the top of content. Dismissible only when
-/// the information isn't needed to act.
+/// the information isn't needed to act. Mark a bold run in [message] with
+/// `**`, as in `HeadlineText`.
 class const AppBanner({
   super.key,
   required final String message,
@@ -33,22 +35,25 @@ class const AppBanner({
   final VoidCallback? onAction,
   final VoidCallback? onDismiss,
 
-  /// A tighter strip (12 radius, 10 vertical padding) for one-line hints
-  /// under an input, such as the weak PIN hint on S06.
+  final bool note = false,
+
   final bool compact = false,
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = variant.colorsOf(context.colors);
     final t = AppTextStyles.of(context);
-    final text = t.body.copyWith(color: colors.fg);
+    final small = note || compact;
+    final text = small
+        ? t.body.copyWith(color: colors.fg, fontSize: 13, height: 18 / 13, fontWeight: FontWeight.w500)
+        : t.body.copyWith(color: colors.fg);
 
     return Semantics(
       container: true,
       liveRegion: variant == AppBannerVariant.error,
       child: Container(
         padding: EdgeInsets.symmetric(
-          horizontal: compact ? 14 : AppSpace.s4,
+          horizontal: small ? 14 : AppSpace.s4,
           vertical: compact ? 10 : AppSpace.s3,
         ),
         decoration: BoxDecoration(
@@ -56,20 +61,31 @@ class const AppBanner({
           borderRadius: BorderRadius.circular(compact ? AppRadius.sm : AppRadius.md),
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: compact ? CrossAxisAlignment.center : CrossAxisAlignment.start,
           children: [
             AppIcon(
               icon ?? variant.icon,
-              size: AppSizes.iconMd,
+              size: compact ? 18 : AppSizes.iconMd,
               color: colors.fg,
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: compact ? AppSpace.s2 : 10),
             Expanded(
               child: Wrap(
                 spacing: AppSpace.s2,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  Text(message, style: text),
+                  Text.rich(
+                    TextSpan(
+                      children: [
+                        for (final (part, bold) in HeadlineText.parse(message))
+                          TextSpan(
+                            text: part,
+                            style: bold ? const TextStyle(fontWeight: FontWeight.w700) : null,
+                          ),
+                      ],
+                    ),
+                    style: text,
+                  ),
                   if (actionLabel != null)
                     Semantics(
                       button: true,

@@ -9,10 +9,6 @@ import '../repositories/auth_repository.dart';
 
 part 'validate_new_email_usecase.g.dart';
 
-/// Step 1 of S46: checks the new address before asking for the PIN and
-/// returns it trimmed and lowercased. Fails with a `validation_error` on
-/// `email` with code [sameEmailCode] when it is the account's address now.
-/// Whether it already has an account is left to the server (`409`).
 class ValidateNewEmailUseCase(final AuthRepository _repository) implements UseCase<String, String> {
   static const sameEmailCode = 'same_email';
 

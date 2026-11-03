@@ -21,6 +21,21 @@ class ProfileRepositoryImpl(final ProfileRemoteDataSource _remote) with BaseRepo
 
     return user.toEntity();
   });
+
+  @override
+  Future<Either<Failure, ProfileData>> uploadAvatar(
+    String path, {
+    void Function(double progress)? onProgress,
+  }) => safeCall(() async {
+    final user = await _remote.uploadAvatar(path, onProgress: onProgress);
+    return user.toEntity();
+  });
+
+  @override
+  Future<Either<Failure, Unit>> deleteAvatar() => safeCall(() async {
+    await _remote.deleteAvatar();
+    return unit;
+  });
 }
 
 @Riverpod(keepAlive: true)

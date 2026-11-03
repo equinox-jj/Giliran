@@ -82,7 +82,7 @@ void main() {
 
     // Assert
     expect(find.text('Ini email kamu yang sekarang.'), findsOneWidget);
-    expect(find.text('Langkah 1 dari 3'), findsOneWidget);
+    expect(find.text('Ubah email · 1 dari 3'), findsOneWidget);
   });
 
   testWidgets('a new address asks for the PIN', (tester) async {
@@ -94,7 +94,7 @@ void main() {
 
     // Assert
     expect(find.text('Masukkan PIN kamu'), findsOneWidget);
-    expect(find.text('Langkah 2 dari 3'), findsOneWidget);
+    expect(find.text('Ubah email · 2 dari 3'), findsOneWidget);
   });
 
   testWidgets('a taken address returns to step 1 with the reason', (tester) async {
@@ -112,7 +112,7 @@ void main() {
 
     // Assert
     expect(find.text('Email ini sudah punya akun Giliran.'), findsOneWidget);
-    expect(find.text('Langkah 1 dari 3'), findsOneWidget);
+    expect(find.text('Ubah email · 1 dari 3'), findsOneWidget);
   });
 
   testWidgets('a wrong PIN shows the attempts left', (tester) async {
@@ -174,12 +174,12 @@ void main() {
     expect(doneCalls, 1);
   });
 
-  testWidgets('back on step 1 closes the flow', (tester) async {
+  testWidgets('close on step 1 closes the flow', (tester) async {
     // Arrange
     await pumpChangeEmail(tester);
 
     // Act
-    await tester.tap(find.bySemanticsLabel('Kembali'));
+    await tester.tap(find.bySemanticsLabel('Tutup'));
     await tester.pump();
 
     // Assert

@@ -11,8 +11,6 @@ import '../../shared/controllers/auth_session_controller.dart';
 part 'pin_lock_controller.freezed.dart';
 part 'pin_lock_controller.g.dart';
 
-/// The S08 lock screen. [attemptsRemaining] comes with `pin_invalid`;
-/// [lockedUntil] with `pin_locked` (from `Retry-After`) for the countdown.
 @freezed
 abstract class PinLockState with _$PinLockState {
   const factory({

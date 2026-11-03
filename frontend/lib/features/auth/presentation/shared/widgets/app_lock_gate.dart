@@ -8,10 +8,6 @@ import '../../../../../shared/widgets/widgets.dart';
 import '../../../domain/entities/auth_status.dart';
 import '../controllers/auth_session_controller.dart';
 
-/// Wraps the whole app (`MaterialApp.router`'s `builder`) to apply S08's
-/// background rules: a privacy cover over an unlocked session while the app
-/// is not in the foreground, so the app switcher snapshot shows no data, and
-/// the lock again after five minutes away (FR-AUTH-03).
 class const AppLockGate({
   super.key,
   required final Widget child,
@@ -68,9 +64,6 @@ class _AppLockGateState() extends ConsumerState<AppLockGate> {
   }
 }
 
-/// Shows [_PrivacyCover] while [covered] is set and the session is open. The
-/// lock and sign-in screens hold nothing private, and skipping them avoids a
-/// flash over S08 while the Face ID prompt has the app inactive.
 class const _CoverLayer({required final ValueListenable<bool> covered}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {

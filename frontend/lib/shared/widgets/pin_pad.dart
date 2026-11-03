@@ -16,17 +16,6 @@ class PinPadController() extends ValueNotifier<String> {
   void clear() => value = '';
 }
 
-/// Six PIN dots plus a 3×4 keypad. Keys are [AppSizes.pinKey] on a typical
-/// phone and scale with the screen (see [keySizeFor]), the same size on
-/// every PIN screen. The biometric key (bottom-left, outlined) shows only
-/// when [onBiometric] is set (lock screen).
-///
-/// The PIN screens (S04, S06, S08, S09) set [expand] so the dots stay under
-/// the [header] and the keypad sits at the bottom, scrolling when the window
-/// is too short for both; that needs a bounded height (`AuthScaffold.pinPad`
-/// gives one). On a short landscape window
-/// ([splitFor]) the expanded pad splits in two: the header, dots and footer
-/// on the left, the keypad on the right.
 class const PinPad({
   super.key,
   required final PinPadController controller,
@@ -208,7 +197,10 @@ class _PinPadState() extends State<PinPad> {
 /// (keypad, footer) at the bottom of the available height. The keys keep
 /// the screen's size on every PIN screen, so when a short window can't hold
 /// both, the pad scrolls instead of shrinking them.
-class const _ExpandedLayout({required final Widget top, required final Widget bottom}) extends StatelessWidget {
+class const _ExpandedLayout({
+  required final Widget top,
+  required final Widget bottom,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) => SingleChildScrollView(
@@ -261,7 +253,10 @@ class const _Dots({
             RepaintBoundary(
               child: SizedBox.square(
                 dimension: AppSizes.iconSm,
-                child: CircularProgressIndicator(strokeWidth: 2, color: context.colors.textPrimary),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: context.colors.textPrimary,
+                ),
               ),
             ),
           ],
@@ -343,7 +338,7 @@ class const _Keypad({
                       onTap: enabled ? onBiometric : null,
                       filled: false,
                       outlined: true,
-                      child: AppIcon(biometricIcon, size: AppSizes.iconXl, color: c.textPrimary),
+                      child: AppIcon(biometricIcon, size: 28, color: c.textPrimary),
                     ),
                   _DigitKey('0', size: key, enabled: enabled, onPress: onPress),
                   _PinKey(
@@ -351,7 +346,7 @@ class const _Keypad({
                     label: 'Hapus',
                     onTap: canDelete ? onDelete : null,
                     filled: false,
-                    child: AppIcon(AppIcons.backspace, size: AppSizes.iconLg, color: c.textPrimary),
+                    child: AppIcon(AppIcons.backspace, size: 26, color: c.textPrimary),
                   ),
                 ],
               ),
@@ -388,10 +383,10 @@ class const _PinDot({required final bool filled, required final bool error}) ext
 
 /// Three keys of [size] with the keypad gap between them.
 class const _KeyRow({required final double size, required final List<Widget> children}) extends StatelessWidget {
-  /// The gaps keep the design's proportions at any key size: 40 px across
-  /// and 24 px down at the 72 px key.
-  static const hGapRatio = AppSpace.s10 / AppSizes.pinKey;
-  static const vGapRatio = AppSpace.s6 / AppSizes.pinKey;
+  /// The gaps keep the design's proportions at any key size: 34 px across
+  /// and 16 px down at the 72 px key (three 106 px columns on a 390 phone).
+  static const hGapRatio = 34 / AppSizes.pinKey;
+  static const vGapRatio = AppSpace.s4 / AppSizes.pinKey;
 
   @override
   Widget build(BuildContext context) => Row(
@@ -443,7 +438,11 @@ class const _DigitKey(
     onTap: enabled ? () => onPress(digit) : null,
     child: Text(
       digit,
+      // 24 px bold digits, a size up from `titleLg`.
       style: AppTextStyles.of(context).titleLg.copyWith(
+        fontSize: 24,
+        height: 1,
+        letterSpacing: 0,
         color: context.colors.textPrimary,
         fontFeatures: AppTextStyles.tabularFigures,
       ),

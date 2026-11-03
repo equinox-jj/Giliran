@@ -13,8 +13,6 @@ part 'update_me_usecase.g.dart';
 
 typedef UpdateMeParams = ({String? name, String? phone});
 
-/// Saves the name and the optional WhatsApp number (S05, S43), then caches
-/// the updated user so the launch gate stops asking for a name.
 class UpdateMeUseCase(
   final ProfileRepository _profile,
   final AuthRepository _auth,

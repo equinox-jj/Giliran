@@ -80,6 +80,12 @@ class const AppTextField({
       autocorrect: autocorrect,
       enableSuggestions: enableSuggestions,
       textCapitalization: textCapitalization,
+      // The default iOS menu (`SystemContextMenu`) asserts "Attempted to show
+      // while another instance was still visible" when the keyboard resizes
+      // the view, so use the Flutter-drawn toolbar instead.
+      contextMenuBuilder: (context, editableTextState) => AdaptiveTextSelectionToolbar.editableText(
+        editableTextState: editableTextState,
+      ),
       maxLines: obscureText ? 1 : maxLines,
       minLines: minLines,
       style: (style ?? t.bodyLg).copyWith(

@@ -8,8 +8,16 @@ import '../../core/themes/themes.dart';
 /// ```dart
 /// HeadlineText('Periode 4 dari 10, **8 orang sudah bayar**.')
 /// ```
-class const HeadlineText(final String text, {super.key, final Color? color, final TextAlign? textAlign})
-    extends StatelessWidget {
+class const HeadlineText(
+  final String text, {
+  super.key,
+  final Color? color,
+  final TextAlign? textAlign,
+
+  /// Replaces the `headline` base style, such as the larger onboarding
+  /// headline.
+  final TextStyle? style,
+}) extends StatelessWidget {
   static List<(String, bool)> parse(String text) {
     final parts = text.split('**');
     return [
@@ -21,7 +29,7 @@ class const HeadlineText(final String text, {super.key, final Color? color, fina
   @override
   Widget build(BuildContext context) {
     final t = AppTextStyles.of(context);
-    final base = t.headline.copyWith(
+    final base = (style ?? t.headline).copyWith(
       color: color ?? context.colors.textPrimary,
     );
     return Semantics(

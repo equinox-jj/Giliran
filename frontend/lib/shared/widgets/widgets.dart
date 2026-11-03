@@ -15,6 +15,7 @@ export 'app_text_field.dart';
 export 'app_toast.dart';
 export 'app_top_bar.dart';
 export 'avatar.dart';
+export 'avatar_picker.dart';
 export 'check_row.dart';
 export 'choice_card.dart';
 export 'circle_icon_button.dart';

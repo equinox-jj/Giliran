@@ -40,6 +40,8 @@ void main() {
       expect(end.page, GiliranColors.dark.page);
       expect(end.paid, GiliranColors.dark.paid);
       expect(end.tones, GiliranColors.dark.tones);
+      expect(start.dotIdle, AppPalette.kopi300);
+      expect(end.dotIdle, GiliranColors.dark.dotIdle);
     });
 
     test('copyWith replaces only the given fields', () {

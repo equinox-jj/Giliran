@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../storage/secure_storage.dart';
@@ -20,7 +21,8 @@ class DioClient({
     this.dio.interceptors.addAll([
       authInterceptor,
       refreshInterceptor,
-      LoggerInterceptor(),
+      // Debug only: never log traffic in profile or release builds.
+      if (kDebugMode) LoggerInterceptor(),
     ]);
   }
 

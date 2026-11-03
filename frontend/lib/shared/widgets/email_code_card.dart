@@ -33,11 +33,6 @@ enum EmailCodeCardState() {
   success,
 }
 
-/// The email code card (8.35) on S04, S09 and S46: the masked address with
-/// "Ubah", the six code boxes, the resend countdown and the spam hint.
-///
-/// The screen maps API failures to [state] and [message]. On `pin_required`
-/// it passes [pinStep] (the PIN pad), which replaces the code boxes.
 class const EmailCodeCard({
   super.key,
   required final String emailMasked,

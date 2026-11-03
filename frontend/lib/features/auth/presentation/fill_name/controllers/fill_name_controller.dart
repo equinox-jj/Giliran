@@ -6,8 +6,6 @@ import '../../shared/controllers/auth_session_controller.dart';
 
 part 'fill_name_controller.g.dart';
 
-/// Saves the name on S05. The `Failure` surfaces as an `AsyncError`; field
-/// errors (`min_length`, `max_length`) come with it.
 @riverpod
 class FillNameController() extends _$FillNameController {
   @override

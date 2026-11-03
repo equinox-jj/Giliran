@@ -120,8 +120,15 @@ class RefreshInterceptor({
   Future<Response<dynamic>> _retry(RequestOptions options, String newToken) {
     final headers = Map<String, dynamic>.of(options.headers)..['Authorization'] = 'Bearer $newToken';
     final extra = Map<String, dynamic>.of(options.extra)..[ApiEndpoints.kRetried] = true;
+    // A FormData is finalized once sent and Dio refuses to send it again, so
+    // multipart uploads (avatar) replay with a fresh clone.
+    final data = options.data;
     return _retryDio.fetch<dynamic>(
-      options.copyWith(headers: headers, extra: extra),
+      options.copyWith(
+        headers: headers,
+        extra: extra,
+        data: data is FormData ? data.clone() : data,
+      ),
     );
   }
 }

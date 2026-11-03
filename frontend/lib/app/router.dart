@@ -13,6 +13,7 @@ GoRouter router(Ref ref) {
   // Bridges the session into a Listenable so the guard re-runs whenever it
   // changes (sign-in, unlock, logout, session expired).
   final authStatus = ValueNotifier(ref.read(authSessionControllerProvider));
+
   ref.listen(
     authSessionControllerProvider,
     (_, next) => authStatus.value = next,
@@ -26,28 +27,15 @@ GoRouter router(Ref ref) {
     refreshListenable: authStatus,
     redirect: (context, state) => authRedirect(authStatus.value, state.uri),
   );
+
   ref.onDispose(() {
     router.dispose();
     authStatus.dispose();
   });
+
   return router;
 }
 
-/// Global guard, run before every navigation and whenever [status] changes.
-///
-/// Each status only reaches its own screens (design system 10.2):
-/// signed out → Welcome, S03, S04 and S09; an open code request → S03, S04
-/// and S09 (else S04); no name → S05; no PIN → S06; locked → S08 and S09.
-/// An unlocked user leaving a sign-in step goes to S07, which moves on to
-/// Home when there is nothing to offer; other sign-in screens send them Home.
-/// The splash and the debug gallery are never redirected, and other routes
-/// wait on the splash while the session is still loading.
-///
-/// The lock keeps the app location it covered in `from` and returns there
-/// once unlocked (S08, also after the resume lock).
-///
-/// After sign-in, a pending invite link should open the join screen
-/// (PRD 8.1).
 String? authRedirect(AsyncValue<AuthStatus> status, Uri uri) {
   final path = uri.path;
   if (path == const SplashRoute().location || path == const GalleryRoute().location) {
@@ -95,9 +83,11 @@ String? authRedirect(AsyncValue<AuthStatus> status, Uri uri) {
 String lockReturnTo(String? from) {
   final home = const HomeRoute().location;
   if (from == null) return home;
+
   final target = Uri.tryParse(from);
   if (target == null || target.hasScheme || target.hasAuthority || !target.path.startsWith('/')) {
     return home;
   }
+
   return target.path == const LockRoute().location ? home : from;
 }

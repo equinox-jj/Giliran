@@ -7,8 +7,6 @@ import '../../../../../core/utils/enums/otp_purpose.dart';
 part 'email_otp_challenge_model.freezed.dart';
 part 'email_otp_challenge_model.g.dart';
 
-/// JSON shape of `EmailOtpChallenge`, returned when a code is requested or
-/// resent. Also cached in secure storage so S04 can be resumed.
 @freezed
 abstract class EmailOtpChallengeModel with _$EmailOtpChallengeModel {
   const factory({
@@ -28,9 +26,6 @@ abstract class EmailOtpChallengeModel with _$EmailOtpChallengeModel {
   factory fromJson(Map<String, dynamic> json) => _$EmailOtpChallengeModelFromJson(json);
 }
 
-/// An unfinished code request saved on the device: the challenge plus the
-/// full email the user typed, which the API only returns masked. Lets S04
-/// resume after the app is closed (design 10.2).
 @freezed
 abstract class PendingOtpModel with _$PendingOtpModel {
   @JsonSerializable(explicitToJson: true)

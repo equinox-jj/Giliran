@@ -6,10 +6,6 @@ import '../utils/logger/app_logger.dart';
 
 part 'biometric_service.g.dart';
 
-/// Thin wrapper over `local_auth` for biometric unlock (S07, S08).
-///
-/// The PIN is always the fallback, so every platform failure ends as "not
-/// available" or "not authenticated" instead of an error.
 class const BiometricService(final LocalAuthentication _auth) {
   static const _tag = 'biometric';
 

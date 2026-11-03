@@ -45,7 +45,7 @@ void main() {
   }
 
   Future<void> sendCode(WidgetTester tester) async {
-    await tester.tap(find.text('Kirim kode'));
+    await tester.tap(find.text('Kirim kode ke email'));
     await tester.pump();
     await tester.pump();
   }
@@ -74,10 +74,9 @@ void main() {
     await pumpForgot(tester);
 
     // Assert
-    expect(
-      find.text('Kami kirim kode ke ri•••••@gmail.com untuk memastikan ini kamu.'),
-      findsOneWidget,
-    );
+    expect(find.text('Pastikan ini kamu'), findsOneWidget);
+    expect(find.text('ri•••••@gmail.com'), findsOneWidget);
+    expect(find.text('Lupa PIN · 1 dari 3'), findsOneWidget);
   });
 
   testWidgets('without an email the code cannot be sent', (tester) async {
@@ -85,7 +84,7 @@ void main() {
     await pumpForgot(tester, email: null);
 
     // Act
-    final button = tester.widget<AppButton>(find.widgetWithText(AppButton, 'Kirim kode'));
+    final button = tester.widget<AppButton>(find.widgetWithText(AppButton, 'Kirim kode ke email'));
 
     // Assert
     expect(button.onPressed, isNull);
@@ -151,12 +150,12 @@ void main() {
     expect(find.text('Kode salah. Sisa 3 kali coba.'), findsOneWidget);
   });
 
-  testWidgets('back on the first step leaves', (tester) async {
+  testWidgets('close on the first step leaves', (tester) async {
     // Arrange
     await pumpForgot(tester);
 
     // Act
-    await tester.tap(find.bySemanticsLabel('Kembali'));
+    await tester.tap(find.bySemanticsLabel('Tutup'));
 
     // Assert
     expect(back, 1);

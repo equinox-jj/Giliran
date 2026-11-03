@@ -13,7 +13,6 @@ abstract class PinRequestModel with _$PinRequestModel {
   factory fromJson(Map<String, dynamic> json) => _$PinRequestModelFromJson(json);
 }
 
-/// Body of `POST /auth/pin` (first PIN, S06).
 @freezed
 abstract class SetPinRequestModel with _$SetPinRequestModel {
   const factory({
@@ -24,7 +23,6 @@ abstract class SetPinRequestModel with _$SetPinRequestModel {
   factory fromJson(Map<String, dynamic> json) => _$SetPinRequestModelFromJson(json);
 }
 
-/// Body of `PUT /auth/pin` (change PIN, S45).
 @freezed
 abstract class ChangePinRequestModel with _$ChangePinRequestModel {
   const factory({

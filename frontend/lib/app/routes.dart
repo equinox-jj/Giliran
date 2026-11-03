@@ -26,8 +26,6 @@ import 'component_gallery_page.dart';
 
 part 'routes.g.dart';
 
-/// The app's root navigator. Full-screen routes inside a tab (S45, S46) set
-/// it as their parent so they cover the tab bar.
 final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
 /// Main tabs. Branch order must match [AppNavDestination.main].
@@ -130,7 +128,6 @@ class const ProfileRoute() extends GoRouteData with $ProfileRoute {
   Widget build(BuildContext context, GoRouterState state) => const ProfilePage();
 }
 
-/// S45 Change PIN, full screen over the tabs. Opened from S44 Security.
 class const ChangePinRoute() extends GoRouteData with $ChangePinRoute {
   static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
 
@@ -141,7 +138,6 @@ class const ChangePinRoute() extends GoRouteData with $ChangePinRoute {
   );
 }
 
-/// S46 Change email, full screen over the tabs. Opened from S43 and S44.
 class const ChangeEmailRoute() extends GoRouteData with $ChangeEmailRoute {
   static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
 
@@ -152,9 +148,6 @@ class const ChangeEmailRoute() extends GoRouteData with $ChangeEmailRoute {
   );
 }
 
-/// S09 Forgot PIN for an open session, from "Lupa PIN?" on S45 or S46. The
-/// sign-in S09 route hands over to the guard instead; this one returns to
-/// Profile once the new PIN is saved.
 class const SecurityForgotPinRoute() extends GoRouteData with $SecurityForgotPinRoute {
   static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
 
@@ -173,9 +166,6 @@ class const SecurityForgotPinRoute() extends GoRouteData with $SecurityForgotPin
 /// directly (a deep link) and has nothing under it.
 void _popOr(BuildContext context, String fallback) => context.canPop() ? context.pop() : context.go(fallback);
 
-/// S01 launch gate. After the hold it waits for the session to load, then
-/// heads for Home; the guard (`authRedirect`) sends the user to Welcome, an
-/// unfinished sign-in step or the lock instead.
 @TypedGoRoute<SplashRoute>(
   name: 'splash',
   path: '/',
@@ -197,7 +187,6 @@ class const SplashRoute() extends GoRouteData with $SplashRoute {
   }
 }
 
-/// S02 onboarding pager for signed-out users.
 @TypedGoRoute<WelcomeRoute>(
   name: 'welcome',
   path: '/welcome',
@@ -209,8 +198,6 @@ class const WelcomeRoute() extends GoRouteData with $WelcomeRoute {
   );
 }
 
-/// S03 Sign in with email. [$extra] prefills the address when coming back
-/// from S04 ("Ubah").
 @TypedGoRoute<SignInRoute>(
   name: 'signIn',
   path: '/auth/email',
@@ -223,7 +210,6 @@ class const SignInRoute({final String? $extra}) extends GoRouteData with $SignIn
   );
 }
 
-/// S04 Enter code (and PIN), for the request kept on the device.
 @TypedGoRoute<VerifyOtpRoute>(
   name: 'verifyOtp',
   path: '/auth/email/code',
@@ -232,7 +218,6 @@ class const VerifyOtpRoute() extends GoRouteData with $VerifyOtpRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) => VerifyOtpPage(
     onChangeEmail: (email) {
-      // Back to S03 when it is underneath (it still holds the address).
       if (context.canPop()) {
         context.pop();
       } else {
@@ -243,7 +228,6 @@ class const VerifyOtpRoute() extends GoRouteData with $VerifyOtpRoute {
   );
 }
 
-/// S05 Fill in name, for a new account.
 @TypedGoRoute<FillNameRoute>(
   name: 'fillName',
   path: '/auth/name',
@@ -253,7 +237,6 @@ class const FillNameRoute() extends GoRouteData with $FillNameRoute {
   Widget build(BuildContext context, GoRouterState state) => const FillNamePage();
 }
 
-/// S06 Set PIN, for an account without one.
 @TypedGoRoute<SetPinRoute>(
   name: 'setPin',
   path: '/auth/pin/new',
@@ -263,8 +246,6 @@ class const SetPinRoute() extends GoRouteData with $SetPinRoute {
   Widget build(BuildContext context, GoRouterState state) => const SetPinPage();
 }
 
-/// S07 Biometric opt-in. The guard opens it after every sign-in step; it
-/// goes on to Home at once when there is nothing to offer.
 @TypedGoRoute<BiometricRoute>(
   name: 'biometric',
   path: '/auth/biometric',
@@ -276,8 +257,6 @@ class const BiometricRoute() extends GoRouteData with $BiometricRoute {
   );
 }
 
-/// S08 PIN lock for a session on this device. [from] is the location the
-/// lock covered, opened again after unlocking.
 @TypedGoRoute<LockRoute>(
   name: 'lock',
   path: '/lock',
@@ -289,8 +268,6 @@ class const LockRoute({final String? from}) extends GoRouteData with $LockRoute 
   );
 }
 
-/// S09 Forgot PIN, from S08 or the PIN step of S04. [$extra] is the account
-/// email the code goes to.
 @TypedGoRoute<ForgotPinRoute>(
   name: 'forgotPin',
   path: '/auth/pin/forgot',

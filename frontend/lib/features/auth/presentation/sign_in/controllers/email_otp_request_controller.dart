@@ -7,9 +7,6 @@ import '../../../domain/usecases/request_email_otp_usecase.dart';
 
 part 'email_otp_request_controller.g.dart';
 
-/// Sends an email code: S03 (`sign_in`), S09 step 1 (`reset_pin`) and S46
-/// (`change_email`). Holds the sent challenge, or the `Failure` as an
-/// `AsyncError` (`429` carries `retryAfterDelay` for the countdown).
 @riverpod
 class EmailOtpRequestController() extends _$EmailOtpRequestController {
   @override

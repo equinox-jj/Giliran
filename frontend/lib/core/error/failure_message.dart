@@ -1,3 +1,4 @@
+import '../utils/enums/api_error_code.dart';
 import 'failure.dart';
 
 /// Default Indonesian message for any [Failure] variant.
@@ -9,6 +10,8 @@ extension FailureMessage on Failure {
   String get displayMessage => switch (this) {
     NetworkFailure() => 'Tidak ada koneksi internet. Periksa jaringanmu.',
     TimeoutFailure() => 'Koneksi lambat. Coba lagi sebentar.',
+    BadRequestFailure(code: ApiErrorCode.fileTooLarge) => 'Foto lebih dari 5 MB. Pilih foto lain.',
+    BadRequestFailure(code: ApiErrorCode.unsupportedMediaType) => 'Format tidak didukung. Pakai JPG atau PNG.',
     BadRequestFailure() => 'Permintaan tidak dapat diproses.',
     UnauthorizedFailure() => 'Sesi berakhir. Silakan masuk lagi.',
     ForbiddenFailure() => 'Kamu tidak punya akses untuk tindakan ini.',

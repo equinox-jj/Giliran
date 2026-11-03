@@ -8,14 +8,11 @@ import '../../../domain/usecases/set_biometric_enabled_usecase.dart';
 
 part 'biometric_controller.g.dart';
 
-/// Biometric unlock for the S07 opt-in, the S08 key and the S47 toggle.
 @riverpod
 class BiometricController() extends _$BiometricController {
   @override
   Future<BiometricStatus> build() => _load();
 
-  /// "Aktifkan" (true) or "Nanti saja" (false) on S07, or the S47 toggle.
-  /// Returns the [Failure] when the choice could not be saved.
   Future<Failure?> setEnabled(bool enabled) async {
     final result = await ref.read(setBiometricEnabledUseCaseProvider)(enabled);
     if (!ref.mounted) return result.getLeft().toNullable();

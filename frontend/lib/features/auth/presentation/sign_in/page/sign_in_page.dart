@@ -1,6 +1,9 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../../core/constants/app_icons.dart';
 import '../../../../../core/constants/app_illustrations.dart';
 import '../../../../../core/error/failure.dart';
 import '../../../../../core/error/failure_message.dart';
@@ -10,8 +13,6 @@ import '../../../../../shared/widgets/widgets.dart';
 import '../../shared/widgets/auth_scaffold.dart';
 import '../controllers/email_otp_request_controller.dart';
 
-/// S03 Sign in with email: one field, "Kirim kode", then [onCodeSent] opens
-/// S04. [initialEmail] prefills the field when coming back via "Ubah".
 class const SignInPage({
   super.key,
   required final VoidCallback onCodeSent,
@@ -102,9 +103,19 @@ class _SignInPageState() extends ConsumerState<SignInPage> {
     );
 
     return AuthScaffold(
+      // The hero panel sits right under the bar.
+      topPadding: context.isCompact ? 0 : AppSpace.s2,
       maxWidth: context.isCompact ? AuthScaffold.formMax : AppSizes.boardMax,
       body: context.isCompact ? form : _WideLayout(form: form),
-      bottom: _SendButton(retryUntil: _retryUntil, onSubmit: _submit),
+      bottom: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: 10,
+        children: [
+          _SendButton(retryUntil: _retryUntil, onSubmit: _submit),
+          const _LegalNote(),
+        ],
+      ),
     );
   }
 }
@@ -140,48 +151,52 @@ class const _Form({
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (context.isCompact) ...[
-          const Illustration(AppIllustrations.emailSlip, width: 96, height: 96),
+          const _HeroIllustration(),
           const SizedBox(height: AppSpace.s6),
         ],
         const HeadlineText('Masuk dengan **email**'),
         const SizedBox(height: AppSpace.s2),
         Text(
-          'Kami kirim kode 6 digit ke email kamu. Tidak perlu kata sandi.',
-          style: t.bodyLg.copyWith(color: c.textSecondary),
+          'Kami kirim kode 6 digit ke email kamu. Tanpa kata sandi.',
+          style: t.body.copyWith(color: c.textSecondary),
         ),
-        const SizedBox(height: AppSpace.s6),
+        const SizedBox(height: AppSpace.s5),
         ValueListenableBuilder(
           valueListenable: error,
           builder: (context, error, _) => EmailField(
             controller: email,
+            helper: 'Akun baru dibuat otomatis kalau email ini belum terdaftar.',
             errorText: error,
             autofocus: true,
             onSubmitted: (_) => onSubmit(),
           ),
         ),
         _RetryCountdown(retryUntil: retryUntil),
-        const SizedBox(height: AppSpace.s4),
-        Text(
-          'Dengan lanjut, kamu setuju dengan Syarat & Kebijakan Privasi '
-          'di giliran.monai.my.id/privacy.',
-          style: t.caption.copyWith(color: c.textTertiary),
-        ),
-        const SizedBox(height: AppSpace.s2),
-        AppButton.ghost(
-          label: 'Tidak punya email?',
-          size: AppButtonSize.small,
-          onPressed: () => showHelpSheet(
-            context,
-            title: 'Tidak punya email?',
-            paragraphs: const [
-              'Giliran memakai email untuk masuk, jadi akunmu aman tanpa '
-                  'kata sandi.',
-              'Tanpa email, pengurus arisan tetap bisa menambahkan kamu '
-                  'sebagai anggota tamu. Iuranmu tetap tercatat di grup.',
-            ],
-          ),
+        const SizedBox(height: 18),
+        const AppBanner(
+          note: true,
+          icon: AppIcons.shieldCheck,
+          message:
+              'Email kamu hanya untuk masuk dan pemulihan akun. '
+              'Tidak ditampilkan ke anggota lain.',
         ),
       ],
+    );
+  }
+}
+
+/// The `email_slip` illustration on the hero tone, full width (phone only).
+class const _HeroIllustration() extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 168,
+      alignment: Alignment.center,
+      decoration: ShapeDecoration(
+        color: context.colors.hero,
+        shape: AppShapes.squircle(AppRadius.xl),
+      ),
+      child: const Illustration(AppIllustrations.emailSlip, width: 240, height: 140),
     );
   }
 }
@@ -199,6 +214,7 @@ class const _RetryCountdown({required final ValueNotifier<DateTime?> retryUntil}
               child: CountdownText(
                 prefix: 'Terlalu sering. Coba lagi dalam ',
                 until: until,
+                showTimeOnSameDay: false,
                 onFinished: () => retryUntil.value = null,
               ),
             ),
@@ -225,6 +241,55 @@ class const _SendButton({
         loading: loading,
         onPressed: until == null ? onSubmit : null,
       ),
+    );
+  }
+}
+
+/// "Dengan lanjut, kamu setuju dengan Syarat & Kebijakan Privasi." under the
+/// button; both links open the privacy page. Stateful to own the link
+/// recognizers.
+class const _LegalNote() extends StatefulWidget {
+  static final _privacyUrl = Uri.parse('https://giliran.monai.my.id/privacy');
+
+  @override
+  State<_LegalNote> createState() => _LegalNoteState();
+}
+
+class _LegalNoteState() extends State<_LegalNote> {
+  late final _terms = TapGestureRecognizer()..onTap = _open;
+  late final _privacy = TapGestureRecognizer()..onTap = _open;
+
+  @override
+  void dispose() {
+    _terms.dispose();
+    _privacy.dispose();
+    super.dispose();
+  }
+
+  void _open() => launchUrl(_LegalNote._privacyUrl, mode: LaunchMode.externalApplication);
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.colors;
+    final t = AppTextStyles.of(context);
+    final link = TextStyle(
+      color: c.link,
+      decoration: TextDecoration.underline,
+      decorationColor: c.link,
+    );
+
+    return Text.rich(
+      TextSpan(
+        text: 'Dengan lanjut, kamu setuju dengan ',
+        children: [
+          TextSpan(text: 'Syarat', style: link, recognizer: _terms),
+          const TextSpan(text: ' & '),
+          TextSpan(text: 'Kebijakan Privasi', style: link, recognizer: _privacy),
+          const TextSpan(text: '.'),
+        ],
+      ),
+      textAlign: TextAlign.center,
+      style: t.caption.copyWith(color: c.textTertiary),
     );
   }
 }

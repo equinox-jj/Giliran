@@ -10,8 +10,6 @@ import '../repositories/auth_repository.dart';
 
 part 'get_biometric_status_usecase.g.dart';
 
-/// The enrolled biometric and the stored flags. The S07 opt-in is offered
-/// only when a biometric is enrolled, it is off, and it was never offered.
 class GetBiometricStatusUseCase(
   final AuthRepository _repository,
   final BiometricService _biometric,

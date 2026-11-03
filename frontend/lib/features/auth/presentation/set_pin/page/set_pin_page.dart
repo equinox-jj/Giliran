@@ -8,8 +8,6 @@ import '../../shared/widgets/auth_scaffold.dart';
 import '../../shared/widgets/pin_entry.dart';
 import '../controllers/set_pin_controller.dart';
 
-/// S06 Set PIN: "Buat PIN 6 digit" (step 1 of 2), then "Ulangi PIN" on the
-/// same pad. Setting it unlocks the session, and the guard moves on.
 class const SetPinPage({super.key}) extends ConsumerStatefulWidget {
   @override
   ConsumerState<SetPinPage> createState() => _SetPinPageState();
@@ -29,6 +27,7 @@ class _SetPinPageState() extends ConsumerState<SetPinPage> {
         _pin.clear();
       }
     });
+
     _pin.addListener(_onTyping);
   }
 
@@ -53,14 +52,17 @@ class _SetPinPageState() extends ConsumerState<SetPinPage> {
       step: confirming ? 'Langkah 2 dari 2' : 'Langkah 1 dari 2',
       showBack: confirming,
       pinPad: true,
+      topPadding: 0,
       onBack: confirming ? () => ref.read(setPinControllerProvider.notifier).restart() : null,
       body: _Entry(controller: _pin, confirming: confirming),
     );
   }
 }
 
-class const _Entry({required final PinPadController controller, required final bool confirming})
-    extends ConsumerWidget {
+class const _Entry({
+  required final PinPadController controller,
+  required final bool confirming,
+}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final (:failure, :checking) = ref.watch(
@@ -79,8 +81,6 @@ class const _Entry({required final PinPadController controller, required final b
   }
 }
 
-/// S06 copy for a rejected new PIN (`pin_too_weak` or `mismatch` field
-/// errors). Also used by S09 step 3.
 String? setPinErrorMessage(Failure? failure) {
   if (failure == null) return null;
   if (failure case ValidationFailure(:final fieldErrors)) {
@@ -90,5 +90,6 @@ String? setPinErrorMessage(Failure? failure) {
     }
     if (codes.contains('mismatch')) return 'PIN tidak sama. Ulangi dari awal.';
   }
+
   return failure.displayMessage;
 }

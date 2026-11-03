@@ -21,6 +21,8 @@ class const OtpInput({
   final bool checking = false,
   final bool autofocus = true,
   final String semanticLabel = 'Kode 6 digit',
+
+  final bool onCard = false,
 }) extends StatefulWidget {
   @override
   State<OtpInput> createState() => _OtpInputState();
@@ -83,6 +85,7 @@ class _OtpInputState() extends State<OtpInput> {
               digit: i < text.length ? text[i] : '',
               current: _focus.hasFocus && i == text.length.clamp(0, widget.length - 1),
               error: widget.error,
+              onCard: widget.onCard,
             ),
           ),
         ],
@@ -158,7 +161,11 @@ class const _OtpBox({
   required final String digit,
   required final bool current,
   required final bool error,
+  required final bool onCard,
 }) extends StatelessWidget {
+  static const _cardW = 46.0;
+  static const _cardH = 56.0;
+
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
@@ -171,23 +178,25 @@ class const _OtpBox({
         : (c.hairline, AppStroke.regular);
 
     return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: AppSizes.otpBoxW),
+      constraints: BoxConstraints(maxWidth: onCard ? _cardW : AppSizes.otpBoxW),
       child: AspectRatio(
-        aspectRatio: AppSizes.otpBoxW / AppSizes.otpBoxH,
+        aspectRatio: onCard ? _cardW / _cardH : AppSizes.otpBoxW / AppSizes.otpBoxH,
         child: Container(
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: c.surface,
-            borderRadius: BorderRadius.circular(AppRadius.sm),
+            color: onCard && !current ? c.page : c.surface,
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(color: borderColor, width: stroke),
           ),
           child: current && digit.isEmpty && !error
-              ? const _Caret()
+              ? _Caret(height: onCard ? 26 : 28)
               : FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(
                     digit,
                     style: AppTextStyles.of(context).amountLg.copyWith(
+                      fontSize: onCard ? 24 : 26,
+                      letterSpacing: 0,
                       color: c.textPrimary,
                     ),
                   ),
@@ -200,7 +209,7 @@ class const _OtpBox({
 
 /// The 2 × 28 blinking caret in the current empty box. Stays on when the
 /// platform asks for reduced motion.
-class const _Caret() extends StatefulWidget {
+class const _Caret({required final double height}) extends StatefulWidget {
   @override
   State<_Caret> createState() => _CaretState();
 }
@@ -233,6 +242,6 @@ class _CaretState() extends State<_Caret> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) => FadeTransition(
     // A hard on/off blink rather than a fade.
     opacity: _blink.drive(CurveTween(curve: const Threshold(0.5))),
-    child: Container(width: 2, height: 28, color: context.colors.textPrimary),
+    child: Container(width: 2, height: widget.height, color: context.colors.textPrimary),
   );
 }

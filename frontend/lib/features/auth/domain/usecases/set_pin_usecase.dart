@@ -10,8 +10,6 @@ part 'set_pin_usecase.g.dart';
 
 typedef SetPinParams = ({String pin, String pinConfirmation});
 
-/// Sets the account's first PIN (S06) and marks the cached user as having
-/// one, so the launch gate does not ask for a PIN again.
 class SetPinUseCase(final AuthRepository _repository) implements UseCase<Unit, SetPinParams> {
   @override
   Future<Either<Failure, Unit>> call(SetPinParams params) async {

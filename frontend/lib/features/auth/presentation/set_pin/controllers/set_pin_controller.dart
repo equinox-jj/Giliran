@@ -9,8 +9,6 @@ import '../../shared/controllers/auth_session_controller.dart';
 part 'set_pin_controller.freezed.dart';
 part 'set_pin_controller.g.dart';
 
-/// The two-step PIN pad on S06. [firstPin] is null on "Buat PIN 6 digit"
-/// and set on "Ulangi PIN".
 @freezed
 abstract class SetPinState with _$SetPinState {
   const factory({

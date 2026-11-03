@@ -6,8 +6,6 @@ import '../../../../../core/constants/app_illustrations.dart';
 import '../../../../../core/themes/themes.dart';
 import '../../../../../shared/widgets/widgets.dart';
 
-/// S01 launch gate: the kaleng and wordmark on `bg.page`, held for [hold],
-/// then [onReady] picks the next route.
 class const SplashPage({
   super.key,
   required final VoidCallback onReady,

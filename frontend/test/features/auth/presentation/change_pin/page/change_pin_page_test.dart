@@ -40,14 +40,14 @@ void main() {
 
     // Act
     await tester.enterPin('111111');
-    final second = find.text('Buat PIN baru').evaluate().isNotEmpty;
+    final second = find.text('Masukkan PIN baru').evaluate().isNotEmpty;
     await tester.enterPin('246802');
 
     // Assert
     expect(first, isTrue);
     expect(second, isTrue);
     expect(find.text('Ulangi PIN baru'), findsOneWidget);
-    expect(find.text('Langkah 3 dari 3'), findsOneWidget);
+    expect(find.bySemanticsLabel(RegExp('Langkah 3 dari 3')), findsOneWidget);
   });
 
   testWidgets('changes the PIN, shows the toast and closes', (tester) async {
@@ -104,12 +104,12 @@ void main() {
     expect(forgotCalls, 1);
   });
 
-  testWidgets('back on step 1 closes the flow', (tester) async {
+  testWidgets('close on step 1 closes the flow', (tester) async {
     // Arrange
     await pumpChangePin(tester);
 
     // Act
-    await tester.tap(find.bySemanticsLabel('Kembali'));
+    await tester.tap(find.bySemanticsLabel('Tutup'));
     await tester.pump();
 
     // Assert
@@ -122,7 +122,7 @@ void main() {
     await tester.enterPin('111111');
 
     // Act
-    await tester.tap(find.bySemanticsLabel('Kembali'));
+    await tester.binding.handlePopRoute();
     await tester.pump();
 
     // Assert

@@ -9,7 +9,6 @@ import '../../../domain/usecases/change_pin_usecase.dart';
 part 'change_pin_controller.freezed.dart';
 part 'change_pin_controller.g.dart';
 
-/// The pad step on S45: current PIN, new PIN, then the new PIN again.
 enum ChangePinStep() {
   current,
   newPin,
@@ -31,9 +30,6 @@ abstract class ChangePinState with _$ChangePinState {
   }) = _ChangePinState;
 }
 
-/// Steps through S45 and changes the PIN. A wrong or locked current PIN
-/// goes back to the first step; any other failure (such as `pin_too_weak`
-/// or a mismatch) goes back to the new PIN.
 @riverpod
 class ChangePinController() extends _$ChangePinController {
   @override

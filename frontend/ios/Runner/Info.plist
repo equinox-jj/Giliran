@@ -4,6 +4,10 @@
 	<dict>
 		<key>NSFaceIDUsageDescription</key>
 		<string>Giliran memakai Face ID untuk membuka aplikasi tanpa mengetik PIN.</string>
+		<key>NSCameraUsageDescription</key>
+		<string>Giliran memakai kamera untuk memotret foto profil dan bukti transfer.</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Giliran membuka galeri untuk memilih foto profil dan bukti transfer.</string>
 		<key>CADisableMinimumFrameDurationOnPhone</key>
 		<true/>
 		<key>CFBundleDevelopmentRegion</key>

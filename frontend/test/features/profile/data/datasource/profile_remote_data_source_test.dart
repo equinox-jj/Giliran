@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
@@ -107,5 +108,62 @@ void main() {
         ),
       ),
     );
+  });
+
+  group('uploadAvatar', () {
+    late File image;
+
+    setUp(() {
+      final dir = Directory.systemTemp.createTempSync('avatar_test');
+      addTearDown(() => dir.deleteSync(recursive: true));
+      image = File('${dir.path}/photo.png')..writeAsBytesSync(List.filled(64, 1));
+    });
+
+    test('puts the file as multipart with an image content type', () async {
+      // Arrange
+      adapter.body = {
+        'data': {..._userJson, 'avatar_url': 'https://cdn.test/a.png'},
+      };
+
+      // Act
+      final user = await dataSource.uploadAvatar(image.path);
+
+      // Assert
+      final request = adapter.requests.single;
+      final file = (request.data as FormData).files.single;
+      expect(request.method, 'PUT');
+      expect(request.path, '/me/avatar');
+      expect(file.key, 'file');
+      expect(file.value.filename, 'photo.png');
+      expect(file.value.contentType?.mimeType, 'image/png');
+      expect(user.avatarUrl, 'https://cdn.test/a.png');
+    });
+
+    test('maps 413 to BadRequestException', () async {
+      // Arrange
+      adapter
+        ..status = 413
+        ..body = {'status': 413, 'code': 'file_too_large'};
+
+      // Act
+      final call = dataSource.uploadAvatar(image.path);
+
+      // Assert
+      await expectLater(call, throwsA(isA<BadRequestException>()));
+    });
+  });
+
+  test('deleteAvatar sends DELETE to /me/avatar', () async {
+    // Arrange
+    adapter
+      ..status = 204
+      ..body = null;
+
+    // Act
+    await dataSource.deleteAvatar();
+
+    // Assert
+    expect(adapter.requests.single.method, 'DELETE');
+    expect(adapter.requests.single.path, '/me/avatar');
   });
 }

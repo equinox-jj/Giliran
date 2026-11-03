@@ -15,9 +15,6 @@ import '../../shared/widgets/biometric_copy.dart';
 import '../../shared/widgets/pin_entry.dart';
 import '../controllers/pin_lock_controller.dart';
 
-/// S08 PIN lock: greets the user and opens the session with the PIN or
-/// biometric. Unlocking moves the session on and the guard leaves.
-/// [onForgotPin] opens S09 with the account's email.
 class const PinLockPage({super.key, required final ValueChanged<String?> onForgotPin}) extends ConsumerStatefulWidget {
   /// The reason shown in the system biometric prompt.
   static const biometricReason = 'Buka Giliran';
@@ -103,6 +100,7 @@ class _PinLockPageState() extends ConsumerState<PinLockPage> {
     return AuthScaffold(
       showTopBar: false,
       pinPad: true,
+      topPadding: 0,
       body: _LockPad(
         controller: _pin,
         wrong: _wrong,
@@ -174,7 +172,7 @@ class const _Greeting() extends ConsumerWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const SizedBox(height: AppSpace.s6),
+        const SizedBox(height: 88),
         AppAvatar(
           name: name.isEmpty ? '?' : name,
           imageUrl: user?.avatarUrl,
@@ -192,7 +190,7 @@ class const _Greeting() extends ConsumerWidget {
           textAlign: TextAlign.center,
           style: t.caption.copyWith(color: c.textTertiary),
         ),
-        const SizedBox(height: AppSpace.s8),
+        const SizedBox(height: 36),
       ],
     );
   }

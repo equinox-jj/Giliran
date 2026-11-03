@@ -1,15 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../../core/themes/themes.dart';
 import '../../../../../shared/widgets/widgets.dart';
 import '../../set_pin/page/set_pin_page.dart';
 import '../../shared/widgets/auth_scaffold.dart';
 import '../../shared/widgets/pin_entry.dart';
+import '../../shared/widgets/step_pills.dart';
 import '../controllers/change_pin_controller.dart';
 
-/// S45 Change PIN: the current PIN, then the new PIN twice on the S06 pad.
-/// Other sessions stay signed in (FR-AUTH-04). [onDone] closes the flow
-/// after the toast, and [onForgotPin] opens S09 from a wrong or locked PIN.
 class const ChangePinPage({super.key, required final VoidCallback onDone, required final VoidCallback onForgotPin})
     extends ConsumerStatefulWidget {
   @override
@@ -57,11 +56,20 @@ class _ChangePinPageState() extends ConsumerState<ChangePinPage> {
   Widget build(BuildContext context) {
     final step = ref.watch(changePinControllerProvider.select((s) => s.step));
 
-    return AuthScaffold(
-      step: 'Langkah ${step.index + 1} dari ${ChangePinStep.values.length}',
-      pinPad: true,
-      onBack: _back,
-      body: _Entry(controller: _pin, step: step, onForgotPin: widget.onForgotPin),
+    // The close button leaves the flow; the system back steps back.
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _back();
+      },
+      child: AuthScaffold(
+        step: 'Ubah PIN',
+        stepColor: context.colors.textPrimary,
+        modal: true,
+        pinPad: true,
+        onBack: widget.onDone,
+        body: _Entry(controller: _pin, step: step, onForgotPin: widget.onForgotPin),
+      ),
     );
   }
 }
@@ -80,9 +88,17 @@ class const _Entry({
       ),
     );
     final notifier = ref.read(changePinControllerProvider.notifier);
+    final pills = StepPills(
+      labels: const ['PIN lama', 'PIN baru', 'Ulangi'],
+      current: step.index,
+      alignment: MainAxisAlignment.center,
+    );
 
     return switch (step) {
       ChangePinStep.current => CurrentPinEntry(
+        top: pills,
+        headingTop: AppSpace.s8,
+        dotsGap: 36,
         headline: 'Masukkan **PIN lama**',
         caption: 'Pastikan ini kamu sebelum mengganti PIN.',
         error: wrongPinMessage(failure),
@@ -93,14 +109,19 @@ class const _Entry({
         onCompleted: notifier.enter,
       ),
       ChangePinStep.newPin => PinEntry(
-        headline: 'Buat **PIN baru**',
-        caption: 'PIN lama tidak bisa dipakai lagi.',
-        hint: 'Hindari angka berurutan atau sama semua, seperti 123456.',
+        top: pills,
+        headingTop: AppSpace.s8,
+        dotsGap: 36,
+        headline: 'Masukkan **PIN baru**',
+        caption: 'Perangkat lain tetap masuk seperti biasa.',
         error: setPinErrorMessage(failure),
         controller: controller,
         onCompleted: notifier.enter,
       ),
       ChangePinStep.confirm => PinEntry(
+        top: pills,
+        headingTop: AppSpace.s8,
+        dotsGap: 36,
         headline: 'Ulangi **PIN baru**',
         caption: 'Masukkan PIN yang sama sekali lagi.',
         error: setPinErrorMessage(failure),

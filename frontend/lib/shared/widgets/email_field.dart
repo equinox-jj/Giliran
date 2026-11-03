@@ -1,10 +1,14 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/constants/app_icons.dart';
+import '../../core/themes/themes.dart';
+import 'app_icon.dart';
 import 'app_text_field.dart';
 
-/// Email field for sign-in and change email. No autocorrect or
-/// capitalization; checks a basic `name@domain` shape after the user leaves
-/// the field or submits. The server is the final judge.
+/// Email field for sign-in and change email: an envelope icon in front and a
+/// clear button once there is text. No autocorrect or capitalization; checks
+/// a basic `name@domain` shape after the user leaves the field or submits.
+/// The server is the final judge.
 class const EmailField({
   super.key,
   required final TextEditingController controller,
@@ -54,6 +58,11 @@ class _EmailFieldState() extends State<EmailField> {
     super.dispose();
   }
 
+  void _onCleared() {
+    widget.controller.clear();
+    setState(() => _checked = false);
+  }
+
   @override
   Widget build(BuildContext context) {
     final text = widget.controller.text;
@@ -73,6 +82,12 @@ class _EmailFieldState() extends State<EmailField> {
       enableSuggestions: false,
       textCapitalization: TextCapitalization.none,
       autofocus: widget.autofocus,
+      prefix: AppIcon(
+        AppIcons.envelopeSimple,
+        size: AppSizes.iconMd,
+        color: context.colors.textTertiary,
+      ),
+      suffix: _ClearButton(controller: widget.controller, onCleared: _onCleared),
       onChanged: (_) {
         if (_checked) setState(() {});
       },
@@ -83,6 +98,21 @@ class _EmailFieldState() extends State<EmailField> {
           widget.onSubmitted?.call(normalized);
         }
       },
+    );
+  }
+}
+
+/// The clear button, shown only while the field has text.
+class const _ClearButton({
+  required final TextEditingController controller,
+  required final VoidCallback onCleared,
+}) extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+      valueListenable: controller,
+      builder: (context, value, _) =>
+          value.text.isEmpty ? const SizedBox.shrink() : FieldClearButton(onPressed: onCleared),
     );
   }
 }

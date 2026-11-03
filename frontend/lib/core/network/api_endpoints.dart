@@ -34,6 +34,9 @@ abstract final class ApiEndpoints() {
   /// The signed-in user's profile (`GET`, `PATCH`).
   static const String me = '/me';
 
+  /// The signed-in user's profile picture (`PUT` multipart, `DELETE`).
+  static const String meAvatar = '/me/avatar';
+
   /// `extra` flag: skip attaching the access token (sign-in, refresh, public
   /// pages).
   static const String kNoAuth = 'noAuth';

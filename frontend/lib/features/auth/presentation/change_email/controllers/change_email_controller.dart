@@ -12,7 +12,6 @@ import '../../verify_otp/controllers/email_otp_controller.dart';
 part 'change_email_controller.freezed.dart';
 part 'change_email_controller.g.dart';
 
-/// The three steps of S46.
 enum ChangeEmailStep() {
   /// The current address and a field for the new one.
   email,
@@ -42,8 +41,6 @@ abstract class ChangeEmailState with _$ChangeEmailState {
   }) = _ChangeEmailState;
 }
 
-/// Steps through S46 up to the code. The code itself is verified by
-/// [EmailOtpController], which caches the updated user.
 @riverpod
 class ChangeEmailController() extends _$ChangeEmailController {
   @override

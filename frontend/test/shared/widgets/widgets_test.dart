@@ -272,6 +272,85 @@ void main() {
     expect(icon.dx, greaterThan(label.dx));
   });
 
+  group('AvatarPicker', () {
+    testWidgets('empty: asks for an optional photo and opens on tap', (
+      tester,
+    ) async {
+      // Arrange
+      var taps = 0;
+      await tester.pumpApp(AvatarPicker(onTap: () => taps++));
+
+      // Act
+      await tester.tap(find.bySemanticsLabel('Tambah foto profil'));
+
+      // Assert
+      expect(find.text('Foto profil (opsional)'), findsOneWidget);
+      expect(taps, 1);
+    });
+
+    testWidgets('uploading: shows the percentage and ignores taps', (
+      tester,
+    ) async {
+      // Arrange
+      var taps = 0;
+      await tester.pumpApp(AvatarPicker(progress: 0.42, onTap: () => taps++));
+
+      // Act
+      await tester.tap(find.byType(AvatarPicker));
+
+      // Assert
+      expect(find.text('Mengunggah… 42%'), findsOneWidget);
+      expect(taps, 0);
+    });
+
+    testWidgets('failed: shows the reason and Coba lagi retries', (
+      tester,
+    ) async {
+      // Arrange
+      var retries = 0;
+      await tester.pumpApp(
+        AvatarPicker(
+          errorText: 'Foto lebih dari 5 MB.',
+          onTap: () {},
+          onRetry: () => retries++,
+        ),
+      );
+
+      // Act
+      await tester.tap(find.text('Coba lagi'));
+
+      // Assert
+      expect(find.text('Foto lebih dari 5 MB.'), findsOneWidget);
+      expect(retries, 1);
+    });
+
+    testWidgets('the sheet offers Hapus foto only when there is a photo', (
+      tester,
+    ) async {
+      // Arrange
+      AvatarSheetAction? picked;
+      await tester.pumpApp(
+        Builder(
+          builder: (context) => AppButton(
+            label: 'Buka',
+            onPressed: () async => picked = await showAvatarSourceSheet(context, canRemove: true),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Buka'));
+      await tester.pumpAndSettle();
+      final offersRemove = find.text('Hapus foto').evaluate().isNotEmpty;
+
+      // Act
+      await tester.tap(find.text('Kamera'));
+      await tester.pumpAndSettle();
+
+      // Assert
+      expect(offersRemove, isTrue);
+      expect(picked, AvatarSheetAction.camera);
+    });
+  });
+
   group('IllustrationColorMapper', () {
     test('keeps light colors and maps them for dark', () {
       // Arrange

@@ -10,13 +10,10 @@ class const Preferences(final SharedPreferencesAsync _prefs) {
   static const _biometricEnabledKey = 'biometric_enabled';
   static const _biometricPromptedKey = 'biometric_prompted';
 
-  /// Whether the user turned on biometric unlock on this device (S07).
   Future<bool> readBiometricEnabled() async => await _prefs.getBool(_biometricEnabledKey) ?? false;
 
   Future<void> saveBiometricEnabled(bool value) => _prefs.setBool(_biometricEnabledKey, value);
 
-  /// Whether the biometric opt-in (S07) was already shown on this device; it
-  /// is offered only once.
   Future<bool> readBiometricPrompted() async => await _prefs.getBool(_biometricPromptedKey) ?? false;
 
   Future<void> saveBiometricPrompted(bool value) => _prefs.setBool(_biometricPromptedKey, value);

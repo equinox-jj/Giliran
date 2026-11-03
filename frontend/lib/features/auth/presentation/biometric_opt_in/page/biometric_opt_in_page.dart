@@ -9,9 +9,6 @@ import '../../shared/controllers/biometric_controller.dart';
 import '../../shared/widgets/auth_scaffold.dart';
 import '../../shared/widgets/biometric_copy.dart';
 
-/// S07 Biometric opt-in, offered once per device after the PIN step. When
-/// there is nothing to offer (no biometric enrolled, already asked) it calls
-/// [onDone] straight away, so the guard can always route here first.
 class const BiometricOptInPage({super.key, required final VoidCallback onDone}) extends ConsumerStatefulWidget {
   @override
   ConsumerState<BiometricOptInPage> createState() => _BiometricOptInPageState();
@@ -67,7 +64,10 @@ class _BiometricOptInPageState() extends ConsumerState<BiometricOptInPage> {
     final offer = ref.watch(biometricControllerProvider.select((s) => s.value?.shouldOffer == true));
 
     return AuthScaffold(
-      showBack: false,
+      // No bar: the panel starts where it would end.
+      showTopBar: false,
+      topPadding: AppSizes.topBarH,
+      bottomPadding: 28,
       body: offer ? const _Offer() : const SizedBox.shrink(),
       bottom: offer ? _Actions(saving: _saving, onChoose: _choose) : null,
     );
@@ -95,7 +95,7 @@ class const _Offer() extends ConsumerWidget {
           height: heroH,
           alignment: Alignment.center,
           decoration: ShapeDecoration(color: c.hero, shape: AppShapes.squircle(AppRadius.xl)),
-          child: const Illustration(AppIllustrations.biometricUnlock, width: 220, height: 220),
+          child: const Illustration(AppIllustrations.biometricUnlock, width: 220, height: 240),
         ),
         const SizedBox(height: AppSpace.s8),
         HeadlineText('Buka Giliran dengan **$name**'),
@@ -126,12 +126,18 @@ class const _Actions({
             loading: choice == true,
             onPressed: choice == null ? () => onChoose(true) : null,
           ),
-          const SizedBox(height: AppSpace.s1),
-          AppButton.ghost(
-            label: 'Nanti saja',
-            block: true,
-            loading: choice == false,
-            onPressed: choice == null ? () => onChoose(false) : null,
+          const SizedBox(height: 6),
+          // Ghost buttons are 44 high; this one takes the full 52 row.
+          SizedBox(
+            height: AppSizes.buttonH,
+            child: Center(
+              child: AppButton.ghost(
+                label: 'Nanti saja',
+                block: true,
+                loading: choice == false,
+                onPressed: choice == null ? () => onChoose(false) : null,
+              ),
+            ),
           ),
         ],
       ),
@@ -140,8 +146,10 @@ class const _Actions({
 }
 
 /// "Aktifkan" with the fingerprint or face icon of this device.
-class const _EnableButton({required final bool loading, required final VoidCallback? onPressed})
-    extends ConsumerWidget {
+class const _EnableButton({
+  required final bool loading,
+  required final VoidCallback? onPressed,
+}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final kind = ref.watch(biometricControllerProvider.select((s) => s.value?.kind));

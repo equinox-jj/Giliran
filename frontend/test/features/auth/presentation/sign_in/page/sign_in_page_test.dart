@@ -87,15 +87,17 @@ void main() {
     expect(sent, 0);
   });
 
-  testWidgets('Tidak punya email? opens the help sheet', (tester) async {
+  testWidgets('shows the helper, privacy banner and legal note under the button', (tester) async {
     // Arrange
     await pumpSignIn(tester);
 
     // Act
-    await tester.tap(find.text('Tidak punya email?'));
-    await tester.pumpAndSettle();
+    final button = tester.getRect(find.widgetWithText(AppButton, 'Kirim kode'));
+    final legal = tester.getRect(find.textContaining('Dengan lanjut, kamu setuju'));
 
     // Assert
-    expect(find.text('Mengerti'), findsOneWidget);
+    expect(find.text('Akun baru dibuat otomatis kalau email ini belum terdaftar.'), findsOneWidget);
+    expect(find.textContaining('Email kamu hanya untuk masuk'), findsOneWidget);
+    expect(legal.top, greaterThanOrEqualTo(button.bottom));
   });
 }

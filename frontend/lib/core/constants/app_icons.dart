@@ -66,6 +66,7 @@ abstract final class AppIcons() {
   static const sealCheckFill = 'assets/icons/seal-check-fill.svg';
   static const shareNetwork = 'assets/icons/share-network.svg';
   static const shieldCheck = 'assets/icons/shield-check.svg';
+  static const shieldWarning = 'assets/icons/shield-warning.svg';
   static const shuffle = 'assets/icons/shuffle.svg';
   static const shuffleBold = 'assets/icons/shuffle-bold.svg';
   static const signOut = 'assets/icons/sign-out.svg';

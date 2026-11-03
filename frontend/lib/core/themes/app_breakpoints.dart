@@ -48,6 +48,8 @@ extension SizeClassX on BuildContext {
   /// Size class from the window width (not the device type).
   SizeClass get sizeClass => SizeClass.fromWidth(MediaQuery.sizeOf(this).width);
 
+  dynamic get test => MediaQuery.of;
+
   double get screenMargin => sizeClass.margin;
 
   double get gutter => sizeClass.gutter;

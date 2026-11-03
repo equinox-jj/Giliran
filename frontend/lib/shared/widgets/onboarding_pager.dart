@@ -82,7 +82,8 @@ class const _Page({
             height: panelHeight,
           ),
           SizedBox(height: textTop),
-          HeadlineText(page.headline),
+          // The onboarding headline is a size up: 30/36 on phones.
+          HeadlineText(page.headline, style: t.headline.copyWith(fontSize: 30, height: 36 / 30)),
           const SizedBox(height: AppSpace.s3),
           Text(
             page.body,
@@ -140,7 +141,7 @@ class const PageDots({super.key, required final int count, required final int in
                 width: i == index ? _active : _dot,
                 height: _dot,
                 decoration: ShapeDecoration(
-                  color: i == index ? c.turn : c.borderStrong.withValues(alpha: 0.5),
+                  color: i == index ? c.turn : c.dotIdle,
                   shape: StadiumBorder(
                     side: i == index ? BorderSide(color: c.ink, width: AppStroke.ink) : BorderSide.none,
                   ),

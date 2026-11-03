@@ -14,13 +14,6 @@ import '../../shared/widgets/auth_scaffold.dart';
 import '../../shared/widgets/pin_entry.dart';
 import '../controllers/email_otp_controller.dart';
 
-/// S04 Enter code (and PIN): "Cek email kamu" with the six code boxes for
-/// the open sign-in request. An existing account gets the PIN step after
-/// `pin_required`.
-///
-/// A verified code moves the session on and the guard picks the next screen.
-/// [onChangeEmail] goes back to S03 with the typed address, also when there
-/// is no open request or it can no longer be used. [onForgotPin] opens S09.
 class const VerifyOtpPage({
   super.key,
   required final ValueChanged<String?> onChangeEmail,
@@ -49,7 +42,6 @@ class _VerifyOtpPageState() extends ConsumerState<VerifyOtpPage> {
   }
 
   void _onState(AsyncValue<EmailOtpState>? previous, AsyncValue<EmailOtpState> next) {
-    // S09 shares this request while it is pushed on top; it reacts itself.
     if (next.isLoading || !(ModalRoute.of(context)?.isCurrent ?? true)) return;
     final state = next.value;
     final email = state?.pending?.email;
@@ -95,6 +87,7 @@ class _VerifyOtpPageState() extends ConsumerState<VerifyOtpPage> {
 
     return AuthScaffold(
       pinPad: pinStep,
+      topPadding: pinStep ? AppSpace.s1 : AppSpace.s2,
       onBack: () => widget.onChangeEmail(ref.read(emailOtpControllerProvider).value?.pending?.email),
       body: _Body(
         pin: _pin,
@@ -108,8 +101,6 @@ class _VerifyOtpPageState() extends ConsumerState<VerifyOtpPage> {
   }
 }
 
-/// The code step, or the PIN step once the API asks for it. The only part
-/// of S04 that rebuilds when the request state changes.
 class const _Body({
   required final PinPadController pin,
   required final ValueNotifier<DateTime?> pinLockedUntil,
@@ -155,8 +146,6 @@ class const _Body({
   }
 }
 
-/// S04: "Cek **email** kamu", where the code went, the six boxes with the
-/// expiry and resend timers, the spam hint and the never-share warning.
 class const _CodeStep({
   required final String emailMasked,
   required final EmailCodeCardState state,
@@ -184,7 +173,7 @@ class const _CodeStep({
         _SentTo(emailMasked: emailMasked, onChange: onChangeEmail),
         const SizedBox(height: AppSpace.s6),
         if (closed)
-          _ClosedState(
+          OtpClosedState(
             expired: state == EmailCodeCardState.expired,
             message: message,
             resending: resending,
@@ -211,13 +200,13 @@ class const _CodeStep({
           ],
           if (state != EmailCodeCardState.success) ...[
             const SizedBox(height: AppSpace.s3),
-            _Timers(
+            OtpTimers(
               expiresAt: expiresAt,
               resendAvailableAt: resendAvailableAt,
               resending: resending,
               onResend: onResend,
             ),
-            const SizedBox(height: AppSpace.s4),
+            const SizedBox(height: AppSpace.s5),
             AppButton.secondary(
               label: 'Buka aplikasi email',
               icon: AppIcons.envelopeSimple,
@@ -226,7 +215,7 @@ class const _CodeStep({
             ),
           ],
         ],
-        const SizedBox(height: AppSpace.s5),
+        const SizedBox(height: AppSpace.s3),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpace.s3),
           child: Text(
@@ -239,7 +228,8 @@ class const _CodeStep({
         const AppBanner(
           message: 'Jangan berikan kode ini ke siapa pun. Pengurus Giliran tidak pernah memintanya.',
           variant: AppBannerVariant.warning,
-          icon: AppIcons.shieldCheck,
+          icon: AppIcons.shieldWarning,
+          note: true,
         ),
       ],
     );
@@ -255,7 +245,9 @@ class const _SentTo({required final String emailMasked, required final VoidCallb
     final t = AppTextStyles.of(context);
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(18, AppSpace.s4, AppSpace.s2, AppSpace.s4),
+      // "Ubah" brings its own 18 px side padding, so 4 here lands its label
+      // 22 px in from the edge.
+      padding: const EdgeInsets.fromLTRB(18, AppSpace.s4, AppSpace.s1, AppSpace.s4),
       decoration: ShapeDecoration(color: c.surface, shape: AppShapes.squircle(AppRadius.lg)),
       child: Row(
         children: [
@@ -296,17 +288,18 @@ class const _SentTo({required final String emailMasked, required final VoidCallb
 /// "Berlaku 09:48" on the left and "Kirim ulang dalam 0:52" on the right,
 /// ticking every second. The right side becomes "Kirim ulang" once
 /// `resend_available_at` has passed.
-class const _Timers({
+class const OtpTimers({
+  super.key,
   required final DateTime? expiresAt,
   required final DateTime? resendAvailableAt,
   required final bool resending,
   required final VoidCallback onResend,
 }) extends StatefulWidget {
   @override
-  State<_Timers> createState() => _TimersState();
+  State<OtpTimers> createState() => _OtpTimersState();
 }
 
-class _TimersState() extends State<_Timers> {
+class _OtpTimersState() extends State<OtpTimers> {
   Timer? _timer;
 
   static Duration? _left(DateTime? until) {
@@ -324,7 +317,7 @@ class _TimersState() extends State<_Timers> {
   }
 
   @override
-  void didUpdateWidget(_Timers old) {
+  void didUpdateWidget(OtpTimers old) {
     super.didUpdateWidget(old);
     if (old.expiresAt != widget.expiresAt || old.resendAvailableAt != widget.resendAvailableAt) _start();
   }
@@ -384,7 +377,8 @@ class _TimersState() extends State<_Timers> {
 
 /// Expired or locked: the reason and one primary action in place of the
 /// boxes.
-class const _ClosedState({
+class const OtpClosedState({
+  super.key,
   required final bool expired,
   required final String? message,
   required final bool resending,
@@ -411,8 +405,6 @@ class const _ClosedState({
   }
 }
 
-/// "Buka aplikasi email" on S04, S09 and S46: opens the mail app, or says
-/// to open it by hand when there is none to open.
 Future<void> openMailApp(BuildContext context, WidgetRef ref) async {
   final opened = await ref.read(mailAppLauncherProvider).open();
   if (!opened && context.mounted) {
@@ -420,8 +412,6 @@ Future<void> openMailApp(BuildContext context, WidgetRef ref) async {
   }
 }
 
-/// The email code card state and caption for [state]. Shared by S04, S09
-/// and S46.
 (EmailCodeCardState, String?) emailCodeCardStateOf(EmailOtpState? state) {
   if (state == null) return (EmailCodeCardState.waiting, null);
   if (state.result != null) return (EmailCodeCardState.success, 'Kode benar');
@@ -445,8 +435,6 @@ Future<void> openMailApp(BuildContext context, WidgetRef ref) async {
   };
 }
 
-/// S04 for an existing account: "Kode benar", then "Masukkan **PIN** kamu"
-/// with the keypad at the bottom, or the lock countdown after `pin_locked`.
 class const _PinStep({
   required final String emailMasked,
   required final PinPadController controller,
@@ -512,7 +500,7 @@ class const _PinHeading({required final String emailMasked}) extends StatelessWi
         Text(
           'PIN memastikan ini benar-benar kamu.',
           textAlign: TextAlign.center,
-          style: t.body.copyWith(color: c.textSecondary),
+          style: t.body.copyWith(color: c.textSecondary, fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 28),
       ],
@@ -528,6 +516,7 @@ class const _ForgotPinLink({required final VoidCallback onPressed}) extends Stat
     children: [
       const SizedBox(height: AppSpace.s4),
       AppButton.link(label: 'Lupa PIN?', size: AppButtonSize.small, onPressed: onPressed),
+      const SizedBox(height: AppSpace.s1),
     ],
   );
 }

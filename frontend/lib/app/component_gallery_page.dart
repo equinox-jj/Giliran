@@ -317,6 +317,17 @@ class const _StatusSection() extends StatelessWidget {
           message: 'Semua sudah bayar periode ini.',
           onDismiss: () {},
         ),
+        _gap,
+        const AppBanner(
+          note: true,
+          icon: AppIcons.shieldCheck,
+          message: 'Email kamu hanya untuk masuk dan pemulihan akun. Tidak ditampilkan ke anggota lain.',
+        ),
+        _gap,
+        const AppBanner(
+          compact: true,
+          message: 'Hindari angka berurutan atau sama semua, seperti 123456.',
+        ),
       ],
     );
   }
@@ -351,6 +362,20 @@ class const _PeopleSection() extends StatelessWidget {
                 AvatarData(name: 'Sari'),
                 AvatarData(name: 'Tono'),
               ],
+            ),
+          ],
+        ),
+        _gap,
+        Wrap(
+          spacing: AppSpace.s6,
+          runSpacing: AppSpace.s4,
+          children: [
+            AvatarPicker(onTap: () => showAvatarSourceSheet(context)),
+            const AvatarPicker(progress: 0.42, onTap: null),
+            AvatarPicker(
+              errorText: 'Foto lebih dari 5 MB.',
+              onTap: () => showAvatarSourceSheet(context, canRemove: true),
+              onRetry: () {},
             ),
           ],
         ),
@@ -723,6 +748,7 @@ class _CodeSectionState() extends State<_CodeSection> {
           child: CountdownText(
             prefix: 'Kirim ulang dalam ',
             until: _resendAt,
+            showTimeOnSameDay: false,
           ),
         ),
         _gap,
@@ -898,8 +924,6 @@ class _ListsSectionState() extends State<_ListsSection> {
   }
 }
 
-/// Links to screens that have no entry point yet (S44 Security will open
-/// them). They need an unlocked session; the guard sends others away.
 class const _ScreensSection() extends StatelessWidget {
   @override
   Widget build(BuildContext context) {

@@ -41,7 +41,6 @@ class AuthSessionController() extends _$AuthSessionController {
     if (ref.mounted) state = next;
   }
 
-  /// Opens a locked session after a correct PIN or biometric (S08).
   void unlock() {
     if (state.value case AuthLocked(:final user)) {
       state = AsyncData(AuthStatus.unlocked(user: user));
@@ -69,9 +68,6 @@ class AuthSessionController() extends _$AuthSessionController {
     if (result case Right(value: true)) lock();
   }
 
-  /// Signs out ("Bukan kamu? Keluar", S42). The user is signed out in the app
-  /// either way; a returned [Failure] means the device could not be fully
-  /// cleared.
   Future<Failure?> logout() async {
     final result = await ref.read(logoutUseCaseProvider)(const NoParams());
     if (ref.mounted) state = const AsyncData(AuthStatus.signedOut());
