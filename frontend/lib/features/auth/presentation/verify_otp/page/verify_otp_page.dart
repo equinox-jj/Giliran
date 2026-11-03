@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../../../core/constants/app_icons.dart';
 import '../../../../../core/error/failure.dart';
 import '../../../../../core/error/failure_message.dart';
+import '../../../../../core/services/mail_app_launcher.dart';
 import '../../../../../core/themes/themes.dart';
 import '../../../../../core/utils/enums/api_error_code.dart';
 import '../../../../../shared/widgets/widgets.dart';
@@ -149,6 +150,7 @@ class const _Body({
       onCompleted: onVerifyCode,
       onChangeEmail: () => onChangeEmail(email),
       onResend: notifier.resend,
+      onOpenMail: () => openMailApp(context, ref),
     );
   }
 }
@@ -165,6 +167,7 @@ class const _CodeStep({
   required final ValueChanged<String> onCompleted,
   required final VoidCallback onChangeEmail,
   required final VoidCallback onResend,
+  required final VoidCallback onOpenMail,
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -213,6 +216,13 @@ class const _CodeStep({
               resendAvailableAt: resendAvailableAt,
               resending: resending,
               onResend: onResend,
+            ),
+            const SizedBox(height: AppSpace.s4),
+            AppButton.secondary(
+              label: 'Buka aplikasi email',
+              icon: AppIcons.envelopeSimple,
+              block: true,
+              onPressed: onOpenMail,
             ),
           ],
         ],
@@ -401,7 +411,17 @@ class const _ClosedState({
   }
 }
 
-/// The email code card state and caption for [state]. Shared by S04 and S09.
+/// "Buka aplikasi email" on S04, S09 and S46: opens the mail app, or says
+/// to open it by hand when there is none to open.
+Future<void> openMailApp(BuildContext context, WidgetRef ref) async {
+  final opened = await ref.read(mailAppLauncherProvider).open();
+  if (!opened && context.mounted) {
+    showAppToast(context, 'Aplikasi email tidak bisa dibuka. Buka sendiri, ya.');
+  }
+}
+
+/// The email code card state and caption for [state]. Shared by S04, S09
+/// and S46.
 (EmailCodeCardState, String?) emailCodeCardStateOf(EmailOtpState? state) {
   if (state == null) return (EmailCodeCardState.waiting, null);
   if (state.result != null) return (EmailCodeCardState.success, 'Kode benar');

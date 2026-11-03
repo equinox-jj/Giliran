@@ -162,6 +162,24 @@ void main() {
       expect(find.byType(HomePage), findsOneWidget);
     });
 
+    testWidgets('locking again covers the open tab, and unlocking returns to it', (tester) async {
+      // Arrange
+      signIn();
+      await pumpRouterApp(tester);
+      await unlock(tester);
+      await go(tester, const GroupsRoute().location);
+
+      // Act
+      container.read(authSessionControllerProvider.notifier).lock();
+      await tester.pumpAndSettle();
+      final lockShown = find.byType(PinLockPage).evaluate().isNotEmpty;
+      await unlock(tester);
+
+      // Assert
+      expect(lockShown, isTrue);
+      expect(find.byType(GroupsPage), findsOneWidget);
+    });
+
     testWidgets('logging out returns to Welcome', (tester) async {
       // Arrange
       signIn();
@@ -288,10 +306,35 @@ void main() {
       final onForgot = authRedirect(status, forgotPin);
 
       // Assert
-      expect(fromHome, lock.path);
+      expect(fromHome, const LockRoute(from: '/home').location);
       expect(fromWelcome, lock.path);
       expect(onLock, isNull);
       expect(onForgot, isNull);
+    });
+
+    test('the lock keeps the covered location, query included', () {
+      // Arrange
+      const status = AsyncData<AuthStatus>(AuthStatus.locked());
+      final covered = Uri.parse('/profile/security/pin?tab=2');
+
+      // Act
+      final target = authRedirect(status, covered);
+
+      // Assert
+      expect(target, const LockRoute(from: '/profile/security/pin?tab=2').location);
+      expect(Uri.parse(target!).queryParameters['from'], covered.toString());
+    });
+
+    test('unlocking returns to the covered location', () {
+      // Arrange
+      const status = AsyncData<AuthStatus>(AuthStatus.unlocked());
+      final onLock = Uri.parse(const LockRoute(from: '/groups').location);
+
+      // Act
+      final target = authRedirect(status, onLock);
+
+      // Assert
+      expect(target, '/groups');
     });
 
     test('an unlocked user leaves sign-in steps for the biometric offer', () {
@@ -322,6 +365,37 @@ void main() {
       // Assert
       expect(targets, everyElement(const HomeRoute().location));
       expect(onHome, isNull);
+    });
+  });
+
+  group('lockReturnTo', () {
+    test('returns an app path with its query', () {
+      // Arrange
+      const from = '/profile/security/email?step=2';
+
+      // Act
+      final target = lockReturnTo(from);
+
+      // Assert
+      expect(target, from);
+    });
+
+    test('falls back to Home for nothing, outside URLs and the lock itself', () {
+      // Arrange
+      const unsafe = [
+        null,
+        'https://example.com/home',
+        '//example.com/home',
+        'home',
+        '/lock',
+        '/lock?from=%2Fgroups',
+      ];
+
+      // Act
+      final targets = [for (final from in unsafe) lockReturnTo(from)];
+
+      // Assert
+      expect(targets, everyElement(const HomeRoute().location));
     });
   });
 }

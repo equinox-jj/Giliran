@@ -1,6 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../../core/constants/app_icons.dart';
+import '../../../../../core/error/failure.dart';
+import '../../../../../core/utils/enums/api_error_code.dart';
 import '../../../../../core/themes/themes.dart';
 import '../../../../../shared/widgets/widgets.dart';
 
@@ -37,6 +39,78 @@ class const PinEntry({
     belowDots: _Strip(error: error, hint: hint),
     footer: const SizedBox(height: AppSpace.s4),
   );
+}
+
+/// The current-PIN step of S45 and S46: the S06 layout with "PIN salah"
+/// under the dots and "Lupa PIN?" under the pad, or the lock countdown in
+/// place of the pad while [lockedUntil] is set (`pin_locked`).
+class const CurrentPinEntry({
+  super.key,
+  required final String headline,
+  required final PinPadController controller,
+  required final ValueChanged<String> onCompleted,
+  required final VoidCallback onForgotPin,
+  final String? caption,
+
+  /// "PIN salah" with the attempts left, or another error, under the dots.
+  final String? error,
+  final bool checking = false,
+  final DateTime? lockedUntil,
+
+  /// The lock countdown ran out.
+  final VoidCallback? onLockFinished,
+}) extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final header = _Heading(headline: headline, caption: caption);
+    final footer = _ForgotPinLink(onPressed: onForgotPin);
+    final until = lockedUntil;
+
+    if (until != null) {
+      return PinCountdownLayout(
+        header: header,
+        countdown: CountdownText.lock(
+          until: until,
+          caption: 'PIN terkunci sementara. Coba lagi setelah waktu habis.',
+          onFinished: onLockFinished,
+        ),
+        footer: footer,
+      );
+    }
+    return PinPad(
+      controller: controller,
+      error: error != null,
+      checking: checking,
+      expand: true,
+      onCompleted: onCompleted,
+      header: header,
+      belowDots: PinErrorLine(message: error),
+      footer: footer,
+    );
+  }
+}
+
+/// "Lupa PIN?" under the pad.
+class const _ForgotPinLink({required final VoidCallback onPressed}) extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      const SizedBox(height: AppSpace.s4),
+      AppButton.link(label: 'Lupa PIN?', size: AppButtonSize.small, onPressed: onPressed),
+      const SizedBox(height: AppSpace.s2),
+    ],
+  );
+}
+
+/// "PIN salah. Sisa {n} percobaan." for a wrong current PIN (S45, S46),
+/// else null.
+String? wrongPinMessage(Failure? failure) {
+  if (failure?.apiCode != ApiErrorCode.pinInvalid) return null;
+  return switch (failure?.attemptsRemaining) {
+    final n? => 'PIN salah. Sisa $n percobaan.',
+    null => 'PIN salah.',
+  };
 }
 
 /// The headline and caption over the dots, with the space around them.

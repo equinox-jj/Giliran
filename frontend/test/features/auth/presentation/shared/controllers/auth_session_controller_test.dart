@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:giliran/core/error/failure.dart';
@@ -102,5 +103,48 @@ void main() {
 
     // Assert
     await expectLater(read, throwsA(isA<CacheFailure>()));
+  });
+
+  group('lockIfIdle', () {
+    final hiddenAt = DateTime(2026, 11, 2, 9);
+
+    Future<ProviderContainer> unlockedContainer() async {
+      final container = authTestContainer(repository);
+      await container.read(authSessionControllerProvider.future);
+      container.read(authSessionControllerProvider.notifier).unlock();
+      return container;
+    }
+
+    test('locks after five minutes in the background', () async {
+      // Arrange
+      final container = await unlockedContainer();
+
+      // Act
+      await container
+          .read(authSessionControllerProvider.notifier)
+          .lockIfIdle(hiddenAt, now: hiddenAt.add(const Duration(minutes: 5)));
+
+      // Assert
+      expect(
+        container.read(authSessionControllerProvider).value,
+        AuthStatus.locked(user: user),
+      );
+    });
+
+    test('stays open after a shorter time away', () async {
+      // Arrange
+      final container = await unlockedContainer();
+
+      // Act
+      await container
+          .read(authSessionControllerProvider.notifier)
+          .lockIfIdle(hiddenAt, now: hiddenAt.add(const Duration(minutes: 4, seconds: 59)));
+
+      // Assert
+      expect(
+        container.read(authSessionControllerProvider).value,
+        AuthStatus.unlocked(user: user),
+      );
+    });
   });
 }

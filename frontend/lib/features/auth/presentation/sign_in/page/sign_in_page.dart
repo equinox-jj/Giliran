@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../../../core/constants/app_doodles.dart';
+import '../../../../../core/constants/app_illustrations.dart';
 import '../../../../../core/error/failure.dart';
 import '../../../../../core/error/failure_message.dart';
 import '../../../../../core/themes/themes.dart';
@@ -109,14 +109,14 @@ class _SignInPageState() extends ConsumerState<SignInPage> {
   }
 }
 
-/// Tablet: the doodle left, the form right (max width 420).
+/// Tablet: the illustration left, the form right (max width 420).
 class const _WideLayout({required final Widget form}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
       spacing: context.gutter,
       children: [
-        const Expanded(child: Center(child: Doodle(AppDoodles.slip, size: 200))),
+        const Expanded(child: Center(child: Illustration(AppIllustrations.emailSlip, width: 200, height: 200))),
         Expanded(
           child: MaxWidth(width: AuthScaffold.formMax, child: form),
         ),
@@ -140,7 +140,7 @@ class const _Form({
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (context.isCompact) ...[
-          const Doodle(AppDoodles.slip, size: 96),
+          const Illustration(AppIllustrations.emailSlip, width: 96, height: 96),
           const SizedBox(height: AppSpace.s6),
         ],
         const HeadlineText('Masuk dengan **email**'),

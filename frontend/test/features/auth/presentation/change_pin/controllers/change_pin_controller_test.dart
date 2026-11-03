@@ -65,4 +65,85 @@ void main() {
     expect(state().currentPin, '111111');
     expect(state().failure, isA<ValidationFailure>());
   });
+
+  test('a locked current PIN sets the lock countdown from Retry-After', () async {
+    // Arrange
+    repository.unitResult = const Left(
+      Failure.badRequest(
+        code: ApiErrorCode.pinLocked,
+        status: 423,
+        retryAfter: Duration(minutes: 15),
+      ),
+    );
+    final before = DateTime.now();
+
+    // Act
+    await enterAll();
+
+    // Assert
+    expect(state().step, ChangePinStep.current);
+    expect(
+      state().lockedUntil?.isAfter(before.add(const Duration(minutes: 14))),
+      isTrue,
+    );
+  });
+
+  test('ignores entries while locked, until the countdown finishes', () async {
+    // Arrange
+    repository.unitResult = const Left(
+      Failure.badRequest(
+        code: ApiErrorCode.pinLocked,
+        status: 423,
+        retryAfter: Duration(minutes: 15),
+      ),
+    );
+    await enterAll();
+
+    // Act
+    await controller().enter('111111');
+    final whileLocked = state().step;
+    controller().lockFinished();
+    await controller().enter('111111');
+
+    // Assert
+    expect(whileLocked, ChangePinStep.current);
+    expect(state().step, ChangePinStep.newPin);
+    expect(state().lockedUntil, isNull);
+  });
+
+  test('back steps from repeat to new to current, then lets the page close', () async {
+    // Arrange
+    await controller().enter('111111');
+    await controller().enter('246802');
+
+    // Act
+    final fromConfirm = controller().back();
+    final afterConfirm = state();
+    final fromNew = controller().back();
+    final afterNew = state().step;
+    final fromCurrent = controller().back();
+
+    // Assert
+    expect(fromConfirm, isTrue);
+    expect(afterConfirm.step, ChangePinStep.newPin);
+    expect(afterConfirm.currentPin, '111111');
+    expect(afterConfirm.newPin, isNull);
+    expect(fromNew, isTrue);
+    expect(afterNew, ChangePinStep.current);
+    expect(fromCurrent, isFalse);
+  });
+
+  test('clearFailure drops the shown error', () async {
+    // Arrange
+    repository.unitResult = const Left(
+      Failure.badRequest(code: ApiErrorCode.pinInvalid, status: 401),
+    );
+    await enterAll();
+
+    // Act
+    controller().clearFailure();
+
+    // Assert
+    expect(state().failure, isNull);
+  });
 }

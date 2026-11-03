@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../core/themes/themes.dart';
+import '../features/auth/presentation/shared/widgets/app_lock_gate.dart';
 import 'router.dart';
 
 /// Root widget of the app.
@@ -21,6 +22,7 @@ class const GiliranApp({
       darkTheme: AppTheme.dark(),
       themeMode: themeMode,
       routerConfig: ref.watch(routerProvider),
+      builder: (context, child) => AppLockGate(child: child ?? const SizedBox.shrink()),
     );
   }
 }

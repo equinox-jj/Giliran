@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../../../core/constants/app_doodles.dart';
+import '../../../../../core/constants/app_illustrations.dart';
 import '../../../../../core/error/failure.dart';
 import '../../../../../core/error/failure_message.dart';
 import '../../../../../core/themes/themes.dart';
@@ -29,9 +29,14 @@ enum ForgotPinStep() {
 
 /// S09 Forgot PIN: sends a `reset_pin` code to the account's [email], takes
 /// the code and a new PIN, and verifies them together. Success signs this
-/// device in again and the guard moves on.
-class const ForgotPinPage({super.key, required final VoidCallback onBack, final String? email})
-    extends ConsumerStatefulWidget {
+/// device in again and the guard moves on, or [onDone] runs when the flow
+/// was opened from an open session (S45, S46).
+class const ForgotPinPage({
+  super.key,
+  required final VoidCallback onBack,
+  final String? email,
+  final VoidCallback? onDone,
+}) extends ConsumerStatefulWidget {
   @override
   ConsumerState<ForgotPinPage> createState() => _ForgotPinPageState();
 }
@@ -67,6 +72,7 @@ class _ForgotPinPageState() extends ConsumerState<ForgotPinPage> {
     if (state == null) return;
     if (state.result != null && previous?.value?.result == null) {
       showAppToast(context, 'PIN baru tersimpan. Perangkat lain sudah dikeluarkan.');
+      widget.onDone?.call();
       return;
     }
 
@@ -178,7 +184,7 @@ class const _Explain({required final String? email, required final VoidCallback 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Doodle(AppDoodles.slip, size: 96),
+        const Illustration(AppIllustrations.emailSlip, width: 96, height: 96),
         const SizedBox(height: AppSpace.s6),
         const HeadlineText('Atur ulang **PIN** kamu'),
         const SizedBox(height: AppSpace.s2),
@@ -240,6 +246,7 @@ class const _CodeStep({
       onResend: notifier.resend,
       onRequestNew: notifier.resend,
       onRestart: onRestart,
+      onOpenMail: () => openMailApp(context, ref),
     );
   }
 }

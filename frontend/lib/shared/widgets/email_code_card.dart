@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:flutter/semantics.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/constants/app_doodles.dart';
+import '../../core/constants/app_illustrations.dart';
 import '../../core/constants/app_icons.dart';
 import '../../core/themes/themes.dart';
 import 'app_button.dart';
 import 'app_card.dart';
 import 'app_icon.dart';
-import 'doodle.dart';
+import 'illustration.dart';
 import 'otp_input.dart';
 
 /// What the [EmailCodeCard] shows (design system 8.35).
@@ -58,6 +58,9 @@ class const EmailCodeCard({
   /// The primary on [EmailCodeCardState.locked] (back to the email screen).
   final VoidCallback? onRestart,
   final Widget? pinStep,
+
+  /// "Buka aplikasi email" under the resend row; hidden when null.
+  final VoidCallback? onOpenMail,
 }) extends StatefulWidget {
   /// How long before "Belum dapat? Cek folder Spam/Promosi" appears.
   static const spamHintDelay = Duration(seconds: 30);
@@ -135,6 +138,15 @@ class _EmailCodeCardState() extends State<EmailCodeCard> {
                   resending: widget.resending,
                   onResend: widget.onResend,
                 ),
+                if (widget.onOpenMail case final onOpenMail?) ...[
+                  const SizedBox(height: AppSpace.s3),
+                  AppButton.secondary(
+                    label: 'Buka aplikasi email',
+                    icon: AppIcons.envelopeSimple,
+                    size: AppButtonSize.small,
+                    onPressed: onOpenMail,
+                  ),
+                ],
                 const SizedBox(height: AppSpace.s2),
                 const _SpamHint(),
               ],
@@ -146,7 +158,7 @@ class _EmailCodeCardState() extends State<EmailCodeCard> {
   }
 }
 
-/// Doodle (or the success check), title and "Dikirim ke … · Ubah".
+/// The waiting envelope (or the success check), title and "Dikirim ke … · Ubah".
 class const _Header({
   required final String emailMasked,
   required final bool success,
@@ -167,7 +179,7 @@ class const _Header({
             semanticLabel: 'Kode benar',
           )
         else
-          const Doodle(AppDoodles.slip, size: 72),
+          const Illustration(AppIllustrations.emailWaiting, width: 72, height: 72),
         const SizedBox(height: AppSpace.s4),
         Text(
           'Masukkan kode dari email',

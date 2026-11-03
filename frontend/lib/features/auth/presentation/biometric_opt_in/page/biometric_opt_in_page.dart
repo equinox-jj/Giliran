@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-import '../../../../../core/constants/app_doodles.dart';
+import '../../../../../core/constants/app_illustrations.dart';
 import '../../../../../core/error/failure_message.dart';
 import '../../../../../core/themes/themes.dart';
 import '../../../../../shared/widgets/widgets.dart';
@@ -74,7 +74,7 @@ class _BiometricOptInPageState() extends ConsumerState<BiometricOptInPage> {
   }
 }
 
-/// The phone doodle on the hero panel, the headline and the reassurance.
+/// The biometric illustration on the hero panel, the headline and the reassurance.
 class const _Offer() extends ConsumerWidget {
   /// Height of the hero panel.
   static const heroH = 300.0;
@@ -95,7 +95,7 @@ class const _Offer() extends ConsumerWidget {
           height: heroH,
           alignment: Alignment.center,
           decoration: ShapeDecoration(color: c.hero, shape: AppShapes.squircle(AppRadius.xl)),
-          child: const Doodle(AppDoodles.phone, size: 220),
+          child: const Illustration(AppIllustrations.biometricUnlock, width: 220, height: 220),
         ),
         const SizedBox(height: AppSpace.s8),
         HeadlineText('Buka Giliran dengan **$name**'),

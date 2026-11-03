@@ -39,6 +39,10 @@ class FakeAuthRepository() implements AuthRepository {
   bool? savedBiometricPrompted;
   Object? lastArgs;
 
+  /// The last `requestEmailOtp` arguments; [lastArgs] is overwritten by the
+  /// pending-code save that follows a sent code.
+  (OtpPurpose, String, String?)? requestArgs;
+
   Future<T> _record<T>(String name, T value, [Object? args]) async {
     calls.add(name);
     lastArgs = args;
@@ -50,7 +54,10 @@ class FakeAuthRepository() implements AuthRepository {
     required OtpPurpose purpose,
     required String email,
     String? pin,
-  }) => _record('requestEmailOtp', challengeResult, (purpose, email, pin));
+  }) {
+    requestArgs = (purpose, email, pin);
+    return _record('requestEmailOtp', challengeResult, requestArgs);
+  }
 
   @override
   Future<Either<Failure, EmailOtpChallenge>> resendEmailOtp(

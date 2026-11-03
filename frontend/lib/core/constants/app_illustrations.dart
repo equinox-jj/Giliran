@@ -14,4 +14,13 @@ abstract final class AppIllustrations() {
 
   /// Money passing hand to hand, the app beside it: Welcome page 3 (S02).
   static const onboardingTrust = 'assets/images/illustrations/onboarding_trust.svg';
+
+  /// An envelope with a rolled arisan slip: sign in (S03), forgot PIN (S09).
+  static const emailSlip = 'assets/images/illustrations/email_slip.svg';
+
+  /// An envelope with a small hourglass: the email code card (8.35).
+  static const emailWaiting = 'assets/images/illustrations/email_waiting.svg';
+
+  /// A hand holding a phone with a fingerprint: biometric opt-in (S07).
+  static const biometricUnlock = 'assets/images/illustrations/biometric_unlock.svg';
 }

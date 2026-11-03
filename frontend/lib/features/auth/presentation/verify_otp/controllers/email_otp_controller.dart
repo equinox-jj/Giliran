@@ -15,7 +15,7 @@ import '../../shared/controllers/auth_session_controller.dart';
 part 'email_otp_controller.freezed.dart';
 part 'email_otp_controller.g.dart';
 
-/// What the email code card (8.35) shows on S04 and S09 step 2.
+/// What the email code card (8.35) shows on S04, S09 step 2 and S46 step 3.
 ///
 /// [pending] is null when there is no open code request, and the page goes
 /// back to S03. [pinRequired] turns on the PIN step after `pin_required`.
@@ -90,6 +90,9 @@ class EmailOtpController() extends _$EmailOtpController {
         );
         if (verified.auth != null) {
           await ref.read(authSessionControllerProvider.notifier).refresh(unlocked: pin != null || newPin != null);
+        } else if (verified.user != null) {
+          // A changed email (S46): the open session reads the updated user.
+          await ref.read(authSessionControllerProvider.notifier).refresh(unlocked: true);
         }
     }
   }

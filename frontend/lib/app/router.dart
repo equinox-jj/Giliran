@@ -19,6 +19,7 @@ GoRouter router(Ref ref) {
   );
 
   final router = GoRouter(
+    navigatorKey: rootNavigatorKey,
     routes: $appRoutes,
     initialLocation: const SplashRoute().location,
     debugLogDiagnostics: kDebugMode,
@@ -42,8 +43,11 @@ GoRouter router(Ref ref) {
 /// The splash and the debug gallery are never redirected, and other routes
 /// wait on the splash while the session is still loading.
 ///
+/// The lock keeps the app location it covered in `from` and returns there
+/// once unlocked (S08, also after the resume lock).
+///
 /// After sign-in, a pending invite link should open the join screen
-/// (PRD 8.1), and the lock should return to the route it covered.
+/// (PRD 8.1).
 String? authRedirect(AsyncValue<AuthStatus> status, Uri uri) {
   final path = uri.path;
   if (path == const SplashRoute().location || path == const GalleryRoute().location) {
@@ -66,14 +70,34 @@ String? authRedirect(AsyncValue<AuthStatus> status, Uri uri) {
 
   String? only(Set<String> allowed, String fallback) => allowed.contains(path) ? null : fallback;
 
+  // Sign-in steps are never worth returning to after the lock.
+  final authPaths = {...signedOutPaths, name, newPin, biometric, lock};
+
   return switch (status.value) {
     null || AuthSignedOut() => only(signedOutPaths, welcome),
     AuthOtpPending() => only({signIn, code, forgotPin}, code),
     AuthNeedsName() => only({name}, name),
     AuthNeedsPin() => only({newPin}, newPin),
-    AuthLocked() => only({lock, forgotPin}, lock),
+    AuthLocked() => only(
+      {lock, forgotPin},
+      LockRoute(from: authPaths.contains(path) ? null : uri.toString()).location,
+    ),
     AuthUnlocked() when {code, name, newPin, forgotPin}.contains(path) => biometric,
-    AuthUnlocked() when {welcome, signIn, lock}.contains(path) => const HomeRoute().location,
+    AuthUnlocked() when path == lock => lockReturnTo(uri.queryParameters['from']),
+    AuthUnlocked() when {welcome, signIn}.contains(path) => const HomeRoute().location,
     AuthUnlocked() => null,
   };
+}
+
+/// Where an unlocked lock screen goes: [from] when it is an app path (not an
+/// outside URL, not the lock itself), otherwise Home.
+@visibleForTesting
+String lockReturnTo(String? from) {
+  final home = const HomeRoute().location;
+  if (from == null) return home;
+  final target = Uri.tryParse(from);
+  if (target == null || target.hasScheme || target.hasAuthority || !target.path.startsWith('/')) {
+    return home;
+  }
+  return target.path == const LockRoute().location ? home : from;
 }

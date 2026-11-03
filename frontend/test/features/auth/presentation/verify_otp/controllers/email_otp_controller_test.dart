@@ -137,4 +137,24 @@ void main() {
     // Assert
     expect(state().failure, isNull);
   });
+
+  test('a changed email refreshes the open session with the new address', () async {
+    // Arrange
+    final user = ProfileData(name: 'Ana', email: 'baru@example.com', pinSet: true);
+    repository
+      ..hasSessionResult = const Right(true)
+      ..verifyResult = Right(
+        EmailOtpResult(purpose: OtpPurpose.changeEmail, user: user),
+      );
+    await container.read(authSessionControllerProvider.future);
+
+    // Act
+    await controller().verify('123456');
+
+    // Assert
+    expect(
+      container.read(authSessionControllerProvider).value,
+      AuthStatus.unlocked(user: user),
+    );
+  });
 }

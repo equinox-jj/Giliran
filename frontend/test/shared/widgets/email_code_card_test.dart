@@ -19,6 +19,7 @@ void main() {
     VoidCallback? onRequestNew,
     VoidCallback? onRestart,
     Widget? pinStep,
+    VoidCallback? onOpenMail,
   }) => tester.pumpApp(
     SingleChildScrollView(
       child: EmailCodeCard(
@@ -32,6 +33,7 @@ void main() {
         onRequestNew: onRequestNew,
         onRestart: onRestart,
         pinStep: pinStep,
+        onOpenMail: onOpenMail,
       ),
     ),
   );
@@ -174,5 +176,21 @@ void main() {
     // Assert
     expect(find.bySemanticsLabel('Kode benar'), findsOneWidget);
     expect(find.text('Kirim ulang'), findsNothing);
+  });
+
+  testWidgets('Buka aplikasi email shows only with a callback, and calls it', (tester) async {
+    // Arrange
+    await pumpCard(tester);
+    final withoutCallback = find.text('Buka aplikasi email').evaluate().length;
+    var opened = 0;
+    await pumpCard(tester, onOpenMail: () => opened++);
+
+    // Act
+    await tester.tap(find.text('Buka aplikasi email'));
+    await tester.pump();
+
+    // Assert
+    expect(withoutCallback, 0);
+    expect(opened, 1);
   });
 }

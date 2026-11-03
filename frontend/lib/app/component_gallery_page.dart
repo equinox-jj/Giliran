@@ -6,6 +6,7 @@ import '../core/constants/app_illustrations.dart';
 import '../core/themes/themes.dart';
 import '../features/auth/presentation/welcome/page/welcome_page.dart';
 import '../shared/widgets/widgets.dart';
+import 'routes.dart';
 
 /// Debug gallery of the Tikar components in light and dark, used to compare
 /// against the design system previews. Remove once real screens exist.
@@ -52,6 +53,7 @@ class _GalleryState() extends State<_Gallery> {
     _DoodlesSection(),
     _OnboardingSection(),
     _CardsSection(),
+    _ScreensSection(),
   ];
 
   int _nav = 0;
@@ -422,11 +424,13 @@ class const _OnboardingSection() extends StatelessWidget {
           spacing: AppSpace.s4,
           runSpacing: AppSpace.s4,
           children: [
-            const Illustration(
+            for (final asset in const [
               AppIllustrations.splashKaleng,
-              width: 72,
-              height: 72,
-            ),
+              AppIllustrations.emailSlip,
+              AppIllustrations.emailWaiting,
+              AppIllustrations.biometricUnlock,
+            ])
+              Illustration(asset, width: 72, height: 72),
             for (final (i, page) in WelcomePage.pages.indexed)
               SizedBox(
                 width: 150,
@@ -779,6 +783,7 @@ class _EmailCodeSectionState() extends State<_EmailCodeSection> {
           onResend: () => showAppToast(context, 'Kirim ulang'),
           onRequestNew: () => setState(() => _state = EmailCodeCardState.waiting),
           onRestart: () => setState(() => _state = EmailCodeCardState.waiting),
+          onOpenMail: () => showAppToast(context, 'Buka aplikasi email'),
           onCompleted: (code) => setState(
             () => _state = code == '482913' ? EmailCodeCardState.success : EmailCodeCardState.wrong,
           ),
@@ -885,6 +890,34 @@ class _ListsSectionState() extends State<_ListsSection> {
                   '3. Semua bisa cek: kunci rahasia dibuka, siapa pun bisa menghitung ulang hasilnya.',
                 ],
               ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+/// Links to screens that have no entry point yet (S44 Security will open
+/// them). They need an unlocked session; the guard sends others away.
+class const _ScreensSection() extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SectionHeader(title: 'Screens'),
+        SettingsGroup(
+          children: [
+            SettingsRow.navigation(
+              label: 'Ubah PIN (S45)',
+              icon: AppIcons.lockSimple,
+              onTap: () => const ChangePinRoute().push<void>(context),
+            ),
+            SettingsRow.navigation(
+              label: 'Ubah email (S46)',
+              icon: AppIcons.envelopeSimple,
+              onTap: () => const ChangeEmailRoute().push<void>(context),
             ),
           ],
         ),

@@ -20,8 +20,10 @@ import 'package:giliran/features/auth/domain/usecases/resend_email_otp_usecase.d
 import 'package:giliran/features/auth/domain/usecases/resolve_auth_status_usecase.dart';
 import 'package:giliran/features/auth/domain/usecases/set_biometric_enabled_usecase.dart';
 import 'package:giliran/features/auth/domain/usecases/set_pin_usecase.dart';
+import 'package:giliran/features/auth/domain/usecases/should_lock_on_resume_usecase.dart';
 import 'package:giliran/features/auth/domain/usecases/should_offer_biometric_usecase.dart';
 import 'package:giliran/features/auth/domain/usecases/unlock_with_biometric_usecase.dart';
+import 'package:giliran/features/auth/domain/usecases/validate_new_email_usecase.dart';
 import 'package:giliran/features/auth/domain/usecases/verify_email_otp_usecase.dart';
 import 'package:giliran/features/auth/domain/usecases/verify_pin_usecase.dart';
 import 'package:giliran/features/profile/domain/entity/profile.dart';
@@ -471,6 +473,81 @@ void main() {
 
       // Assert
       expect(repository.savedUser, user);
+    });
+  });
+
+  group('ShouldLockOnResumeUseCase', () {
+    final hiddenAt = DateTime(2026, 11, 2, 9);
+
+    test('keeps the session open under five minutes away', () async {
+      // Arrange
+      const useCase = ShouldLockOnResumeUseCase();
+
+      // Act
+      final result = await useCase((
+        hiddenAt: hiddenAt,
+        now: hiddenAt.add(const Duration(minutes: 4, seconds: 59)),
+      ));
+
+      // Assert
+      expect(result, const Right<Failure, bool>(false));
+    });
+
+    test('locks from five minutes away', () async {
+      // Arrange
+      const useCase = ShouldLockOnResumeUseCase();
+
+      // Act
+      final result = await useCase((
+        hiddenAt: hiddenAt,
+        now: hiddenAt.add(ShouldLockOnResumeUseCase.autoLockAfter),
+      ));
+
+      // Assert
+      expect(result, const Right<Failure, bool>(true));
+    });
+  });
+
+  group('ValidateNewEmailUseCase', () {
+    setUp(() => repository.userResult = Right(ProfileData(email: 'ana@example.com')));
+
+    test('returns a different address trimmed and lowercased', () async {
+      // Arrange
+      final useCase = ValidateNewEmailUseCase(repository);
+
+      // Act
+      final result = await useCase('  Baru@Example.com ');
+
+      // Assert
+      expect(result, const Right<Failure, String>('baru@example.com'));
+    });
+
+    test('rejects the current address, ignoring case and spaces', () async {
+      // Arrange
+      final useCase = ValidateNewEmailUseCase(repository);
+
+      // Act
+      final result = await useCase(' ANA@example.com');
+
+      // Assert
+      final failure = result.getLeft().toNullable();
+      expect(failure, isA<ValidationFailure>());
+      expect(
+        (failure! as ValidationFailure).fieldErrors.single.code,
+        ValidateNewEmailUseCase.sameEmailCode,
+      );
+    });
+
+    test('passes the cache failure through', () async {
+      // Arrange
+      repository.userResult = const Left(Failure.cache());
+      final useCase = ValidateNewEmailUseCase(repository);
+
+      // Act
+      final result = await useCase('baru@example.com');
+
+      // Assert
+      expect(result, const Left<Failure, String>(Failure.cache()));
     });
   });
 

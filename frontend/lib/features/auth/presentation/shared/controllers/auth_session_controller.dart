@@ -1,3 +1,4 @@
+import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../../core/error/failure.dart';
@@ -6,6 +7,7 @@ import '../../../../../core/usecase/usecase.dart';
 import '../../../domain/entities/auth_status.dart';
 import '../../../domain/usecases/logout_usecase.dart';
 import '../../../domain/usecases/resolve_auth_status_usecase.dart';
+import '../../../domain/usecases/should_lock_on_resume_usecase.dart';
 
 part 'auth_session_controller.g.dart';
 
@@ -52,6 +54,19 @@ class AuthSessionController() extends _$AuthSessionController {
     if (state.value case AuthUnlocked(:final user)) {
       state = AsyncData(AuthStatus.locked(user: user));
     }
+  }
+
+  /// Locks an open session when the app comes back after [hiddenAt] and the
+  /// background time reached the auto-lock limit. [now] defaults to the
+  /// clock.
+  Future<void> lockIfIdle(DateTime hiddenAt, {DateTime? now}) async {
+    if (state.value is! AuthUnlocked) return;
+    final result = await ref.read(shouldLockOnResumeUseCaseProvider)((
+      hiddenAt: hiddenAt,
+      now: now ?? DateTime.now(),
+    ));
+    if (!ref.mounted) return;
+    if (result case Right(value: true)) lock();
   }
 
   /// Signs out ("Bukan kamu? Keluar", S42). The user is signed out in the app
