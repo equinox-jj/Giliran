@@ -39,6 +39,7 @@ export 'pin_pad.dart';
 export 'pressable.dart';
 export 'search_field.dart';
 export 'section_header.dart';
+export 'session_row.dart';
 export 'settings_row.dart';
 export 'shake.dart';
 export 'skeleton.dart';

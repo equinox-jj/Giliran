@@ -20,7 +20,11 @@ import '../features/auth/presentation/welcome/page/welcome_page.dart';
 import '../features/group/presentation/pages/groups_page.dart';
 import '../features/history/presentation/pages/activity_page.dart';
 import '../features/home/presentation/pages/home_page.dart';
-import '../features/profile/presentation/pages/profile_page.dart';
+import '../features/profile/presentation/delete_account/page/delete_account_page.dart';
+import '../features/profile/presentation/edit_profile/page/edit_profile_page.dart';
+import '../features/profile/presentation/profile/page/profile_page.dart';
+import '../features/profile/presentation/security/page/security_page.dart';
+import '../features/settings/presentation/settings/page/settings_page.dart';
 import '../shared/widgets/widgets.dart';
 import 'component_gallery_page.dart';
 
@@ -61,19 +65,37 @@ final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
           name: 'profile',
           path: '/profile',
           routes: [
-            TypedGoRoute<ChangePinRoute>(
-              name: 'changePin',
-              path: 'security/pin',
+            TypedGoRoute<EditProfileRoute>(
+              name: 'editProfile',
+              path: 'edit',
+            ),
+            TypedGoRoute<SettingsRoute>(
+              name: 'settings',
+              path: 'settings',
+            ),
+            TypedGoRoute<DeleteAccountRoute>(
+              name: 'deleteAccount',
+              path: 'delete',
+            ),
+            TypedGoRoute<SecurityRoute>(
+              name: 'security',
+              path: 'security',
               routes: [
-                TypedGoRoute<SecurityForgotPinRoute>(
-                  name: 'securityForgotPin',
-                  path: 'forgot',
+                TypedGoRoute<ChangePinRoute>(
+                  name: 'changePin',
+                  path: 'pin',
+                  routes: [
+                    TypedGoRoute<SecurityForgotPinRoute>(
+                      name: 'securityForgotPin',
+                      path: 'forgot',
+                    ),
+                  ],
+                ),
+                TypedGoRoute<ChangeEmailRoute>(
+                  name: 'changeEmail',
+                  path: 'email',
                 ),
               ],
-            ),
-            TypedGoRoute<ChangeEmailRoute>(
-              name: 'changeEmail',
-              path: 'security/email',
             ),
           ],
         ),
@@ -125,7 +147,50 @@ class const ActivityRoute() extends GoRouteData with $ActivityRoute {
 
 class const ProfileRoute() extends GoRouteData with $ProfileRoute {
   @override
-  Widget build(BuildContext context, GoRouterState state) => const ProfilePage();
+  Widget build(BuildContext context, GoRouterState state) => ProfilePage(
+    onEdit: () => const EditProfileRoute().push<void>(context),
+    onSecurity: () => const SecurityRoute().push<void>(context),
+    onSettings: () => const SettingsRoute().push<void>(context),
+  );
+}
+
+class const EditProfileRoute() extends GoRouteData with $EditProfileRoute {
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => EditProfilePage(
+    onChangeEmail: () => const ChangeEmailRoute().push<void>(context),
+    onDone: () => _popOr(context, const ProfileRoute().location),
+  );
+}
+
+class const SettingsRoute() extends GoRouteData with $SettingsRoute {
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => SettingsPage(
+    onDeleteAccount: () => const DeleteAccountRoute().push<void>(context),
+  );
+}
+
+class const DeleteAccountRoute() extends GoRouteData with $DeleteAccountRoute {
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => DeleteAccountPage(
+    onClose: () => _popOr(context, const SettingsRoute().location),
+    onForgotPin: () => const SecurityForgotPinRoute().push<void>(context),
+  );
+}
+
+class const SecurityRoute() extends GoRouteData with $SecurityRoute {
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => SecurityPage(
+    onChangePin: () => const ChangePinRoute().push<void>(context),
+    onChangeEmail: () => const ChangeEmailRoute().push<void>(context),
+  );
 }
 
 class const ChangePinRoute() extends GoRouteData with $ChangePinRoute {

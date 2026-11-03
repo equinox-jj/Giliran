@@ -17,5 +17,402 @@
         "example": "19.02"
       }
     }
+  },
+  "profileTitle": "Profil",
+  "@profileTitle": {
+    "description": "Title of the Profil tab (S42)."
+  },
+  "profileEditButton": "Ubah profil",
+  "@profileEditButton": {
+    "description": "S42 button that opens Edit profile."
+  },
+  "profileGroupAccount": "Akun",
+  "@profileGroupAccount": {
+    "description": "S42 settings group header."
+  },
+  "profileSecurity": "Keamanan",
+  "@profileSecurity": {
+    "description": "S42 row that opens Security (S44)."
+  },
+  "profileSettings": "Pengaturan",
+  "@profileSettings": {
+    "description": "S42 row that opens Settings (S47)."
+  },
+  "profileGroupHelp": "Bantuan",
+  "@profileGroupHelp": {
+    "description": "S42 settings group header."
+  },
+  "profileHelpDraw": "Cara kerja kocokan",
+  "@profileHelpDraw": {
+    "description": "S42 help row."
+  },
+  "profileHelpDrawBody1": "Setiap periode, satu anggota yang belum menang dipilih acak sebagai penerima.",
+  "@profileHelpDrawBody1": {
+    "description": "Help sheet paragraph 1."
+  },
+  "profileHelpDrawBody2": "Hasil kocokan bisa dicek ulang oleh semua anggota, jadi tidak ada yang bisa mengatur pemenangnya.",
+  "@profileHelpDrawBody2": {
+    "description": "Help sheet paragraph 2."
+  },
+  "profileHelpMoney": "Kenapa Giliran tidak memegang uang",
+  "@profileHelpMoney": {
+    "description": "S42 help row."
+  },
+  "profileHelpMoneyBody1": "Uang arisan langsung dibayar ke rekening pengurus, bukan lewat Giliran.",
+  "@profileHelpMoneyBody1": {
+    "description": "Help sheet paragraph 1."
+  },
+  "profileHelpMoneyBody2": "Giliran hanya mencatat siapa sudah bayar dan siapa yang menerima, supaya semua anggota bisa melihatnya.",
+  "@profileHelpMoneyBody2": {
+    "description": "Help sheet paragraph 2."
+  },
+  "profileHelpContact": "Hubungi kami",
+  "@profileHelpContact": {
+    "description": "S42 help row, opens email."
+  },
+  "profileGroupAbout": "Tentang",
+  "@profileGroupAbout": {
+    "description": "S42 settings group header."
+  },
+  "profilePrivacy": "Kebijakan privasi",
+  "@profilePrivacy": {
+    "description": "S42 about row."
+  },
+  "profileTerms": "Syarat",
+  "@profileTerms": {
+    "description": "S42 about row."
+  },
+  "profileVersion": "Versi app",
+  "@profileVersion": {
+    "description": "S42 about row showing the version."
+  },
+  "profileLogout": "Keluar",
+  "@profileLogout": {
+    "description": "S42 destructive sign-out row and dialog button."
+  },
+  "profileLogoutTitle": "Keluar dari Giliran?",
+  "@profileLogoutTitle": {
+    "description": "Sign-out confirmation title."
+  },
+  "profileLogoutMessage": "Kamu perlu masuk lagi dengan email di perangkat ini.",
+  "@profileLogoutMessage": {
+    "description": "Sign-out confirmation message."
+  },
+  "linkOpenFailed": "Tautan belum bisa dibuka.",
+  "@linkOpenFailed": {
+    "description": "Toast when a link or email app fails to open."
+  },
+  "editProfileTitle": "Ubah profil",
+  "@editProfileTitle": {
+    "description": "Title of Edit profile (S43)."
+  },
+  "editProfileName": "Nama",
+  "@editProfileName": {
+    "description": "Name field label."
+  },
+  "editProfileNameHint": "Nama panggilan atau lengkap",
+  "@editProfileNameHint": {
+    "description": "Name field hint."
+  },
+  "editProfileNameError": "Nama harus 2–50 karakter.",
+  "@editProfileNameError": {
+    "description": "Name length error."
+  },
+  "editProfilePhoneLabel": "Nomor WhatsApp",
+  "@editProfilePhoneLabel": {
+    "description": "Phone field label."
+  },
+  "editProfileOptional": "(opsional)",
+  "@editProfileOptional": {
+    "description": "Label hint for optional fields."
+  },
+  "editProfilePhoneHelper": "Hanya untuk pengingat bayar. Bukan untuk masuk.",
+  "@editProfilePhoneHelper": {
+    "description": "Phone field helper."
+  },
+  "editProfilePhoneError": "Nomor WhatsApp belum benar",
+  "@editProfilePhoneError": {
+    "description": "Phone validation error."
+  },
+  "editProfileEmail": "Email",
+  "@editProfileEmail": {
+    "description": "Read-only email row label."
+  },
+  "editProfileChangeEmail": "Ubah",
+  "@editProfileChangeEmail": {
+    "description": "Link that opens Change email."
+  },
+  "editProfileSave": "Simpan",
+  "@editProfileSave": {
+    "description": "Save button."
+  },
+  "editProfileSaved": "Profil disimpan.",
+  "@editProfileSaved": {
+    "description": "Toast after saving."
+  },
+  "editProfileWaitUpload": "Tunggu foto selesai diunggah",
+  "@editProfileWaitUpload": {
+    "description": "Disabled reason while the avatar uploads."
+  },
+  "avatarCameraDenied": "Izinkan akses kamera di Pengaturan.",
+  "@avatarCameraDenied": {
+    "description": "Toast when camera access is blocked."
+  },
+  "avatarGalleryDenied": "Izinkan akses foto di Pengaturan.",
+  "@avatarGalleryDenied": {
+    "description": "Toast when photo access is blocked."
+  },
+  "securityTitle": "Keamanan",
+  "@securityTitle": {
+    "description": "Title of Security (S44)."
+  },
+  "securityChangePin": "Ubah PIN",
+  "@securityChangePin": {
+    "description": "Row that opens Change PIN."
+  },
+  "securityBiometric": "Buka dengan {method}",
+  "@securityBiometric": {
+    "description": "Biometric toggle, e.g. \"Buka dengan sidik jari\".",
+    "placeholders": {
+      "method": {
+        "type": "String",
+        "example": "sidik jari"
+      }
+    }
+  },
+  "securityAutoLock": "Kunci otomatis",
+  "@securityAutoLock": {
+    "description": "Auto-lock info row."
+  },
+  "securityAutoLockValue": "Setelah 5 menit",
+  "@securityAutoLockValue": {
+    "description": "Auto-lock value."
+  },
+  "securityChangeEmail": "Ubah email",
+  "@securityChangeEmail": {
+    "description": "Row that opens Change email."
+  },
+  "securityDevices": "Perangkat aktif",
+  "@securityDevices": {
+    "description": "Section header for sessions."
+  },
+  "securitySignOutOthers": "Keluar dari semua perangkat lain",
+  "@securitySignOutOthers": {
+    "description": "Destructive row."
+  },
+  "securitySignOutOthersTitle": "Keluarkan semua perangkat lain?",
+  "@securitySignOutOthersTitle": {
+    "description": "Confirmation title."
+  },
+  "securitySignOutOthersMessage": "Perangkat lain perlu masuk lagi dengan email.",
+  "@securitySignOutOthersMessage": {
+    "description": "Confirmation message."
+  },
+  "securitySignOutOthersDone": "{count, plural, =0{Tidak ada perangkat lain.} other{{count} perangkat dikeluarkan.}}",
+  "@securitySignOutOthersDone": {
+    "description": "Toast after signing out other devices.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "securityDevicesFailed": "Daftar perangkat belum bisa dimuat.",
+  "@securityDevicesFailed": {
+    "description": "Error when sessions fail to load."
+  },
+  "commonRetry": "Coba lagi",
+  "@commonRetry": {
+    "description": "Retry action."
+  },
+  "commonCancel": "Batal",
+  "@commonCancel": {
+    "description": "Cancel action."
+  },
+  "sessionThisDevice": "Perangkat ini",
+  "@sessionThisDevice": {
+    "description": "Pill on the current session."
+  },
+  "sessionActive": "Aktif {when}",
+  "@sessionActive": {
+    "description": "Session subtitle, e.g. \"Aktif 2 jam lalu\".",
+    "placeholders": {
+      "when": {
+        "type": "String",
+        "example": "2 jam lalu"
+      }
+    }
+  },
+  "sessionUnknownDevice": "Perangkat tanpa nama",
+  "@sessionUnknownDevice": {
+    "description": "Fallback device name."
+  },
+  "sessionSignOut": "Keluarkan",
+  "@sessionSignOut": {
+    "description": "Ghost button on a session row."
+  },
+  "sessionSignOutTitle": "Keluarkan {device}?",
+  "@sessionSignOutTitle": {
+    "description": "Confirmation title for one session.",
+    "placeholders": {
+      "device": {
+        "type": "String",
+        "example": "iPhone 15"
+      }
+    }
+  },
+  "sessionSignOutMessage": "Perangkat itu perlu masuk lagi dengan email.",
+  "@sessionSignOutMessage": {
+    "description": "Confirmation message for one session."
+  },
+  "sessionSignOutSemantic": "Keluarkan {device}",
+  "@sessionSignOutSemantic": {
+    "description": "Semantics label of the sign-out button.",
+    "placeholders": {
+      "device": {
+        "type": "String",
+        "example": "iPhone 15"
+      }
+    }
+  },
+  "settingsTitle": "Pengaturan",
+  "@settingsTitle": {
+    "description": "Title of Settings (S47)."
+  },
+  "settingsNotifications": "Notifikasi",
+  "@settingsNotifications": {
+    "description": "Group header."
+  },
+  "settingsNotifyPayment": "Pengingat bayar",
+  "@settingsNotifyPayment": {
+    "description": "Toggle."
+  },
+  "settingsNotifyPaymentHint": "Sebelum dan saat jatuh tempo.",
+  "@settingsNotifyPaymentHint": {
+    "description": "Toggle explanation."
+  },
+  "settingsNotifyDraw": "Hasil kocokan",
+  "@settingsNotifyDraw": {
+    "description": "Toggle."
+  },
+  "settingsNotifyDrawHint": "Saat penerima periode diundi.",
+  "@settingsNotifyDrawHint": {
+    "description": "Toggle explanation."
+  },
+  "settingsNotifyActivity": "Aktivitas grup",
+  "@settingsNotifyActivity": {
+    "description": "Toggle."
+  },
+  "settingsNotifyActivityHint": "Pembayaran dikonfirmasi, anggota baru, dan lainnya.",
+  "@settingsNotifyActivityHint": {
+    "description": "Toggle explanation."
+  },
+  "settingsAppearance": "Tampilan",
+  "@settingsAppearance": {
+    "description": "Group header."
+  },
+  "settingsTheme": "Tema",
+  "@settingsTheme": {
+    "description": "Theme row."
+  },
+  "settingsThemeSystem": "Ikuti sistem",
+  "@settingsThemeSystem": {
+    "description": "Theme option."
+  },
+  "settingsThemeLight": "Terang",
+  "@settingsThemeLight": {
+    "description": "Theme option."
+  },
+  "settingsThemeDark": "Gelap",
+  "@settingsThemeDark": {
+    "description": "Theme option."
+  },
+  "settingsLanguage": "Bahasa",
+  "@settingsLanguage": {
+    "description": "Language row."
+  },
+  "settingsLanguageId": "Indonesia",
+  "@settingsLanguageId": {
+    "description": "Language option, always in Indonesian."
+  },
+  "settingsLanguageEn": "English",
+  "@settingsLanguageEn": {
+    "description": "Language option, always in English."
+  },
+  "settingsData": "Data",
+  "@settingsData": {
+    "description": "Group header."
+  },
+  "settingsClearCache": "Hapus cache gambar",
+  "@settingsClearCache": {
+    "description": "Row that clears cached images."
+  },
+  "settingsCacheCleared": "Cache gambar dihapus.",
+  "@settingsCacheCleared": {
+    "description": "Toast after clearing."
+  },
+  "settingsDeleteAccount": "Hapus akun",
+  "@settingsDeleteAccount": {
+    "description": "Destructive row that opens S48."
+  },
+  "settingsFailed": "Pengaturan belum bisa dimuat.",
+  "@settingsFailed": {
+    "description": "Error when settings fail to load."
+  },
+  "deleteAccountTitle": "Hapus akun",
+  "@deleteAccountTitle": {
+    "description": "Title of S48."
+  },
+  "deleteAccountHeadline": "Hapus **akun** kamu?",
+  "@deleteAccountHeadline": {
+    "description": "Step 1 headline; ** marks the bold run."
+  },
+  "deleteAccountRemoved": "Yang dihapus",
+  "@deleteAccountRemoved": {
+    "description": "Step 1 section header."
+  },
+  "deleteAccountRemovedBody": "Nama, foto, email, dan nomor WhatsApp kamu.",
+  "@deleteAccountRemovedBody": {
+    "description": "Step 1 body."
+  },
+  "deleteAccountKept": "Yang tetap ada",
+  "@deleteAccountKept": {
+    "description": "Step 1 section header."
+  },
+  "deleteAccountKeptBody": "Catatan pembayaran di grup tetap ada tanpa identitas, dengan nama \"Mantan anggota\".",
+  "@deleteAccountKeptBody": {
+    "description": "Step 1 body."
+  },
+  "deleteAccountUnderstand": "Saya mengerti",
+  "@deleteAccountUnderstand": {
+    "description": "Check row that unlocks Continue."
+  },
+  "deleteAccountContinue": "Lanjut",
+  "@deleteAccountContinue": {
+    "description": "Step 1 button."
+  },
+  "deleteAccountBlocked": "Akun belum bisa dihapus. Kamu masih mengurus arisan aktif atau punya pembayaran yang belum lunas. Selesaikan dulu, lalu coba lagi.",
+  "@deleteAccountBlocked": {
+    "description": "Blocked banner (obligations_outstanding)."
+  },
+  "deleteAccountPinHeadline": "Masukkan **PIN** kamu",
+  "@deleteAccountPinHeadline": {
+    "description": "Step 2 headline."
+  },
+  "deleteAccountPinCaption": "Untuk memastikan ini memang kamu.",
+  "@deleteAccountPinCaption": {
+    "description": "Step 2 caption."
+  },
+  "deleteAccountDoneHeadline": "Akun kamu **sudah dihapus**",
+  "@deleteAccountDoneHeadline": {
+    "description": "Step 3 headline."
+  },
+  "deleteAccountDoneBody": "Terima kasih sudah memakai Giliran.",
+  "@deleteAccountDoneBody": {
+    "description": "Step 3 body."
+  },
+  "deleteAccountDoneButton": "Selesai",
+  "@deleteAccountDoneButton": {
+    "description": "Step 3 button."
   }
 }

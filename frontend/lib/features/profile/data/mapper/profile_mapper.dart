@@ -1,5 +1,18 @@
 import '../../domain/entity/profile.dart';
+import '../../domain/entity/session.dart';
 import '../datasource/model/profile_model.dart';
+import '../datasource/model/session_model.dart';
+
+extension SessionModelMapper on SessionModel {
+  Session toEntity() => Session(
+    id: id,
+    deviceName: deviceName,
+    devicePlatform: devicePlatform,
+    lastActiveAt: lastActiveAt,
+    createdAt: createdAt,
+    isCurrent: isCurrent,
+  );
+}
 
 extension ProfileModelMapper on ProfileModel {
   Profile toEntity() {

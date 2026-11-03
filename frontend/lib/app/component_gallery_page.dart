@@ -880,6 +880,19 @@ class _ListsSectionState() extends State<_ListsSection> {
             ),
           ],
         ),
+        SettingsGroup(
+          header: 'Perangkat aktif',
+          children: [
+            const SessionRow(deviceName: 'Pixel 8', platform: 'android', current: true),
+            SessionRow(
+              deviceName: 'iPhone 15',
+              platform: 'ios',
+              lastActiveAt: DateTime.utc(2026, 11, 3, 8),
+              now: DateTime.utc(2026, 11, 3, 10),
+              onSignOut: () {},
+            ),
+          ],
+        ),
         Wrap(
           spacing: AppSpace.s2,
           runSpacing: AppSpace.s2,

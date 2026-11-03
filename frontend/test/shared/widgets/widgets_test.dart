@@ -219,6 +219,57 @@ void main() {
     expect(value, 50);
   });
 
+  group('SettingsRow', () {
+    testWidgets('gives the label the row and pins the caret to the end', (
+      tester,
+    ) async {
+      // Arrange
+      const rowWidth = 358.0;
+      await tester.pumpApp(
+        SizedBox(
+          width: rowWidth,
+          child: SettingsRow.navigation(
+            icon: AppIcons.shieldCheck,
+            label: 'Keamanan',
+            onTap: () {},
+          ),
+        ),
+      );
+
+      // Act
+      final rowRect = tester.getRect(find.byType(SettingsRow));
+      final labelSize = tester.getSize(find.text('Keamanan'));
+      final caretRect = tester.getRect(find.byType(AppIcon).last);
+
+      // Assert
+      expect(labelSize.height, lessThan(30), reason: 'label must stay on one line');
+      expect(caretRect.right, closeTo(rowRect.right - AppSpace.s4, 0.5));
+    });
+
+    testWidgets('caps a long value so the label keeps most of the row', (
+      tester,
+    ) async {
+      // Arrange
+      const rowWidth = 358.0;
+      await tester.pumpApp(
+        const SizedBox(
+          width: rowWidth,
+          child: SettingsRow.info(
+            label: 'Versi app',
+            value: '1.0.0 (1) a very long build string that would overflow',
+          ),
+        ),
+      );
+
+      // Act
+      final valueWidth = tester.getSize(find.textContaining('1.0.0')).width;
+
+      // Assert
+      expect(valueWidth, lessThanOrEqualTo((rowWidth - 2 * AppSpace.s4) * 0.45));
+      expect(tester.takeException(), isNull);
+    });
+  });
+
   testWidgets('CheckRow toggles from anywhere on the row', (tester) async {
     var checked = false;
     await tester.pumpApp(

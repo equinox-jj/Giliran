@@ -82,6 +82,17 @@ void main() {
     expect(adapter.requests.single.data, {'name': 'Joshua'});
   });
 
+  test('updateMe with clearPhone sends phone null', () async {
+    // Arrange
+    adapter.body = {'data': _userJson};
+
+    // Act
+    await dataSource.updateMe(const UpdateMeRequestModel(), clearPhone: true);
+
+    // Assert
+    expect(adapter.requests.single.data, {'phone': null});
+  });
+
   test('updateMe maps 422 to ValidationException with field errors', () async {
     // Arrange
     adapter
@@ -108,6 +119,79 @@ void main() {
         ),
       ),
     );
+  });
+
+  test('getSessions parses the list, current one first', () async {
+    // Arrange
+    adapter.body = {
+      'data': [
+        {
+          'id': 's-1',
+          'device_name': 'Pixel 8',
+          'device_platform': 'android',
+          'last_active_at': '2026-11-03T08:00:00Z',
+          'created_at': '2026-11-01T08:00:00Z',
+          'is_current': true,
+        },
+        {
+          'id': 's-2',
+          'device_name': null,
+          'device_platform': 'ios',
+          'last_active_at': '2026-11-02T08:00:00Z',
+          'created_at': '2026-10-01T08:00:00Z',
+          'is_current': false,
+        },
+      ],
+    };
+
+    // Act
+    final sessions = await dataSource.getSessions();
+
+    // Assert
+    expect(adapter.requests.single.method, 'GET');
+    expect(adapter.requests.single.path, '/me/sessions');
+    expect(sessions.map((s) => s.id), ['s-1', 's-2']);
+    expect(sessions.first.isCurrent, isTrue);
+    expect(sessions.last.devicePlatform, 'ios');
+    expect(sessions.last.deviceName, isNull);
+  });
+
+  test('revokeSession deletes that session', () async {
+    // Arrange
+    adapter.status = 204;
+
+    // Act
+    await dataSource.revokeSession('s-2');
+
+    // Assert
+    expect(adapter.requests.single.method, 'DELETE');
+    expect(adapter.requests.single.path, '/me/sessions/s-2');
+  });
+
+  test('deleteAccount posts the PIN', () async {
+    // Arrange
+    adapter.status = 204;
+
+    // Act
+    await dataSource.deleteAccount('123456');
+
+    // Assert
+    expect(adapter.requests.single.method, 'POST');
+    expect(adapter.requests.single.path, '/me/deletion');
+    expect(adapter.requests.single.data, {'pin': '123456'});
+  });
+
+  test('deleteAccount maps obligations_outstanding to a conflict', () async {
+    // Arrange
+    adapter
+      ..status = 409
+      ..body = {'status': 409, 'code': 'obligations_outstanding'};
+
+    // Act
+    final call = dataSource.deleteAccount('123456');
+
+    // Assert
+    await expectLater(call, throwsA(isA<AppException>()));
   });
 
   group('uploadAvatar', () {

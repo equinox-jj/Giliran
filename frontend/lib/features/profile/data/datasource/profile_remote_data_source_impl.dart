@@ -7,7 +7,9 @@ import '../../../../core/error/exceptions.dart';
 import '../../../../core/network/api_endpoints.dart';
 import '../../../../core/network/api_response.dart';
 import '../../../../core/network/dio_client.dart';
+import '../../../auth/data/datasource/model/pin_request_models.dart';
 import 'model/profile_model.dart';
+import 'model/session_model.dart';
 import 'model/update_me_request_model.dart';
 import 'profile_remote_data_source.dart';
 
@@ -21,10 +23,14 @@ class ProfileRemoteDataSourceImpl(final Dio _dio) with BaseRemoteDataSource impl
   });
 
   @override
-  Future<ProfileDataModel> updateMe(UpdateMeRequestModel body) => safeApiCall(() async {
+  Future<ProfileDataModel> updateMe(
+    UpdateMeRequestModel body, {
+    bool clearPhone = false,
+  }) => safeApiCall(() async {
     final response = await _dio.patch<Map<String, dynamic>>(
       ApiEndpoints.me,
-      data: body.toJson(),
+      // The model drops null fields, so an explicit null is added here.
+      data: {...body.toJson(), if (clearPhone) 'phone': null},
     );
     return _user(response);
   });
@@ -55,6 +61,29 @@ class ProfileRemoteDataSourceImpl(final Dio _dio) with BaseRemoteDataSource impl
   @override
   Future<void> deleteAvatar() => safeApiCall(() async {
     await _dio.delete<void>(ApiEndpoints.meAvatar);
+  });
+
+  @override
+  Future<List<SessionModel>> getSessions() => safeApiCall(() async {
+    final response = await _dio.get<Map<String, dynamic>>(ApiEndpoints.meSessions);
+    final data = response.data?['data'];
+    if (data is! List) throw const UnknownException('Empty /me/sessions response');
+    return [
+      for (final item in data) SessionModel.fromJson(item as Map<String, dynamic>),
+    ];
+  });
+
+  @override
+  Future<void> revokeSession(String sessionId) => safeApiCall(() async {
+    await _dio.delete<void>(ApiEndpoints.meSession(sessionId));
+  });
+
+  @override
+  Future<void> deleteAccount(String pin) => safeApiCall(() async {
+    await _dio.post<void>(
+      ApiEndpoints.meDeletion,
+      data: PinRequestModel(pin: pin).toJson(),
+    );
   });
 
   static DioMediaType _imageType(String path) => switch (p.extension(path).toLowerCase()) {

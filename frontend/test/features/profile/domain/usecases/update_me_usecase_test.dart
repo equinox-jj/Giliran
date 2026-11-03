@@ -20,7 +20,7 @@ void main() {
 
   test('trims the name, drops an empty phone and caches the user', () async {
     // Arrange
-    const params = (name: '  Rina Ayu ', phone: ' ');
+    const params = (name: '  Rina Ayu ', phone: ' ', clearPhone: false);
 
     // Act
     final result = await useCase(params);
@@ -36,7 +36,7 @@ void main() {
     profile.updateResult = const Left(Failure.validation());
 
     // Act
-    final result = await useCase((name: 'R', phone: null));
+    final result = await useCase((name: 'R', phone: null, clearPhone: false));
 
     // Assert
     expect(result.getLeft().toNullable(), isA<ValidationFailure>());
@@ -48,10 +48,22 @@ void main() {
     const phone = '+6281234567890';
 
     // Act
-    await useCase((name: 'Rina', phone: phone));
+    await useCase((name: 'Rina', phone: phone, clearPhone: false));
 
     // Assert
     expect(profile.lastUpdate?.phone, phone);
     expect(auth.savedUser, isA<ProfileData>());
+  });
+
+  test('passes clearPhone through so the number is removed', () async {
+    // Arrange
+    const params = (name: null, phone: null, clearPhone: true);
+
+    // Act
+    await useCase(params);
+
+    // Assert
+    expect(profile.lastClearPhone, isTrue);
+    expect(profile.lastUpdate, (name: null, phone: null));
   });
 }

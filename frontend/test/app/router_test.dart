@@ -17,7 +17,7 @@ import 'package:giliran/features/auth/presentation/welcome/page/welcome_page.dar
 import 'package:giliran/features/group/presentation/pages/groups_page.dart';
 import 'package:giliran/features/home/presentation/pages/home_page.dart';
 import 'package:giliran/features/profile/domain/entity/profile.dart';
-import 'package:giliran/features/profile/presentation/pages/profile_page.dart';
+import 'package:giliran/features/profile/presentation/profile/page/profile_page.dart';
 import 'package:giliran/shared/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 

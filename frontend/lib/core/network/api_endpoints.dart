@@ -37,6 +37,18 @@ abstract final class ApiEndpoints() {
   /// The signed-in user's profile picture (`PUT` multipart, `DELETE`).
   static const String meAvatar = '/me/avatar';
 
+  /// Deletes the signed-in account with the PIN (`POST`).
+  static const String meDeletion = '/me/deletion';
+
+  /// Notification and language settings (`GET`, `PATCH`).
+  static const String meSettings = '/me/settings';
+
+  /// Active sessions, current one first (`GET`).
+  static const String meSessions = '/me/sessions';
+
+  /// Signs out one other device (`DELETE`).
+  static String meSession(String sessionId) => '/me/sessions/$sessionId';
+
   /// `extra` flag: skip attaching the access token (sign-in, refresh, public
   /// pages).
   static const String kNoAuth = 'noAuth';

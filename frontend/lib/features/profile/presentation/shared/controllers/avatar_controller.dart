@@ -4,6 +4,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../../core/error/failure.dart';
 import '../../../../../core/usecase/usecase.dart';
 import '../../../../../core/utils/enums/photo_source.dart';
+import '../../../../auth/domain/entities/auth_status.dart';
+import '../../../../auth/presentation/shared/controllers/auth_session_controller.dart';
 import '../../../domain/usecases/delete_avatar_usecase.dart';
 import '../../../domain/usecases/pick_avatar_photo_usecase.dart';
 import '../../../domain/usecases/upload_avatar_usecase.dart';
@@ -31,11 +33,18 @@ class const AvatarState({
 }
 
 /// Picks, uploads and removes the profile picture. The photo is optional, so
-/// a failed upload never blocks the rest of the screen.
+/// a failed upload never blocks the rest of the screen. Starts from the
+/// signed-in user's current photo, so Edit profile can remove it.
 @riverpod
 class AvatarController() extends _$AvatarController {
   @override
-  AvatarState build() => const AvatarState();
+  AvatarState build() {
+    final user = switch (ref.read(authSessionControllerProvider).value) {
+      AuthUnlocked(:final user) || AuthLocked(:final user) => user,
+      _ => null,
+    };
+    return AvatarState(imageUrl: user?.avatarUrl);
+  }
 
   /// Takes or chooses a photo from [source] and uploads it. Returns false
   /// when the user blocked camera or photo access.

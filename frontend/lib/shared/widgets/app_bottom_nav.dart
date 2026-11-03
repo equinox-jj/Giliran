@@ -109,10 +109,11 @@ class const AppBottomNavBar({
   required final int selectedIndex,
   required final ValueChanged<int> onSelected,
 }) extends StatelessWidget {
-  /// Bottom padding lists need so nothing hides behind the bar:
-  /// bar height + 16 gap + safe area + 16.
-  static double contentInset(BuildContext context) =>
-      AppSizes.navH + AppSizes.navBottomGap * 2 + MediaQuery.paddingOf(context).bottom;
+  /// Bottom padding lists inside [AppNavShell] need so nothing hides behind
+  /// the bar. The shell's `extendBody` already adds the bar's full height
+  /// (bar + gap + safe area) to the body's bottom padding, so only the 16
+  /// breathing gap goes on top.
+  static double contentInset(BuildContext context) => MediaQuery.paddingOf(context).bottom + AppSizes.navBottomGap;
 
   @override
   Widget build(BuildContext context) {
@@ -163,6 +164,7 @@ class const AppNavRail({
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+
     return Container(
       width: AppSizes.railW,
       decoration: BoxDecoration(

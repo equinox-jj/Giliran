@@ -76,6 +76,9 @@ class SettingsRow extends StatelessWidget {
        toggleValue = null,
        onToggle = null;
 
+  /// Largest share of the row a trailing value may take.
+  static const _valueMaxFraction = 0.45;
+
   final _SettingsRowKind _kind;
   final String label;
   final String? icon;
@@ -97,57 +100,6 @@ class SettingsRow extends StatelessWidget {
         ? c.textTertiary
         : c.textPrimary;
 
-    final trailing = switch (_kind) {
-      _SettingsRowKind.navigation => Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (value != null)
-            Flexible(
-              child: Text(
-                value!,
-                style: t.body.copyWith(color: c.textSecondary),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          const SizedBox(width: AppSpace.s1),
-          AppIcon(
-            AppIcons.caretRight,
-            size: AppSizes.iconMd,
-            color: c.textTertiary,
-          ),
-        ],
-      ),
-      _SettingsRowKind.toggle => Switch.adaptive(
-        value: toggleValue!,
-        onChanged: onToggle,
-        activeTrackColor: c.paid.fg,
-      ),
-      _SettingsRowKind.info => Text(
-        value!,
-        style: t.body.copyWith(color: c.textSecondary),
-      ),
-      _SettingsRowKind.locked => Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (value != null)
-            Flexible(
-              child: Text(
-                value!,
-                style: t.body.copyWith(color: c.textTertiary),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          const SizedBox(width: AppSpace.s1),
-          AppIcon(
-            AppIcons.lockSimple,
-            size: AppSizes.iconMd,
-            color: c.textTertiary,
-          ),
-        ],
-      ),
-      _SettingsRowKind.destructive => null,
-    };
-
     final row = Container(
       constraints: BoxConstraints(
         minHeight: subtitle == null ? AppSizes.settingsRowH : AppSizes.settingsRowHWithSubtitle,
@@ -156,35 +108,79 @@ class SettingsRow extends StatelessWidget {
         horizontal: AppSpace.s4,
         vertical: AppSpace.s2,
       ),
-      child: Row(
-        children: [
-          if (icon != null) ...[
-            AppIcon(
-              icon!,
-              size: AppSizes.iconLg,
-              color: destructive ? c.rejected.fg : c.textSecondary,
-            ),
-            const SizedBox(width: AppSpace.s3),
-          ],
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // A value never takes more than [_valueMaxFraction] of the row, so
+          // the label keeps the rest and wraps only when it must.
+          final valueMax = constraints.maxWidth * _valueMaxFraction;
+          final Widget? trailingWidget = switch (_kind) {
+            _SettingsRowKind.navigation => Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(label, style: t.bodyLg.copyWith(color: labelColor)),
-                if (subtitle != null)
-                  Text(
-                    subtitle!,
-                    style: t.caption.copyWith(color: c.textTertiary),
-                  ),
+                if (value != null) ...[
+                  _TrailingValue(text: value!, color: c.textSecondary, maxWidth: valueMax),
+                  const SizedBox(width: AppSpace.s1),
+                ],
+                AppIcon(
+                  AppIcons.caretRight,
+                  size: AppSizes.iconMd,
+                  color: c.textTertiary,
+                ),
               ],
             ),
-          ),
-          if (trailing != null) ...[
-            const SizedBox(width: AppSpace.s3),
-            Flexible(child: trailing),
-          ],
-        ],
+            _SettingsRowKind.toggle => Switch.adaptive(
+              value: toggleValue!,
+              onChanged: onToggle,
+              activeTrackColor: c.paid.fg,
+            ),
+            _SettingsRowKind.info => _TrailingValue(text: value!, color: c.textSecondary, maxWidth: valueMax),
+            _SettingsRowKind.locked => Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (value != null) ...[
+                  _TrailingValue(text: value!, color: c.textTertiary, maxWidth: valueMax),
+                  const SizedBox(width: AppSpace.s1),
+                ],
+                AppIcon(
+                  AppIcons.lockSimple,
+                  size: AppSizes.iconMd,
+                  color: c.textTertiary,
+                ),
+              ],
+            ),
+            _SettingsRowKind.destructive => null,
+          };
+          return Row(
+            children: [
+              if (icon != null) ...[
+                AppIcon(
+                  icon!,
+                  size: AppSizes.iconLg,
+                  color: destructive ? c.rejected.fg : c.textSecondary,
+                ),
+                const SizedBox(width: AppSpace.s3),
+              ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(label, style: t.bodyLg.copyWith(color: labelColor)),
+                    if (subtitle != null)
+                      Text(
+                        subtitle!,
+                        style: t.caption.copyWith(color: c.textTertiary),
+                      ),
+                  ],
+                ),
+              ),
+              if (trailingWidget != null) ...[
+                const SizedBox(width: AppSpace.s3),
+                trailingWidget,
+              ],
+            ],
+          );
+        },
       ),
     );
 
@@ -258,4 +254,22 @@ class const SettingsGroup({super.key, final String? header, required final List<
       ),
     );
   }
+}
+
+/// A one-line trailing value, capped at [maxWidth] and ellipsized.
+class const _TrailingValue({
+  required final String text,
+  required final Color color,
+  required final double maxWidth,
+}) extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => ConstrainedBox(
+    constraints: BoxConstraints(maxWidth: maxWidth),
+    child: Text(
+      text,
+      style: AppTextStyles.of(context).body.copyWith(color: color),
+      overflow: TextOverflow.ellipsis,
+      maxLines: 1,
+    ),
+  );
 }

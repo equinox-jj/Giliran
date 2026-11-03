@@ -11,7 +11,9 @@ import '../repository/profile_repository.dart';
 
 part 'update_me_usecase.g.dart';
 
-typedef UpdateMeParams = ({String? name, String? phone});
+/// A null [name] or [phone] keeps the server value; [clearPhone] removes the
+/// WhatsApp number.
+typedef UpdateMeParams = ({String? name, String? phone, bool clearPhone});
 
 class UpdateMeUseCase(
   final ProfileRepository _profile,
@@ -24,6 +26,7 @@ class UpdateMeUseCase(
     final result = await _profile.updateMe(
       name: name,
       phone: phone == null || phone.isEmpty ? null : phone,
+      clearPhone: params.clearPhone,
     );
     if (result case Right(value: final user)) {
       // The server has the change; a failed cache write only means the next

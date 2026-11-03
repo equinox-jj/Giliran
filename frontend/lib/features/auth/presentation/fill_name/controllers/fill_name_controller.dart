@@ -17,7 +17,13 @@ class FillNameController() extends _$FillNameController {
     if (state.isLoading) return false;
 
     state = const AsyncLoading();
-    final result = await ref.read(updateMeUseCaseProvider)((name: name, phone: phone));
+
+    final result = await ref.read(updateMeUseCaseProvider)((
+      name: name,
+      phone: phone,
+      clearPhone: false,
+    ));
+
     if (!ref.mounted) return result.isRight();
 
     switch (result) {
@@ -28,6 +34,7 @@ class FillNameController() extends _$FillNameController {
         // The user just verified the email code on this device.
         await ref.read(authSessionControllerProvider.notifier).refresh(unlocked: true);
     }
+
     return result.isRight();
   }
 }
