@@ -11,6 +11,7 @@ class const Preferences(final SharedPreferencesAsync _prefs) {
   static const _biometricPromptedKey = 'biometric_prompted';
   static const _languageKey = 'language';
   static const _themeModeKey = 'theme_mode';
+  static const _pendingDeepLinkKey = 'pending_deep_link';
 
   Future<bool> readBiometricEnabled() async => await _prefs.getBool(_biometricEnabledKey) ?? false;
 
@@ -29,6 +30,14 @@ class const Preferences(final SharedPreferencesAsync _prefs) {
   Future<String> readThemeMode() async => await _prefs.getString(_themeModeKey) ?? 'system';
 
   Future<void> saveThemeMode(String value) => _prefs.setString(_themeModeKey, value);
+
+  /// An invite or claim link opened while signed out, resumed after
+  /// sign-in. Null when there is none.
+  Future<String?> readPendingDeepLink() => _prefs.getString(_pendingDeepLinkKey);
+
+  /// Stores [value], or clears the pending link when it is null.
+  Future<void> savePendingDeepLink(String? value) =>
+      value == null ? _prefs.remove(_pendingDeepLinkKey) : _prefs.setString(_pendingDeepLinkKey, value);
 }
 
 @Riverpod(keepAlive: true)

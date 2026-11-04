@@ -117,6 +117,8 @@ class _AppStepperState() extends State<AppStepper> {
         : atMin
         ? 'Minimal ${widget.min}$unit'
         : null;
+    final valueStyle = t.amountLg.copyWith(color: c.textPrimary);
+    final valuePad = (AppSizes.tapMin - valueStyle.fontSize! * valueStyle.height!) / 2;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -138,40 +140,38 @@ class _AppStepperState() extends State<AppStepper> {
               onRepeatEnd: _stopRepeat,
             ),
             const SizedBox(width: AppSpace.s1),
-            // A collapsed field is exactly one line tall, so Center can put
-            // the digits on the buttons' midline.
             SizedBox(
               width: 56,
-              height: AppSizes.tapMin,
-              child: Center(
-                child: Semantics(
-                  label: widget.label,
-                  value: '${widget.value}',
-                  child: TextField(
-                    controller: _controller,
-                    focusNode: _focus,
-                    textAlign: TextAlign.center,
-                    keyboardType: TextInputType.number,
-                    textInputAction: TextInputAction.done,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter('${widget.max}'.length),
-                    ],
-                    onChanged: _onTyped,
-                    onSubmitted: _commit,
-                    style: t.amountLg.copyWith(color: c.textPrimary),
-                    // Empty constraints override the theme's 56 min height;
-                    // zero padding overrides the theme's 16 px vertical
-                    // padding, which isCollapsed alone doesn't clear.
-                    decoration: const InputDecoration(
-                      isCollapsed: true,
-                      contentPadding: EdgeInsets.zero,
-                      filled: false,
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      constraints: BoxConstraints(),
-                    ),
+              child: Semantics(
+                label: widget.label,
+                value: '${widget.value}',
+                child: TextField(
+                  controller: _controller,
+                  focusNode: _focus,
+                  textAlign: TextAlign.center,
+                  keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.done,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter('${widget.max}'.length),
+                  ],
+                  onChanged: _onTyped,
+                  onSubmitted: _commit,
+                  style: valueStyle,
+                  // Equal top/bottom padding grows the one-line field to a
+                  // 48 px tap target with the digits on the buttons'
+                  // midline. A min-height constraint would grow it too but
+                  // pins the text to the top, since textAlignVertical
+                  // doesn't apply to a collapsed decoration. The empty
+                  // constraints clear the theme's 56 px min height.
+                  decoration: InputDecoration(
+                    constraints: const BoxConstraints(),
+                    isCollapsed: true,
+                    contentPadding: EdgeInsets.symmetric(vertical: valuePad),
+                    filled: false,
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
                   ),
                 ),
               ),

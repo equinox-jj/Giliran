@@ -27,6 +27,9 @@ class const EditGroupPage({
   super.key,
   required final String groupId,
   required final VoidCallback onPaymentInfo,
+  required final VoidCallback onFixedOrder,
+  required final VoidCallback onLeaveRequests,
+  required final VoidCallback onTransfer,
 
   /// Called after the group was closed.
   required final VoidCallback onClosed,
@@ -38,7 +41,14 @@ class const EditGroupPage({
       appBar: AppTopBar(title: context.l10n.editGroupTitle),
       body: group == null
           ? const Center(child: CircularProgressIndicator.adaptive())
-          : _EditGroupBody(group: group, onPaymentInfo: onPaymentInfo, onClosed: onClosed),
+          : _EditGroupBody(
+              group: group,
+              onPaymentInfo: onPaymentInfo,
+              onFixedOrder: onFixedOrder,
+              onLeaveRequests: onLeaveRequests,
+              onTransfer: onTransfer,
+              onClosed: onClosed,
+            ),
     );
   }
 }
@@ -46,6 +56,9 @@ class const EditGroupPage({
 class const _EditGroupBody({
   required final GroupDetail group,
   required final VoidCallback onPaymentInfo,
+  required final VoidCallback onFixedOrder,
+  required final VoidCallback onLeaveRequests,
+  required final VoidCallback onTransfer,
   required final VoidCallback onClosed,
 }) extends ConsumerWidget {
   @override
@@ -244,10 +257,9 @@ class const _EditGroupBody({
                 SettingsRow.navigation(
                   icon: AppIcons.listNumbers,
                   label: l10n.editGroupFixedOrder,
-                  onTap: () => showAppToast(context, l10n.comingSoon),
+                  onTap: onFixedOrder,
                 ),
-              // Reminders (S41) and leave requests (S31) land with their
-              // features.
+              // Reminders (S41) land with Phase 7.
               SettingsRow.navigation(
                 icon: AppIcons.chatCircle,
                 label: l10n.editGroupRemindersRecap,
@@ -256,13 +268,13 @@ class const _EditGroupBody({
               SettingsRow.navigation(
                 icon: AppIcons.signOut,
                 label: l10n.editGroupLeaveRequests,
-                onTap: () => showAppToast(context, l10n.comingSoon),
+                onTap: onLeaveRequests,
               ),
               if (organizer)
                 SettingsRow.navigation(
                   icon: AppIcons.crown,
                   label: l10n.editGroupTransfer,
-                  onTap: () => showAppToast(context, l10n.comingSoon),
+                  onTap: onTransfer,
                 ),
             ],
           ),

@@ -9,6 +9,10 @@ import '../../../../../core/themes/themes.dart';
 import '../../../../../core/utils/date_formatter.dart';
 import '../../../../../core/utils/enums/group_status.dart';
 import '../../../../../shared/widgets/widgets.dart';
+import '../../../../member/presentation/members_tab/controllers/members_tab_controller.dart';
+import '../../../../member/presentation/members_tab/widgets/members_tab.dart';
+import '../../../../member/presentation/shared/controllers/members_controller.dart';
+import '../../../../member/presentation/shared/widgets/leave_request_sheet.dart';
 import '../../../domain/entities/group.dart';
 import '../../../domain/usecases/group_menu_actions_usecase.dart';
 import '../../../domain/usecases/pick_hero_action_usecase.dart';
@@ -27,6 +31,11 @@ class const GroupDetailPage({
   final bool created = false,
   required final VoidCallback onEdit,
   required final VoidCallback onPaymentInfo,
+  required final VoidCallback onInvite,
+  required final VoidCallback onStart,
+  required final ValueChanged<String> onOpenMember,
+  required final VoidCallback onLeaveRequests,
+  required final VoidCallback onTransfer,
 }) extends ConsumerStatefulWidget {
   @override
   ConsumerState<GroupDetailPage> createState() => _GroupDetailPageState();
@@ -51,11 +60,38 @@ class _GroupDetailPageState() extends ConsumerState<GroupDetailPage> {
       confirmLabel: l10n.inviteNowButton,
       cancelLabel: l10n.laterButton,
     );
-    // Invite (S16) comes with Members (Phase 3).
-    if (invite && mounted) showAppToast(context, l10n.comingSoon);
+    if (invite && mounted) widget.onInvite();
   }
 
   void _comingSoon() => showAppToast(context, context.l10n.comingSoon);
+
+  /// "Lanjutkan persiapan" opens Start group (S18); the period actions
+  /// arrive with Phases 4–5.
+  void _onHeroAction() {
+    final action = ref.read(groupDetailControllerProvider(widget.groupId)).value?.heroAction;
+    action == HeroAction.continueSetup ? widget.onStart() : _comingSoon();
+  }
+
+  /// Opens the leave sheet (S30) with the caller's own obligation when the
+  /// Anggota tab has loaded it.
+  Future<void> _leave() async {
+    final group = ref.read(groupDetailControllerProvider(widget.groupId)).value?.group;
+    if (group == null) return;
+    final obligations = ref.read(membersTabControllerProvider(widget.groupId)).value?.obligations ?? const [];
+    await showLeaveRequestSheet(
+      context,
+      group: group,
+      obligation: obligations.where((o) => o.memberId == group.myMemberId).firstOrNull,
+      onTransfer: widget.onTransfer,
+    );
+  }
+
+  /// Only managers receive the invite link; sharing for members comes with
+  /// the group summary (S24).
+  void _share() {
+    final manager = ref.read(groupDetailControllerProvider(widget.groupId)).value?.group?.isManager ?? false;
+    manager ? widget.onInvite() : _comingSoon();
+  }
 
   Future<void> _onMenu(GroupMenuAction action) async {
     switch (action) {
@@ -65,7 +101,13 @@ class _GroupDetailPageState() extends ConsumerState<GroupDetailPage> {
         widget.onPaymentInfo();
       case GroupMenuAction.close:
         await _close();
-      case GroupMenuAction.share || GroupMenuAction.leave || GroupMenuAction.invite || GroupMenuAction.reminders:
+      case GroupMenuAction.invite:
+        widget.onInvite();
+      case GroupMenuAction.share:
+        _share();
+      case GroupMenuAction.leave:
+        await _leave();
+      case GroupMenuAction.reminders:
         _comingSoon();
     }
   }
@@ -90,12 +132,18 @@ class _GroupDetailPageState() extends ConsumerState<GroupDetailPage> {
   Widget build(BuildContext context) {
     final provider = groupDetailControllerProvider(widget.groupId);
     return Scaffold(
-      appBar: _DetailTopBar(provider: provider, onShare: _comingSoon, onMenu: _onMenu),
+      appBar: _DetailTopBar(provider: provider, onShare: _share, onMenu: _onMenu),
       body: _DetailBody(
         provider: provider,
         tab: _tab,
         onTab: (t) => setState(() => _tab = t),
-        onHeroAction: _comingSoon,
+        onHeroAction: _onHeroAction,
+        tabActions: (
+          onInvite: widget.onInvite,
+          onOpenMember: widget.onOpenMember,
+          onLeaveRequests: widget.onLeaveRequests,
+          onLeave: _leave,
+        ),
       ),
     );
   }
@@ -136,11 +184,20 @@ enum _Phase() {
   content,
 }
 
+/// Navigation the tab bodies need from the page.
+typedef _TabActions = ({
+  VoidCallback onInvite,
+  ValueChanged<String> onOpenMember,
+  VoidCallback onLeaveRequests,
+  VoidCallback onLeave,
+});
+
 class const _DetailBody({
   required final GroupDetailControllerProvider provider,
   required final DetailTab tab,
   required final ValueChanged<DetailTab> onTab,
   required final VoidCallback onHeroAction,
+  required final _TabActions tabActions,
 }) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -156,7 +213,15 @@ class const _DetailBody({
     final bottom = context.isCompact ? AppBottomNavBar.contentInset(context) : AppSpace.s8;
 
     Future<void> refresh() async {
-      final failure = await ref.read(provider.notifier).refresh();
+      final groupId = provider.argument! as String;
+      final results = await Future.wait([
+        ref.read(provider.notifier).refresh(),
+        if (tab == DetailTab.members) ...[
+          ref.read(membersControllerProvider(groupId).notifier).refresh(),
+          ref.read(membersTabControllerProvider(groupId).notifier).refresh().then((_) => null),
+        ],
+      ]);
+      final failure = results.nonNulls.firstOrNull;
       if (failure != null && context.mounted) showAppToast(context, failure.displayMessage);
     }
 
@@ -172,6 +237,7 @@ class const _DetailBody({
 
     final top = _TopSection(provider: provider, onHeroAction: onHeroAction);
     final tabs = _TabsSection(provider: provider, tab: tab, onTab: onTab);
+    final body = _TabBody(provider: provider, tab: tab, actions: tabActions);
 
     if (context.sizeClass == SizeClass.expanded) {
       // Expanded: the shared top section on the left (5 of 12 columns), the
@@ -191,9 +257,17 @@ class const _DetailBody({
           ),
           Expanded(
             flex: 7,
-            child: ListView(
-              padding: EdgeInsets.fromLTRB(context.gutter / 2, AppSpace.s4, margin, bottom),
-              children: [tabs],
+            child: CustomScrollView(
+              slivers: [
+                SliverPadding(
+                  padding: EdgeInsets.fromLTRB(context.gutter / 2, AppSpace.s4, margin, 0),
+                  sliver: SliverToBoxAdapter(child: tabs),
+                ),
+                SliverPadding(
+                  padding: EdgeInsets.fromLTRB(context.gutter / 2, AppSpace.s4, margin, bottom),
+                  sliver: body,
+                ),
+              ],
             ),
           ),
         ],
@@ -201,16 +275,49 @@ class const _DetailBody({
     }
     return RefreshIndicator(
       onRefresh: refresh,
-      child: ListView(
+      child: CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: EdgeInsets.fromLTRB(margin, 0, margin, bottom),
-        children: [
-          top,
-          const SizedBox(height: AppSpace.s6),
-          tabs,
+        slivers: [
+          SliverPadding(
+            padding: EdgeInsets.symmetric(horizontal: margin),
+            sliver: SliverList.list(
+              children: [
+                top,
+                const SizedBox(height: AppSpace.s6),
+                tabs,
+              ],
+            ),
+          ),
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(margin, AppSpace.s4, margin, bottom),
+            sliver: body,
+          ),
         ],
       ),
     );
+  }
+}
+
+/// The selected tab's body, as a sliver.
+class const _TabBody({
+  required final GroupDetailControllerProvider provider,
+  required final DetailTab tab,
+  required final _TabActions actions,
+}) extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final group = ref.watch(provider.select((s) => s.value?.group));
+    if (group == null) return const SliverToBoxAdapter(child: SizedBox.shrink());
+    return switch (tab) {
+      DetailTab.members => MembersTab(
+        group: group,
+        onInvite: actions.onInvite,
+        onOpenMember: actions.onOpenMember,
+        onLeaveRequests: actions.onLeaveRequests,
+        onLeave: actions.onLeave,
+      ),
+      _ => SliverToBoxAdapter(child: DetailTabPlaceholder(tab: tab)),
+    };
   }
 }
 

@@ -15,6 +15,12 @@ class MembersDao(super.attachedDatabase) extends DatabaseAccessor<AppDatabase> w
             ..orderBy([(m) => OrderingTerm.asc(m.slotNo)]))
           .watch();
 
+  /// One cached member, or `null` once it is gone.
+  Stream<MemberRow?> watchById(String id) => (select(members)..where((m) => m.id.equals(id))).watchSingleOrNull();
+
+  /// Drops one member (removed, or left after an approved request).
+  Future<void> deleteById(String id) => (delete(members)..where((m) => m.id.equals(id))).go();
+
   /// Replaces a group's members with a full server fetch.
   Future<void> replaceForGroup(String groupId, List<MembersCompanion> rows) => transaction(() async {
     await (delete(members)..where((m) => m.groupId.equals(groupId))).go();

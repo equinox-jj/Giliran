@@ -54,6 +54,9 @@ void main() {
       EditGroupPage(
         groupId: 'g1',
         onPaymentInfo: () => events.add('paymentInfo'),
+        onFixedOrder: () => events.add('fixedOrder'),
+        onLeaveRequests: () => events.add('leaveRequests'),
+        onTransfer: () => events.add('transfer'),
         onClosed: () => events.add('closed'),
       ),
       container: container,

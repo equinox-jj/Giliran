@@ -2,11 +2,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:giliran/app/app.dart';
+import 'package:giliran/app/deep_link_controller.dart';
 import 'package:giliran/app/router.dart';
 import 'package:giliran/app/routes.dart';
 import 'package:giliran/core/error/failure.dart';
 import 'package:giliran/core/network/connectivity_controller.dart';
 import 'package:giliran/core/services/biometric_service.dart';
+import 'package:giliran/core/services/share_service.dart';
 import 'package:giliran/core/storage/preferences.dart';
 import 'package:giliran/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:giliran/features/auth/domain/entities/auth_status.dart';
@@ -18,6 +20,8 @@ import 'package:giliran/features/auth/presentation/welcome/page/welcome_page.dar
 import 'package:giliran/features/group/data/repositories/group_repository_impl.dart';
 import 'package:giliran/features/group/presentation/groups/page/groups_page.dart';
 import 'package:giliran/features/home/presentation/home/page/home_page.dart';
+import 'package:giliran/features/member/data/repositories/member_repository_impl.dart';
+import 'package:giliran/features/member/presentation/join/page/join_page.dart';
 import 'package:giliran/features/profile/domain/entity/profile.dart';
 import 'package:giliran/features/profile/presentation/profile/page/profile_page.dart';
 import 'package:giliran/shared/widgets/widgets.dart';
@@ -26,21 +30,29 @@ import 'package:material_ui/material_ui.dart';
 import '../helpers/fake_auth_repository.dart';
 import '../helpers/fake_connectivity.dart';
 import '../helpers/fake_group_repository.dart';
+import '../helpers/fake_member_repository.dart';
 import '../helpers/fake_preferences.dart';
+import '../helpers/fake_share_service.dart';
 
 void main() {
   late FakeAuthRepository repository;
+  late FakePreferences preferences;
+  late FakeShareService share;
   late ProviderContainer container;
 
   setUp(() {
     // Signed out by default.
     repository = FakeAuthRepository()..hasSessionResult = const Right(false);
+    preferences = FakePreferences();
+    share = FakeShareService();
     container = ProviderContainer(
       overrides: [
         authRepositoryProvider.overrideWithValue(repository),
         biometricServiceProvider.overrideWithValue(FakeBiometricService()),
-        preferencesProvider.overrideWithValue(FakePreferences()),
+        preferencesProvider.overrideWithValue(preferences),
         groupRepositoryProvider.overrideWithValue(FakeGroupRepository()),
+        memberRepositoryProvider.overrideWithValue(FakeMemberRepository()),
+        shareServiceProvider.overrideWithValue(share),
         connectivityControllerProvider.overrideWith(() => FakeConnectivityController(true)),
       ],
     );
@@ -126,6 +138,66 @@ void main() {
       // Assert
       expect(find.byType(WelcomePage), findsOneWidget);
       expect(find.byType(ProfilePage), findsNothing);
+    });
+  });
+
+  group('deep links', () {
+    testWidgets('pending invite resumes after sign-in', (tester) async {
+      // Arrange
+      await pumpRouterApp(tester);
+      await go(tester, '/j/K7P2QX9M');
+      final welcomeShown = find.byType(WelcomePage).evaluate().isNotEmpty;
+      final bannerShown = find.text('Kamu diundang ke grup arisan. Masuk dulu untuk gabung.').evaluate().isNotEmpty;
+
+      // Act
+      signIn();
+      container.invalidate(authSessionControllerProvider);
+      await tester.pumpAndSettle();
+      await unlock(tester);
+
+      // Assert
+      expect(welcomeShown, isTrue);
+      expect(bannerShown, isTrue);
+      expect(find.byType(JoinPage), findsOneWidget);
+      expect(container.read(deepLinkControllerProvider).pending, isNull);
+      expect(preferences.pendingDeepLink, isNull);
+    });
+
+    testWidgets('a signed-out invite link is stored for the next start', (tester) async {
+      // Arrange
+      await pumpRouterApp(tester);
+
+      // Act
+      await go(tester, '/j/K7P2QX9M');
+
+      // Assert
+      expect(preferences.pendingDeepLink, '/j/K7P2QX9M');
+    });
+
+    testWidgets('a full https invite link is stored as its in-app path', (tester) async {
+      // Arrange
+      await pumpRouterApp(tester);
+
+      // Act
+      await go(tester, 'https://giliran.monai.my.id/j/K7P2QX9M');
+
+      // Assert
+      expect(preferences.pendingDeepLink, '/j/K7P2QX9M');
+      expect(find.byType(WelcomePage), findsOneWidget);
+    });
+
+    testWidgets('a verification link opens the public page in the browser', (tester) async {
+      // Arrange
+      signIn();
+      await pumpRouterApp(tester);
+      await unlock(tester);
+
+      // Act
+      await go(tester, '/v/7H2K9QX4MP');
+
+      // Assert
+      expect(share.openedUrls.single.toString(), 'https://giliran.monai.my.id/v/7H2K9QX4MP');
+      expect(find.byType(HomePage), findsOneWidget);
     });
   });
 
@@ -380,6 +452,29 @@ void main() {
       // Assert
       expect(targets, everyElement(const HomeRoute().location));
       expect(onHome, isNull);
+    });
+    test('sends a signed-out invite link to Welcome', () {
+      // Act
+      final target = authRedirect(const AsyncData(AuthSignedOut()), Uri.parse('/j/K7P2QX9M'));
+
+      // Assert
+      expect(target, const WelcomeRoute(invited: true).location);
+    });
+
+    test('an unlocked session goes to the pending link instead of Home', () {
+      // Act
+      final target = authRedirect(const AsyncData(AuthUnlocked()), home, pending: '/j/K7P2QX9M');
+
+      // Assert
+      expect(target, '/j/K7P2QX9M');
+    });
+
+    test('the biometric opt-in comes before the pending link', () {
+      // Act
+      final target = authRedirect(const AsyncData(AuthUnlocked()), biometric, pending: '/j/K7P2QX9M');
+
+      // Assert
+      expect(target, isNull);
     });
   });
 

@@ -144,7 +144,7 @@ class const AppListRow({
 
 /// Hero panel: `radius.xl`, a tone fill (default `bg.hero`), padding 24
 /// (64 on tablet), min height 200. Max one per screen. [decoration] is an
-/// optional corner doodle, painted at 40% opacity and excluded from
+/// optional corner doodle, painted at 20% opacity and excluded from
 /// semantics.
 class const HeroPanel({
   super.key,
@@ -170,7 +170,7 @@ class const HeroPanel({
               right: -6,
               bottom: -8,
               child: ExcludeSemantics(
-                child: Opacity(opacity: 0.4, child: decoration),
+                child: Opacity(opacity: 0.2, child: decoration),
               ),
             ),
           Padding(

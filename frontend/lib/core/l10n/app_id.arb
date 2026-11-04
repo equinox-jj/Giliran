@@ -1479,5 +1479,957 @@
   "photoGalleryDenied": "Izinkan akses galeri di pengaturan HP.",
   "@photoGalleryDenied": {
     "description": "Toast when gallery access is denied."
+  },
+  "invitedBanner": "Kamu diundang ke grup arisan. Masuk dulu untuk gabung.",
+  "@invitedBanner": {
+    "description": "S02 banner when a pending invite link exists."
+  },
+  "inviteHeadline": "Undang **{count} orang** lagi",
+  "@inviteHeadline": {
+    "description": "S16 headline; bold part is wrapped in **.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "inviteFullHeadline": "Semua slot **terisi**",
+  "@inviteFullHeadline": {
+    "description": "S16 headline when the group is full."
+  },
+  "inviteFull": "Semua slot terisi",
+  "@inviteFull": {
+    "description": "S16 hero text when the group is full."
+  },
+  "inviteShareWhatsApp": "Bagikan ke WhatsApp",
+  "@inviteShareWhatsApp": {
+    "description": "S16 primary button."
+  },
+  "inviteCopyLink": "Salin link",
+  "@inviteCopyLink": {
+    "description": "S16 secondary button."
+  },
+  "inviteLinkCopied": "Link disalin.",
+  "@inviteLinkCopied": {
+    "description": "Toast after copying the invite link."
+  },
+  "inviteCodeCopied": "Kode disalin.",
+  "@inviteCodeCopied": {
+    "description": "Toast after copying the invite code."
+  },
+  "inviteCodeLabel": "Kode undangan",
+  "@inviteCodeLabel": {
+    "description": "Label above the invite code."
+  },
+  "inviteCopyCodeSemantics": "Salin kode undangan",
+  "@inviteCopyCodeSemantics": {
+    "description": "Screen reader label of the copy-code button."
+  },
+  "inviteQrSemantics": "Kode QR undangan {group}",
+  "@inviteQrSemantics": {
+    "description": "Screen reader label of the invite QR.",
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "inviteShareMessage": "Yuk gabung arisan {group} di Giliran: {url}",
+  "@inviteShareMessage": {
+    "description": "Pre-filled share message with the invite link.",
+    "placeholders": {
+      "group": {
+        "type": "String"
+      },
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "inviteSlotsSection": "Slot",
+  "@inviteSlotsSection": {
+    "description": "S16 section header for the slot list."
+  },
+  "inviteEmptySlot": "Slot kosong",
+  "@inviteEmptySlot": {
+    "description": "S16 row for a free slot."
+  },
+  "inviteAddGuest": "Tambah tamu (tanpa aplikasi)",
+  "@inviteAddGuest": {
+    "description": "S16 link to the guest sheet."
+  },
+  "inviteResetMenu": "Buat link baru",
+  "@inviteResetMenu": {
+    "description": "S16 overflow menu item."
+  },
+  "inviteResetTitle": "Buat link baru? Link lama tidak bisa dipakai lagi.",
+  "@inviteResetTitle": {
+    "description": "Confirmation before resetting the invite code."
+  },
+  "inviteResetDone": "Link baru siap dibagikan.",
+  "@inviteResetDone": {
+    "description": "Toast after the invite code reset."
+  },
+  "inviteNoLink": "Link undangan belum tersedia. Tarik untuk memuat ulang.",
+  "@inviteNoLink": {
+    "description": "S16 when the group has no invite loaded."
+  },
+  "joinHeadline": "{organizer} mengajak kamu ke **{group}**",
+  "@joinHeadline": {
+    "description": "S25 headline.",
+    "placeholders": {
+      "organizer": {
+        "type": "String"
+      },
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "joinDues": "Iuran",
+  "@joinDues": {
+    "description": "S25 key-value label."
+  },
+  "joinStart": "Mulai",
+  "@joinStart": {
+    "description": "S25 key-value label."
+  },
+  "joinSlots": "Slot",
+  "@joinSlots": {
+    "description": "S25 key-value label."
+  },
+  "joinSlotsValue": "{filled} dari {total} terisi",
+  "@joinSlotsValue": {
+    "description": "S25 slot fill value.",
+    "placeholders": {
+      "filled": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "joinPot": "Total per periode",
+  "@joinPot": {
+    "description": "S25 key-value label."
+  },
+  "joinTrustNote": "Kamu transfer langsung ke pengurus. Giliran hanya mencatat.",
+  "@joinTrustNote": {
+    "description": "S25 trust note."
+  },
+  "joinButton": "Gabung",
+  "@joinButton": {
+    "description": "S25 primary button."
+  },
+  "joinOpenGroup": "Buka grup",
+  "@joinOpenGroup": {
+    "description": "S25 / S29 button when already a member."
+  },
+  "joinLater": "Nanti",
+  "@joinLater": {
+    "description": "S25 ghost button."
+  },
+  "joinFullBanner": "Slot grup ini sudah penuh. Minta pengurus menambah slot.",
+  "@joinFullBanner": {
+    "description": "S25 banner when the group is full."
+  },
+  "joinStartedBanner": "Arisan ini sudah berjalan, jadi tidak bisa gabung lagi.",
+  "@joinStartedBanner": {
+    "description": "S25 banner when the group is no longer draft."
+  },
+  "joinInvalidTitle": "Link undangan tidak berlaku",
+  "@joinInvalidTitle": {
+    "description": "S25 empty state title."
+  },
+  "joinInvalidMessage": "Link undangan tidak berlaku. Minta link baru ke pengurus.",
+  "@joinInvalidMessage": {
+    "description": "S25 empty state message."
+  },
+  "joinedToast": "Kamu sudah bergabung.",
+  "@joinedToast": {
+    "description": "Toast after joining a group."
+  },
+  "joinLinkSheetTitle": "Gabung lewat link",
+  "@joinLinkSheetTitle": {
+    "description": "Home paste-link sheet title."
+  },
+  "joinLinkSheetHelp": "Tempel link undangan atau ketik kodenya.",
+  "@joinLinkSheetHelp": {
+    "description": "Home paste-link sheet help."
+  },
+  "joinLinkField": "Link atau kode undangan",
+  "@joinLinkField": {
+    "description": "Home paste-link sheet field label."
+  },
+  "joinLinkInvalid": "Link atau kode tidak dikenali.",
+  "@joinLinkInvalid": {
+    "description": "Error under the paste-link field."
+  },
+  "joinLinkContinue": "Lanjut",
+  "@joinLinkContinue": {
+    "description": "Home paste-link sheet button."
+  },
+  "guestSheetTitle": "Tambah tamu",
+  "@guestSheetTitle": {
+    "description": "S27 title."
+  },
+  "guestEditTitle": "Ubah tamu",
+  "@guestEditTitle": {
+    "description": "S27 title when editing."
+  },
+  "guestSheetHelp": "Untuk anggota yang tidak pakai aplikasi. Kamu yang mencatat bayarannya.",
+  "@guestSheetHelp": {
+    "description": "S27 help."
+  },
+  "guestNameLabel": "Nama",
+  "@guestNameLabel": {
+    "description": "S27 name field label."
+  },
+  "guestNameError": "Nama 2–50 huruf.",
+  "@guestNameError": {
+    "description": "S27 name field error."
+  },
+  "guestPhoneHelper": "Untuk pengingat WhatsApp",
+  "@guestPhoneHelper": {
+    "description": "S27 phone helper."
+  },
+  "guestPhoneLabel": "Nomor HP",
+  "@guestPhoneLabel": {
+    "description": "S27 phone field label."
+  },
+  "guestAddButton": "Tambahkan ke slot {slot}",
+  "@guestAddButton": {
+    "description": "S27 primary button.",
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      }
+    }
+  },
+  "guestSaveButton": "Simpan",
+  "@guestSaveButton": {
+    "description": "S27 primary button when editing."
+  },
+  "guestFull": "Semua slot sudah terisi.",
+  "@guestFull": {
+    "description": "S27 when the group is full."
+  },
+  "guestAdded": "{name} masuk slot {slot}.",
+  "@guestAdded": {
+    "description": "Toast after adding a guest.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "slot": {
+        "type": "String"
+      }
+    }
+  },
+  "guestSaved": "Tamu disimpan.",
+  "@guestSaved": {
+    "description": "Toast after editing a guest."
+  },
+  "claimSheetTitle": "Biar {name} pakai aplikasi",
+  "@claimSheetTitle": {
+    "description": "S28 title.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "claimSheetHelp": "Kirim link ini. Setelah masuk, slot dan riwayat bayarnya pindah ke akunnya.",
+  "@claimSheetHelp": {
+    "description": "S28 explanation."
+  },
+  "claimSendWhatsApp": "Kirim lewat WhatsApp",
+  "@claimSendWhatsApp": {
+    "description": "S28 primary button."
+  },
+  "claimValidUntil": "Berlaku sampai {date}",
+  "@claimValidUntil": {
+    "description": "S28 caption.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "claimLinkCopied": "Link klaim disalin.",
+  "@claimLinkCopied": {
+    "description": "Toast after copying the claim link."
+  },
+  "claimCopySemantics": "Salin link klaim",
+  "@claimCopySemantics": {
+    "description": "Screen reader label of the copy button."
+  },
+  "claimShareMessage": "Halo {name}, ini link untuk ambil slot kamu di arisan {group} di Giliran: {url}",
+  "@claimShareMessage": {
+    "description": "Pre-filled claim message.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "group": {
+        "type": "String"
+      },
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "claimHeadline": "Ambil **slot kamu** di grup ini",
+  "@claimHeadline": {
+    "description": "S29 headline."
+  },
+  "claimBody": "Slot tamu dan riwayat bayarnya akan pindah ke akun kamu.",
+  "@claimBody": {
+    "description": "S29 body."
+  },
+  "claimButton": "Ini saya, ambil slot",
+  "@claimButton": {
+    "description": "S29 primary button."
+  },
+  "claimExpiredTitle": "Link klaim tidak berlaku",
+  "@claimExpiredTitle": {
+    "description": "S29 expired empty state title."
+  },
+  "claimExpiredMessage": "Link ini sudah kedaluwarsa atau sudah dipakai. Minta link baru ke pengurus.",
+  "@claimExpiredMessage": {
+    "description": "S29 expired empty state message."
+  },
+  "claimAlreadyMember": "Kamu sudah jadi anggota grup ini.",
+  "@claimAlreadyMember": {
+    "description": "S29 already-member explanation."
+  },
+  "claimedToast": "Slot sudah jadi milikmu.",
+  "@claimedToast": {
+    "description": "Toast after claiming a slot."
+  },
+  "obligationLabel": "Sudah menang P{period} · sisa **{count} × {amount}**",
+  "@obligationLabel": {
+    "description": "Obligation Meter label; bold part wrapped in **.",
+    "placeholders": {
+      "period": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "obligationDone": "Sudah menang P{period} · lunas",
+  "@obligationDone": {
+    "description": "Obligation Meter label when nothing is left.",
+    "placeholders": {
+      "period": {
+        "type": "int"
+      }
+    }
+  },
+  "obligationOverdue": "Terlambat {count} iuran · {amount}",
+  "@obligationOverdue": {
+    "description": "Obligation Meter overdue line.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "obligationSemantics": "{name}: sudah menang periode {period}, sisa {count} iuran, {overdue} terlambat",
+  "@obligationSemantics": {
+    "description": "Screen reader label of the Obligation Meter.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "period": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      },
+      "overdue": {
+        "type": "int"
+      }
+    }
+  },
+  "obligationsSection": "Kewajiban setelah menang",
+  "@obligationsSection": {
+    "description": "S22 section header."
+  },
+  "membersSection": "Anggota ({count})",
+  "@membersSection": {
+    "description": "S22 section header.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "membersInvite": "Undang",
+  "@membersInvite": {
+    "description": "S22 organizer button."
+  },
+  "membersAddGuest": "Tambah tamu",
+  "@membersAddGuest": {
+    "description": "S22 organizer button."
+  },
+  "membersLeaveRequests": "Permintaan keluar ({count})",
+  "@membersLeaveRequests": {
+    "description": "S22 row when leave requests are pending.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "badgeOrganizer": "Pengurus",
+  "@badgeOrganizer": {
+    "description": "Member badge."
+  },
+  "badgeGuest": "Tamu",
+  "@badgeGuest": {
+    "description": "Member badge."
+  },
+  "badgeYou": "Kamu",
+  "@badgeYou": {
+    "description": "Member badge for the viewer."
+  },
+  "memberWonChip": "Sudah dapat P{period}",
+  "@memberWonChip": {
+    "description": "Chip on a member who has won.",
+    "placeholders": {
+      "period": {
+        "type": "int"
+      }
+    }
+  },
+  "memberSlotCaption": "Slot {slot}",
+  "@memberSlotCaption": {
+    "description": "Caption with the slot number.",
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      }
+    }
+  },
+  "memberDetailSlot": "Slot",
+  "@memberDetailSlot": {
+    "description": "S26 key-value label."
+  },
+  "memberDetailJoined": "Bergabung",
+  "@memberDetailJoined": {
+    "description": "S26 key-value label."
+  },
+  "memberDetailWon": "Sudah dapat",
+  "@memberDetailWon": {
+    "description": "S26 key-value label."
+  },
+  "memberDetailNotYet": "Belum",
+  "@memberDetailNotYet": {
+    "description": "S26 value when the member hasn't won."
+  },
+  "memberDetailWonValue": "Periode {period}",
+  "@memberDetailWonValue": {
+    "description": "S26 won value.",
+    "placeholders": {
+      "period": {
+        "type": "int"
+      }
+    }
+  },
+  "memberDetailPhone": "Nomor HP",
+  "@memberDetailPhone": {
+    "description": "S26 key-value label (managers only)."
+  },
+  "memberPaymentHistory": "Riwayat bayar",
+  "@memberPaymentHistory": {
+    "description": "S26 section header."
+  },
+  "memberPaymentHistoryLater": "Riwayat bayar muncul setelah arisan berjalan.",
+  "@memberPaymentHistoryLater": {
+    "description": "S26 placeholder until payments exist."
+  },
+  "memberRemindWhatsApp": "Ingatkan lewat WhatsApp",
+  "@memberRemindWhatsApp": {
+    "description": "S26 action."
+  },
+  "memberRemindMessage": "Halo {name}, ini pengingat iuran arisan {group} ya. Terima kasih!",
+  "@memberRemindMessage": {
+    "description": "Pre-filled WhatsApp reminder.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "memberCreateClaimLink": "Buat link klaim",
+  "@memberCreateClaimLink": {
+    "description": "S26 action for guests."
+  },
+  "memberEditGuest": "Ubah tamu",
+  "@memberEditGuest": {
+    "description": "S26 action for guests."
+  },
+  "memberRemove": "Keluarkan dari grup",
+  "@memberRemove": {
+    "description": "S26 destructive action."
+  },
+  "memberRemoveTitle": "Keluarkan {name} dari grup?",
+  "@memberRemoveTitle": {
+    "description": "Remove confirmation title.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memberRemoveMessage": "Slotnya akan kosong lagi. Tindakan ini tercatat di aktivitas.",
+  "@memberRemoveMessage": {
+    "description": "Remove confirmation message."
+  },
+  "memberRemoved": "{name} dikeluarkan.",
+  "@memberRemoved": {
+    "description": "Toast after removing a member.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memberRemoveBlocked": "{name} sudah menang dan masih punya {count} iuran.",
+  "@memberRemoveBlocked": {
+    "description": "Dialog when removal is blocked by obligations.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "memberRemoveBlockedTitle": "Belum bisa dikeluarkan",
+  "@memberRemoveBlockedTitle": {
+    "description": "Title of the blocked-removal dialog."
+  },
+  "memberNotFound": "Anggota tidak ditemukan.",
+  "@memberNotFound": {
+    "description": "S26 when the member is gone."
+  },
+  "commonOk": "Oke",
+  "@commonOk": {
+    "description": "Acknowledge button."
+  },
+  "leavePendingBanner": "Permintaan keluar menunggu persetujuan",
+  "@leavePendingBanner": {
+    "description": "S22 banner for the member's own pending request."
+  },
+  "fixedOrderHeadline": "Atur **urutan giliran**",
+  "@fixedOrderHeadline": {
+    "description": "S17 headline."
+  },
+  "fixedOrderHelp": "Geser untuk mengubah urutan. Nomor 1 dapat duluan.",
+  "@fixedOrderHelp": {
+    "description": "S17 help line."
+  },
+  "fixedOrderShuffle": "Acak urutan",
+  "@fixedOrderShuffle": {
+    "description": "S17 ghost button."
+  },
+  "fixedOrderShuffled": "Urutan diacak.",
+  "@fixedOrderShuffled": {
+    "description": "Toast after shuffling."
+  },
+  "fixedOrderUndo": "Urungkan",
+  "@fixedOrderUndo": {
+    "description": "Undo action label."
+  },
+  "fixedOrderSave": "Simpan urutan",
+  "@fixedOrderSave": {
+    "description": "S17 docked primary button."
+  },
+  "fixedOrderSaved": "Urutan disimpan.",
+  "@fixedOrderSaved": {
+    "description": "Toast after saving the order."
+  },
+  "fixedOrderLocked": "Urutan dikunci setelah arisan dimulai",
+  "@fixedOrderLocked": {
+    "description": "S17 banner outside draft."
+  },
+  "fixedOrderUnsavedTitle": "Simpan perubahan?",
+  "@fixedOrderUnsavedTitle": {
+    "description": "Dialog when leaving S17 with unsaved changes."
+  },
+  "fixedOrderDiscard": "Buang",
+  "@fixedOrderDiscard": {
+    "description": "Discard button."
+  },
+  "fixedOrderIncomplete": "Isi semua slot dulu sebelum mengatur urutan.",
+  "@fixedOrderIncomplete": {
+    "description": "S17 when slots are still empty."
+  },
+  "reorderMoveUp": "Naikkan",
+  "@reorderMoveUp": {
+    "description": "Semantic action on a reorderable row."
+  },
+  "reorderMoveDown": "Turunkan",
+  "@reorderMoveDown": {
+    "description": "Semantic action on a reorderable row."
+  },
+  "reorderDragHandle": "Geser untuk mengubah urutan",
+  "@reorderDragHandle": {
+    "description": "Screen reader label of the drag handle."
+  },
+  "reorderPositionSemantics": "Urutan {position}: {name}, slot {slot}",
+  "@reorderPositionSemantics": {
+    "description": "Screen reader label of a reorderable row.",
+    "placeholders": {
+      "position": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      },
+      "slot": {
+        "type": "String"
+      }
+    }
+  },
+  "startHeadline": "Siap **mulai arisan**?",
+  "@startHeadline": {
+    "description": "S18 headline."
+  },
+  "readinessSlots": "Semua slot terisi",
+  "@readinessSlots": {
+    "description": "Readiness item."
+  },
+  "readinessSlotsCaption": "{filled} dari {total} slot terisi",
+  "@readinessSlotsCaption": {
+    "description": "Readiness item caption.",
+    "placeholders": {
+      "filled": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "readinessPaymentInfo": "Info rekening ada",
+  "@readinessPaymentInfo": {
+    "description": "Readiness item."
+  },
+  "readinessPaymentInfoCaption": "Anggota perlu tahu ke mana transfer.",
+  "@readinessPaymentInfoCaption": {
+    "description": "Readiness item caption."
+  },
+  "readinessFixedOrder": "Urutan lengkap",
+  "@readinessFixedOrder": {
+    "description": "Readiness item (fixed order only)."
+  },
+  "readinessFixedOrderCaption": "Setiap slot punya nomor urut.",
+  "@readinessFixedOrderCaption": {
+    "description": "Readiness item caption."
+  },
+  "readinessFillPaymentInfo": "Isi rekening",
+  "@readinessFillPaymentInfo": {
+    "description": "Readiness fix action."
+  },
+  "readinessSetOrder": "Atur urutan",
+  "@readinessSetOrder": {
+    "description": "Readiness fix action."
+  },
+  "readinessRemaining": "Lengkapi {count} hal lagi",
+  "@readinessRemaining": {
+    "description": "Caption under the start button.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "readinessDone": "Sudah",
+  "@readinessDone": {
+    "description": "Screen reader state of a done item."
+  },
+  "readinessMissing": "Belum",
+  "@readinessMissing": {
+    "description": "Screen reader state of a missing item."
+  },
+  "startSummaryDues": "Iuran",
+  "@startSummaryDues": {
+    "description": "S18 summary label."
+  },
+  "startSummaryPeriod": "Periode",
+  "@startSummaryPeriod": {
+    "description": "S18 summary label."
+  },
+  "startSummaryPot": "Total per periode",
+  "@startSummaryPot": {
+    "description": "S18 summary label."
+  },
+  "startSummaryStart": "Mulai",
+  "@startSummaryStart": {
+    "description": "S18 summary label."
+  },
+  "startSummaryDraw": "Kocokan",
+  "@startSummaryDraw": {
+    "description": "S18 summary label."
+  },
+  "startInfo": "Periode 1 dibuka, kode komitmen kocokan dipublikasikan, semua anggota dapat notifikasi.",
+  "@startInfo": {
+    "description": "S18 info card."
+  },
+  "startButton": "Mulai arisan",
+  "@startButton": {
+    "description": "S18 primary button."
+  },
+  "startConfirmTitle": "Mulai Arisan {group} sekarang?",
+  "@startConfirmTitle": {
+    "description": "S18 confirmation sheet title.",
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "startConsent": "Saya sudah cek pengaturan. Iuran dan jumlah slot tidak bisa diubah lagi.",
+  "@startConsent": {
+    "description": "S18 consent check row."
+  },
+  "startedToast": "Arisan dimulai! Periode 1 sudah dibuka.",
+  "@startedToast": {
+    "description": "Toast after starting the group."
+  },
+  "startNotDraft": "Arisan ini sudah dimulai.",
+  "@startNotDraft": {
+    "description": "S18 when the group is no longer a draft."
+  },
+  "leaveSheetTitle": "Minta keluar dari grup",
+  "@leaveSheetTitle": {
+    "description": "S30 title."
+  },
+  "leaveSheetHelp": "Pengurus perlu menyetujui. Slot kamu akan dikosongkan.",
+  "@leaveSheetHelp": {
+    "description": "S30 explanation."
+  },
+  "leaveReasonLabel": "Alasan",
+  "@leaveReasonLabel": {
+    "description": "S30 reason field label."
+  },
+  "leaveReasonHint": "(opsional)",
+  "@leaveReasonHint": {
+    "description": "S30 reason field label hint."
+  },
+  "leaveReasonCounter": "{count}/500",
+  "@leaveReasonCounter": {
+    "description": "Reason field counter.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "leaveReasonTooLong": "Alasan paling banyak 500 huruf.",
+  "@leaveReasonTooLong": {
+    "description": "Reason field error."
+  },
+  "leaveSend": "Kirim permintaan",
+  "@leaveSend": {
+    "description": "S30 primary button."
+  },
+  "leaveSent": "Permintaan keluar terkirim. Tunggu persetujuan pengurus.",
+  "@leaveSent": {
+    "description": "Toast after sending a leave request."
+  },
+  "leaveOrganizerBlocked": "Pengurus tidak bisa keluar. Serahkan pengurus ke anggota lain dulu, atau tutup grup.",
+  "@leaveOrganizerBlocked": {
+    "description": "S30 blocked state for the organizer."
+  },
+  "leaveTransferLink": "Serahkan pengurus",
+  "@leaveTransferLink": {
+    "description": "S30 link to S32."
+  },
+  "leaveObligationsBlocked": "Kamu sudah menang dan masih punya {count} iuran. Lunasi dulu sebelum keluar.",
+  "@leaveObligationsBlocked": {
+    "description": "S30 blocked state for a past winner.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "leavePendingExists": "Kamu sudah punya permintaan keluar yang menunggu.",
+  "@leavePendingExists": {
+    "description": "Toast on pending_request_exists for leave."
+  },
+  "leaveRequestsTitle": "Permintaan keluar",
+  "@leaveRequestsTitle": {
+    "description": "S31 title."
+  },
+  "leaveRequestsEmpty": "Tidak ada permintaan keluar.",
+  "@leaveRequestsEmpty": {
+    "description": "S31 empty state."
+  },
+  "leaveRequestedOn": "Diminta {date}",
+  "@leaveRequestedOn": {
+    "description": "S31 card caption.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "leaveNoReason": "Tanpa alasan.",
+  "@leaveNoReason": {
+    "description": "S31 card when no reason was given."
+  },
+  "leaveApprove": "Setujui",
+  "@leaveApprove": {
+    "description": "S31 approve button."
+  },
+  "leaveReject": "Tolak",
+  "@leaveReject": {
+    "description": "S31 reject button."
+  },
+  "leaveApproved": "{name} sudah keluar. Slotnya kosong lagi.",
+  "@leaveApproved": {
+    "description": "Toast after approving.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "leaveRejected": "Permintaan ditolak.",
+  "@leaveRejected": {
+    "description": "Toast after rejecting."
+  },
+  "leaveRejectTitle": "Tolak permintaan {name}?",
+  "@leaveRejectTitle": {
+    "description": "Reject reason sheet title.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "leaveRejectReason": "Alasan penolakan",
+  "@leaveRejectReason": {
+    "description": "Reject reason field label."
+  },
+  "leaveRejectReasonError": "Alasan 3–500 huruf, atau kosongkan.",
+  "@leaveRejectReasonError": {
+    "description": "Reject reason error."
+  },
+  "leaveRejectConfirm": "Tolak permintaan",
+  "@leaveRejectConfirm": {
+    "description": "Reject reason sheet button."
+  },
+  "leaveWinnerWarning": "Sudah menang. Pastikan sisa iurannya beres sebelum disetujui.",
+  "@leaveWinnerWarning": {
+    "description": "S31 warning for a past winner."
+  },
+  "transferHeadline": "Serahkan **pengurus** ke siapa?",
+  "@transferHeadline": {
+    "description": "S32 headline."
+  },
+  "transferExplain": "Pengurus baru yang mengelola pembayaran, kocokan dan info rekening. Pengurus baru perlu mengisi rekeningnya sendiri. Kamu jadi anggota biasa.",
+  "@transferExplain": {
+    "description": "S32 explanation."
+  },
+  "transferNoCandidates": "Belum ada anggota dengan akun Giliran. Tamu tidak bisa jadi pengurus.",
+  "@transferNoCandidates": {
+    "description": "S32 when nobody is eligible."
+  },
+  "transferSend": "Kirim tawaran",
+  "@transferSend": {
+    "description": "S32 primary button."
+  },
+  "transferConfirmTitle": "Tawarkan peran pengurus ke {name}?",
+  "@transferConfirmTitle": {
+    "description": "S32 confirmation sheet title.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "transferPending": "Menunggu jawaban {name} · berlaku sampai {date}",
+  "@transferPending": {
+    "description": "S32 pending state card.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "transferPendingExists": "Sudah ada tawaran yang menunggu jawaban.",
+  "@transferPendingExists": {
+    "description": "Toast on pending_request_exists for a transfer."
+  },
+  "transferRespondHeadline": "{from} ingin kamu jadi **pengurus {group}**",
+  "@transferRespondHeadline": {
+    "description": "S33 headline.",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "transferDutyPayments": "Cek bukti bayar dan catat iuran anggota.",
+  "@transferDutyPayments": {
+    "description": "S33 responsibility bullet."
+  },
+  "transferDutyDraws": "Jalankan kocokan dan catat penyerahan.",
+  "@transferDutyDraws": {
+    "description": "S33 responsibility bullet."
+  },
+  "transferDutyMembers": "Kelola anggota, tamu dan permintaan keluar.",
+  "@transferDutyMembers": {
+    "description": "S33 responsibility bullet."
+  },
+  "transferReminder": "Setelah menerima, isi info rekening kamu agar anggota transfer ke kamu.",
+  "@transferReminder": {
+    "description": "S33 key reminder card."
+  },
+  "transferAccept": "Terima",
+  "@transferAccept": {
+    "description": "S33 primary button."
+  },
+  "transferDecline": "Tolak",
+  "@transferDecline": {
+    "description": "S33 secondary button."
+  },
+  "transferAccepted": "Kamu sekarang pengurus. Isi info rekening kamu.",
+  "@transferAccepted": {
+    "description": "Toast after accepting."
+  },
+  "transferDeclined": "Tawaran ditolak.",
+  "@transferDeclined": {
+    "description": "Toast after declining."
+  },
+  "transferExpired": "Tawaran ini sudah tidak berlaku.",
+  "@transferExpired": {
+    "description": "S33 when the transfer is gone or answered."
   }
 }

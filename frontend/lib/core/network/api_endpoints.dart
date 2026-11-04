@@ -7,8 +7,14 @@ abstract final class ApiEndpoints() {
   /// for a local backend.
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://giliran.monai.my.id/api/v1',
+    defaultValue: 'http://localhost:8080/api/v1',
   );
+
+  /// The public site behind invite, claim and verification links.
+  static const String webBaseUrl = 'https://giliran.monai.my.id';
+
+  /// Public draw verification page (`/v/{code}`), opened in the browser.
+  static Uri verifyPage(String code) => Uri.parse('$webBaseUrl/v/$code');
 
   /// Token refresh (`POST`, rotates the refresh token).
   static const String refresh = '/auth/refresh';
@@ -66,6 +72,59 @@ abstract final class ApiEndpoints() {
 
   /// The organizer's QRIS image (`PUT` multipart, `DELETE`).
   static String paymentInfoQris(String groupId) => '/groups/$groupId/payment-info/qris';
+
+  /// Sets the winning order of a fixed-order group (`PUT`).
+  static String fixedOrder(String groupId) => '/groups/$groupId/fixed-order';
+
+  /// Starts a draft group and opens period 1 (`POST`).
+  static String groupStart(String groupId) => '/groups/$groupId/start';
+
+  /// Replaces the invite code; old links stop working (`POST`).
+  static String inviteReset(String groupId) => '/groups/$groupId/invite-code/reset';
+
+  /// Group preview from an invite code (`GET`).
+  static String invite(String code) => '/invites/$code';
+
+  /// Joins the group behind an invite code (`POST`).
+  static String inviteJoin(String code) => '/invites/$code/join';
+
+  /// Members and guests (`GET`, `?status=active|all`).
+  static String members(String groupId) => '/groups/$groupId/members';
+
+  /// Adds a guest to the next free slot (`POST`).
+  static String guests(String groupId) => '/groups/$groupId/guests';
+
+  /// One member (`GET`), guest edit (`PATCH`), removal (`DELETE`).
+  static String member(String groupId, String memberId) => '/groups/$groupId/members/$memberId';
+
+  /// A link a guest uses to take over their slot (`POST`).
+  static String claimLink(String groupId, String memberId) => '/groups/$groupId/members/$memberId/claim-link';
+
+  /// Claims a guest slot with the signed-in account (`POST`).
+  static String claim(String token) => '/claims/$token';
+
+  /// Leave requests (`GET`, `?status=`) and asking to leave (`POST`).
+  static String leaveRequests(String groupId) => '/groups/$groupId/leave-requests';
+
+  /// Approves a leave request (`POST`).
+  static String leaveApprove(String groupId, String requestId) => '/groups/$groupId/leave-requests/$requestId/approve';
+
+  /// Rejects a leave request (`POST`).
+  static String leaveReject(String groupId, String requestId) => '/groups/$groupId/leave-requests/$requestId/reject';
+
+  /// Offers the organizer role to another member (`POST`).
+  static String ownershipTransfers(String groupId) => '/groups/$groupId/ownership-transfers';
+
+  /// Accepts the organizer role (`POST`).
+  static String transferAccept(String groupId, String transferId) =>
+      '/groups/$groupId/ownership-transfers/$transferId/accept';
+
+  /// Declines the organizer role (`POST`).
+  static String transferDecline(String groupId, String transferId) =>
+      '/groups/$groupId/ownership-transfers/$transferId/decline';
+
+  /// Remaining obligations of past winners (`GET`).
+  static String obligations(String groupId) => '/groups/$groupId/obligations';
 
   /// `extra` flag: skip attaching the access token (sign-in, refresh, public
   /// pages).

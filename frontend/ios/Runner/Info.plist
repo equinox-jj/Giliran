@@ -78,5 +78,7 @@
 		<array>
 			<string>message</string>
 		</array>
-	</dict>
+	<key>FlutterDeepLinkingEnabled</key>
+	<true/>
+</dict>
 </plist>

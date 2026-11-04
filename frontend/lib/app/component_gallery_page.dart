@@ -223,6 +223,35 @@ class const _GroupsSection() extends StatelessWidget {
         _gap,
         QrisCard(onUpload: () => showAppToast(context, 'Upload QRIS')),
         _gap,
+        const ObligationMeter(
+          name: 'Pak Dedi',
+          wonPeriodNo: 3,
+          periodsAfterWin: 7,
+          remainingCount: 5,
+          remainingAmount: 1000000,
+          overdueCount: 1,
+          overdueAmount: 200000,
+          showOverdue: true,
+        ),
+        _gap,
+        const ReorderableMemberRow(position: 1, name: 'Bu Rina', slotNo: 4),
+        _gap,
+        const ReorderableMemberRow(position: 2, name: 'Pak Dedi', slotNo: 7, guest: true, locked: true),
+        _gap,
+        ReadinessChecklist(
+          rows: [
+            const ReadinessRow(title: 'Semua slot terisi', caption: '10 dari 10 slot terisi', done: true),
+            ReadinessRow(
+              title: 'Info rekening ada',
+              caption: 'Anggota perlu tahu ke mana transfer.',
+              done: false,
+              highlighted: true,
+              actionLabel: 'Isi rekening',
+              onAction: () => showAppToast(context, 'Isi rekening'),
+            ),
+          ],
+        ),
+        _gap,
         PeriodStrip(
           periods: [
             for (var n = 1; n <= 10; n++)

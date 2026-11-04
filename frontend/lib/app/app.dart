@@ -11,13 +11,15 @@ import 'router.dart';
 /// Root widget of the app.
 ///
 /// Applies the light and dark [AppTheme], the stored theme mode and language,
-/// and navigates through the app router. Until the stored settings load, it
-/// shows Indonesian and follows the system theme.
+/// and navigates through the app router, which also receives app links
+/// (Flutter deep linking). Until the stored settings load, it shows
+/// Indonesian and follows the system theme.
 class const GiliranApp({super.key}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final locale = ref.watch(localeControllerProvider.select((s) => s.value));
     final themeMode = ref.watch(themeModeControllerProvider.select((s) => s.value));
+    final router = ref.watch(routerProvider);
 
     return MaterialApp.router(
       onGenerateTitle: (context) => context.l10n.appName,
@@ -28,7 +30,7 @@ class const GiliranApp({super.key}) extends ConsumerWidget {
       locale: locale ?? LocaleController.supported.first,
       localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      routerConfig: ref.watch(routerProvider),
+      routerConfig: router,
       builder: (context, child) => AppLockGate(child: child ?? const SizedBox.shrink()),
     );
   }

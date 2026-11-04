@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../core/error/failure.dart';
-import '../core/l10n/l10n.dart';
 import '../features/auth/domain/entities/auth_status.dart';
 import '../features/auth/presentation/biometric_opt_in/page/biometric_opt_in_page.dart';
 import '../features/auth/presentation/change_email/page/change_email_page.dart';
@@ -27,6 +26,16 @@ import '../features/group/presentation/groups/page/groups_page.dart';
 import '../features/group/presentation/payment_info/page/payment_info_page.dart';
 import '../features/history/presentation/pages/activity_page.dart';
 import '../features/home/presentation/home/page/home_page.dart';
+import '../features/member/presentation/claim/page/claim_page.dart';
+import '../features/member/presentation/fixed_order/page/fixed_order_page.dart';
+import '../features/member/presentation/invite/page/invite_page.dart';
+import '../features/member/presentation/join/page/join_page.dart';
+import '../features/member/presentation/leave_requests/page/leave_requests_page.dart';
+import '../features/member/presentation/member_detail/page/member_detail_page.dart';
+import '../features/member/presentation/shared/widgets/join_link_sheet.dart';
+import '../features/member/presentation/start_group/page/start_group_page.dart';
+import '../features/member/presentation/transfer_offer/page/transfer_offer_page.dart';
+import '../features/member/presentation/transfer_respond/page/transfer_respond_page.dart';
 import '../features/profile/presentation/delete_account/page/delete_account_page.dart';
 import '../features/profile/presentation/edit_profile/page/edit_profile_page.dart';
 import '../features/profile/presentation/profile/page/profile_page.dart';
@@ -34,6 +43,7 @@ import '../features/profile/presentation/security/page/security_page.dart';
 import '../features/settings/presentation/settings/page/settings_page.dart';
 import '../shared/widgets/widgets.dart';
 import 'component_gallery_page.dart';
+import 'deep_link_controller.dart';
 
 part 'routes.g.dart';
 
@@ -71,6 +81,34 @@ final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
                 TypedGoRoute<PaymentInfoRoute>(
                   name: 'paymentInfo',
                   path: 'payment-info',
+                ),
+                TypedGoRoute<InviteRoute>(
+                  name: 'invite',
+                  path: 'invite',
+                ),
+                TypedGoRoute<MemberDetailRoute>(
+                  name: 'memberDetail',
+                  path: 'members/:mid',
+                ),
+                TypedGoRoute<FixedOrderRoute>(
+                  name: 'fixedOrder',
+                  path: 'fixed-order',
+                ),
+                TypedGoRoute<StartGroupRoute>(
+                  name: 'startGroup',
+                  path: 'start',
+                ),
+                TypedGoRoute<LeaveRequestsRoute>(
+                  name: 'leaveRequests',
+                  path: 'leave-requests',
+                ),
+                TypedGoRoute<TransferOfferRoute>(
+                  name: 'transferOffer',
+                  path: 'transfer',
+                ),
+                TypedGoRoute<TransferRespondRoute>(
+                  name: 'transferRespond',
+                  path: 'transfer/:tid',
                 ),
               ],
             ),
@@ -162,8 +200,10 @@ class const HomeRoute() extends GoRouteData with $HomeRoute {
   Widget build(BuildContext context, GoRouterState state) => HomePage(
     onOpenGroup: (id) => GroupDetailRoute(gid: id).go(context),
     onCreateGroup: () => const CreateGroupRoute().push<void>(context),
-    // The paste-invite-link sheet comes with Members (Phase 3).
-    onJoinByLink: () => showAppToast(context, context.l10n.comingSoon),
+    onJoinByLink: () async {
+      final code = await showJoinLinkSheet(context);
+      if (code != null && context.mounted) JoinRoute(code: code).push<void>(context);
+    },
     onAvatar: () => const ProfileRoute().go(context),
     onBell: () => const ActivityRoute().go(context),
   );
@@ -210,6 +250,11 @@ class const GroupDetailRoute({required final String gid, final String? tab, fina
     created: created,
     onEdit: () => EditGroupRoute(gid: gid).push<void>(context),
     onPaymentInfo: () => PaymentInfoRoute(gid: gid).push<void>(context),
+    onInvite: () => InviteRoute(gid: gid).push<void>(context),
+    onStart: () => StartGroupRoute(gid: gid).push<void>(context),
+    onOpenMember: (mid) => MemberDetailRoute(gid: gid, mid: mid).push<void>(context),
+    onLeaveRequests: () => LeaveRequestsRoute(gid: gid).push<void>(context),
+    onTransfer: () => TransferOfferRoute(gid: gid).push<void>(context),
   );
 }
 
@@ -221,6 +266,9 @@ class const EditGroupRoute({required final String gid}) extends GoRouteData with
   Widget build(BuildContext context, GoRouterState state) => EditGroupPage(
     groupId: gid,
     onPaymentInfo: () => PaymentInfoRoute(gid: gid).push<void>(context),
+    onFixedOrder: () => FixedOrderRoute(gid: gid).push<void>(context),
+    onLeaveRequests: () => LeaveRequestsRoute(gid: gid).push<void>(context),
+    onTransfer: () => TransferOfferRoute(gid: gid).push<void>(context),
     onClosed: () => _popOr(context, GroupDetailRoute(gid: gid).location),
   );
 }
@@ -231,6 +279,85 @@ class const PaymentInfoRoute({required final String gid}) extends GoRouteData wi
 
   @override
   Widget build(BuildContext context, GoRouterState state) => PaymentInfoPage(groupId: gid);
+}
+
+/// Invite (S16), over the tabs.
+class const InviteRoute({required final String gid}) extends GoRouteData with $InviteRoute {
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => InvitePage(groupId: gid);
+}
+
+/// Member detail (S26), over the tabs.
+class const MemberDetailRoute({required final String gid, required final String mid})
+    extends GoRouteData
+    with $MemberDetailRoute {
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => MemberDetailPage(
+    groupId: gid,
+    memberId: mid,
+    onRemoved: () => _popOr(context, GroupDetailRoute(gid: gid, tab: DetailTab.members.query).location),
+  );
+}
+
+/// Fixed order (S17), over the tabs.
+class const FixedOrderRoute({required final String gid}) extends GoRouteData with $FixedOrderRoute {
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => FixedOrderPage(
+    groupId: gid,
+    onDone: () => _popOr(context, GroupDetailRoute(gid: gid).location),
+  );
+}
+
+/// Start group (S18), over the tabs.
+class const StartGroupRoute({required final String gid}) extends GoRouteData with $StartGroupRoute {
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => StartGroupPage(
+    groupId: gid,
+    onInvite: () => InviteRoute(gid: gid).push<void>(context),
+    onPaymentInfo: () => PaymentInfoRoute(gid: gid).push<void>(context),
+    onFixedOrder: () => FixedOrderRoute(gid: gid).push<void>(context),
+    onStarted: () => _popOr(context, GroupDetailRoute(gid: gid).location),
+  );
+}
+
+/// Leave requests review (S31), over the tabs.
+class const LeaveRequestsRoute({required final String gid}) extends GoRouteData with $LeaveRequestsRoute {
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => LeaveRequestsPage(groupId: gid);
+}
+
+/// Transfer ownership offer (S32), over the tabs.
+class const TransferOfferRoute({required final String gid}) extends GoRouteData with $TransferOfferRoute {
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => TransferOfferPage(groupId: gid);
+}
+
+/// Transfer ownership respond (S33), over the tabs. Accepting opens Payment
+/// info (S15) in its place.
+class const TransferRespondRoute({required final String gid, required final String tid})
+    extends GoRouteData
+    with $TransferRespondRoute {
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => TransferRespondPage(
+    groupId: gid,
+    transferId: tid,
+    onAccepted: () => PaymentInfoRoute(gid: gid).pushReplacement(context),
+    onDone: () => _popOr(context, GroupDetailRoute(gid: gid).location),
+  );
 }
 
 class const ActivityRoute() extends GoRouteData with $ActivityRoute {
@@ -324,6 +451,34 @@ class const SecurityForgotPinRoute() extends GoRouteData with $SecurityForgotPin
 /// directly (a deep link) and has nothing under it.
 void _popOr(BuildContext context, String fallback) => context.canPop() ? context.pop() : context.go(fallback);
 
+/// Join preview (S25), from an invite link `/j/:code`.
+@TypedGoRoute<JoinRoute>(
+  name: 'join',
+  path: '/j/:code',
+)
+class const JoinRoute({required final String code}) extends GoRouteData with $JoinRoute {
+  @override
+  Widget build(BuildContext context, GoRouterState state) => JoinPage(
+    code: code,
+    onOpenGroup: (id) => GroupDetailRoute(gid: id).go(context),
+    onLater: () => _popOr(context, const HomeRoute().location),
+  );
+}
+
+/// Claim guest slot (S29), from a claim link `/c/:token`.
+@TypedGoRoute<ClaimRoute>(
+  name: 'claim',
+  path: '/c/:token',
+)
+class const ClaimRoute({required final String token}) extends GoRouteData with $ClaimRoute {
+  @override
+  Widget build(BuildContext context, GoRouterState state) => ClaimPage(
+    token: token,
+    onClaimed: (id) => id == null ? const GroupsRoute().go(context) : GroupDetailRoute(gid: id).go(context),
+    onClose: () => _popOr(context, const HomeRoute().location),
+  );
+}
+
 @TypedGoRoute<SplashRoute>(
   name: 'splash',
   path: '/',
@@ -349,11 +504,17 @@ class const SplashRoute() extends GoRouteData with $SplashRoute {
   name: 'welcome',
   path: '/welcome',
 )
-class const WelcomeRoute() extends GoRouteData with $WelcomeRoute {
+/// Welcome (S02). [invited] is set when the guard turns away an invite
+/// link; a link stored by an earlier run shows the banner too.
+class const WelcomeRoute({final bool invited = false}) extends GoRouteData with $WelcomeRoute {
   @override
-  Widget build(BuildContext context, GoRouterState state) => WelcomePage(
-    onSignIn: () => const SignInRoute().push<void>(context),
-  );
+  Widget build(BuildContext context, GoRouterState state) {
+    final pending = ProviderScope.containerOf(context, listen: false).read(deepLinkControllerProvider).pending;
+    return WelcomePage(
+      invited: invited || (pending?.startsWith('/j/') ?? false),
+      onSignIn: () => const SignInRoute().push<void>(context),
+    );
+  }
 }
 
 @TypedGoRoute<SignInRoute>(

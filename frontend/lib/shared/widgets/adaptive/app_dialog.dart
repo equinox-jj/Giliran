@@ -8,7 +8,8 @@ import '../app_button.dart';
 /// dialog elsewhere, with identical copy. Resolves to true when confirmed.
 ///
 /// Use [destructive] for removing members, closing groups, deleting the
-/// account and signing out devices.
+/// account and signing out devices. Without [showCancel] it is a notice with
+/// one button.
 Future<bool> showAppDialog(
   BuildContext context, {
   required String title,
@@ -16,6 +17,7 @@ Future<bool> showAppDialog(
   required String confirmLabel,
   String cancelLabel = 'Batal',
   bool destructive = true,
+  bool showCancel = true,
 }) async {
   final platform = Theme.of(context).platform;
   final isCupertino = platform == TargetPlatform.iOS || platform == TargetPlatform.macOS;
@@ -28,10 +30,11 @@ Future<bool> showAppDialog(
           title: Text(title),
           content: message == null ? null : Text(message),
           actions: [
-            CupertinoDialogAction(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text(cancelLabel),
-            ),
+            if (showCancel)
+              CupertinoDialogAction(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text(cancelLabel),
+              ),
             CupertinoDialogAction(
               isDestructiveAction: destructive,
               isDefaultAction: !destructive,
@@ -81,10 +84,11 @@ Future<bool> showAppDialog(
                   alignment: WrapAlignment.end,
                   spacing: AppSpace.s2,
                   children: [
-                    AppButton.ghost(
-                      label: cancelLabel,
-                      onPressed: () => Navigator.of(context).pop(false),
-                    ),
+                    if (showCancel)
+                      AppButton.ghost(
+                        label: cancelLabel,
+                        onPressed: () => Navigator.of(context).pop(false),
+                      ),
                     AppButton(
                       label: confirmLabel,
                       size: AppButtonSize.small,

@@ -57,6 +57,11 @@ void main() {
         created: created,
         onEdit: () => opened.add('edit'),
         onPaymentInfo: () => opened.add('paymentInfo'),
+        onInvite: () => opened.add('invite'),
+        onStart: () => opened.add('start'),
+        onOpenMember: (mid) => opened.add('member:$mid'),
+        onLeaveRequests: () => opened.add('leaveRequests'),
+        onTransfer: () => opened.add('transfer'),
       ),
       container: container,
     );

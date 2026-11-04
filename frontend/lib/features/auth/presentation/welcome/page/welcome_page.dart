@@ -2,10 +2,14 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../../../core/constants/app_icons.dart';
 import '../../../../../core/constants/app_illustrations.dart';
+import '../../../../../core/l10n/l10n.dart';
 import '../../../../../core/themes/themes.dart';
 import '../../../../../shared/widgets/widgets.dart';
 
-class const WelcomePage({super.key, required final VoidCallback onSignIn}) extends StatefulWidget {
+/// Welcome (S02): the onboarding pager and sign-in. [invited] shows the
+/// telang banner when an invite link is waiting for the sign-in.
+class const WelcomePage({super.key, required final VoidCallback onSignIn, final bool invited = false})
+    extends StatefulWidget {
   static const pages = [
     OnboardingPageData(
       illustration: AppIllustrations.onboardingTikar,
@@ -73,17 +77,28 @@ class _WelcomePageState() extends State<WelcomePage> {
             context.screenMargin,
             AppSpace.s8,
           ),
-          child: context.isCompact
-              ? _PhoneLayout(
-                  controller: _controller,
-                  index: _index,
-                  isLast: _isLast,
-                  onPageChanged: (i) => setState(() => _index = i),
-                  onSkip: () => _goTo(WelcomePage.pages.length - 1),
-                  onNext: () => _goTo(_index + 1),
-                  onSignIn: widget.onSignIn,
-                )
-              : _WideLayout(onSignIn: widget.onSignIn),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (widget.invited) ...[
+                AppBanner(message: context.l10n.invitedBanner, icon: AppIcons.userPlus),
+                const SizedBox(height: AppSpace.s3),
+              ],
+              Expanded(
+                child: context.isCompact
+                    ? _PhoneLayout(
+                        controller: _controller,
+                        index: _index,
+                        isLast: _isLast,
+                        onPageChanged: (i) => setState(() => _index = i),
+                        onSkip: () => _goTo(WelcomePage.pages.length - 1),
+                        onNext: () => _goTo(_index + 1),
+                        onSignIn: widget.onSignIn,
+                      )
+                    : _WideLayout(onSignIn: widget.onSignIn),
+              ),
+            ],
+          ),
         ),
       ),
     );
