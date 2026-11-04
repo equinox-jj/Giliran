@@ -40,18 +40,3 @@ class const DetailTabs({
     );
   }
 }
-
-/// The body of a tab that its feature hasn't filled yet.
-class const DetailTabPlaceholder({super.key, required final DetailTab tab}) extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final label = switch (tab) {
-      DetailTab.payments => l10n.tabPayments,
-      DetailTab.schedule => l10n.tabSchedule,
-      DetailTab.members => l10n.tabMembers,
-      DetailTab.activity => l10n.tabActivity,
-    };
-    return EmptyState(compact: true, title: label, message: l10n.comingSoon);
-  }
-}

@@ -75,6 +75,7 @@ void main() {
         onDraw: (pid) => opened.add('draw:$pid'),
         onBuktiKocok: (pid) => opened.add('bukti:$pid'),
         onPayout: (pid) => opened.add('payout:$pid'),
+        onSummary: () => opened.add('summary'),
       ),
       container: container,
     );
@@ -114,6 +115,18 @@ void main() {
 
     // Assert
     expect(find.text('Arisan selesai.'), findsOneWidget);
+  });
+
+  testWidgets('a completed group offers Lihat ringkasan, which opens S24', (tester) async {
+    // Arrange
+    await pumpDetail(tester, _active.copyWith(status: GroupStatus.completed));
+
+    // Act
+    await tester.tap(find.text('Lihat ringkasan'));
+    await tester.pumpAndSettle();
+
+    // Assert
+    expect(opened, ['summary']);
   });
 
   testWidgets('a member menu has Bagikan and Minta keluar', (tester) async {

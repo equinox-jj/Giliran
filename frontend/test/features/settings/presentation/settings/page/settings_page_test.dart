@@ -4,6 +4,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:giliran/core/error/failure.dart';
 import 'package:giliran/core/l10n/l10n.dart';
 import 'package:giliran/core/l10n/locale_controller.dart';
+import 'package:giliran/core/services/push_service.dart';
 import 'package:giliran/core/storage/preferences.dart';
 import 'package:giliran/core/themes/theme_mode_controller.dart';
 import 'package:giliran/core/themes/themes.dart';
@@ -13,20 +14,24 @@ import 'package:giliran/features/settings/presentation/settings/page/settings_pa
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../../helpers/fake_preferences.dart';
+import '../../../../../helpers/fake_push_service.dart';
 import '../../../../../helpers/fake_settings_repository.dart';
 
 void main() {
   late FakeSettingsRepository repository;
   late FakePreferences prefs;
+  late FakePushService push;
   late ProviderContainer container;
   late int deleteTaps;
 
   setUp(() {
     repository = FakeSettingsRepository();
     prefs = FakePreferences();
+    push = FakePushService();
     container = ProviderContainer(
       overrides: [
         settingsRepositoryProvider.overrideWithValue(repository),
+        pushServiceProvider.overrideWithValue(push),
         preferencesProvider.overrideWithValue(prefs),
       ],
     );
@@ -80,6 +85,37 @@ void main() {
     // Assert
     expect(repository.patches, [const UserSettingsPatch(notifyGroupActivity: true)]);
     expect(switchOf(tester, 'Aktivitas grup'), isTrue);
+  });
+
+  testWidgets('the permission row shows Mati and asks the OS when not asked yet', (tester) async {
+    // Arrange
+    push
+      ..permissionState = PushPermission.notDetermined
+      ..afterRequest = PushPermission.granted;
+    await pumpSettings(tester);
+    expect(find.text('Mati'), findsOneWidget);
+
+    // Act
+    await tester.tap(find.text('Izin notifikasi'));
+    await tester.pumpAndSettle();
+
+    // Assert
+    expect(push.requestCount, 1);
+    expect(find.text('Aktif'), findsOneWidget);
+  });
+
+  testWidgets('a denied permission opens the system settings', (tester) async {
+    // Arrange
+    push.permissionState = PushPermission.denied;
+    await pumpSettings(tester);
+
+    // Act
+    await tester.tap(find.text('Izin notifikasi'));
+    await tester.pumpAndSettle();
+
+    // Assert
+    expect(push.requestCount, 0);
+    expect(push.settingsOpened, 1);
   });
 
   testWidgets('a failed save reverts the switch and shows a toast', (tester) async {

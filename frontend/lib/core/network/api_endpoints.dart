@@ -49,6 +49,9 @@ abstract final class ApiEndpoints() {
   /// Notification and language settings (`GET`, `PATCH`).
   static const String meSettings = '/me/settings';
 
+  /// The current session's FCM token (`PUT`, body `fcm_token`).
+  static const String mePushToken = '/me/push-token';
+
   /// Active sessions, current one first (`GET`).
   static const String meSessions = '/me/sessions';
 
@@ -125,6 +128,9 @@ abstract final class ApiEndpoints() {
 
   /// Remaining obligations of past winners (`GET`).
   static String obligations(String groupId) => '/groups/$groupId/obligations';
+
+  /// The group's activity log, newest first, with `limit` and `cursor` (`GET`).
+  static String activity(String groupId) => '/groups/$groupId/activity';
 
   /// A group's periods in order (`GET`).
   static String periods(String groupId) => '/groups/$groupId/periods';

@@ -6,12 +6,14 @@ import 'converters.dart';
 import 'daos/activity_logs_dao.dart';
 import 'daos/groups_dao.dart';
 import 'daos/members_dao.dart';
+import 'daos/notifications_dao.dart';
 import 'daos/payments_dao.dart';
 import 'daos/payouts_dao.dart';
 import 'daos/periods_dao.dart';
 import 'tables/activity_logs_table.dart';
 import 'tables/groups_table.dart';
 import 'tables/members_table.dart';
+import 'tables/notifications_table.dart';
 import 'tables/payments_table.dart';
 import 'tables/payouts_table.dart';
 import 'tables/periods_table.dart';
@@ -21,10 +23,11 @@ part 'app_database.g.dart';
 /// The on-device mirror of server data for offline reading (DB_SCHEME §9).
 ///
 /// The server is the source of truth; these tables are a cache filled from
-/// API responses, plus the pending-sync flag for offline cash payments.
+/// API responses, plus the pending-sync flag for offline cash payments and
+/// the push notifications received on this device.
 /// Feature local datasources reach the tables through the DAO getters.
 @DriftDatabase(
-  tables: [Groups, Members, Periods, Payments, Payouts, ActivityLogs],
+  tables: [Groups, Members, Periods, Payments, Payouts, ActivityLogs, Notifications],
   daos: [
     GroupsDao,
     MembersDao,
@@ -32,6 +35,7 @@ part 'app_database.g.dart';
     PaymentsDao,
     PayoutsDao,
     ActivityLogsDao,
+    NotificationsDao,
   ],
 )
 class AppDatabase([QueryExecutor? executor]) extends _$AppDatabase {
@@ -42,11 +46,18 @@ class AppDatabase([QueryExecutor? executor]) extends _$AppDatabase {
   static const _fileName = 'giliran';
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) => m.createAll(),
+    onUpgrade: (m, from, to) async {
+      // v2: push notifications for the Aktivitas tab (S12).
+      if (from < 2) {
+        await m.createTable(notifications);
+        await m.createIndex(notificationsCreatedIdx);
+      }
+    },
     beforeOpen: (details) async {
       // Per-connection: SQLite defaults it off and then ignores ON DELETE.
       await customStatement('PRAGMA foreign_keys = ON');
@@ -65,6 +76,9 @@ class AppDatabase([QueryExecutor? executor]) extends _$AppDatabase {
   static QueryExecutor _openConnection() => driftDatabase(
     name: _fileName,
     native: DriftNativeOptions(
+      // The push background handler opens the database from another
+      // isolate; sharing keeps one connection.
+      shareAcrossIsolates: true,
       setup: (db) {
         db.execute('PRAGMA journal_mode = WAL');
         // NORMAL is enough for a cache that can be refetched from the API.

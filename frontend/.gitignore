@@ -46,3 +46,7 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+firebase.json
+google-services.json
+GoogleService-Info.plist

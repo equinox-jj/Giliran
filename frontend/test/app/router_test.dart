@@ -5,9 +5,11 @@ import 'package:giliran/app/app.dart';
 import 'package:giliran/app/deep_link_controller.dart';
 import 'package:giliran/app/router.dart';
 import 'package:giliran/app/routes.dart';
+import 'package:giliran/core/database/app_database.dart';
 import 'package:giliran/core/error/failure.dart';
 import 'package:giliran/core/network/connectivity_controller.dart';
 import 'package:giliran/core/services/biometric_service.dart';
+import 'package:giliran/core/services/push_service.dart';
 import 'package:giliran/core/services/share_service.dart';
 import 'package:giliran/core/storage/preferences.dart';
 import 'package:giliran/features/auth/data/repositories/auth_repository_impl.dart';
@@ -33,6 +35,8 @@ import '../helpers/fake_group_repository.dart';
 import '../helpers/fake_member_repository.dart';
 import '../helpers/fake_preferences.dart';
 import '../helpers/fake_share_service.dart';
+import '../core/database/fixtures.dart';
+import '../helpers/fake_push_service.dart';
 
 void main() {
   late FakeAuthRepository repository;
@@ -45,9 +49,13 @@ void main() {
     repository = FakeAuthRepository()..hasSessionResult = const Right(false);
     preferences = FakePreferences();
     share = FakeShareService();
+    final db = openTestDatabase();
+    addTearDown(db.close);
     container = ProviderContainer(
       overrides: [
         authRepositoryProvider.overrideWithValue(repository),
+        appDatabaseProvider.overrideWithValue(db),
+        pushServiceProvider.overrideWithValue(FakePushService()),
         biometricServiceProvider.overrideWithValue(FakeBiometricService()),
         preferencesProvider.overrideWithValue(preferences),
         groupRepositoryProvider.overrideWithValue(FakeGroupRepository()),

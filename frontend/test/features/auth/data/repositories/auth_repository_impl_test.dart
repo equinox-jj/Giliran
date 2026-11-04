@@ -176,6 +176,23 @@ void main() {
       );
     });
 
+    test('sends the device FCM token when push has one', () async {
+      // Arrange
+      remote.challenge = const EmailOtpChallengeModel(id: 'otp-1', codeLength: 6);
+      repository = AuthRepositoryImpl(
+        remote: remote,
+        local: local,
+        deviceInfo: _FakeDeviceInfo(),
+        fcmToken: () async => 'fcm-token-1',
+      );
+
+      // Act
+      await repository.requestEmailOtp(purpose: OtpPurpose.signIn, email: 'jo@email.com');
+
+      // Assert
+      expect(remote.lastRequest?.fcmToken, 'fcm-token-1');
+    });
+
     test('turns a network error into a NetworkFailure', () async {
       // Arrange
       remote.error = const NetworkException();

@@ -48,6 +48,13 @@ class ActivityLogsDao(super.attachedDatabase) extends DatabaseAccessor<AppDataba
     await trimToLatest(groupId, maxPerGroup);
   });
 
+  /// Replaces every cached entry of [groupId] with [rows] (a fresh first
+  /// page, server wins).
+  Future<void> replaceForGroup(String groupId, List<ActivityLogsCompanion> rows) => transaction(() async {
+    await (delete(activityLogs)..where((a) => a.groupId.equals(groupId))).go();
+    await upsertAll(groupId, rows);
+  });
+
   /// Deletes all but the newest [keep] entries of [groupId].
   Future<void> trimToLatest(String groupId, int keep) => customUpdate(
     'DELETE FROM activity_logs WHERE group_id = ?1 AND id NOT IN ('

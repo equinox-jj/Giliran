@@ -12,6 +12,9 @@ import '../../../../../core/utils/enums/group_status.dart';
 import '../../../../../core/utils/enums/payment_status.dart';
 import '../../../../../core/utils/enums/period_status.dart';
 import '../../../../../shared/widgets/widgets.dart';
+import '../../../../history/presentation/activity_tab/controllers/activity_tab_controller.dart';
+import '../../../../history/presentation/activity_tab/widgets/activity_tab.dart';
+import '../../../../history/presentation/schedule_tab/widgets/schedule_tab.dart';
 import '../../../../member/presentation/members_tab/controllers/members_tab_controller.dart';
 import '../../../../member/presentation/members_tab/widgets/members_tab.dart';
 import '../../../../member/presentation/shared/controllers/members_controller.dart';
@@ -57,6 +60,9 @@ class const GroupDetailPage({
 
   /// Opens the payout (S40) for a period id.
   required final ValueChanged<String> onPayout,
+
+  /// Opens the group summary (S24) of a completed or closed group.
+  required final VoidCallback onSummary,
 }) extends ConsumerStatefulWidget {
   @override
   ConsumerState<GroupDetailPage> createState() => _GroupDetailPageState();
@@ -108,6 +114,8 @@ class _GroupDetailPageState() extends ConsumerState<GroupDetailPage> {
         widget.onBuktiKocok(periodId);
       case HeroAction.continueSetup:
         widget.onStart();
+      case HeroAction.viewSummary:
+        widget.onSummary();
       case HeroAction.uploadProof when my != null:
         _upload(my);
       case HeroAction.viewMyProof when my?.id != null:
@@ -221,6 +229,8 @@ class _GroupDetailPageState() extends ConsumerState<GroupDetailPage> {
     final failure = await ref.read(provider.notifier).close();
     if (!mounted) return;
     showAppToast(context, failure?.displayMessage ?? l10n.groupClosedToast);
+    // A closed group is an archive: show its summary (S24).
+    if (failure == null) widget.onSummary();
   }
 
   @override
@@ -243,6 +253,7 @@ class _GroupDetailPageState() extends ConsumerState<GroupDetailPage> {
           onOpenMember: widget.onOpenMember,
           onLeaveRequests: widget.onLeaveRequests,
           onLeave: _leave,
+          onBuktiKocok: widget.onBuktiKocok,
           payments: (
             onUpload: _upload,
             onReview: (p) => widget.onOpenProof(p.id ?? ''),
@@ -297,6 +308,7 @@ typedef _TabActions = ({
   ValueChanged<String> onOpenMember,
   VoidCallback onLeaveRequests,
   VoidCallback onLeave,
+  ValueChanged<String> onBuktiKocok,
   PaymentsTabActions payments,
 });
 
@@ -331,6 +343,7 @@ class const _DetailBody({
             shownPeriod != null &&
             shownPeriod != ref.read(provider).value?.currentPeriod?.id)
           ref.read(paymentsTabControllerProvider(groupId, shownPeriod).notifier).refresh(),
+        if (tab == DetailTab.activity) ref.read(activityTabControllerProvider(groupId).notifier).refresh(),
         if (tab == DetailTab.members) ...[
           ref.read(membersControllerProvider(groupId).notifier).refresh(),
           ref.read(membersTabControllerProvider(groupId).notifier).refresh().then((_) => null),
@@ -438,8 +451,22 @@ class const _TabBody({
         onLeaveRequests: actions.onLeaveRequests,
         onLeave: actions.onLeave,
       ),
-      _ => SliverToBoxAdapter(child: DetailTabPlaceholder(tab: tab)),
+      DetailTab.schedule => _ScheduleTabBody(provider: provider, group: group, onBuktiKocok: actions.onBuktiKocok),
+      DetailTab.activity => ActivityTab(groupId: group.id ?? ''),
     };
+  }
+}
+
+/// The Jadwal tab over the cached periods.
+class const _ScheduleTabBody({
+  required final GroupDetailControllerProvider provider,
+  required final GroupDetail group,
+  required final ValueChanged<String> onBuktiKocok,
+}) extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final periods = ref.watch(provider.select((s) => s.value?.periods ?? const <Period>[]));
+    return ScheduleTab(group: group, periods: periods, onBuktiKocok: onBuktiKocok);
   }
 }
 
@@ -598,6 +625,7 @@ class const _Hero({
           onPressed: onAction,
           secondary: true,
         ),
+        HeroAction.viewSummary => CurrentPeriodHeroAction(label: l10n.heroViewSummary, onPressed: onAction),
         HeroAction.continueSetup || HeroAction.waitForDraw || HeroAction.none => null,
       },
     );

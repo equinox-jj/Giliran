@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:giliran/core/database/app_database.dart';
 import 'package:giliran/core/error/failure.dart';
 import 'package:giliran/core/usecase/usecase.dart';
 import 'package:giliran/core/utils/enums/biometric_kind.dart';
@@ -29,6 +30,7 @@ import 'package:giliran/features/auth/domain/usecases/verify_pin_usecase.dart';
 import 'package:giliran/features/profile/domain/entity/profile.dart';
 
 import '../../../../helpers/fake_auth_repository.dart';
+import '../../../../core/database/fixtures.dart';
 
 void main() {
   late FakeAuthRepository repository;
@@ -243,9 +245,14 @@ void main() {
   });
 
   group('LogoutUseCase', () {
+    late AppDatabase db;
+
+    setUp(() => db = openTestDatabase());
+    tearDown(() => db.close());
+
     test('revokes the session, then clears the device', () async {
       // Arrange
-      final useCase = LogoutUseCase(repository);
+      final useCase = LogoutUseCase(repository, db);
 
       // Act
       final result = await useCase(const NoParams());
@@ -258,7 +265,7 @@ void main() {
     test('still clears the device when the server call fails', () async {
       // Arrange
       repository.logoutResult = const Left(Failure.network());
-      final useCase = LogoutUseCase(repository);
+      final useCase = LogoutUseCase(repository, db);
 
       // Act
       final result = await useCase(const NoParams());
@@ -271,13 +278,27 @@ void main() {
     test('returns the failure when clearing the device fails', () async {
       // Arrange
       repository.clearSessionResult = const Left(Failure.cache());
-      final useCase = LogoutUseCase(repository);
+      final useCase = LogoutUseCase(repository, db);
 
       // Act
       final result = await useCase(const NoParams());
 
       // Assert
       expect(result.getLeft().toNullable(), isA<CacheFailure>());
+    });
+
+    test('clears the offline cache, notifications included', () async {
+      // Arrange
+      await db.groupsDao.upsertAll([groupRow('g1')]);
+      await db.notificationsDao.insertIfAbsent(notificationRow('n1', DateTime.utc(2026, 11, 1)));
+      final useCase = LogoutUseCase(repository, db);
+
+      // Act
+      await useCase(const NoParams());
+
+      // Assert
+      expect(await db.select(db.groups).get(), isEmpty);
+      expect(await db.select(db.notifications).get(), isEmpty);
     });
   });
 

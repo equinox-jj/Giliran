@@ -1,8 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:giliran/core/database/app_database.dart';
 import 'package:giliran/core/error/failure.dart';
 import 'package:giliran/core/services/biometric_service.dart';
+import 'package:giliran/core/services/push_service.dart';
 import 'package:giliran/core/utils/enums/biometric_kind.dart';
 import 'package:giliran/core/utils/enums/otp_purpose.dart';
 import 'package:giliran/features/auth/data/repositories/auth_repository_impl.dart';
@@ -10,6 +12,9 @@ import 'package:giliran/features/auth/domain/entities/email_otp_challenge.dart';
 import 'package:giliran/features/auth/domain/entities/email_otp_result.dart';
 import 'package:giliran/features/auth/domain/repositories/auth_repository.dart';
 import 'package:giliran/features/profile/domain/entity/profile.dart';
+
+import '../core/database/fixtures.dart';
+import 'fake_push_service.dart';
 
 /// Records each call by name and answers with the configured results. Once
 /// something is saved (user, biometric flags), reads return the saved value.
@@ -176,9 +181,13 @@ ProviderContainer authTestContainer(
   FakeAuthRepository repository, {
   BiometricService? biometric,
 }) {
+  final db = openTestDatabase();
+  addTearDown(db.close);
   final container = ProviderContainer(
     overrides: [
       authRepositoryProvider.overrideWithValue(repository),
+      appDatabaseProvider.overrideWithValue(db),
+      pushServiceProvider.overrideWithValue(FakePushService()),
       biometricServiceProvider.overrideWithValue(
         biometric ?? FakeBiometricService(),
       ),

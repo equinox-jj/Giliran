@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/data/base_repository.dart';
 import '../../../../core/error/failure.dart';
 import '../../../../core/services/device_info_service.dart';
+import '../../../../core/services/push_service.dart';
 import '../../../../core/utils/enums/otp_purpose.dart';
 import '../../../profile/data/mapper/profile_mapper.dart';
 import '../../../profile/domain/entity/profile.dart';
@@ -25,14 +26,19 @@ class AuthRepositoryImpl({
   required final AuthRemoteDataSource _remote,
   required final AuthLocalDataSource _local,
   required final DeviceInfoService _deviceInfo,
+
+  /// This device's FCM token for `fcm_token`, so the new session can be
+  /// pushed to right away; null when push is unavailable.
+  final Future<String?> Function() _fcmToken = _noToken,
 }) with BaseRepository implements AuthRepository {
+  static Future<String?> _noToken() async => null;
+
   @override
   Future<Either<Failure, EmailOtpChallenge>> requestEmailOtp({
     required OtpPurpose purpose,
     required String email,
     String? pin,
   }) => safeCall(() async {
-    // fcm_token stays null until push notifications are wired up.
     final challenge = await _remote.requestEmailOtp(
       EmailOtpRequestModel(
         purpose: purpose,
@@ -40,6 +46,7 @@ class AuthRepositoryImpl({
         deviceName: await _deviceInfo.deviceName(),
         devicePlatform: _deviceInfo.platform,
         pin: pin,
+        fcmToken: await _fcmToken(),
       ),
     );
 
@@ -199,4 +206,5 @@ AuthRepository authRepository(Ref ref) => AuthRepositoryImpl(
   remote: ref.watch(authRemoteDataSourceProvider),
   local: ref.watch(authLocalDataSourceProvider),
   deviceInfo: ref.watch(deviceInfoServiceProvider),
+  fcmToken: ref.watch(pushServiceProvider).token,
 );
