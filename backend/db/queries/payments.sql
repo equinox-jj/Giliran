@@ -59,9 +59,10 @@ RETURNING *;
 
 -- name: SetPaymentPaid :one
 -- Approve (method transfer) or mark paid directly (any method, with a note).
+-- paid_at is when the money changed hands; reviewed_at is when it was recorded.
 UPDATE payments
 SET status = 'paid', method = sqlc.arg(method), note = sqlc.narg(note),
-    paid_at = sqlc.arg(now)::timestamptz, reviewed_by = sqlc.arg(reviewed_by), reviewed_at = sqlc.arg(now)::timestamptz,
+    paid_at = sqlc.arg(paid_at)::timestamptz, reviewed_by = sqlc.arg(reviewed_by), reviewed_at = sqlc.arg(now)::timestamptz,
     reject_reason = NULL
 WHERE id = sqlc.arg(id)
 RETURNING *;

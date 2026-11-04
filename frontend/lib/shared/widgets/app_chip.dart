@@ -55,7 +55,14 @@ class const AppChip({
                 AppIcon(icon!, size: AppSizes.iconMd, color: fg),
                 const SizedBox(width: AppSpace.s2),
               ],
-              Text(label, style: t.label.copyWith(color: fg)),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: t.label.copyWith(color: fg),
+                ),
+              ),
               if (count != null && count! > 0) ...[
                 const SizedBox(width: 6),
                 selected ? _InvertedCount(count!) : CountBadge(count!),

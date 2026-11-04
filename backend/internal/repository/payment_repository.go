@@ -100,11 +100,12 @@ func (r *PaymentRepository) SetProof(ctx context.Context, id, proofID uuid.UUID)
 	return toPayment(row), mapErr(err)
 }
 
-// SetPaid marks the payment paid at now, reviewed by reviewer.
-func (r *PaymentRepository) SetPaid(ctx context.Context, id uuid.UUID, method model.PaymentMethod, note *string, reviewer uuid.UUID, now time.Time) (model.Payment, error) {
+// SetPaid marks the payment paid at paidAt, recorded (reviewed) by
+// reviewer at now.
+func (r *PaymentRepository) SetPaid(ctx context.Context, id uuid.UUID, method model.PaymentMethod, note *string, reviewer uuid.UUID, paidAt, now time.Time) (model.Payment, error) {
 	m := string(method)
 	row, err := r.tx.Queries(ctx).SetPaymentPaid(ctx, sqlc.SetPaymentPaidParams{
-		ID: id, Method: &m, Note: note, ReviewedBy: &reviewer, Now: now,
+		ID: id, Method: &m, Note: note, PaidAt: paidAt, ReviewedBy: &reviewer, Now: now,
 	})
 	return toPayment(row), mapErr(err)
 }

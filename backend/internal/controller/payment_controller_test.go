@@ -32,6 +32,7 @@ type fakePayments struct {
 	gotReason  string
 	gotMethod  model.PaymentMethod
 	gotNote    *string
+	gotPaidAt  *time.Time
 	gotData    []byte
 }
 
@@ -64,8 +65,8 @@ func (f *fakePayments) Reject(_ context.Context, groupID, paymentID, _ uuid.UUID
 	return f.view, f.err
 }
 
-func (f *fakePayments) MarkPaid(_ context.Context, groupID, paymentID, _ uuid.UUID, method model.PaymentMethod, note *string) (service.PaymentView, error) {
-	f.called, f.gotGroup, f.gotPayment, f.gotMethod, f.gotNote = "mark_paid", groupID, paymentID, method, note
+func (f *fakePayments) MarkPaid(_ context.Context, groupID, paymentID, _ uuid.UUID, method model.PaymentMethod, note *string, paidAt *time.Time) (service.PaymentView, error) {
+	f.called, f.gotGroup, f.gotPayment, f.gotMethod, f.gotNote, f.gotPaidAt = "mark_paid", groupID, paymentID, method, note, paidAt
 	return f.view, f.err
 }
 
@@ -273,6 +274,21 @@ func TestPaymentMarkPaid(t *testing.T) {
 	// Assert
 	if resp.StatusCode != 200 || fake.gotMethod != model.PaymentMethodCash || fake.gotNote == nil || *fake.gotNote != "Tunai" {
 		t.Fatalf("status %d, method %q, note %v", resp.StatusCode, fake.gotMethod, fake.gotNote)
+	}
+}
+
+func TestPaymentMarkPaidWithPaidAt(t *testing.T) {
+	// Arrange
+	fake := &fakePayments{view: testPayment()}
+	req := idempotent(t, paymentPathOf(fake.view.Payment.ID, "mark-paid"), `{"method":"cash","paid_at":"2026-11-01T05:30:00Z"}`)
+
+	// Act
+	resp, _ := call(t, newPaymentApp(fake, &fakeRunner{}), req)
+
+	// Assert
+	want := time.Date(2026, 11, 1, 5, 30, 0, 0, time.UTC)
+	if resp.StatusCode != 200 || fake.gotPaidAt == nil || !fake.gotPaidAt.Equal(want) {
+		t.Fatalf("status %d, paid_at %v", resp.StatusCode, fake.gotPaidAt)
 	}
 }
 

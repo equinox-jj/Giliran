@@ -129,7 +129,7 @@ func TestMarkPaidSkipsGuestAndSelf(t *testing.T) {
 
 	// Act
 	for _, name := range []string{"rina", "darto", "sari"} {
-		if _, err := env.payments.MarkPaid(context.Background(), a.groupID, pay[name], a.rina, model.PaymentMethodCash, nil); err != nil {
+		if _, err := env.payments.MarkPaid(context.Background(), a.groupID, pay[name], a.rina, model.PaymentMethodCash, nil, nil); err != nil {
 			t.Fatalf("MarkPaid %s: %v", name, err)
 		}
 	}

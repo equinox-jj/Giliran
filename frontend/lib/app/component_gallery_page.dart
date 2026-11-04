@@ -58,6 +58,7 @@ class _GalleryState() extends State<_Gallery> {
     _EmailCodeSection(),
     _PeopleSection(),
     _ListsSection(),
+    _PaymentsSection(),
     _DoodlesSection(),
     _OnboardingSection(),
     _CardsSection(),
@@ -575,6 +576,79 @@ class const _PeopleSection() extends StatelessWidget {
           trailing: StatusChip(
             ChipStatus.pendingReview,
             label: 'Menunggu',
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Payment Row (§9.3), Upload tile (8.21) and Image viewer (8.22).
+class const _PaymentsSection() extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SectionHeader(title: 'Payments'),
+        PaymentRow(
+          slotNo: 3,
+          name: 'Kamu',
+          status: ChipStatus.unpaid,
+          subtitle: 'Jatuh tempo Sab, 25 Okt',
+          mine: true,
+          onUpload: () {},
+        ),
+        const SizedBox(height: AppSpace.s2),
+        PaymentRow(
+          slotNo: 7,
+          name: 'Pak Dedi',
+          status: ChipStatus.pendingReview,
+          subtitle: 'Upload 24 Okt, 19.02',
+          onReview: () {},
+        ),
+        const SizedBox(height: AppSpace.s2),
+        PaymentRow(
+          slotNo: 8,
+          name: 'Bu Sri',
+          status: ChipStatus.overdue,
+          subtitle: 'Jatuh tempo Sab, 18 Okt',
+          subtitleAlert: true,
+          guest: true,
+          menuItems: [
+            OverflowMenuItem(label: 'Tandai sudah bayar', icon: AppIcons.handCoins, onSelected: () {}),
+          ],
+        ),
+        const SizedBox(height: AppSpace.s2),
+        const PaymentRow(
+          slotNo: 9,
+          name: 'Mas Andi',
+          status: ChipStatus.paid,
+          subtitle: 'Dibayar Kemarin · Tunai',
+          pendingSync: true,
+        ),
+        _gap,
+        UploadTile(onPick: (_) {}),
+        _gap,
+        UploadTile(
+          errorText: 'Ukuran maksimal 5 MB',
+          onPick: (_) {},
+          onRetry: () {},
+        ),
+        _gap,
+        AppButton(
+          label: 'Image viewer',
+          variant: AppButtonVariant.secondary,
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (context) => ImageViewer(
+                pages: const [
+                  ImageViewerPage(url: 'https://picsum.photos/seed/giliran1/900/1600', uploaderName: 'Pak Dedi'),
+                  ImageViewerPage(url: 'https://picsum.photos/seed/giliran2/900/1600', uploaderName: 'Pak Dedi'),
+                ],
+                onClose: () => Navigator.of(context).pop(),
+              ),
+            ),
           ),
         ),
       ],

@@ -7,11 +7,17 @@ import 'package:giliran/core/utils/enums/payment_status.dart';
 import 'package:giliran/core/utils/enums/period_type.dart';
 import 'package:giliran/features/group/data/repositories/group_repository_impl.dart';
 import 'package:giliran/features/group/domain/entities/group.dart';
+import 'package:giliran/core/utils/enums/period_status.dart';
+import 'package:giliran/features/member/domain/entities/member.dart';
+import 'package:giliran/features/payment/domain/entities/payment.dart';
+import 'package:giliran/features/payment/domain/entities/period.dart';
 import 'package:giliran/features/group/presentation/group_detail/page/group_detail_page.dart';
+import 'package:giliran/features/payment/data/repositories/payment_repository_impl.dart';
 import 'package:giliran/shared/widgets/widgets.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import '../../../../../helpers/fake_group_repository.dart';
+import '../../../../../helpers/fake_payment_repository.dart';
 import '../../../../../helpers/pump_app.dart';
 
 const _active = GroupDetail(
@@ -33,10 +39,12 @@ void main() {
   setUpAll(() => initializeDateFormatting('id_ID'));
 
   late FakeGroupRepository groups;
+  late FakePaymentRepository payments;
   late List<String> opened;
 
   setUp(() {
     groups = FakeGroupRepository();
+    payments = FakePaymentRepository();
     opened = [];
   });
 
@@ -47,6 +55,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         groupRepositoryProvider.overrideWithValue(groups),
+        paymentRepositoryProvider.overrideWithValue(payments),
         clockProvider.overrideWithValue(() => DateTime.utc(2026, 11, 4, 3)),
       ],
     );
@@ -62,6 +71,7 @@ void main() {
         onOpenMember: (mid) => opened.add('member:$mid'),
         onLeaveRequests: () => opened.add('leaveRequests'),
         onTransfer: () => opened.add('transfer'),
+        onOpenProof: (id) => opened.add('proof:$id'),
       ),
       container: container,
     );
@@ -158,5 +168,64 @@ void main() {
 
     // Assert
     expect(find.text('Grup jadi! Undang anggota sekarang?'), findsOneWidget);
+  });
+
+  group('with periods', () {
+    final periods = [
+      Period(
+        id: 'p1',
+        periodNo: 1,
+        status: PeriodStatus.closed,
+        dueDate: DateTime.utc(2026, 10, 1),
+        drawDate: DateTime.utc(2026, 10, 1),
+        winner: const MemberRef(id: 'm3', displayName: 'Bu Sri', slotNo: 3),
+      ),
+      Period(
+        id: 'p2',
+        periodNo: 2,
+        status: PeriodStatus.open,
+        dueDate: DateTime.utc(2026, 11, 25),
+        drawDate: DateTime.utc(2026, 11, 25),
+      ),
+    ];
+    final group = _active.copyWith(currentPeriodId: 'p2', currentPeriodNo: 2, totalSlots: 2);
+
+    testWidgets('the strip shows real periods and a tap loads that period', (tester) async {
+      // Arrange
+      payments.periods = periods;
+      await pumpDetail(tester, group);
+
+      // Act
+      await tester.tap(find.byType(SlotToken).first);
+      await tester.pumpAndSettle();
+
+      // Assert
+      expect(find.byType(SlotToken), findsNWidgets(2));
+      expect(payments.calls, contains('refreshPeriodPayments:p1'));
+    });
+
+    testWidgets('my unpaid row turns the hero into Upload bukti, which opens the sheet', (tester) async {
+      // Arrange
+      payments
+        ..periods = periods
+        ..payments = [
+          const Payment(
+            id: 'pay9',
+            periodId: 'p2',
+            member: MemberRef(id: 'm9', displayName: 'Kamu', slotNo: 9),
+            amount: 200000,
+            status: PaymentStatus.unpaid,
+            isMine: true,
+          ),
+        ];
+      await pumpDetail(tester, group);
+
+      // Act
+      await tester.tap(find.widgetWithText(AppButton, 'Upload bukti').first);
+      await tester.pumpAndSettle();
+
+      // Assert
+      expect(find.text('Bayar iuran periode 2'), findsOneWidget);
+    });
   });
 }

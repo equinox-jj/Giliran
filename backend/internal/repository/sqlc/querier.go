@@ -243,6 +243,7 @@ type Querier interface {
 	SetMemberRole(ctx context.Context, arg SetMemberRoleParams) error
 	SetMemberStatus(ctx context.Context, arg SetMemberStatusParams) (GroupMember, error)
 	// Approve (method transfer) or mark paid directly (any method, with a note).
+	// paid_at is when the money changed hands; reviewed_at is when it was recorded.
 	SetPaymentPaid(ctx context.Context, arg SetPaymentPaidParams) (Payment, error)
 	SetPaymentProof(ctx context.Context, arg SetPaymentProofParams) (Payment, error)
 	SetSessionFCMToken(ctx context.Context, arg SetSessionFCMTokenParams) (int64, error)

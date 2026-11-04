@@ -126,6 +126,36 @@ abstract final class ApiEndpoints() {
   /// Remaining obligations of past winners (`GET`).
   static String obligations(String groupId) => '/groups/$groupId/obligations';
 
+  /// A group's periods in order (`GET`).
+  static String periods(String groupId) => '/groups/$groupId/periods';
+
+  /// One period (`GET`).
+  static String period(String groupId, String periodId) => '/groups/$groupId/periods/$periodId';
+
+  /// A period's payment board with `meta.summary` (`GET`).
+  static String periodPayments(String groupId, String periodId) => '/groups/$groupId/periods/$periodId/payments';
+
+  /// One payment with every proof (`GET`).
+  static String payment(String groupId, String paymentId) => '/groups/$groupId/payments/$paymentId';
+
+  /// Uploads a transfer screenshot (`POST` multipart).
+  static String paymentProofs(String groupId, String paymentId) => '/groups/$groupId/payments/$paymentId/proofs';
+
+  /// Approves a pending proof (`POST`).
+  static String paymentApprove(String groupId, String paymentId) => '/groups/$groupId/payments/$paymentId/approve';
+
+  /// Rejects a pending proof with a reason (`POST`).
+  static String paymentReject(String groupId, String paymentId) => '/groups/$groupId/payments/$paymentId/reject';
+
+  /// Marks a payment paid without a proof (`POST`).
+  static String paymentMarkPaid(String groupId, String paymentId) => '/groups/$groupId/payments/$paymentId/mark-paid';
+
+  /// A period's payout (`GET`) and recording it (`POST` multipart).
+  static String payout(String groupId, String periodId) => '/groups/$groupId/periods/$periodId/payout';
+
+  /// The winner confirms the pot arrived (`POST`).
+  static String payoutConfirm(String groupId, String periodId) => '/groups/$groupId/periods/$periodId/payout/confirm';
+
   /// `extra` flag: skip attaching the access token (sign-in, refresh, public
   /// pages).
   static const String kNoAuth = 'noAuth';

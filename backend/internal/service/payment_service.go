@@ -212,7 +212,7 @@ func (s *PaymentService) UploadProof(ctx context.Context, groupID, paymentID, us
 // Organizers and co-organizers only.
 func (s *PaymentService) Approve(ctx context.Context, groupID, paymentID, userID uuid.UUID) (PaymentView, error) {
 	return s.review(ctx, groupID, paymentID, userID, func(ctx context.Context, w paymentWrite) (model.Payment, Entry, error) {
-		p, err := s.payments.SetPaid(ctx, paymentID, model.PaymentMethodTransfer, nil, userID, w.now)
+		p, err := s.payments.SetPaid(ctx, paymentID, model.PaymentMethodTransfer, nil, userID, w.now, w.now)
 		if err != nil {
 			return model.Payment{}, Entry{}, err
 		}
@@ -277,7 +277,12 @@ func (s *PaymentService) review(ctx context.Context, groupID, paymentID, userID 
 // without a proof (FR-PAY-04). Organizers and co-organizers only. Allowed
 // from unpaid and, as the spec says, from rejected: the organizer may settle
 // a disputed proof directly, which BR-07's transitions leave out.
-func (s *PaymentService) MarkPaid(ctx context.Context, groupID, paymentID, userID uuid.UUID, method model.PaymentMethod, note *string) (PaymentView, error) {
+//
+// paidAt, when set, is when the money changed hands, for a mark recorded
+// later (an organizer offline at the meeting). It may not be in the future
+// beyond model.MaxPaidAtSkew, nor before the payment existed; nil means now.
+// The activity entry keeps its own time, so the log shows both.
+func (s *PaymentService) MarkPaid(ctx context.Context, groupID, paymentID, userID uuid.UUID, method model.PaymentMethod, note *string, paidAt *time.Time) (PaymentView, error) {
 	if note != nil {
 		n, err := trimmedLength("note", *note, 0, model.MaxNoteLength)
 		if err != nil {
@@ -294,13 +299,20 @@ func (s *PaymentService) MarkPaid(ctx context.Context, groupID, paymentID, userI
 		if w.payment.Status != model.PaymentStatusUnpaid && w.payment.Status != model.PaymentStatusRejected {
 			return model.Payment{}, Entry{}, model.ErrInvalidPaymentState.WithDetail("A %s payment cannot be marked paid.", w.payment.Status)
 		}
-		p, err := s.payments.SetPaid(ctx, paymentID, method, note, userID, w.now)
+		at, err := markedPaidAt(paidAt, w.payment.CreatedAt, w.now)
+		if err != nil {
+			return model.Payment{}, Entry{}, err
+		}
+		p, err := s.payments.SetPaid(ctx, paymentID, method, note, userID, at, w.now)
 		if err != nil {
 			return model.Payment{}, Entry{}, err
 		}
 		after := map[string]any{"status": p.Status, "method": method}
 		if note != nil {
 			after["note"] = *note
+		}
+		if !at.Equal(w.now) {
+			after["paid_at"] = at
 		}
 		err = s.notifyPayer(ctx, w, p, userID, notify.KindPaymentMarked, "")
 		return p, Entry{
@@ -313,6 +325,28 @@ func (s *PaymentService) MarkPaid(ctx context.Context, groupID, paymentID, userI
 		return PaymentView{}, err
 	}
 	return s.viewOf(ctx, groupID, paymentID, me)
+}
+
+// markedPaidAt checks a client-sent paid_at against the payment's lifetime.
+// A time slightly ahead of now (clock skew) is clamped to now.
+func markedPaidAt(paidAt *time.Time, created, now time.Time) (time.Time, error) {
+	if paidAt == nil {
+		return now, nil
+	}
+	at := paidAt.UTC()
+	switch {
+	case at.After(now.Add(model.MaxPaidAtSkew)):
+		return time.Time{}, model.NewValidationError(model.FieldError{
+			Field: "paid_at", Code: model.FieldMaximumValue, Message: "Must not be in the future.",
+		})
+	case at.Before(created):
+		return time.Time{}, model.NewValidationError(model.FieldError{
+			Field: "paid_at", Code: model.FieldMinimumValue, Message: "Must not be before the payment opened.",
+		})
+	case at.After(now):
+		return now, nil
+	}
+	return at, nil
 }
 
 // notifyPayer queues a push about p to its payer's account, unless the

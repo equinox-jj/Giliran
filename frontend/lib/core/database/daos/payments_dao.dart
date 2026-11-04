@@ -69,17 +69,20 @@ class PaymentsDao(super.attachedDatabase) extends DatabaseAccessor<AppDatabase> 
     }
   });
 
-  /// Records an offline "marked paid in cash" on payment [id], to be sent
-  /// later with [idempotencyKey].
+  Future<PaymentRow?> getById(String id) => (select(payments)..where((p) => p.id.equals(id))).getSingleOrNull();
+
+  /// Records an offline "marked paid" ([method] is `cash`, `transfer` or
+  /// `other`) on payment [id], to be sent later with [idempotencyKey].
   Future<void> markPendingCash(
     String id, {
+    required String method,
     required String idempotencyKey,
     required DateTime paidAt,
     String? note,
   }) => (update(payments)..where((p) => p.id.equals(id))).write(
     PaymentsCompanion(
       status: const Value('paid'),
-      method: const Value('cash'),
+      method: Value(method),
       note: Value(note),
       paidAt: Value(paidAt.toUtc()),
       updatedAt: Value(DateTime.now().toUtc()),

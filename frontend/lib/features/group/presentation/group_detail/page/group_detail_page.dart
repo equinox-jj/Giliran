@@ -4,15 +4,24 @@ import 'package:material_ui/material_ui.dart';
 import '../../../../../core/constants/app_doodles.dart';
 import '../../../../../core/constants/app_icons.dart';
 import '../../../../../core/error/failure_message.dart';
+import '../../../../../core/services/share_service.dart';
 import '../../../../../core/l10n/l10n.dart';
 import '../../../../../core/themes/themes.dart';
 import '../../../../../core/utils/date_formatter.dart';
 import '../../../../../core/utils/enums/group_status.dart';
+import '../../../../../core/utils/enums/payment_status.dart';
+import '../../../../../core/utils/enums/period_status.dart';
 import '../../../../../shared/widgets/widgets.dart';
 import '../../../../member/presentation/members_tab/controllers/members_tab_controller.dart';
 import '../../../../member/presentation/members_tab/widgets/members_tab.dart';
 import '../../../../member/presentation/shared/controllers/members_controller.dart';
 import '../../../../member/presentation/shared/widgets/leave_request_sheet.dart';
+import '../../../../payment/domain/entities/payment.dart';
+import '../../../../payment/domain/entities/period.dart';
+import '../../../../payment/presentation/payments_tab/controllers/payments_tab_controller.dart';
+import '../../../../payment/presentation/payments_tab/widgets/payments_tab.dart';
+import '../../../../payment/presentation/shared/widgets/mark_paid_sheet.dart';
+import '../../../../payment/presentation/shared/widgets/upload_proof_sheet.dart';
 import '../../../domain/entities/group.dart';
 import '../../../domain/usecases/group_menu_actions_usecase.dart';
 import '../../../domain/usecases/pick_hero_action_usecase.dart';
@@ -36,6 +45,9 @@ class const GroupDetailPage({
   required final ValueChanged<String> onOpenMember,
   required final VoidCallback onLeaveRequests,
   required final VoidCallback onTransfer,
+
+  /// Opens Proof review (S35) or my own proof for a payment id.
+  required final ValueChanged<String> onOpenProof,
 }) extends ConsumerStatefulWidget {
   @override
   ConsumerState<GroupDetailPage> createState() => _GroupDetailPageState();
@@ -43,6 +55,10 @@ class const GroupDetailPage({
 
 class _GroupDetailPageState() extends ConsumerState<GroupDetailPage> {
   late DetailTab _tab = widget.initialTab;
+
+  /// The period the strip and the Pembayaran tab show; null follows the
+  /// current period.
+  String? _periodId;
 
   @override
   void initState() {
@@ -65,11 +81,73 @@ class _GroupDetailPageState() extends ConsumerState<GroupDetailPage> {
 
   void _comingSoon() => showAppToast(context, context.l10n.comingSoon);
 
-  /// "Lanjutkan persiapan" opens Start group (S18); the period actions
-  /// arrive with Phases 4–5.
+  GroupDetailState? get _detail => ref.read(groupDetailControllerProvider(widget.groupId)).value;
+
+  /// "Lanjutkan persiapan" opens Start group (S18); upload, my proof and
+  /// review open the payment screens. Draw and payout arrive with Phase 5.
   void _onHeroAction() {
-    final action = ref.read(groupDetailControllerProvider(widget.groupId)).value?.heroAction;
-    action == HeroAction.continueSetup ? widget.onStart() : _comingSoon();
+    final detail = _detail;
+    final my = detail?.myPayment;
+    switch (detail?.heroAction) {
+      case HeroAction.continueSetup:
+        widget.onStart();
+      case HeroAction.uploadProof when my != null:
+        _upload(my);
+      case HeroAction.viewMyProof when my?.id != null:
+        widget.onOpenProof(my!.id!);
+      case HeroAction.reviewProofs:
+        _reviewFirstPending();
+      default:
+        _comingSoon();
+    }
+  }
+
+  /// Opens the first pending proof on the current board, or the Pembayaran
+  /// tab when the board isn't cached yet.
+  void _reviewFirstPending() {
+    final periodId = _detail?.currentPeriod?.id;
+    final board = periodId == null
+        ? null
+        : ref.read(paymentsTabControllerProvider(widget.groupId, periodId)).value?.rows;
+    final pending = board?.where((p) => p.status == PaymentStatus.pendingReview).firstOrNull;
+    if (pending?.id != null) {
+      widget.onOpenProof(pending!.id!);
+    } else {
+      setState(() => _tab = DetailTab.payments);
+    }
+  }
+
+  int _periodNoOf(Payment payment) =>
+      _detail?.periods.where((p) => p.id == payment.periodId).firstOrNull?.periodNo ??
+      _detail?.group?.currentPeriodNo ??
+      1;
+
+  Future<void> _upload(Payment payment) async {
+    final group = _detail?.group;
+    if (group == null) return;
+    final sent = await showUploadProofSheet(context, group: group, payment: payment, periodNo: _periodNoOf(payment));
+    if (sent && mounted) showAppToast(context, context.l10n.uploadProofSent);
+  }
+
+  Future<void> _markPaid(Payment payment) async {
+    final saved = await showMarkPaidSheet(context, groupId: widget.groupId, payment: payment);
+    if (saved == null || !mounted) return;
+    final l10n = context.l10n;
+    showAppToast(
+      context,
+      saved.isPendingSync ? l10n.markPaidQueued : l10n.markPaidDone(payment.member?.displayName ?? ''),
+    );
+  }
+
+  Future<void> _remind(Payment payment) async {
+    final members = ref.read(membersControllerProvider(widget.groupId)).value ?? const [];
+    final phone = members.where((m) => m.id == payment.member?.id).firstOrNull?.guestPhone;
+    await ref
+        .read(shareServiceProvider)
+        .openWhatsApp(
+          phone: phone,
+          text: context.l10n.memberRemindMessage(payment.member?.displayName ?? '', _detail?.group?.name ?? ''),
+        );
   }
 
   /// Opens the leave sheet (S30) with the caller's own obligation when the
@@ -136,13 +214,25 @@ class _GroupDetailPageState() extends ConsumerState<GroupDetailPage> {
       body: _DetailBody(
         provider: provider,
         tab: _tab,
+        periodId: _periodId,
         onTab: (t) => setState(() => _tab = t),
+        onPeriod: (id) => setState(() {
+          _periodId = id;
+          _tab = DetailTab.payments;
+        }),
         onHeroAction: _onHeroAction,
         tabActions: (
           onInvite: widget.onInvite,
           onOpenMember: widget.onOpenMember,
           onLeaveRequests: widget.onLeaveRequests,
           onLeave: _leave,
+          payments: (
+            onUpload: _upload,
+            onReview: (p) => widget.onOpenProof(p.id ?? ''),
+            onViewProof: (p) => widget.onOpenProof(p.id ?? ''),
+            onMarkPaid: _markPaid,
+            onRemind: _remind,
+          ),
         ),
       ),
     );
@@ -190,12 +280,15 @@ typedef _TabActions = ({
   ValueChanged<String> onOpenMember,
   VoidCallback onLeaveRequests,
   VoidCallback onLeave,
+  PaymentsTabActions payments,
 });
 
 class const _DetailBody({
   required final GroupDetailControllerProvider provider,
   required final DetailTab tab,
+  required final String? periodId,
   required final ValueChanged<DetailTab> onTab,
+  required final ValueChanged<String> onPeriod,
   required final VoidCallback onHeroAction,
   required final _TabActions tabActions,
 }) extends ConsumerWidget {
@@ -214,8 +307,13 @@ class const _DetailBody({
 
     Future<void> refresh() async {
       final groupId = provider.argument! as String;
+      final shownPeriod = periodId ?? ref.read(provider).value?.currentPeriod?.id;
       final results = await Future.wait([
         ref.read(provider.notifier).refresh(),
+        if (tab == DetailTab.payments &&
+            shownPeriod != null &&
+            shownPeriod != ref.read(provider).value?.currentPeriod?.id)
+          ref.read(paymentsTabControllerProvider(groupId, shownPeriod).notifier).refresh(),
         if (tab == DetailTab.members) ...[
           ref.read(membersControllerProvider(groupId).notifier).refresh(),
           ref.read(membersTabControllerProvider(groupId).notifier).refresh().then((_) => null),
@@ -235,9 +333,9 @@ class const _DetailBody({
     }
     if (phase == _Phase.loading) return _DetailSkeleton(margin: margin);
 
-    final top = _TopSection(provider: provider, onHeroAction: onHeroAction);
+    final top = _TopSection(provider: provider, periodId: periodId, onPeriod: onPeriod, onHeroAction: onHeroAction);
     final tabs = _TabsSection(provider: provider, tab: tab, onTab: onTab);
-    final body = _TabBody(provider: provider, tab: tab, actions: tabActions);
+    final body = _TabBody(provider: provider, tab: tab, periodId: periodId, actions: tabActions);
 
     if (context.sizeClass == SizeClass.expanded) {
       // Expanded: the shared top section on the left (5 of 12 columns), the
@@ -302,6 +400,7 @@ class const _DetailBody({
 class const _TabBody({
   required final GroupDetailControllerProvider provider,
   required final DetailTab tab,
+  required final String? periodId,
   required final _TabActions actions,
 }) extends ConsumerWidget {
   @override
@@ -309,6 +408,12 @@ class const _TabBody({
     final group = ref.watch(provider.select((s) => s.value?.group));
     if (group == null) return const SliverToBoxAdapter(child: SizedBox.shrink());
     return switch (tab) {
+      DetailTab.payments => _PaymentsTabBody(
+        provider: provider,
+        group: group,
+        periodId: periodId,
+        actions: actions.payments,
+      ),
       DetailTab.members => MembersTab(
         group: group,
         onInvite: actions.onInvite,
@@ -321,14 +426,38 @@ class const _TabBody({
   }
 }
 
+/// The Pembayaran tab for the selected period (the current one by default).
+class const _PaymentsTabBody({
+  required final GroupDetailControllerProvider provider,
+  required final GroupDetail group,
+  required final String? periodId,
+  required final PaymentsTabActions actions,
+}) extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final period = ref.watch(
+      provider.select((s) {
+        final state = s.value;
+        if (periodId == null) return state?.currentPeriod;
+        return state?.periods.where((p) => p.id == periodId).firstOrNull;
+      }),
+    );
+    return PaymentsTab(group: group, period: period, actions: actions);
+  }
+}
+
 /// Headline, Period Strip and hero.
 class const _TopSection({
   required final GroupDetailControllerProvider provider,
+  required final String? periodId,
+  required final ValueChanged<String> onPeriod,
   required final VoidCallback onHeroAction,
 }) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final group = ref.watch(provider.select((s) => s.value?.group));
+    final periods = ref.watch(provider.select((s) => s.value?.periods ?? const <Period>[]));
+    final current = ref.watch(provider.select((s) => s.value?.currentPeriod));
     final action = ref.watch(provider.select((s) => s.value?.heroAction ?? HeroAction.none));
     if (group == null) return const SizedBox.shrink();
     return Column(
@@ -338,16 +467,36 @@ class const _TopSection({
         GroupHeadline(group: group),
         if (group.status != GroupStatus.draft) ...[
           const SizedBox(height: AppSpace.s4),
-          PeriodStrip(periods: _tokensFor(group), onSelect: (_) {}),
+          PeriodStrip(
+            periods: periods.isEmpty ? _tokensFor(group) : _tokensFrom(periods, group.myMemberId),
+            selectedPeriodId: periodId ?? current?.id ?? group.currentPeriodId,
+            onSelect: periods.isEmpty ? (_) {} : onPeriod,
+          ),
         ],
         const SizedBox(height: AppSpace.s4),
-        _Hero(group: group, action: action, onAction: onHeroAction),
+        _Hero(group: group, period: current, action: action, onAction: onHeroAction),
       ],
     );
   }
 
-  /// Tokens from the group alone until periods are loaded (Task 4.1): the
-  /// periods before the current one are done, the rest upcoming.
+  static List<PeriodTokenData> _tokensFrom(List<Period> periods, String? myMemberId) => [
+    for (final p in periods)
+      PeriodTokenData(
+        id: p.id ?? 'p${p.periodNo}',
+        periodNo: p.periodNo ?? 0,
+        state: switch (p.status) {
+          PeriodStatus.drawn || PeriodStatus.closed => SlotTokenState.done,
+          PeriodStatus.open => SlotTokenState.current,
+          PeriodStatus.upcoming || null => SlotTokenState.upcoming,
+        },
+        winnerName: p.winner?.displayName,
+        winnerAvatarUrl: p.winner?.avatarUrl,
+        iWon: myMemberId != null && p.winner?.id == myMemberId,
+      ),
+  ];
+
+  /// Tokens from the group alone until periods are cached: the periods
+  /// before the current one are done, the rest upcoming.
   static List<PeriodTokenData> _tokensFor(GroupDetail group) {
     final current = group.status == GroupStatus.active ? (group.currentPeriodNo ?? 1) : (group.totalSlots ?? 0) + 1;
     return [
@@ -367,6 +516,7 @@ class const _TopSection({
 
 class const _Hero({
   required final GroupDetail group,
+  required final Period? period,
   required final HeroAction action,
   required final VoidCallback onAction,
 }) extends StatelessWidget {
@@ -390,22 +540,23 @@ class const _Hero({
             : null,
       );
     }
-    final paid = group.paidCount ?? 0;
-    final pending = group.pendingReviewCount ?? 0;
+    final summary = period?.paymentSummary;
+    final paid = summary?.paidCount ?? group.paidCount ?? 0;
+    final pending = summary?.pendingReviewCount ?? group.pendingReviewCount ?? 0;
     final amount = group.amount ?? 0;
-    final due = group.nextDueDate;
-    final draw = group.nextDrawDate;
+    final due = period?.dueDate ?? group.nextDueDate;
+    final draw = period?.drawDate ?? group.nextDrawDate;
     final now = DateTime.now();
     return CurrentPeriodHero(
       title: group.name ?? '',
-      subtitle: l10n.periodOf(group.currentPeriodNo ?? 1, total),
+      subtitle: l10n.periodOf(period?.periodNo ?? group.currentPeriodNo ?? 1, total),
       ringValue: paid,
       ringTotal: total,
       ringPending: pending,
       ringSemantics: pending > 0
           ? l10n.ringPaidPendingSemantics(paid, total, pending)
           : l10n.ringPaidSemantics(paid, total),
-      amount: paid * amount,
+      amount: summary?.collectedAmount ?? paid * amount,
       amountCaption: l10n.heroCollectedOf(Rupiah.format(group.potAmount ?? amount * total)),
       infoLine: due == null || draw == null
           ? null
@@ -445,9 +596,9 @@ class const _TabsSection({
   Widget build(BuildContext context, WidgetRef ref) {
     final pending = ref.watch(
       provider.select((s) {
-        final group = s.value?.group;
-        final count = group?.pendingReviewCount ?? 0;
-        return (group?.isManager ?? false) && count > 0 ? count : null;
+        final state = s.value;
+        final count = state?.pendingCount ?? 0;
+        return (state?.group?.isManager ?? false) && count > 0 ? count : null;
       }),
     );
     return DetailTabs(selected: tab, onChanged: onTab, pendingCount: pending);

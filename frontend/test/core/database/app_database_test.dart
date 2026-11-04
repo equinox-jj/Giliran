@@ -42,6 +42,7 @@ void main() {
     ]);
     await db.paymentsDao.markPendingCash(
       'pay1',
+      method: 'cash',
       idempotencyKey: 'key-12345678',
       paidAt: DateTime.utc(2026, 11, 2),
     );

@@ -16,9 +16,12 @@ type RejectPaymentRequest struct {
 }
 
 // MarkPaidRequest is the body of POST .../payments/{payment_id}/mark-paid.
+// PaidAt is when the money changed hands, for a mark sent later; the
+// service checks its range.
 type MarkPaidRequest struct {
-	Method string  `json:"method" validate:"required,oneof=cash transfer other"`
-	Note   *string `json:"note" validate:"omitnil,max=500"`
+	Method string     `json:"method" validate:"required,oneof=cash transfer other"`
+	Note   *string    `json:"note" validate:"omitnil,max=500"`
+	PaidAt *time.Time `json:"paid_at"`
 }
 
 // PaymentProof is the PaymentProof schema.

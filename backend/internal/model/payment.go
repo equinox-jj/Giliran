@@ -10,6 +10,10 @@ import (
 // leave requests.
 const MaxNoteLength = 500
 
+// MaxPaidAtSkew is how far ahead of the server clock a mark-paid paid_at may
+// be (a phone clock running fast); within it the time is clamped to now.
+const MaxPaidAtSkew = 5 * time.Minute
+
 // MinRejectReasonLength is the shortest reason accepted when rejecting a
 // proof, so the member learns what to fix.
 const MinRejectReasonLength = 3

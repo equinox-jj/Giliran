@@ -1531,7 +1531,7 @@ paths:
       tags: [Payments]
       operationId: markPaymentPaid
       summary: Mark a payment as paid without a proof (cash, guests)
-      description: Organizer or co-organizer. `unpaid` or `rejected` → `paid`.
+      description: Organizer or co-organizer. `unpaid` or `rejected` → `paid`. `paid_at` may backdate the payment.
       parameters:
         - $ref: "#/components/parameters/IdempotencyKey"
       requestBody:
@@ -3162,6 +3162,14 @@ components:
         note:
           type: string
           maxLength: 500
+        paid_at:
+          type: string
+          format: date-time
+          description: |
+            When the money changed hands, for a mark recorded later (an organizer who was offline
+            at the meeting). Omitted means now. Must not be before the payment was created
+            (`minimum_value`) nor more than 5 minutes ahead of the server clock (`maximum_value`);
+            a time within that margin is clamped to now. The activity entry keeps its own time.
 
     # ---------------------------------------------------------- draws
     DrawSlot:

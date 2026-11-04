@@ -119,7 +119,7 @@ func TestActivitySubjectAndActor(t *testing.T) {
 	t.Parallel()
 	env := newTransparencyEnv(t)
 	a, _, payments := env.started(t)
-	if _, err := env.payments.MarkPaid(context.Background(), a.groupID, payments["budi"], a.rina, model.PaymentMethodCash, nil); err != nil {
+	if _, err := env.payments.MarkPaid(context.Background(), a.groupID, payments["budi"], a.rina, model.PaymentMethodCash, nil, nil); err != nil {
 		t.Fatalf("MarkPaid: %v", err)
 	}
 
@@ -210,7 +210,7 @@ func TestObligationsCountPaidPeriods(t *testing.T) {
 	}
 	for _, p := range board {
 		if p.Payment.MemberID == a.memberIDs["budi"] {
-			if _, err := env.payments.MarkPaid(context.Background(), a.groupID, p.Payment.ID, a.rina, model.PaymentMethodCash, nil); err != nil {
+			if _, err := env.payments.MarkPaid(context.Background(), a.groupID, p.Payment.ID, a.rina, model.PaymentMethodCash, nil, nil); err != nil {
 				t.Fatalf("MarkPaid: %v", err)
 			}
 		}
@@ -247,7 +247,7 @@ func TestReminderSendSkipsAndSends(t *testing.T) {
 	a, period, payments := env.started(t)
 	env.device(t, a.budi)
 	env.device(t, a.rina)
-	if _, err := env.payments.MarkPaid(context.Background(), a.groupID, payments["rina"], a.rina, model.PaymentMethodCash, nil); err != nil {
+	if _, err := env.payments.MarkPaid(context.Background(), a.groupID, payments["rina"], a.rina, model.PaymentMethodCash, nil, nil); err != nil {
 		t.Fatalf("MarkPaid: %v", err)
 	}
 
@@ -372,7 +372,7 @@ func TestRecapPhonesForManagersOnly(t *testing.T) {
 	t.Parallel()
 	env := newTransparencyEnv(t)
 	a, period, payments := env.started(t)
-	if _, err := env.payments.MarkPaid(context.Background(), a.groupID, payments["rina"], a.rina, model.PaymentMethodCash, nil); err != nil {
+	if _, err := env.payments.MarkPaid(context.Background(), a.groupID, payments["rina"], a.rina, model.PaymentMethodCash, nil, nil); err != nil {
 		t.Fatalf("MarkPaid: %v", err)
 	}
 	tests := []struct {

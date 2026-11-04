@@ -36,6 +36,8 @@ import '../features/member/presentation/shared/widgets/join_link_sheet.dart';
 import '../features/member/presentation/start_group/page/start_group_page.dart';
 import '../features/member/presentation/transfer_offer/page/transfer_offer_page.dart';
 import '../features/member/presentation/transfer_respond/page/transfer_respond_page.dart';
+import '../features/payment/presentation/proof_review/page/proof_review_page.dart';
+import '../features/payment/presentation/shared/widgets/payment_sync_listener.dart';
 import '../features/profile/presentation/delete_account/page/delete_account_page.dart';
 import '../features/profile/presentation/edit_profile/page/edit_profile_page.dart';
 import '../features/profile/presentation/profile/page/profile_page.dart';
@@ -110,6 +112,10 @@ final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
                   name: 'transferRespond',
                   path: 'transfer/:tid',
                 ),
+                TypedGoRoute<ProofReviewRoute>(
+                  name: 'proofReview',
+                  path: 'payments/:payId/review',
+                ),
               ],
             ),
           ],
@@ -175,13 +181,15 @@ class const AppShellRoute() extends StatefulShellRouteData {
     GoRouterState state,
     StatefulNavigationShell navigationShell,
   ) {
-    return AppNavShell(
-      body: navigationShell,
-      selectedIndex: navigationShell.currentIndex,
-      // Re-tapping the active tab pops it back to its root.
-      onSelected: (index) => navigationShell.goBranch(
-        index,
-        initialLocation: index == navigationShell.currentIndex,
+    return PaymentSyncListener(
+      child: AppNavShell(
+        body: navigationShell,
+        selectedIndex: navigationShell.currentIndex,
+        // Re-tapping the active tab pops it back to its root.
+        onSelected: (index) => navigationShell.goBranch(
+          index,
+          initialLocation: index == navigationShell.currentIndex,
+        ),
       ),
     );
   }
@@ -255,6 +263,22 @@ class const GroupDetailRoute({required final String gid, final String? tab, fina
     onOpenMember: (mid) => MemberDetailRoute(gid: gid, mid: mid).push<void>(context),
     onLeaveRequests: () => LeaveRequestsRoute(gid: gid).push<void>(context),
     onTransfer: () => TransferOfferRoute(gid: gid).push<void>(context),
+    onOpenProof: (payId) => ProofReviewRoute(gid: gid, payId: payId).push<void>(context),
+  );
+}
+
+/// Proof review (S35) for managers, or the payer's own proof, over the
+/// tabs.
+class const ProofReviewRoute({required final String gid, required final String payId})
+    extends GoRouteData
+    with $ProofReviewRoute {
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => ProofReviewPage(
+    groupId: gid,
+    paymentId: payId,
+    onClose: () => _popOr(context, GroupDetailRoute(gid: gid).location),
   );
 }
 

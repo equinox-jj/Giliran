@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"time"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
@@ -21,7 +22,7 @@ type PaymentService interface {
 	UploadProof(ctx context.Context, groupID, paymentID, userID uuid.UUID, data []byte) (service.PaymentView, error)
 	Approve(ctx context.Context, groupID, paymentID, userID uuid.UUID) (service.PaymentView, error)
 	Reject(ctx context.Context, groupID, paymentID, userID uuid.UUID, reason string) (service.PaymentView, error)
-	MarkPaid(ctx context.Context, groupID, paymentID, userID uuid.UUID, method model.PaymentMethod, note *string) (service.PaymentView, error)
+	MarkPaid(ctx context.Context, groupID, paymentID, userID uuid.UUID, method model.PaymentMethod, note *string, paidAt *time.Time) (service.PaymentView, error)
 }
 
 // PaymentController serves the payment board and payment writes. Every route
@@ -122,7 +123,7 @@ func (h *PaymentController) MarkPaid(c fiber.Ctx) error {
 	if err := c.Bind().Body(&req); err != nil {
 		return err
 	}
-	v, err := h.payments.MarkPaid(c.Context(), gid, pid, middleware.UserID(c), model.PaymentMethod(req.Method), req.Note)
+	v, err := h.payments.MarkPaid(c.Context(), gid, pid, middleware.UserID(c), model.PaymentMethod(req.Method), req.Note, req.PaidAt)
 	if err != nil {
 		return err
 	}

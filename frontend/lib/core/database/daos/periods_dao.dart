@@ -25,4 +25,9 @@ class PeriodsDao(super.attachedDatabase) extends DatabaseAccessor<AppDatabase> w
       );
     }
   });
+
+  /// Writes a fresh payment summary (from the board's `meta.summary`) onto
+  /// period [id].
+  Future<void> updateSummary(String id, PeriodsCompanion summary) =>
+      (update(periods)..where((p) => p.id.equals(id))).write(summary);
 }

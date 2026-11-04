@@ -206,7 +206,7 @@ func TestRemindersWorkerQueuesDuePayments(t *testing.T) {
 	t.Parallel()
 	env := newWorkerEnv(t)
 	a, period, pay := env.started(t)
-	if _, err := env.payments.MarkPaid(context.Background(), a.groupID, pay["rina"], a.rina, model.PaymentMethodCash, nil); err != nil {
+	if _, err := env.payments.MarkPaid(context.Background(), a.groupID, pay["rina"], a.rina, model.PaymentMethodCash, nil, nil); err != nil {
 		t.Fatalf("MarkPaid: %v", err)
 	}
 	env.exec(t, "UPDATE user_settings SET notify_payment_reminders = false WHERE user_id = $1", a.sari)

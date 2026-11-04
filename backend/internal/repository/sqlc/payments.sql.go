@@ -693,27 +693,30 @@ func (q *Queries) RejectPayment(ctx context.Context, arg RejectPaymentParams) (P
 const setPaymentPaid = `-- name: SetPaymentPaid :one
 UPDATE payments
 SET status = 'paid', method = $1, note = $2,
-    paid_at = $3::timestamptz, reviewed_by = $4, reviewed_at = $3::timestamptz,
+    paid_at = $3::timestamptz, reviewed_by = $4, reviewed_at = $5::timestamptz,
     reject_reason = NULL
-WHERE id = $5
+WHERE id = $6
 RETURNING id, group_id, period_id, slot_id, member_id, amount, status, method, current_proof_id, note, reject_reason, paid_at, reviewed_by, reviewed_at, created_at, updated_at, last_reminded_at
 `
 
 type SetPaymentPaidParams struct {
 	Method     *string
 	Note       *string
-	Now        time.Time
+	PaidAt     time.Time
 	ReviewedBy *uuid.UUID
+	Now        time.Time
 	ID         uuid.UUID
 }
 
 // Approve (method transfer) or mark paid directly (any method, with a note).
+// paid_at is when the money changed hands; reviewed_at is when it was recorded.
 func (q *Queries) SetPaymentPaid(ctx context.Context, arg SetPaymentPaidParams) (Payment, error) {
 	row := q.db.QueryRow(ctx, setPaymentPaid,
 		arg.Method,
 		arg.Note,
-		arg.Now,
+		arg.PaidAt,
 		arg.ReviewedBy,
+		arg.Now,
 		arg.ID,
 	)
 	var i Payment

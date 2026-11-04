@@ -87,7 +87,7 @@ func (e drawEnv) payAll(t *testing.T, a arisan, periodID uuid.UUID) {
 		t.Fatalf("Board: %v", err)
 	}
 	for _, p := range board {
-		if _, err := e.payments.MarkPaid(context.Background(), a.groupID, p.Payment.ID, a.rina, model.PaymentMethodCash, nil); err != nil {
+		if _, err := e.payments.MarkPaid(context.Background(), a.groupID, p.Payment.ID, a.rina, model.PaymentMethodCash, nil, nil); err != nil {
 			t.Fatalf("MarkPaid: %v", err)
 		}
 	}
@@ -293,7 +293,7 @@ func TestDrawRunPaymentsIncompleteCarriesCounts(t *testing.T) {
 	env := newDrawEnv(t)
 	a, first, pay := env.started(t)
 	env.clock.Set(afterAllDraws)
-	if _, err := env.payments.MarkPaid(context.Background(), a.groupID, pay["budi"], a.rina, model.PaymentMethodCash, nil); err != nil {
+	if _, err := env.payments.MarkPaid(context.Background(), a.groupID, pay["budi"], a.rina, model.PaymentMethodCash, nil, nil); err != nil {
 		t.Fatalf("MarkPaid: %v", err)
 	}
 

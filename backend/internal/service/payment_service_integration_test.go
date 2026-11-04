@@ -11,6 +11,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -90,7 +91,7 @@ func TestPaymentUploadProofRefuses(t *testing.T) {
 			return pay["darto"], a.rina, testPNG(t, color.White)
 		}, model.ErrForbiddenRole},
 		{"paid payment", func(t *testing.T, env paymentEnv, a arisan, pay map[string]uuid.UUID) (uuid.UUID, uuid.UUID, []byte) {
-			if _, err := env.payments.MarkPaid(context.Background(), a.groupID, pay["budi"], a.rina, model.PaymentMethodCash, nil); err != nil {
+			if _, err := env.payments.MarkPaid(context.Background(), a.groupID, pay["budi"], a.rina, model.PaymentMethodCash, nil, nil); err != nil {
 				t.Fatalf("MarkPaid: %v", err)
 			}
 			return pay["budi"], a.budi, testPNG(t, color.White)
@@ -215,7 +216,7 @@ func TestPaymentMarkPaid(t *testing.T) {
 	note := " Bayar tunai di rumah. "
 
 	// Act
-	v, err := env.payments.MarkPaid(context.Background(), a.groupID, pay["darto"], a.rina, model.PaymentMethodCash, &note)
+	v, err := env.payments.MarkPaid(context.Background(), a.groupID, pay["darto"], a.rina, model.PaymentMethodCash, &note, nil)
 
 	// Assert
 	p := v.Payment
@@ -224,6 +225,67 @@ func TestPaymentMarkPaid(t *testing.T) {
 	}
 	if acts := env.actions(t, a.groupID); acts[len(acts)-1] != "payment.marked_paid" {
 		t.Errorf("activity %v", acts)
+	}
+}
+
+func TestPaymentMarkPaidBackdated(t *testing.T) {
+	// Arrange
+	t.Parallel()
+	env := newPaymentEnv(t)
+	a, _, pay := env.started(t)
+	paidAt := env.clock.Now().UTC().Truncate(time.Second)
+	env.clock.Advance(48 * time.Hour)
+
+	// Act
+	v, err := env.payments.MarkPaid(context.Background(), a.groupID, pay["darto"], a.rina, model.PaymentMethodCash, nil, &paidAt)
+
+	// Assert
+	p := v.Payment
+	if err != nil || p.PaidAt == nil || !p.PaidAt.Equal(paidAt) {
+		t.Fatalf("MarkPaid: %v, paid_at %v, want %v", err, p.PaidAt, paidAt)
+	}
+	if p.ReviewedAt == nil || !p.ReviewedAt.Equal(env.clock.Now()) {
+		t.Errorf("reviewed_at %v, want now %v", p.ReviewedAt, env.clock.Now())
+	}
+	if _, after := env.lastLog(t, a.groupID); !strings.Contains(after, `"paid_at"`) {
+		t.Errorf("logged %s, want paid_at", after)
+	}
+}
+
+func TestPaymentMarkPaidAt(t *testing.T) {
+	// Arrange
+	tests := []struct {
+		name    string
+		offset  time.Duration // from now; the payment was created at the start
+		wantErr error
+		wantNow bool
+	}{
+		{"omitted is now", 0, nil, true},
+		{"a little ahead is clamped to now", 2 * time.Minute, nil, true},
+		{"in the future", time.Hour, model.ErrValidation, false},
+		{"before the payment existed", -365 * 24 * time.Hour, model.ErrValidation, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			env := newPaymentEnv(t)
+			a, _, pay := env.started(t)
+			env.clock.Advance(time.Hour)
+			var paidAt *time.Time
+			if tt.offset != 0 {
+				at := env.clock.Now().Add(tt.offset)
+				paidAt = &at
+			}
+
+			// Act
+			v, err := env.payments.MarkPaid(context.Background(), a.groupID, pay["darto"], a.rina, model.PaymentMethodCash, nil, paidAt)
+
+			// Assert
+			wantErr(t, err, tt.wantErr)
+			if tt.wantNow && (v.Payment.PaidAt == nil || !v.Payment.PaidAt.Equal(env.clock.Now())) {
+				t.Errorf("paid_at %v, want now %v", v.Payment.PaidAt, env.clock.Now())
+			}
+		})
 	}
 }
 
@@ -244,7 +306,7 @@ func TestPaymentReviewRefuses(t *testing.T) {
 		}
 	}
 	markPaid := func(env paymentEnv, a arisan, id uuid.UUID) error {
-		_, err := env.payments.MarkPaid(context.Background(), a.groupID, id, a.rina, model.PaymentMethodCash, nil)
+		_, err := env.payments.MarkPaid(context.Background(), a.groupID, id, a.rina, model.PaymentMethodCash, nil, nil)
 		return err
 	}
 	tests := []struct {
@@ -312,7 +374,7 @@ func TestPaymentMarkPaidRejected(t *testing.T) {
 	}
 
 	// Act
-	v, err := env.payments.MarkPaid(context.Background(), a.groupID, pay["budi"], a.rina, model.PaymentMethodTransfer, nil)
+	v, err := env.payments.MarkPaid(context.Background(), a.groupID, pay["budi"], a.rina, model.PaymentMethodTransfer, nil, nil)
 
 	// Assert
 	if err != nil || v.Payment.Status != model.PaymentStatusPaid || v.Payment.RejectReason != nil {
@@ -329,7 +391,7 @@ func TestPaymentBoardSummary(t *testing.T) {
 	if _, err := env.payments.Approve(context.Background(), a.groupID, pay["budi"], a.rina); err != nil {
 		t.Fatalf("Approve: %v", err)
 	}
-	if _, err := env.payments.MarkPaid(context.Background(), a.groupID, pay["darto"], a.rina, model.PaymentMethodCash, nil); err != nil {
+	if _, err := env.payments.MarkPaid(context.Background(), a.groupID, pay["darto"], a.rina, model.PaymentMethodCash, nil, nil); err != nil {
 		t.Fatalf("MarkPaid: %v", err)
 	}
 	env.upload(t, a, pay["sari"], a.sari, color.White)

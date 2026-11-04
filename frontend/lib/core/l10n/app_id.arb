@@ -2431,5 +2431,470 @@
   "transferExpired": "Tawaran ini sudah tidak berlaku.",
   "@transferExpired": {
     "description": "S33 when the transfer is gone or answered."
+  },
+  "paymentPaidOn": "Dibayar {date}",
+  "@paymentPaidOn": {
+    "description": "Payment Row subtitle for a paid row.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "paymentMethodCash": "Tunai",
+  "@paymentMethodCash": {
+    "description": "Payment method chip and row suffix."
+  },
+  "paymentMethodTransfer": "Transfer",
+  "@paymentMethodTransfer": {
+    "description": "Payment method chip."
+  },
+  "paymentMethodOther": "Lainnya",
+  "@paymentMethodOther": {
+    "description": "Payment method chip."
+  },
+  "paymentUploadedOn": "Upload {date}",
+  "@paymentUploadedOn": {
+    "description": "Payment Row subtitle for a pending row.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "paymentDueOn": "Jatuh tempo {date}",
+  "@paymentDueOn": {
+    "description": "Payment Row subtitle for an unpaid row.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "paymentSyncPending": "Menunggu sinkron",
+  "@paymentSyncPending": {
+    "description": "Payment Row sync dot label (offline mark)."
+  },
+  "paymentRowSemantics": "Slot {slot}, {name}, {status}. {detail}",
+  "@paymentRowSemantics": {
+    "description": "Payment Row screen reader sentence.",
+    "placeholders": {
+      "slot": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      },
+      "status": {
+        "type": "String"
+      },
+      "detail": {
+        "type": "String"
+      }
+    }
+  },
+  "paymentReviewSemantics": "Cek bukti {name}",
+  "@paymentReviewSemantics": {
+    "description": "Payment Row chevron for managers.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "paymentUploadSemantics": "Upload bukti",
+  "@paymentUploadSemantics": {
+    "description": "Payment Row upload circle on my row."
+  },
+  "paymentActionsSemantics": "Pilihan untuk {name}",
+  "@paymentActionsSemantics": {
+    "description": "Payment Row overflow button.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "paymentSummaryLine": "{paid} sudah bayar · {pending} menunggu cek · {unpaid} belum",
+  "@paymentSummaryLine": {
+    "description": "S20 summary line.",
+    "placeholders": {
+      "paid": {
+        "type": "int"
+      },
+      "pending": {
+        "type": "int"
+      },
+      "unpaid": {
+        "type": "int"
+      }
+    }
+  },
+  "paymentFilterAll": "Semua",
+  "@paymentFilterAll": {
+    "description": "S20 filter chip."
+  },
+  "paymentFilterUnpaid": "Belum bayar",
+  "@paymentFilterUnpaid": {
+    "description": "S20 filter chip."
+  },
+  "paymentFilterPending": "Menunggu cek",
+  "@paymentFilterPending": {
+    "description": "S20 filter chip."
+  },
+  "paymentFilterEmpty": "Tidak ada pembayaran di filter ini.",
+  "@paymentFilterEmpty": {
+    "description": "S20 when a filter hides every row."
+  },
+  "paymentsEmptyTitle": "Periode ini belum dibuka",
+  "@paymentsEmptyTitle": {
+    "description": "S20 empty state for an upcoming period."
+  },
+  "paymentsEmptyMessage": "Iuran bisa dibayar setelah periode sebelumnya selesai.",
+  "@paymentsEmptyMessage": {
+    "description": "S20 empty state message."
+  },
+  "paymentsAllPaid": "Semua sudah bayar periode ini.",
+  "@paymentsAllPaid": {
+    "description": "S20 success banner."
+  },
+  "paymentsMyRejected": "Bukti kamu ditolak: {reason}",
+  "@paymentsMyRejected": {
+    "description": "S20 banner when my proof was rejected.",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "paymentsDrawTomorrow": "Kocokan besok. {count} anggota belum bayar.",
+  "@paymentsDrawTomorrow": {
+    "description": "S20 banner the day before the draw.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "paymentsLoadFailed": "Pembayaran gagal dimuat.",
+  "@paymentsLoadFailed": {
+    "description": "S20 when the board fails to load and nothing is cached."
+  },
+  "paymentMarkPaidAction": "Tandai sudah bayar",
+  "@paymentMarkPaidAction": {
+    "description": "S20 overflow item (managers)."
+  },
+  "uploadTileEmpty": "Pilih bukti transfer",
+  "@uploadTileEmpty": {
+    "description": "Upload tile (8.21) empty label."
+  },
+  "uploadTileHint": "JPG/PNG, maks 5 MB",
+  "@uploadTileHint": {
+    "description": "Upload tile caption."
+  },
+  "uploadTileChange": "Ganti",
+  "@uploadTileChange": {
+    "description": "Upload tile text button under a picked image."
+  },
+  "uploadTileRemove": "Hapus foto",
+  "@uploadTileRemove": {
+    "description": "Upload tile remove button semantics."
+  },
+  "uploadTileProgress": "{percent}%",
+  "@uploadTileProgress": {
+    "description": "Upload tile progress caption.",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "uploadTileDone": "Bukti terunggah",
+  "@uploadTileDone": {
+    "description": "Upload tile done badge semantics."
+  },
+  "uploadSourceTitle": "Bukti transfer",
+  "@uploadSourceTitle": {
+    "description": "Upload tile source sheet title."
+  },
+  "uploadSourceCamera": "Kamera",
+  "@uploadSourceCamera": {
+    "description": "Upload tile source sheet."
+  },
+  "uploadSourceGallery": "Galeri",
+  "@uploadSourceGallery": {
+    "description": "Upload tile source sheet."
+  },
+  "uploadPermissionDenied": "Izinkan akses kamera atau foto di pengaturan HP.",
+  "@uploadPermissionDenied": {
+    "description": "Upload when the picker was denied."
+  },
+  "uploadTooLarge": "Ukuran maksimal 5 MB",
+  "@uploadTooLarge": {
+    "description": "Upload tile failed text (file_too_large)."
+  },
+  "uploadUnsupported": "Format harus JPG atau PNG.",
+  "@uploadUnsupported": {
+    "description": "Upload tile failed text (unsupported_media_type)."
+  },
+  "uploadProofTitle": "Bayar iuran periode {n}",
+  "@uploadProofTitle": {
+    "description": "S34 title.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "uploadProofRejected": "Bukti sebelumnya ditolak: {reason}",
+  "@uploadProofRejected": {
+    "description": "S34 banner.",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadProofTransferTo": "Transfer ke",
+  "@uploadProofTransferTo": {
+    "description": "S34 section label."
+  },
+  "uploadProofQris": "Bayar pakai QRIS",
+  "@uploadProofQris": {
+    "description": "S34 collapsible QRIS header."
+  },
+  "uploadProofNoAccount": "Pengurus belum mengisi rekening.",
+  "@uploadProofNoAccount": {
+    "description": "S34 when payment info is missing."
+  },
+  "uploadProofSteps": "1. Transfer lewat aplikasi bank/e-wallet kamu.\n2. Upload bukti di sini.",
+  "@uploadProofSteps": {
+    "description": "S34 steps."
+  },
+  "uploadProofConfirm": "Saya sudah transfer {amount}",
+  "@uploadProofConfirm": {
+    "description": "S34 required check row.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "uploadProofSubmit": "Kirim bukti",
+  "@uploadProofSubmit": {
+    "description": "S34 primary button."
+  },
+  "uploadProofSent": "Bukti terkirim. Pengurus akan mengecek.",
+  "@uploadProofSent": {
+    "description": "S34 success toast."
+  },
+  "uploadProofPickFirst": "Pilih bukti transfer dulu.",
+  "@uploadProofPickFirst": {
+    "description": "S34 disabled reason."
+  },
+  "uploadProofCheckFirst": "Centang konfirmasi transfer dulu.",
+  "@uploadProofCheckFirst": {
+    "description": "S34 disabled reason."
+  },
+  "needsConnection": "Butuh koneksi internet.",
+  "@needsConnection": {
+    "description": "Disabled reason for server-only actions while offline."
+  },
+  "proofReviewTitle": "Cek bukti",
+  "@proofReviewTitle": {
+    "description": "S35 title."
+  },
+  "proofViewerTitle": "Bukti transfer",
+  "@proofViewerTitle": {
+    "description": "Proof viewer title for the payer."
+  },
+  "proofReviewCounter": "{index} dari {count} menunggu",
+  "@proofReviewCounter": {
+    "description": "S35 pending counter.",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "proofPageIndicator": "{index} dari {count}",
+  "@proofPageIndicator": {
+    "description": "Image viewer page indicator.",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "proofExpected": "Seharusnya",
+  "@proofExpected": {
+    "description": "S35 key-value label."
+  },
+  "proofUploadedAt": "Diupload",
+  "@proofUploadedAt": {
+    "description": "S35 key-value label."
+  },
+  "proofPeriod": "Periode",
+  "@proofPeriod": {
+    "description": "S35 key-value label."
+  },
+  "proofStatus": "Status",
+  "@proofStatus": {
+    "description": "S35 key-value label."
+  },
+  "proofApprove": "Setujui",
+  "@proofApprove": {
+    "description": "S35 button."
+  },
+  "proofReject": "Tolak",
+  "@proofReject": {
+    "description": "S35 button."
+  },
+  "proofApproveTitle": "Setujui pembayaran {name}?",
+  "@proofApproveTitle": {
+    "description": "S35 approve confirmation title.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "proofApproveMessage": "{amount} untuk periode {period}. Persetujuan tidak bisa dibatalkan.",
+  "@proofApproveMessage": {
+    "description": "S35 approve confirmation message.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "period": {
+        "type": "int"
+      }
+    }
+  },
+  "proofApproved": "Pembayaran disetujui.",
+  "@proofApproved": {
+    "description": "S35 toast."
+  },
+  "proofRejectTitle": "Tolak bukti {name}",
+  "@proofRejectTitle": {
+    "description": "S35 reject sheet title.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "proofRejectHint": "Tulis alasannya",
+  "@proofRejectHint": {
+    "description": "S35 reject field hint."
+  },
+  "proofRejectReasonShort": "Nominal kurang",
+  "@proofRejectReasonShort": {
+    "description": "S35 quick-pick reason."
+  },
+  "proofRejectReasonBlurry": "Bukti tidak jelas",
+  "@proofRejectReasonBlurry": {
+    "description": "S35 quick-pick reason."
+  },
+  "proofRejectReasonAccount": "Bukan transfer ke rekening ini",
+  "@proofRejectReasonAccount": {
+    "description": "S35 quick-pick reason."
+  },
+  "proofRejectReasonDate": "Tanggal tidak sesuai",
+  "@proofRejectReasonDate": {
+    "description": "S35 quick-pick reason."
+  },
+  "proofRejectLength": "Alasan 3–500 karakter.",
+  "@proofRejectLength": {
+    "description": "S35 reject field error."
+  },
+  "proofRejectSubmit": "Tolak bukti",
+  "@proofRejectSubmit": {
+    "description": "S35 reject sheet button."
+  },
+  "proofRejected": "Bukti ditolak. {name} akan diberi tahu.",
+  "@proofRejected": {
+    "description": "S35 toast.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "proofAlreadyReviewed": "Sudah dicek pengurus lain",
+  "@proofAlreadyReviewed": {
+    "description": "S35 toast on payment_already_reviewed."
+  },
+  "proofNone": "Belum ada bukti.",
+  "@proofNone": {
+    "description": "S35 when the payment has no proof."
+  },
+  "proofLoadFailed": "Bukti gagal dimuat.",
+  "@proofLoadFailed": {
+    "description": "S35 load error."
+  },
+  "imageViewerClose": "Tutup",
+  "@imageViewerClose": {
+    "description": "Image viewer close button."
+  },
+  "markPaidTitle": "Catat pembayaran {name}",
+  "@markPaidTitle": {
+    "description": "S36 title.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "markPaidMethod": "Cara bayar",
+  "@markPaidMethod": {
+    "description": "S36 method label."
+  },
+  "markPaidNoteLabel": "Catatan (opsional)",
+  "@markPaidNoteLabel": {
+    "description": "S36 note field."
+  },
+  "markPaidNoteHint": "Dibayar saat arisan di rumah Bu Ani",
+  "@markPaidNoteHint": {
+    "description": "S36 note hint."
+  },
+  "markPaidConfirm": "Uang sudah saya terima",
+  "@markPaidConfirm": {
+    "description": "S36 required check row."
+  },
+  "markPaidCheckFirst": "Centang konfirmasi dulu.",
+  "@markPaidCheckFirst": {
+    "description": "S36 disabled reason."
+  },
+  "markPaidSubmit": "Catat sudah bayar",
+  "@markPaidSubmit": {
+    "description": "S36 primary button."
+  },
+  "markPaidDone": "Pembayaran {name} dicatat.",
+  "@markPaidDone": {
+    "description": "S36 toast.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "markPaidQueued": "Tersimpan di HP. Dikirim saat online.",
+  "@markPaidQueued": {
+    "description": "S36 toast when offline."
+  },
+  "markPaidNoteTooLong": "Catatan maksimal 500 karakter.",
+  "@markPaidNoteTooLong": {
+    "description": "S36 note error."
+  },
+  "paymentSyncRejected": "Perubahan tidak tersimpan: pembayaran sudah dicatat pengurus lain.",
+  "@paymentSyncRejected": {
+    "description": "Toast when an offline mark was refused on sync."
   }
 }
