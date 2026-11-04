@@ -16,6 +16,9 @@ enum HeroAction() {
   recordPayout,
   viewBuktiKocok,
   continueSetup,
+
+  /// The group is completed or closed: open its summary (S24).
+  viewSummary,
   none,
 }
 
@@ -32,7 +35,8 @@ typedef HeroInput = ({
 });
 
 /// Picks the hero action by the §9.4 table. A draft group asks managers to
-/// continue setup. Once the payout is recorded anyone sees the Bukti Kocok.
+/// continue setup; a completed or closed one opens its summary for
+/// everyone. Once the payout is recorded anyone sees the Bukti Kocok.
 /// Managers then get, in order: record payout (drawn), review proofs,
 /// draw now (draw date reached). Otherwise my own payment decides: upload
 /// (unpaid or rejected), view my proof (pending), or wait for the draw
@@ -43,6 +47,7 @@ class const PickHeroActionUseCase() {
   HeroAction call(HeroInput input) {
     final manager = input.role == MemberRole.organizer || input.role == MemberRole.coOrganizer;
     if (input.status == GroupStatus.draft) return manager ? HeroAction.continueSetup : HeroAction.none;
+    if (input.status == GroupStatus.completed || input.status == GroupStatus.closed) return HeroAction.viewSummary;
     if (input.status != GroupStatus.active) return HeroAction.none;
     if (input.payoutRecorded) return HeroAction.viewBuktiKocok;
     if (manager) {

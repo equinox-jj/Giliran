@@ -3338,5 +3338,819 @@
   "payoutProofSemantics": "Bukti penyerahan",
   "@payoutProofSemantics": {
     "description": "Semantics of the payout proof thumbnail."
+  },
+  "scheduleScalePeriod": "Periode",
+  "@scheduleScalePeriod": {
+    "description": "S21 segmented control: equal column per period."
+  },
+  "scheduleScaleMonth": "Bulan",
+  "@scheduleScaleMonth": {
+    "description": "S21 segmented control: month axis."
+  },
+  "scheduleCompletion": "{percent}%",
+  "@scheduleCompletion": {
+    "description": "S21 today-line pill: share of the cycle drawn.",
+    "placeholders": {
+      "percent": {
+        "type": "int",
+        "example": "40"
+      }
+    }
+  },
+  "scheduleCompletionSemantics": "Hari ini, {percent}% putaran selesai",
+  "@scheduleCompletionSemantics": {
+    "description": "S21 timeline semantics.",
+    "placeholders": {
+      "percent": {
+        "type": "int",
+        "example": "40"
+      }
+    }
+  },
+  "scheduleBarWinner": "P{period} · {name}",
+  "@scheduleBarWinner": {
+    "description": "S21 bar and row label of a drawn period.",
+    "placeholders": {
+      "period": {
+        "type": "int",
+        "example": "4"
+      },
+      "name": {
+        "type": "String",
+        "example": "Bu Rina"
+      }
+    }
+  },
+  "scheduleBarPeriod": "P{period}",
+  "@scheduleBarPeriod": {
+    "description": "S21 bar label of an undrawn period.",
+    "placeholders": {
+      "period": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "scheduleNotDrawn": "Belum dikocok",
+  "@scheduleNotDrawn": {
+    "description": "S21 row of an undrawn period."
+  },
+  "scheduleDrawnOn": "Dikocok {date}",
+  "@scheduleDrawnOn": {
+    "description": "S21 row date of a drawn period.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "Sab, 25 Okt"
+      }
+    }
+  },
+  "scheduleDrawOn": "Kocok {date}",
+  "@scheduleDrawOn": {
+    "description": "S21 row date of an undrawn period.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "Sab, 25 Okt"
+      }
+    }
+  },
+  "scheduleProofLink": "Bukti",
+  "@scheduleProofLink": {
+    "description": "S21 link to Bukti Kocok (S38)."
+  },
+  "scheduleProofSemantics": "Bukti kocok periode {period}",
+  "@scheduleProofSemantics": {
+    "description": "S21 semantics of the Bukti link.",
+    "placeholders": {
+      "period": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  },
+  "scheduleEmpty": "Jadwal muncul setelah arisan dimulai.",
+  "@scheduleEmpty": {
+    "description": "S21 empty state before start."
+  },
+  "activityIntro": "Semua perubahan oleh pengurus tercatat di sini dan tidak bisa dihapus.",
+  "@activityIntro": {
+    "description": "S23 intro caption."
+  },
+  "activityEnd": "Ini awal riwayat grup.",
+  "@activityEnd": {
+    "description": "S23 end of list."
+  },
+  "activityEmpty": "Belum ada aktivitas di grup ini.",
+  "@activityEmpty": {
+    "description": "S23 empty state."
+  },
+  "activityLoadMoreFailed": "Riwayat lama gagal dimuat.",
+  "@activityLoadMoreFailed": {
+    "description": "S23 end row after a failed page."
+  },
+  "activityToday": "Hari ini",
+  "@activityToday": {
+    "description": "Day header for today."
+  },
+  "activityYesterday": "Kemarin",
+  "@activityYesterday": {
+    "description": "Day header for yesterday."
+  },
+  "activitySystemName": "Giliran",
+  "@activitySystemName": {
+    "description": "Actor name of a system action."
+  },
+  "activityFormerMember": "Mantan anggota",
+  "@activityFormerMember": {
+    "description": "Subject whose account or slot is gone."
+  },
+  "activityRowSemantics": "{title}, {time}",
+  "@activityRowSemantics": {
+    "description": "Activity row semantics.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "example": "1"
+      },
+      "time": {
+        "type": "String",
+        "example": "1"
+      }
+    }
+  },
+  "activityGroupCreated": "{actor} membuat grup",
+  "@activityGroupCreated": {
+    "description": "8.23 group.created.",
+    "placeholders": {
+      "actor": {
+        "type": "String",
+        "example": "Bu Rina"
+      }
+    }
+  },
+  "activityGroupUpdated": "{actor} mengubah {fields}",
+  "@activityGroupUpdated": {
+    "description": "8.23 group.updated.",
+    "placeholders": {
+      "actor": {
+        "type": "String",
+        "example": "Bu Rina"
+      },
+      "fields": {
+        "type": "String",
+        "example": "iuran"
+      }
+    }
+  },
+  "activityGroupPaymentInfo": "{actor} mengganti info rekening",
+  "@activityGroupPaymentInfo": {
+    "description": "8.23 group.payment_info_updated.",
+    "placeholders": {
+      "actor": {
+        "type": "String",
+        "example": "Bu Rina"
+      }
+    }
+  },
+  "activityGroupStarted": "Arisan dimulai",
+  "@activityGroupStarted": {
+    "description": "8.23 group.started."
+  },
+  "activityGroupClosed": "{actor} menutup grup",
+  "@activityGroupClosed": {
+    "description": "8.23 group.closed.",
+    "placeholders": {
+      "actor": {
+        "type": "String",
+        "example": "Bu Rina"
+      }
+    }
+  },
+  "activityInviteReset": "{actor} membuat link undangan baru",
+  "@activityInviteReset": {
+    "description": "group.invite_reset.",
+    "placeholders": {
+      "actor": {
+        "type": "String",
+        "example": "Bu Rina"
+      }
+    }
+  },
+  "activityMemberJoined": "{subject} bergabung (slot {slot})",
+  "@activityMemberJoined": {
+    "description": "8.23 member.joined.",
+    "placeholders": {
+      "subject": {
+        "type": "String",
+        "example": "Pak Dedi"
+      },
+      "slot": {
+        "type": "String",
+        "example": "7"
+      }
+    }
+  },
+  "activityMemberJoinedNoSlot": "{subject} bergabung",
+  "@activityMemberJoinedNoSlot": {
+    "description": "member.joined without a slot.",
+    "placeholders": {
+      "subject": {
+        "type": "String",
+        "example": "Pak Dedi"
+      }
+    }
+  },
+  "activityGuestAdded": "{actor} menambahkan tamu {subject}",
+  "@activityGuestAdded": {
+    "description": "8.23 member.guest_added.",
+    "placeholders": {
+      "actor": {
+        "type": "String",
+        "example": "Bu Rina"
+      },
+      "subject": {
+        "type": "String",
+        "example": "Pak Dedi"
+      }
+    }
+  },
+  "activityGuestClaimed": "{subject} mengklaim slot tamu",
+  "@activityGuestClaimed": {
+    "description": "8.23 member.guest_claimed.",
+    "placeholders": {
+      "subject": {
+        "type": "String",
+        "example": "Pak Dedi"
+      }
+    }
+  },
+  "activityGuestUpdated": "{actor} mengubah data tamu {subject}",
+  "@activityGuestUpdated": {
+    "description": "member.guest_updated.",
+    "placeholders": {
+      "actor": {
+        "type": "String",
+        "example": "Bu Rina"
+      },
+      "subject": {
+        "type": "String",
+        "example": "Pak Dedi"
+      }
+    }
+  },
+  "activityClaimLink": "{actor} membuat link klaim untuk {subject}",
+  "@activityClaimLink": {
+    "description": "member.claim_link_created.",
+    "placeholders": {
+      "actor": {
+        "type": "String",
+        "example": "Bu Rina"
+      },
+      "subject": {
+        "type": "String",
+        "example": "Pak Dedi"
+      }
+    }
+  },
+  "activityMemberRemoved": "{actor} mengeluarkan {subject}",
+  "@activityMemberRemoved": {
+    "description": "8.23 member.removed.",
+    "placeholders": {
+      "actor": {
+        "type": "String",
+        "example": "Bu Rina"
+      },
+      "subject": {
+        "type": "String",
+        "example": "Pak Dedi"
+      }
+    }
+  },
+  "activityMemberLeft": "{subject} keluar dari grup",
+  "@activityMemberLeft": {
+    "description": "8.23 member.left.",
+    "placeholders": {
+      "subject": {
+        "type": "String",
+        "example": "Pak Dedi"
+      }
+    }
+  },
+  "activityLeaveRejected": "{actor} menolak permintaan keluar {subject}",
+  "@activityLeaveRejected": {
+    "description": "member.leave_rejected.",
+    "placeholders": {
+      "actor": {
+        "type": "String",
+        "example": "Bu Rina"
+      },
+      "subject": {
+        "type": "String",
+        "example": "Pak Dedi"
+      }
+    }
+  },
+  "activityPeriodOpened": "Periode {period} dibuka · kode komitmen dipublikasikan",
+  "@activityPeriodOpened": {
+    "description": "8.23 period.opened.",
+    "placeholders": {
+      "period": {
+        "type": "String",
+        "example": "4"
+      }
+    }
+  },
+  "activityPeriodOpenedNoNumber": "Periode baru dibuka · kode komitmen dipublikasikan",
+  "@activityPeriodOpenedNoNumber": {
+    "description": "period.opened without a number."
+  },
+  "activityProofUploaded": "{subject} upload bukti bayar",
+  "@activityProofUploaded": {
+    "description": "8.23 payment.proof_uploaded (the entry has no period number).",
+    "placeholders": {
+      "subject": {
+        "type": "String",
+        "example": "Pak Dedi"
+      }
+    }
+  },
+  "activityPaymentApproved": "{actor} menyetujui bayaran {subject}",
+  "@activityPaymentApproved": {
+    "description": "8.23 payment.approved.",
+    "placeholders": {
+      "actor": {
+        "type": "String",
+        "example": "Bu Rina"
+      },
+      "subject": {
+        "type": "String",
+        "example": "Pak Dedi"
+      }
+    }
+  },
+  "activityPaymentRejected": "{actor} menolak bukti {subject}: {reason}",
+  "@activityPaymentRejected": {
+    "description": "8.23 payment.rejected.",
+    "placeholders": {
+      "actor": {
+        "type": "String",
+        "example": "Bu Rina"
+      },
+      "subject": {
+        "type": "String",
+        "example": "Pak Dedi"
+      },
+      "reason": {
+        "type": "String",
+        "example": "Nominal kurang"
+      }
+    }
+  },
+  "activityPaymentRejectedNoReason": "{actor} menolak bukti {subject}",
+  "@activityPaymentRejectedNoReason": {
+    "description": "payment.rejected without a reason.",
+    "placeholders": {
+      "actor": {
+        "type": "String",
+        "example": "Bu Rina"
+      },
+      "subject": {
+        "type": "String",
+        "example": "Pak Dedi"
+      }
+    }
+  },
+  "activityMarkedPaid": "{actor} mencatat {subject} bayar {method}",
+  "@activityMarkedPaid": {
+    "description": "8.23 payment.marked_paid.",
+    "placeholders": {
+      "actor": {
+        "type": "String",
+        "example": "Bu Rina"
+      },
+      "subject": {
+        "type": "String",
+        "example": "Pak Dedi"
+      },
+      "method": {
+        "type": "String",
+        "example": "tunai"
+      }
+    }
+  },
+  "activityMarkedPaidNoMethod": "{actor} mencatat {subject} sudah bayar",
+  "@activityMarkedPaidNoMethod": {
+    "description": "payment.marked_paid without a method.",
+    "placeholders": {
+      "actor": {
+        "type": "String",
+        "example": "Bu Rina"
+      },
+      "subject": {
+        "type": "String",
+        "example": "Pak Dedi"
+      }
+    }
+  },
+  "activityMethodCash": "tunai",
+  "@activityMethodCash": {
+    "description": "Lowercase method in the marked-paid sentence."
+  },
+  "activityMethodTransfer": "transfer",
+  "@activityMethodTransfer": {
+    "description": "Lowercase method in the marked-paid sentence."
+  },
+  "activityMethodOther": "cara lain",
+  "@activityMethodOther": {
+    "description": "Lowercase method in the marked-paid sentence."
+  },
+  "activityDrawCompleted": "Kocokan selesai: slot {slot} dapat giliran",
+  "@activityDrawCompleted": {
+    "description": "8.23 draw.completed (the entry carries the winning slot, not a name).",
+    "placeholders": {
+      "slot": {
+        "type": "String",
+        "example": "7"
+      }
+    }
+  },
+  "activityDrawCompletedNoSlot": "Kocokan selesai",
+  "@activityDrawCompletedNoSlot": {
+    "description": "draw.completed without a slot."
+  },
+  "activityDrawPaidCount": "{paid}/{total} sudah bayar",
+  "@activityDrawPaidCount": {
+    "description": "Suffix of draw.completed in parentheses.",
+    "placeholders": {
+      "paid": {
+        "type": "int",
+        "example": "8"
+      },
+      "total": {
+        "type": "int",
+        "example": "10"
+      }
+    }
+  },
+  "activityPayoutRecorded": "{actor} menyerahkan {amount} ke {subject}",
+  "@activityPayoutRecorded": {
+    "description": "8.23 payout.recorded.",
+    "placeholders": {
+      "actor": {
+        "type": "String",
+        "example": "Bu Rina"
+      },
+      "amount": {
+        "type": "String",
+        "example": "Rp2.000.000"
+      },
+      "subject": {
+        "type": "String",
+        "example": "Pak Dedi"
+      }
+    }
+  },
+  "activityPayoutRecordedNoAmount": "{actor} menyerahkan uang ke {subject}",
+  "@activityPayoutRecordedNoAmount": {
+    "description": "payout.recorded without an amount.",
+    "placeholders": {
+      "actor": {
+        "type": "String",
+        "example": "Bu Rina"
+      },
+      "subject": {
+        "type": "String",
+        "example": "Pak Dedi"
+      }
+    }
+  },
+  "activityGroupCompletedSuffix": "arisan selesai",
+  "@activityGroupCompletedSuffix": {
+    "description": "Suffix when the payout completed the group."
+  },
+  "activityPayoutConfirmed": "{subject} mengonfirmasi uang diterima",
+  "@activityPayoutConfirmed": {
+    "description": "8.23 payout.confirmed.",
+    "placeholders": {
+      "subject": {
+        "type": "String",
+        "example": "Pak Dedi"
+      }
+    }
+  },
+  "activityOwnershipOffered": "{actor} menawarkan posisi pengurus ke {subject}",
+  "@activityOwnershipOffered": {
+    "description": "ownership.transfer_offered.",
+    "placeholders": {
+      "actor": {
+        "type": "String",
+        "example": "Bu Rina"
+      },
+      "subject": {
+        "type": "String",
+        "example": "Pak Dedi"
+      }
+    }
+  },
+  "activityOwnershipDeclined": "{subject} menolak jadi pengurus",
+  "@activityOwnershipDeclined": {
+    "description": "ownership.transfer_declined.",
+    "placeholders": {
+      "subject": {
+        "type": "String",
+        "example": "Pak Dedi"
+      }
+    }
+  },
+  "activityOwnershipTransferred": "{name} sekarang pengurus",
+  "@activityOwnershipTransferred": {
+    "description": "8.23 ownership.transferred.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Bu Rina"
+      }
+    }
+  },
+  "activityReminderSent": "{actor} mengirim pengingat ke {count} orang",
+  "@activityReminderSent": {
+    "description": "reminder.sent.",
+    "placeholders": {
+      "actor": {
+        "type": "String",
+        "example": "Bu Rina"
+      },
+      "count": {
+        "type": "int",
+        "example": "6"
+      }
+    }
+  },
+  "activityUnknown": "{actor} membuat perubahan",
+  "@activityUnknown": {
+    "description": "Unknown action.",
+    "placeholders": {
+      "actor": {
+        "type": "String",
+        "example": "Bu Rina"
+      }
+    }
+  },
+  "activityFieldName": "nama grup",
+  "@activityFieldName": {
+    "description": "Changed field label."
+  },
+  "activityFieldAmount": "iuran",
+  "@activityFieldAmount": {
+    "description": "Changed field label."
+  },
+  "activityFieldPeriodType": "periode",
+  "@activityFieldPeriodType": {
+    "description": "Changed field label."
+  },
+  "activityFieldTotalSlots": "jumlah slot",
+  "@activityFieldTotalSlots": {
+    "description": "Changed field label."
+  },
+  "activityFieldDrawMethod": "cara kocokan",
+  "@activityFieldDrawMethod": {
+    "description": "Changed field label."
+  },
+  "activityFieldStartDate": "tanggal mulai",
+  "@activityFieldStartDate": {
+    "description": "Changed field label."
+  },
+  "activityFieldReminder": "pengingat",
+  "@activityFieldReminder": {
+    "description": "Changed field label."
+  },
+  "activityFieldFixedOrder": "urutan giliran",
+  "@activityFieldFixedOrder": {
+    "description": "Changed field label."
+  },
+  "activityFieldBankAccount": "rekening",
+  "@activityFieldBankAccount": {
+    "description": "Changed field label."
+  },
+  "activityFieldQris": "QRIS",
+  "@activityFieldQris": {
+    "description": "Changed field label."
+  },
+  "activityFieldPhone": "nomor HP",
+  "@activityFieldPhone": {
+    "description": "Changed field label."
+  },
+  "activityFieldGuestName": "nama",
+  "@activityFieldGuestName": {
+    "description": "Changed field label (guest name)."
+  },
+  "activityFieldsFallback": "pengaturan grup",
+  "@activityFieldsFallback": {
+    "description": "group.updated when no field is known."
+  },
+  "activityReminderDays": "{count} hari",
+  "@activityReminderDays": {
+    "description": "Diff value of reminder_days_before.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "6"
+      }
+    }
+  },
+  "activityDiffSemantics": "{field} dari {before} jadi {after}",
+  "@activityDiffSemantics": {
+    "description": "Diff line semantics.",
+    "placeholders": {
+      "field": {
+        "type": "String",
+        "example": "1"
+      },
+      "before": {
+        "type": "String",
+        "example": "1"
+      },
+      "after": {
+        "type": "String",
+        "example": "1"
+      }
+    }
+  },
+  "notificationsHeadline": "**Aktivitas** terbaru",
+  "@notificationsHeadline": {
+    "description": "S12 headline."
+  },
+  "notificationsFilterAll": "Semua",
+  "@notificationsFilterAll": {
+    "description": "S12 chip."
+  },
+  "notificationsFilterUnread": "Belum dibaca",
+  "@notificationsFilterUnread": {
+    "description": "S12 chip."
+  },
+  "notificationsFilterAction": "Perlu tindakan",
+  "@notificationsFilterAction": {
+    "description": "S12 chip."
+  },
+  "notificationsMarkAllRead": "Tandai semua dibaca",
+  "@notificationsMarkAllRead": {
+    "description": "S12 app bar action."
+  },
+  "notificationsEmpty": "Belum ada aktivitas.",
+  "@notificationsEmpty": {
+    "description": "S12 empty state."
+  },
+  "notificationsEmptyFiltered": "Tidak ada notifikasi di sini.",
+  "@notificationsEmptyFiltered": {
+    "description": "S12 empty state under a filter chip."
+  },
+  "notificationsPushOff": "Notifikasi mati. Aktifkan agar tidak lupa iuran.",
+  "@notificationsPushOff": {
+    "description": "S12 banner when the OS permission is off."
+  },
+  "notificationsOpenSettings": "Buka pengaturan",
+  "@notificationsOpenSettings": {
+    "description": "S12 banner action."
+  },
+  "notificationUnreadSemantics": "Belum dibaca. {title}",
+  "@notificationUnreadSemantics": {
+    "description": "Semantics prefix of an unread notification.",
+    "placeholders": {
+      "title": {
+        "type": "String",
+        "example": "1"
+      }
+    }
+  },
+  "notificationMarkReadAction": "Tandai dibaca",
+  "@notificationMarkReadAction": {
+    "description": "Notification swipe and semantics action."
+  },
+  "notificationFallbackTitle": "Giliran",
+  "@notificationFallbackTitle": {
+    "description": "Title of a push without one."
+  },
+  "settingsPushPermission": "Izin notifikasi",
+  "@settingsPushPermission": {
+    "description": "S47 system permission row."
+  },
+  "settingsPushPermissionOn": "Aktif",
+  "@settingsPushPermissionOn": {
+    "description": "S47 permission value."
+  },
+  "settingsPushPermissionOff": "Mati",
+  "@settingsPushPermissionOff": {
+    "description": "S47 permission value."
+  },
+  "settingsPushPermissionHint": "Diatur di pengaturan HP",
+  "@settingsPushPermissionHint": {
+    "description": "S47 permission row subtitle."
+  },
+  "heroViewSummary": "Lihat ringkasan",
+  "@heroViewSummary": {
+    "description": "Hero action on a completed or closed group (opens S24)."
+  },
+  "summaryTitle": "Ringkasan arisan",
+  "@summaryTitle": {
+    "description": "S24 app bar title."
+  },
+  "summaryHeadlineCompleted": "Arisan selesai. **{periods} periode, {winners} pemenang.**",
+  "@summaryHeadlineCompleted": {
+    "description": "S24 Cycle Summary headline.",
+    "placeholders": {
+      "periods": {
+        "type": "int",
+        "example": "10"
+      },
+      "winners": {
+        "type": "int",
+        "example": "10"
+      }
+    }
+  },
+  "summaryHeadlineClosed": "Arisan **ditutup** {date}",
+  "@summaryHeadlineClosed": {
+    "description": "S24 headline of a group closed early.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "Sab, 25 Okt"
+      }
+    }
+  },
+  "summaryClosedDrawn": "{drawn} dari {total} periode sempat dikocok.",
+  "@summaryClosedDrawn": {
+    "description": "S24 line under the closed headline.",
+    "placeholders": {
+      "drawn": {
+        "type": "int",
+        "example": "10"
+      },
+      "total": {
+        "type": "int",
+        "example": "10"
+      }
+    }
+  },
+  "summaryStatCollected": "Terkumpul",
+  "@summaryStatCollected": {
+    "description": "S24 stat label: total collected."
+  },
+  "summaryStatPaidRate": "Iuran lunas",
+  "@summaryStatPaidRate": {
+    "description": "S24 stat label: share of dues paid."
+  },
+  "summaryStatMembers": "Anggota",
+  "@summaryStatMembers": {
+    "description": "S24 stat label: member count."
+  },
+  "summaryPercent": "{percent}%",
+  "@summaryPercent": {
+    "description": "S24 stat value.",
+    "placeholders": {
+      "percent": {
+        "type": "int",
+        "example": "10"
+      }
+    }
+  },
+  "summaryWinnersTitle": "Pemenang per periode",
+  "@summaryWinnersTitle": {
+    "description": "S24 list header."
+  },
+  "summaryNotDrawn": "Tidak dikocok",
+  "@summaryNotDrawn": {
+    "description": "S24 label for periods a closed group never drew."
+  },
+  "summaryWinnerRow": "P{period} · {name}",
+  "@summaryWinnerRow": {
+    "description": "S24 winner row title.",
+    "placeholders": {
+      "period": {
+        "type": "int",
+        "example": "10"
+      },
+      "name": {
+        "type": "String",
+        "example": "Sab, 25 Okt"
+      }
+    }
+  },
+  "summaryCreateNew": "Buat arisan baru",
+  "@summaryCreateNew": {
+    "description": "S24 organizer action (opens S13 prefilled)."
+  },
+  "summaryViewHistory": "Lihat riwayat",
+  "@summaryViewHistory": {
+    "description": "S24 member action (opens the Aktivitas tab)."
+  },
+  "summaryFinishedBanner": "Arisan sudah selesai",
+  "@summaryFinishedBanner": {
+    "description": "S24 banner over the read-only tabs."
+  },
+  "summaryClosedBanner": "Arisan sudah ditutup",
+  "@summaryClosedBanner": {
+    "description": "S24 banner over the read-only tabs of a closed group."
   }
 }

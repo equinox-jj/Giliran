@@ -24,7 +24,8 @@ import '../features/group/presentation/group_detail/page/group_detail_page.dart'
 import '../features/group/presentation/group_detail/widgets/detail_tabs.dart';
 import '../features/group/presentation/groups/page/groups_page.dart';
 import '../features/group/presentation/payment_info/page/payment_info_page.dart';
-import '../features/history/presentation/pages/activity_page.dart';
+import '../features/history/presentation/group_summary/page/group_summary_page.dart';
+import '../features/history/presentation/notifications/page/notifications_page.dart';
 import '../features/home/presentation/home/page/home_page.dart';
 import '../features/member/presentation/claim/page/claim_page.dart';
 import '../features/member/presentation/fixed_order/page/fixed_order_page.dart';
@@ -49,6 +50,7 @@ import '../features/settings/presentation/settings/page/settings_page.dart';
 import '../shared/widgets/widgets.dart';
 import 'component_gallery_page.dart';
 import 'deep_link_controller.dart';
+import 'push_controller.dart';
 
 part 'routes.g.dart';
 
@@ -82,6 +84,10 @@ final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
                 TypedGoRoute<EditGroupRoute>(
                   name: 'editGroup',
                   path: 'edit',
+                ),
+                TypedGoRoute<GroupSummaryRoute>(
+                  name: 'groupSummary',
+                  path: 'summary',
                 ),
                 TypedGoRoute<PaymentInfoRoute>(
                   name: 'paymentInfo',
@@ -282,6 +288,23 @@ class const GroupDetailRoute({required final String gid, final String? tab, fina
     onDraw: (pid) => DrawRoute(gid: gid, pid: pid).push<void>(context),
     onBuktiKocok: (pid) => DrawResultRoute(gid: gid, pid: pid).push<void>(context),
     onPayout: (pid) => PayoutRoute(gid: gid, pid: pid).push<void>(context),
+    onSummary: () => GroupSummaryRoute(gid: gid).push<void>(context),
+  );
+}
+
+/// Group summary (S24) of a completed or closed group, over the tabs.
+class const GroupSummaryRoute({required final String gid}) extends GoRouteData with $GroupSummaryRoute {
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => GroupSummaryPage(
+    groupId: gid,
+    onCreateNew: (prefill) => CreateGroupRoute(
+      amount: prefill.amount,
+      period: prefill.periodType,
+      slots: prefill.totalSlots,
+    ).push<void>(context),
+    onBuktiKocok: (pid) => DrawResultRoute(gid: gid, pid: pid).push<void>(context),
   );
 }
 
@@ -354,7 +377,8 @@ class const EditGroupRoute({required final String gid}) extends GoRouteData with
     onFixedOrder: () => FixedOrderRoute(gid: gid).push<void>(context),
     onLeaveRequests: () => LeaveRequestsRoute(gid: gid).push<void>(context),
     onTransfer: () => TransferOfferRoute(gid: gid).push<void>(context),
-    onClosed: () => _popOr(context, GroupDetailRoute(gid: gid).location),
+    // Closing ends the group (S19 → S24): the summary replaces Edit group.
+    onClosed: () => GroupSummaryRoute(gid: gid).pushReplacement(context),
   );
 }
 
@@ -447,7 +471,8 @@ class const TransferRespondRoute({required final String gid, required final Stri
 
 class const ActivityRoute() extends GoRouteData with $ActivityRoute {
   @override
-  Widget build(BuildContext context, GoRouterState state) => const ActivityPage();
+  Widget build(BuildContext context, GoRouterState state) =>
+      NotificationsPage(onOpen: (target) => context.go(notificationLocation(target)));
 }
 
 class const ProfileRoute() extends GoRouteData with $ProfileRoute {

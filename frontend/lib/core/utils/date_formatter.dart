@@ -16,6 +16,9 @@ abstract final class AppDate() {
         : DateFormat('d MMM y', _locale).format(d);
   }
 
+  /// Short month name, "Jan" (month axes).
+  static String month(DateTime d) => DateFormat('MMM', _locale).format(d);
+
   /// 24-hour time with a dot: "19.30".
   static String time(DateTime d) => DateFormat('HH.mm', _locale).format(d);
 

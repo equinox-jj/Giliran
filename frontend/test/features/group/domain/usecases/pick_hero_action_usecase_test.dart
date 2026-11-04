@@ -59,7 +59,11 @@ void main() {
       HeroAction.reviewProofs,
     ),
     'member, paid and drawn → nothing': (_input(drawn: true), HeroAction.none),
-    'completed group → nothing': (_input(status: GroupStatus.completed), HeroAction.none),
+    'completed group → the summary': (_input(status: GroupStatus.completed), HeroAction.viewSummary),
+    'closed group → the summary, for members too': (
+      _input(status: GroupStatus.closed, role: MemberRole.member),
+      HeroAction.viewSummary,
+    ),
   };
   for (final MapEntry(key: label, value: (input, expected)) in rows.entries) {
     test(label, () {

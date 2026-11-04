@@ -6,13 +6,14 @@ import '../core/l10n/locale_controller.dart';
 import '../core/themes/theme_mode_controller.dart';
 import '../core/themes/themes.dart';
 import '../features/auth/presentation/shared/widgets/app_lock_gate.dart';
+import 'push_controller.dart';
 import 'router.dart';
 
 /// Root widget of the app.
 ///
 /// Applies the light and dark [AppTheme], the stored theme mode and language,
 /// and navigates through the app router, which also receives app links
-/// (Flutter deep linking). Until the stored settings load, it shows
+/// (Flutter deep linking) and notification taps. Until the stored settings load, it shows
 /// Indonesian and follows the system theme.
 class const GiliranApp({super.key}) extends ConsumerWidget {
   @override
@@ -20,6 +21,8 @@ class const GiliranApp({super.key}) extends ConsumerWidget {
     final locale = ref.watch(localeControllerProvider.select((s) => s.value));
     final themeMode = ref.watch(themeModeControllerProvider.select((s) => s.value));
     final router = ref.watch(routerProvider);
+    // Starts push for the app's lifetime (token, storage, tap routing).
+    ref.watch(pushControllerProvider);
 
     return MaterialApp.router(
       onGenerateTitle: (context) => context.l10n.appName,

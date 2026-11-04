@@ -85,3 +85,19 @@ ActivityLogsCompanion activityRow(
   createdAt: createdAt,
   after: Value(after),
 );
+
+NotificationsCompanion notificationRow(
+  String id,
+  DateTime createdAt, {
+  String type = 'payment.reminder',
+  String? groupId = 'g1',
+  bool read = false,
+}) => NotificationsCompanion.insert(
+  id: id,
+  type: type,
+  groupId: Value(groupId),
+  title: Value('Judul $id'),
+  body: Value('Isi $id'),
+  createdAt: createdAt,
+  read: Value(read),
+);

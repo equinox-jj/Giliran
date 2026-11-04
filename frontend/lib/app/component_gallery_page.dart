@@ -289,6 +289,47 @@ class const _GroupsSection() extends StatelessWidget {
           onSelect: (_) {},
         ),
         _gap,
+        JadwalTimeline(
+          todayAt: 0.45,
+          todayLabel: '40%',
+          bars: [
+            for (var n = 1; n <= 10; n++)
+              JadwalBar(
+                periodNo: n,
+                start: (n - 1) / 10,
+                end: n / 10,
+                fill: n <= 4 ? JadwalBarFill.drawn : (n == 5 ? JadwalBarFill.open : JadwalBarFill.upcoming),
+                tone: n <= 4 ? c.tones[n % c.tones.length].accent : null,
+                label: n <= 4 ? 'P$n · Anggota $n' : 'P$n',
+                semanticsLabel: 'Periode $n',
+              ),
+          ],
+        ),
+        _gap,
+        CycleSummaryCard(
+          tone: c.tones[0],
+          headline: 'Arisan selesai. **10 periode, 10 pemenang.**',
+          stats: const [
+            CycleStat(value: 'Rp20.000.000', label: 'Terkumpul'),
+            CycleStat(value: '96%', label: 'Iuran lunas'),
+            CycleStat(value: '10', label: 'Anggota'),
+          ],
+          tokens: [
+            for (var n = 1; n <= 10; n++)
+              PeriodTokenData(
+                id: 'p$n',
+                periodNo: n,
+                state: n <= 8 ? SlotTokenState.done : SlotTokenState.upcoming,
+                winnerName: n <= 8 ? 'Anggota $n' : null,
+              ),
+          ],
+          winners: const [
+            CycleWinnerRow(periodId: 'p1', title: 'P1 · Anggota 1', date: 'Sen, 5 Jan'),
+            CycleWinnerRow(periodId: 'p2', title: 'P2 · Anggota 2', date: 'Kam, 5 Feb'),
+          ],
+          onProof: (_) => showAppToast(context, 'Bukti Kocok'),
+        ),
+        _gap,
         CurrentPeriodHero(
           title: 'Arisan RT 05',
           subtitle: 'Periode 4 dari 10',
@@ -1154,6 +1195,38 @@ class _ListsSectionState() extends State<_ListsSection> {
             ),
           ],
         ),
+        const ActivityRow(
+          icon: AppIcons.pencilSimple,
+          title: 'Bu Rina mengubah iuran',
+          time: '19.30',
+          diffs: [ActivityRowDiff(label: 'iuran', before: 'Rp150.000', after: 'Rp200.000')],
+        ),
+        const ActivityRow(icon: AppIcons.flag, title: 'Arisan dimulai', time: '08.00', system: true),
+        _gap,
+        NotificationItem(
+          id: 'g-unread',
+          icon: AppIcons.bellRinging,
+          title: 'Iuran jatuh tempo besok',
+          body: 'Rp200.000 untuk periode 4',
+          time: '19.30',
+          groupName: 'Arisan RT 05',
+          toneColor: c.tones[0].accent,
+          read: false,
+          onTap: () => showAppToast(context, 'Buka'),
+          onMarkRead: () => showAppToast(context, 'Dibaca'),
+        ),
+        NotificationItem(
+          id: 'g-read',
+          icon: AppIcons.shuffle,
+          title: 'Hasil kocokan periode 4',
+          time: '08.00',
+          groupName: 'Arisan RT 05',
+          toneColor: c.tones[0].accent,
+          read: true,
+          onTap: () => showAppToast(context, 'Buka'),
+          onMarkRead: () {},
+        ),
+        _gap,
         SettingsGroup(
           header: 'Perangkat aktif',
           children: [

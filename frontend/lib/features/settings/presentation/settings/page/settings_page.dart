@@ -5,13 +5,16 @@ import '../../../../../core/constants/app_icons.dart';
 import '../../../../../core/error/failure_message.dart';
 import '../../../../../core/l10n/l10n.dart';
 import '../../../../../core/l10n/locale_controller.dart';
+import '../../../../../core/services/push_service.dart';
 import '../../../../../core/themes/theme_mode_controller.dart';
 import '../../../../../core/themes/themes.dart';
 import '../../../../../shared/widgets/widgets.dart';
+import '../../../../history/presentation/shared/controllers/push_permission_controller.dart';
 import '../../../domain/entities/user_settings.dart';
 import '../controllers/settings_controller.dart';
 
-/// Settings (S47): notification toggles, theme and language, the image
+/// Settings (S47): the system notification permission, notification
+/// toggles, theme and language, the image
 /// cache, and the way to Delete account.
 class const SettingsPage({
   super.key,
@@ -69,6 +72,7 @@ class const _Notifications() extends ConsumerWidget {
       AsyncData(:final value) => SettingsGroup(
         header: l10n.settingsNotifications,
         children: [
+          const _PushPermissionRow(),
           SettingsRow.toggle(
             icon: AppIcons.bellRinging,
             label: l10n.settingsNotifyPayment,
@@ -236,6 +240,23 @@ class const _ChoiceRow({
           ),
         ),
       ),
+    );
+  }
+}
+
+/// The OS notification permission: "Aktif" or "Mati"; tapping asks for it,
+/// or opens the system settings once it was denied.
+class const _PushPermissionRow() extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final permission = ref.watch(pushPermissionControllerProvider.select((s) => s.value));
+    return SettingsRow.navigation(
+      icon: AppIcons.bellSimple,
+      label: l10n.settingsPushPermission,
+      subtitle: l10n.settingsPushPermissionHint,
+      value: permission == PushPermission.granted ? l10n.settingsPushPermissionOn : l10n.settingsPushPermissionOff,
+      onTap: () => ref.read(pushPermissionControllerProvider.notifier).enable(),
     );
   }
 }
