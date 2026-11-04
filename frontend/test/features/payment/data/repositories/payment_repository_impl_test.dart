@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:giliran/core/database/app_database.dart';
 import 'package:giliran/core/error/exceptions.dart';
@@ -23,6 +24,7 @@ class _FakeRemote() implements PaymentRemoteDataSource {
   List<PeriodModel> periods = [PeriodModel.fromJson(periodJson('p1'))];
   List<PaymentModel> board = [PaymentModel.fromJson(paymentJson('pay1'))];
   PaymentModel payment = PaymentModel.fromJson(paymentJson('pay1', status: 'paid', method: 'cash'));
+  PaymentSummaryModel summary = PaymentSummaryModel.fromJson(summaryJson);
   Object? error;
 
   /// Errors thrown by the next mark-paid calls, in order.
@@ -46,7 +48,7 @@ class _FakeRemote() implements PaymentRemoteDataSource {
   @override
   Future<PaymentBoardModel> getPaymentBoard(String groupId, String periodId) => _answer('getPaymentBoard', (
     payments: board,
-    summary: PaymentSummaryModel.fromJson(summaryJson),
+    summary: summary,
   ));
 
   @override
@@ -122,7 +124,7 @@ void main() {
     remote = _FakeRemote();
     repository = PaymentRepositoryImpl(
       remote,
-      PaymentLocalDataSourceImpl(db.periodsDao, db.paymentsDao, db.payoutsDao),
+      PaymentLocalDataSourceImpl(db.periodsDao, db.paymentsDao, db.payoutsDao, db.groupsDao),
       () => now,
     );
     await db.groupsDao.upsertAll([groupRow('g1')]);
@@ -207,6 +209,30 @@ void main() {
     expect(result.getRight().toNullable()?.status, PaymentStatus.paid);
     final row = await db.paymentsDao.getById('pay1');
     expect(row?.status, 'paid');
+  });
+
+  test('approve moves the group counts', () async {
+    // Arrange
+    await db.groupsDao.upsertAll([
+      groupRow('g1').copyWith(
+        currentPeriodId: const Value('p1'),
+        paidCount: const Value(0),
+        pendingReviewCount: const Value(1),
+      ),
+    ]);
+    await db.periodsDao.upsertAll([periodRow('p1', 'g1', 1)]);
+    await db.paymentsDao.replaceForPeriod('p1', [paymentRow('pay1', 'g1', 'p1', 1, status: 'pending_review')]);
+    remote.payment = PaymentModel.fromJson(paymentJson('pay1', status: 'paid'));
+    remote.board = [remote.payment];
+    remote.summary = PaymentSummaryModel.fromJson({...summaryJson, 'total_count': 1});
+
+    // Act
+    await repository.approvePayment('g1', 'pay1', key: const IdempotencyKey('k'));
+
+    // Assert
+    final group = await db.groupsDao.getById('g1');
+    expect(group?.paidCount, 1);
+    expect(group?.pendingReviewCount, 0);
   });
 
   group('offline cash marks', () {
@@ -324,6 +350,30 @@ void main() {
       expect(remote.markPaidAts, [null, now, null]);
       expect(remote.markKeys.toSet(), {'key-skew'});
       expect(result.getRight().toNullable()?.synced, 1);
+    });
+
+    test('an offline mark moves the group status without a refetch', () async {
+      // Arrange
+      await db.groupsDao.upsertAll([
+        groupRow('g1').copyWith(
+          currentPeriodId: const Value('p1'),
+          myPaymentStatus: const Value('unpaid'),
+          paidCount: const Value(0),
+        ),
+      ]);
+      await db.periodsDao.upsertAll([periodRow('p1', 'g1', 1)]);
+      await db.paymentsDao.replaceForPeriod('p1', [
+        paymentRow('pay1', 'g1', 'p1', 1).copyWith(isMine: const Value(true)),
+      ]);
+      remote.markErrors.add(const NetworkException());
+
+      // Act
+      await repository.markPaid('g1', 'pay1', method: PaymentMethod.cash, key: const IdempotencyKey('key-g'));
+
+      // Assert
+      final group = await db.groupsDao.getById('g1');
+      expect(group?.myPaymentStatus, 'paid');
+      expect(group?.paidCount, 1);
     });
 
     test('sync keeps marks queued while still offline', () async {

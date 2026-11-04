@@ -7,17 +7,35 @@ import '../../../../../core/l10n/locale_controller.dart';
 import '../../../../../core/usecase/usecase.dart';
 import '../../../domain/entities/user_settings.dart';
 import '../../../domain/usecases/clear_image_cache_usecase.dart';
+import '../../../domain/usecases/get_cached_settings_usecase.dart';
 import '../../../domain/usecases/get_settings_usecase.dart';
 import '../../../domain/usecases/update_settings_usecase.dart';
 
 part 'settings_controller.g.dart';
 
-/// The account settings on Settings (S47). Toggles apply at once and revert
-/// when the server rejects them.
+/// The account settings on Settings (S47). Opens with the copy saved on the
+/// device, then the server's. Toggles apply at once and revert when the
+/// server rejects them.
 @riverpod
 class SettingsController() extends _$SettingsController {
+  /// Bumped by each [change], so a server answer that started earlier can't
+  /// overwrite a toggle made while it loaded.
+  int _changes = 0;
+
   @override
-  Future<UserSettings> build() => _load();
+  Stream<UserSettings> build() async* {
+    final cached = (await ref.read(getCachedSettingsUseCaseProvider)(const NoParams())).getRight().toNullable();
+    if (cached == null) {
+      yield await _load();
+      return;
+    }
+    // Read before the yield: the page can toggle as soon as it sees [cached].
+    final changesBefore = _changes;
+    yield cached;
+    final fresh = await ref.read(getSettingsUseCaseProvider)(const NoParams());
+    // Offline or failed: keep showing the saved copy.
+    if (fresh case Right(:final value) when _changes == changesBefore) yield value;
+  }
 
   Future<void> reload() async {
     state = const AsyncLoading();
@@ -29,6 +47,7 @@ class SettingsController() extends _$SettingsController {
   Future<Failure?> change(UserSettingsPatch patch) async {
     final previous = state.value;
     if (previous == null) return null;
+    _changes++;
     state = AsyncData(
       previous.copyWith(
         language: patch.language ?? previous.language,

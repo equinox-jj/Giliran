@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -64,8 +66,11 @@ class StartGroupController() extends _$StartGroupController {
     _highlight = BuildReadinessUseCase.kindFor(failure?.apiCode);
     state = state.copyWith(starting: false, highlight: _highlight);
     if (result is Right) {
-      // The detail page reads the now active group from the cache.
+      // The repository cached the now active group, but not period 1 or its
+      // board, which the server opened with it. Without them the detail page
+      // has no current period (no payment, wrong hero) until a manual refresh.
       ref.invalidate(membersControllerProvider(groupId));
+      unawaited(ref.read(groupDetailControllerProvider(groupId).notifier).refresh());
     }
     return failure;
   }

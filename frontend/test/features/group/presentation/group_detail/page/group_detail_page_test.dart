@@ -72,6 +72,9 @@ void main() {
         onLeaveRequests: () => opened.add('leaveRequests'),
         onTransfer: () => opened.add('transfer'),
         onOpenProof: (id) => opened.add('proof:$id'),
+        onDraw: (pid) => opened.add('draw:$pid'),
+        onBuktiKocok: (pid) => opened.add('bukti:$pid'),
+        onPayout: (pid) => opened.add('payout:$pid'),
       ),
       container: container,
     );
@@ -227,5 +230,42 @@ void main() {
       // Assert
       expect(find.text('Bayar iuran periode 2'), findsOneWidget);
     });
+
+    final organizer = group.copyWith(myRole: MemberRole.organizer);
+    final heroCases = <String, (Period, GroupDetail, String, String)>{
+      'Kocok sekarang opens the draw stage': (
+        periods.last.copyWith(drawDate: DateTime.utc(2026, 11, 1)),
+        organizer,
+        'Kocok sekarang',
+        'draw:p2',
+      ),
+      'Catat penyerahan opens the payout': (
+        periods.last.copyWith(status: PeriodStatus.drawn),
+        organizer,
+        'Catat penyerahan',
+        'payout:p2',
+      ),
+      'Lihat Bukti Kocok opens the result': (
+        periods.last.copyWith(status: PeriodStatus.closed, payoutRecorded: true),
+        group,
+        'Lihat Bukti Kocok',
+        'bukti:p2',
+      ),
+    };
+
+    for (final MapEntry(key: name, value: (current, viewer, label, route)) in heroCases.entries) {
+      testWidgets(name, (tester) async {
+        // Arrange
+        payments.periods = [periods.first, current];
+        await pumpDetail(tester, viewer);
+
+        // Act
+        await tester.tap(find.widgetWithText(AppButton, label).first);
+        await tester.pumpAndSettle();
+
+        // Assert
+        expect(opened, contains(route));
+      });
+    }
   });
 }

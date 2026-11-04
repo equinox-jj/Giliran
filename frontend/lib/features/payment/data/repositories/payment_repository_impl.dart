@@ -53,6 +53,7 @@ class PaymentRepositoryImpl(
   Future<Either<Failure, Payment>> getPaymentDetail(String groupId, String paymentId) => safeCall(() async {
     final model = await _remote.getPayment(groupId, paymentId);
     await _local.upsertPayments([model.toCompanion(groupId)]);
+    await _syncGroup(groupId);
     return model.toEntity(groupId: groupId);
   });
 
@@ -109,7 +110,9 @@ class PaymentRepositoryImpl(
   Future<Either<Failure, SyncReport>> syncPendingPayments() => safeCall(() async {
     var synced = 0;
     final rejected = <Payment>[];
+    final touched = <String>{};
     for (final row in await _local.getPendingPayments()) {
+      touched.add(row.groupId);
       final key = row.pendingIdempotencyKey;
       if (key == null) {
         await _local.clearPending(row.id);
@@ -140,6 +143,9 @@ class PaymentRepositoryImpl(
         });
         rejected.add(restored);
       }
+    }
+    for (final groupId in touched) {
+      await _syncGroup(groupId);
     }
     return SyncReport(synced: synced, rejected: rejected);
   });
@@ -211,6 +217,7 @@ class PaymentRepositoryImpl(
     await _local.replacePayments(periodId, [for (final p in board.payments) p.toCompanion(groupId)]);
     final summary = board.summary;
     if (summary != null) await _local.updatePeriodSummary(periodId, summary.toPeriodCompanion());
+    await _syncGroup(groupId);
   }
 
   /// Caches the server's row after a payment write, then refreshes the
@@ -219,6 +226,9 @@ class PaymentRepositoryImpl(
     await _local.upsertPayments([model.toCompanion(groupId)]);
     final periodId = model.periodId;
     if (periodId != null) await _quietly(() => _saveBoard(groupId, periodId));
+    // When the board fetch failed, the written row alone still moves the
+    // group's status.
+    await _syncGroup(groupId);
     return model.toEntity(groupId: groupId);
   }
 
@@ -237,8 +247,14 @@ class PaymentRepositoryImpl(
     );
     final row = await _local.getPayment(paymentId);
     if (row == null) throw const CacheException('Queued payment is not cached');
+    await _syncGroup(row.groupId);
     return row.toEntity();
   }
+
+  /// Copies the cached board onto the group row (my status and counts), so
+  /// Home and the group headline follow payment changes, offline marks
+  /// included. A failure here must not fail the payment write.
+  Future<void> _syncGroup(String groupId) => _quietly(() => _local.syncGroupTallies(groupId));
 
   /// Runs a cache follow-up after a write that already succeeded on the
   /// server. Its failure must not report the write as failed.

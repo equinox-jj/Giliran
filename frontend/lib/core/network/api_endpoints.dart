@@ -7,7 +7,7 @@ abstract final class ApiEndpoints() {
   /// for a local backend.
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://localhost:8080/api/v1',
+    defaultValue: 'http://10.0.2.2:8080/api/v1',
   );
 
   /// The public site behind invite, claim and verification links.
@@ -149,6 +149,9 @@ abstract final class ApiEndpoints() {
 
   /// Marks a payment paid without a proof (`POST`).
   static String paymentMarkPaid(String groupId, String paymentId) => '/groups/$groupId/payments/$paymentId/mark-paid';
+
+  /// A period's draw (`GET` commitment or result) and running it (`POST`).
+  static String draw(String groupId, String periodId) => '/groups/$groupId/periods/$periodId/draw';
 
   /// A period's payout (`GET`) and recording it (`POST` multipart).
   static String payout(String groupId, String periodId) => '/groups/$groupId/periods/$periodId/payout';

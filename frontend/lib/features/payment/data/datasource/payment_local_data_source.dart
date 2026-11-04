@@ -35,6 +35,10 @@ abstract interface class PaymentLocalDataSource() {
 
   Future<void> clearPending(String paymentId);
 
+  /// Copies the current period's cached board onto the group row, so
+  /// screens reading the group see the payment change.
+  Future<void> syncGroupTallies(String groupId);
+
   Stream<PayoutRow?> watchPayout(String periodId);
 
   Future<void> upsertPayout(PayoutsCompanion row);

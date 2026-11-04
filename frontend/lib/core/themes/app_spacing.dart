@@ -44,20 +44,19 @@ abstract final class AppStroke() {
 
 /// Builders for continuous-corner (squircle) shapes.
 abstract final class AppShapes() {
-  /// Continuous (squircle) corners that look like [radius] circular corners.
-  static ContinuousRectangleBorder squircle(
+  /// Continuous (squircle) corners for a [radius] corner. The radius is
+  /// clamped to the shape's size, so short shapes don't self-intersect.
+  static RoundedSuperellipseBorder squircle(
     double radius, {
     BorderSide side = BorderSide.none,
-  }) => ContinuousRectangleBorder(
-    borderRadius: BorderRadius.circular(radius * 2.2),
+  }) => RoundedSuperellipseBorder(
+    borderRadius: BorderRadius.circular(radius),
     side: side,
   );
 
   /// Squircle with only the top corners rounded (bottom sheets).
-  static ContinuousRectangleBorder squircleTop(double radius) => ContinuousRectangleBorder(
-    borderRadius: BorderRadius.vertical(
-      top: Radius.circular(radius * 2.2),
-    ),
+  static RoundedSuperellipseBorder squircleTop(double radius) => RoundedSuperellipseBorder(
+    borderRadius: BorderRadius.vertical(top: Radius.circular(radius)),
   );
 
   static const pill = StadiumBorder();

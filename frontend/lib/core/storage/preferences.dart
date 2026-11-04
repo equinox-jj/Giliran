@@ -12,6 +12,7 @@ class const Preferences(final SharedPreferencesAsync _prefs) {
   static const _languageKey = 'language';
   static const _themeModeKey = 'theme_mode';
   static const _pendingDeepLinkKey = 'pending_deep_link';
+  static const _userSettingsKey = 'user_settings';
 
   Future<bool> readBiometricEnabled() async => await _prefs.getBool(_biometricEnabledKey) ?? false;
 
@@ -38,6 +39,14 @@ class const Preferences(final SharedPreferencesAsync _prefs) {
   /// Stores [value], or clears the pending link when it is null.
   Future<void> savePendingDeepLink(String? value) =>
       value == null ? _prefs.remove(_pendingDeepLinkKey) : _prefs.setString(_pendingDeepLinkKey, value);
+
+  /// The signed-in account's last known settings as JSON, shown on Settings
+  /// before the server answers. Null when none are saved.
+  Future<String?> readUserSettings() => _prefs.getString(_userSettingsKey);
+
+  /// Stores [value], or clears the saved settings when it is null.
+  Future<void> saveUserSettings(String? value) =>
+      value == null ? _prefs.remove(_userSettingsKey) : _prefs.setString(_userSettingsKey, value);
 }
 
 @Riverpod(keepAlive: true)

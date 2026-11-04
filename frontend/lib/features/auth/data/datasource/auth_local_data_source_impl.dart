@@ -77,6 +77,8 @@ class AuthLocalDataSourceImpl({
       _secure.clearTokens(),
       _secure.clearCurrentUser(),
       _secure.clearPendingOtp(),
+      // Account settings belong to the user signing out.
+      _prefs.saveUserSettings(null),
     ]),
   );
 

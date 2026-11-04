@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:giliran/core/utils/enums/draw_algorithm.dart';
 import 'package:giliran/core/utils/enums/draw_method.dart';
+import 'package:giliran/core/utils/enums/draw_status.dart';
 import 'package:giliran/core/utils/enums/group_status.dart';
 import 'package:giliran/core/utils/enums/member_role.dart';
 import 'package:giliran/core/utils/enums/payment_method.dart';
@@ -16,6 +18,8 @@ void main() {
     ('GroupStatus', GroupStatus.values, (e) => (e as GroupStatus).apiValue, GroupStatus.fromApi),
     ('PeriodStatus', PeriodStatus.values, (e) => (e as PeriodStatus).apiValue, PeriodStatus.fromApi),
     ('PaymentMethod', PaymentMethod.values, (e) => (e as PaymentMethod).apiValue, PaymentMethod.fromApi),
+    ('DrawStatus', DrawStatus.values, (e) => (e as DrawStatus).apiValue, DrawStatus.fromApi),
+    ('DrawAlgorithm', DrawAlgorithm.values, (e) => (e as DrawAlgorithm).apiValue, DrawAlgorithm.fromApi),
   ];
 
   for (final (name, values, api, fromApi) in cases) {

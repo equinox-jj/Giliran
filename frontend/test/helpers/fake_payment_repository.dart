@@ -32,6 +32,15 @@ class FakePaymentRepository() implements PaymentRepository {
   /// Answers for the next writes, in order, before [paymentResult].
   final writeResults = <Either<Failure, Payment>>[];
 
+  /// The cached payout [watchPayout] starts with; `getPayout` answers 404
+  /// while it is null (unless [getPayoutResult] is set).
+  Payout? payout;
+  Either<Failure, Payout>? getPayoutResult;
+  Either<Failure, Payout> payoutResult = const Right(Payout(id: 'po1'));
+
+  /// Answers for the next payout writes, in order, before [payoutResult].
+  final payoutWriteResults = <Either<Failure, Payout>>[];
+
   /// When set, uploads wait for it to complete.
   Completer<void>? uploadGate;
 
@@ -136,10 +145,13 @@ class FakePaymentRepository() implements PaymentRepository {
   }
 
   @override
-  Stream<Either<Failure, Payout?>> watchPayout(String periodId) => Stream.value(const Right(null));
+  Stream<Either<Failure, Payout?>> watchPayout(String periodId) => Stream.value(Right(payout));
 
   @override
-  Future<Either<Failure, Payout>> getPayout(String groupId, String periodId) async => const Right(Payout(id: 'po1'));
+  Future<Either<Failure, Payout>> getPayout(String groupId, String periodId) async {
+    calls.add('getPayout');
+    return getPayoutResult ?? (payout == null ? const Left(Failure.notFound()) : Right(payout!));
+  }
 
   @override
   Future<Either<Failure, Payout>> recordPayout(
@@ -148,12 +160,22 @@ class FakePaymentRepository() implements PaymentRepository {
     String? proofPath,
     String? note,
     required IdempotencyKey key,
-  }) async => const Right(Payout(id: 'po1'));
+  }) async {
+    lastPath = proofPath;
+    lastNote = note;
+    return _payoutWrite('recordPayout', key);
+  }
 
   @override
   Future<Either<Failure, Payout>> confirmPayout(
     String groupId,
     String periodId, {
     required IdempotencyKey key,
-  }) async => const Right(Payout(id: 'po1'));
+  }) async => _payoutWrite('confirmPayout', key);
+
+  Either<Failure, Payout> _payoutWrite(String name, IdempotencyKey key) {
+    calls.add(name);
+    keys.add(key.value);
+    return payoutWriteResults.isNotEmpty ? payoutWriteResults.removeAt(0) : payoutResult;
+  }
 }

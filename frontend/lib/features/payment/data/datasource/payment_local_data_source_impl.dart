@@ -2,6 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/data/base_local_data_source.dart';
 import '../../../../core/database/app_database.dart';
+import '../../../../core/database/daos/groups_dao.dart';
 import '../../../../core/database/daos/payments_dao.dart';
 import '../../../../core/database/daos/payouts_dao.dart';
 import '../../../../core/database/daos/periods_dao.dart';
@@ -13,6 +14,7 @@ class PaymentLocalDataSourceImpl(
   final PeriodsDao _periods,
   final PaymentsDao _payments,
   final PayoutsDao _payouts,
+  final GroupsDao _groups,
 ) with BaseLocalDataSource implements PaymentLocalDataSource {
   @override
   Stream<List<PeriodRow>> watchPeriods(String groupId) => _periods.watchByGroup(groupId);
@@ -64,6 +66,9 @@ class PaymentLocalDataSourceImpl(
   Future<void> clearPending(String paymentId) => safeCacheCall(() => _payments.clearPending(paymentId));
 
   @override
+  Future<void> syncGroupTallies(String groupId) => safeCacheCall(() => _groups.syncPaymentTallies(groupId));
+
+  @override
   Stream<PayoutRow?> watchPayout(String periodId) => _payouts.watchByPeriod(periodId);
 
   @override
@@ -73,5 +78,5 @@ class PaymentLocalDataSourceImpl(
 @Riverpod(keepAlive: true)
 PaymentLocalDataSource paymentLocalDataSource(Ref ref) {
   final db = ref.watch(appDatabaseProvider);
-  return PaymentLocalDataSourceImpl(db.periodsDao, db.paymentsDao, db.payoutsDao);
+  return PaymentLocalDataSourceImpl(db.periodsDao, db.paymentsDao, db.payoutsDao, db.groupsDao);
 }

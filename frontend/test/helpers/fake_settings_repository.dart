@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:fpdart/fpdart.dart';
 import 'package:giliran/core/error/failure.dart';
 import 'package:giliran/features/settings/domain/entities/user_settings.dart';
 import 'package:giliran/features/settings/domain/repositories/settings_repository.dart';
 
-/// Answers `getSettings` with [settingsResult]. `updateSettings` records each
+/// Answers `getCachedSettings` with [cachedResult] (nothing saved by
+/// default) and `getSettings` with [settingsResult]. `updateSettings` records each
 /// patch and answers with [updateResult], or applies the patch to the
 /// current settings. `clearImageCache` counts calls.
 class FakeSettingsRepository() implements SettingsRepository {
@@ -15,13 +18,24 @@ class FakeSettingsRepository() implements SettingsRepository {
       notifyGroupActivity: false,
     ),
   );
+  Either<Failure, UserSettings?> cachedResult = const Right(null);
   Either<Failure, UserSettings>? updateResult;
   Either<Failure, Unit> clearResult = const Right(unit);
   final patches = <UserSettingsPatch>[];
   int clearCalls = 0;
 
   @override
-  Future<Either<Failure, UserSettings>> getSettings() async => settingsResult;
+  Future<Either<Failure, UserSettings?>> getCachedSettings() async => cachedResult;
+
+  /// When set, `getSettings` waits for it before answering, so a test can
+  /// act while the server copy loads.
+  Completer<void>? getSettingsGate;
+
+  @override
+  Future<Either<Failure, UserSettings>> getSettings() async {
+    await getSettingsGate?.future;
+    return settingsResult;
+  }
 
   @override
   Future<Either<Failure, UserSettings>> updateSettings(UserSettingsPatch patch) async {

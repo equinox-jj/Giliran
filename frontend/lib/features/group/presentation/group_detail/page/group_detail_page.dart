@@ -48,6 +48,15 @@ class const GroupDetailPage({
 
   /// Opens Proof review (S35) or my own proof for a payment id.
   required final ValueChanged<String> onOpenProof,
+
+  /// Opens the draw stage (S37) for a period id.
+  required final ValueChanged<String> onDraw,
+
+  /// Opens the draw result and Bukti Kocok (S38) for a period id.
+  required final ValueChanged<String> onBuktiKocok,
+
+  /// Opens the payout (S40) for a period id.
+  required final ValueChanged<String> onPayout,
 }) extends ConsumerStatefulWidget {
   @override
   ConsumerState<GroupDetailPage> createState() => _GroupDetailPageState();
@@ -84,11 +93,19 @@ class _GroupDetailPageState() extends ConsumerState<GroupDetailPage> {
   GroupDetailState? get _detail => ref.read(groupDetailControllerProvider(widget.groupId)).value;
 
   /// "Lanjutkan persiapan" opens Start group (S18); upload, my proof and
-  /// review open the payment screens. Draw and payout arrive with Phase 5.
+  /// review open the payment screens; draw, payout and Bukti Kocok open
+  /// S37, S40 and S38 for the current period.
   void _onHeroAction() {
     final detail = _detail;
     final my = detail?.myPayment;
+    final periodId = detail?.currentPeriod?.id;
     switch (detail?.heroAction) {
+      case HeroAction.drawNow when periodId != null:
+        widget.onDraw(periodId);
+      case HeroAction.recordPayout when periodId != null:
+        widget.onPayout(periodId);
+      case HeroAction.viewBuktiKocok when periodId != null:
+        widget.onBuktiKocok(periodId);
       case HeroAction.continueSetup:
         widget.onStart();
       case HeroAction.uploadProof when my != null:

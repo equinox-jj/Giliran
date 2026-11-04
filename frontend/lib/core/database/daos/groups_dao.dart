@@ -2,11 +2,13 @@ import 'package:drift/drift.dart';
 
 import '../app_database.dart';
 import '../tables/groups_table.dart';
+import '../tables/payments_table.dart';
+import '../tables/periods_table.dart';
 
 part 'groups_dao.g.dart';
 
 /// Reads and writes cached [Groups].
-@DriftAccessor(tables: [Groups])
+@DriftAccessor(tables: [Groups, Periods, Payments])
 class GroupsDao(super.attachedDatabase) extends DatabaseAccessor<AppDatabase> with _$GroupsDaoMixin {
   /// The home list: every cached group, newest-first by status then name.
   Stream<List<GroupRow>> watchAll() =>
@@ -60,6 +62,43 @@ class GroupsDao(super.attachedDatabase) extends DatabaseAccessor<AppDatabase> wi
         ))
         .go();
   });
+
+  /// Copies the current period's cached board onto the group's payment
+  /// columns (my status, paid and pending-review counts). The payment
+  /// repository calls it after every payment change, so Home and the group
+  /// headline update without refetching the group. The counts are left
+  /// alone while the cached board is incomplete.
+  Future<void> syncPaymentTallies(String groupId) => transaction(() async {
+    final group = await getById(groupId);
+    if (group == null) return;
+    final period = await _currentPeriod(group);
+    if (period == null) return;
+    final board = await (select(payments)..where((p) => p.periodId.equals(period.id))).get();
+    if (board.isEmpty) return;
+    final mine = board.where((p) => p.isMine).firstOrNull;
+    final complete = board.length >= (period.summaryTotalCount ?? 0);
+    if (mine == null && !complete) return;
+    int count(String status) => board.where((p) => p.status == status).length;
+    await (update(groups)..where((g) => g.id.equals(groupId))).write(
+      GroupsCompanion(
+        myPaymentStatus: mine == null ? const Value.absent() : Value(mine.status),
+        paidCount: complete ? Value(count('paid')) : const Value.absent(),
+        pendingReviewCount: complete ? Value(count('pending_review')) : const Value.absent(),
+      ),
+    );
+  });
+
+  /// The group's current period: by id when the detail payload set it,
+  /// else by number (the home list sends only the number).
+  Future<PeriodRow?> _currentPeriod(GroupRow group) {
+    final id = group.currentPeriodId;
+    final no = group.currentPeriodNo;
+    if (id == null && no == null) return Future.value();
+    return (select(periods)..where(
+          (p) => id != null ? p.id.equals(id) : p.groupId.equals(group.id) & p.periodNo.equals(no!),
+        ))
+        .getSingleOrNull();
+  }
 
   Future<void> deleteById(String id) => (delete(groups)..where((g) => g.id.equals(id))).go();
 

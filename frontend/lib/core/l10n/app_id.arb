@@ -2896,5 +2896,447 @@
   "paymentSyncRejected": "Perubahan tidak tersimpan: pembayaran sudah dicatat pengurus lain.",
   "@paymentSyncRejected": {
     "description": "Toast when an offline mark was refused on sync."
+  },
+  "drawStageTitle": "Kocokan **periode {n}**",
+  "@drawStageTitle": {
+    "description": "S37 app bar headline.",
+    "placeholders": {
+      "n": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  },
+  "drawCommitment": "Kode komitmen {hash}",
+  "@drawCommitment": {
+    "description": "S37 commitment line with the shortened seed hash.",
+    "placeholders": {
+      "hash": {
+        "type": "String",
+        "example": "9f2c…a71e"
+      }
+    }
+  },
+  "drawCommitmentSemantics": "Kode komitmen. Ketuk untuk melihat kode lengkap.",
+  "@drawCommitmentSemantics": {
+    "description": "Screen reader label of the commitment line."
+  },
+  "drawCommitmentTitle": "Kode komitmen",
+  "@drawCommitmentTitle": {
+    "description": "Title of the full seed hash sheet."
+  },
+  "drawCommitmentBody": "Kode ini dipublikasikan sebelum kocokan. Simpan atau screenshot agar bisa dicek setelah hasil keluar.",
+  "@drawCommitmentBody": {
+    "description": "Full seed hash sheet body."
+  },
+  "drawButton": "Kocok",
+  "@drawButton": {
+    "description": "S37 88 px draw button label."
+  },
+  "drawFixedButton": "Tetapkan giliran",
+  "@drawFixedButton": {
+    "description": "S37 button for fixed-order groups."
+  },
+  "drawAvailableOn": "Bisa dikocok {date}",
+  "@drawAvailableOn": {
+    "description": "S37 disabled reason before the draw date.",
+    "placeholders": {
+      "date": {
+        "type": "String",
+        "example": "Min, 26 Okt"
+      }
+    }
+  },
+  "drawMemberCaption": "Pengurus akan mengocok. Kamu dapat notifikasi hasilnya.",
+  "@drawMemberCaption": {
+    "description": "S37 caption for members."
+  },
+  "drawEligibleCount": "{count} peserta belum dapat",
+  "@drawEligibleCount": {
+    "description": "S37 caption under the eligible avatars.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "8"
+      }
+    }
+  },
+  "drawNextInOrder": "Giliran berikutnya",
+  "@drawNextInOrder": {
+    "description": "S37 fixed-order label above the next person."
+  },
+  "drawPeopleButton": "Lihat peserta",
+  "@drawPeopleButton": {
+    "description": "S37 circle button that lists eligible slots."
+  },
+  "drawHelpButton": "Cara kerja kocokan",
+  "@drawHelpButton": {
+    "description": "S37 circle button and help sheet title."
+  },
+  "drawHelpCommit": "Sebelum kocokan, Giliran membuat kunci rahasia dan langsung mempublikasikan kode komitmennya. Kode ini tidak bisa diubah.",
+  "@drawHelpCommit": {
+    "description": "Help sheet paragraph 1."
+  },
+  "drawHelpReveal": "Saat dikocok, kunci rahasia dibuka. Siapa pun bisa mengecek bahwa kunci itu cocok dengan kode komitmen.",
+  "@drawHelpReveal": {
+    "description": "Help sheet paragraph 2."
+  },
+  "drawHelpPick": "Pemenang dihitung dari kunci itu dan nomor periode, hanya di antara peserta yang belum dapat. Hasilnya tidak bisa diatur pengurus.",
+  "@drawHelpPick": {
+    "description": "Help sheet paragraph 3."
+  },
+  "drawPeopleTitle": "Peserta kocokan",
+  "@drawPeopleTitle": {
+    "description": "Title of the eligible participants sheet."
+  },
+  "drawIncompleteTitle": "{paid} dari {total} sudah bayar. Tetap kocok?",
+  "@drawIncompleteTitle": {
+    "description": "Confirmation sheet when payments are incomplete.",
+    "placeholders": {
+      "paid": {
+        "type": "int",
+        "example": "8"
+      },
+      "total": {
+        "type": "int",
+        "example": "10"
+      }
+    }
+  },
+  "drawIncompleteConsent": "Saya tetap mau mengocok",
+  "@drawIncompleteConsent": {
+    "description": "Consent row on the incomplete payments sheet."
+  },
+  "drawConfirm": "Kocok sekarang",
+  "@drawConfirm": {
+    "description": "Confirm button on the incomplete payments sheet."
+  },
+  "drawStageSemantics": "Panggung kocokan, {count} peserta",
+  "@drawStageSemantics": {
+    "description": "Screen reader label of the draw stage.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "8"
+      }
+    }
+  },
+  "drawLoadFailed": "Data kocokan belum bisa dimuat.",
+  "@drawLoadFailed": {
+    "description": "S37/S38 load error."
+  },
+  "drawResultHeadline": "Selamat, **{winner}** dapat giliran periode {n}!",
+  "@drawResultHeadline": {
+    "description": "S38 headline.",
+    "placeholders": {
+      "winner": {
+        "type": "String",
+        "example": "Bu Rina"
+      },
+      "n": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  },
+  "drawResultHeadlineMine": "Selamat, **kamu** dapat giliran!",
+  "@drawResultHeadlineMine": {
+    "description": "S38 headline for the winner."
+  },
+  "drawResultMineCard": "Pengurus akan menyerahkan uangnya. Konfirmasi setelah kamu terima.",
+  "@drawResultMineCard": {
+    "description": "S38 card for the winner."
+  },
+  "drawResultPaidAtDraw": "{paid}/{total} sudah bayar saat dikocok",
+  "@drawResultPaidAtDraw": {
+    "description": "S38 caption with the payment count at draw time.",
+    "placeholders": {
+      "paid": {
+        "type": "int",
+        "example": "8"
+      },
+      "total": {
+        "type": "int",
+        "example": "10"
+      }
+    }
+  },
+  "drawShareWhatsApp": "Bagikan ke WhatsApp",
+  "@drawShareWhatsApp": {
+    "description": "S38 primary button."
+  },
+  "drawSaveImage": "Simpan gambar",
+  "@drawSaveImage": {
+    "description": "S38 secondary button."
+  },
+  "drawVerifyButton": "Cek keasliannya",
+  "@drawVerifyButton": {
+    "description": "S38 text button that opens S39."
+  },
+  "drawHandOver": "Serahkan {amount} ke {winner}",
+  "@drawHandOver": {
+    "description": "S38 organizer next-step card.",
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "Rp2.000.000"
+      },
+      "winner": {
+        "type": "String",
+        "example": "Bu Rina"
+      }
+    }
+  },
+  "drawShareMessage": "Hasil kocokan {group} periode {n}: {winner}. Cek keasliannya di {url}",
+  "@drawShareMessage": {
+    "description": "Text shared with the Bukti Kocok image.",
+    "placeholders": {
+      "group": {
+        "type": "String",
+        "example": "Arisan RT 05"
+      },
+      "n": {
+        "type": "int",
+        "example": "4"
+      },
+      "winner": {
+        "type": "String",
+        "example": "Bu Rina"
+      },
+      "url": {
+        "type": "String",
+        "example": "https://giliran.monai.my.id/v/7H2K9QX4MP"
+      }
+    }
+  },
+  "drawExportFailed": "Gambar belum bisa dibuat. Coba lagi.",
+  "@drawExportFailed": {
+    "description": "Toast when the ticket image export fails."
+  },
+  "ticketNo": "No. {slot}",
+  "@ticketNo": {
+    "description": "Bukti Kocok slot number.",
+    "placeholders": {
+      "slot": {
+        "type": "String",
+        "example": "07"
+      }
+    }
+  },
+  "ticketCode": "KODE",
+  "@ticketCode": {
+    "description": "Bukti Kocok stub label."
+  },
+  "ticketCheckAt": "Cek di giliran.monai.my.id/v",
+  "@ticketCheckAt": {
+    "description": "Bukti Kocok stub caption."
+  },
+  "ticketSemantics": "Bukti Kocok {group} periode {n} dari {total}: nomor {slot}, {winner}, {date}. Kode {code}. Ketuk untuk cek keaslian.",
+  "@ticketSemantics": {
+    "description": "Screen reader label of the Bukti Kocok ticket.",
+    "placeholders": {
+      "group": {
+        "type": "String",
+        "example": "Arisan RT 05"
+      },
+      "n": {
+        "type": "int",
+        "example": "4"
+      },
+      "total": {
+        "type": "int",
+        "example": "10"
+      },
+      "slot": {
+        "type": "String",
+        "example": "07"
+      },
+      "winner": {
+        "type": "String",
+        "example": "Bu Rina"
+      },
+      "date": {
+        "type": "String",
+        "example": "Min, 26 Okt 2026 19.30"
+      },
+      "code": {
+        "type": "String",
+        "example": "7H2K 9QX4 MP"
+      }
+    }
+  },
+  "verifyTitle": "Cek keaslian kocokan",
+  "@verifyTitle": {
+    "description": "S39 sheet title."
+  },
+  "verifyStep1": "Kode komitmen dipublikasikan sebelum kocokan.",
+  "@verifyStep1": {
+    "description": "S39 step 1."
+  },
+  "verifyStep2": "Kunci rahasia dibuka saat kocokan, dan harus cocok dengan kode komitmen.",
+  "@verifyStep2": {
+    "description": "S39 step 2."
+  },
+  "verifyStep3": "HP ini menghitung ulang pemenang dari kunci itu dan daftar peserta.",
+  "@verifyStep3": {
+    "description": "S39 step 3."
+  },
+  "verifyCommitment": "Kode komitmen",
+  "@verifyCommitment": {
+    "description": "S39 key-value label."
+  },
+  "verifySeed": "Kunci rahasia",
+  "@verifySeed": {
+    "description": "S39 key-value label."
+  },
+  "verifyParticipants": "Peserta",
+  "@verifyParticipants": {
+    "description": "S39 key-value label."
+  },
+  "verifyResult": "Hasil",
+  "@verifyResult": {
+    "description": "S39 key-value label."
+  },
+  "verifyMatch": "Cocok ✓ — hasil ini tidak diubah setelah kode dipublikasikan",
+  "@verifyMatch": {
+    "description": "S39 badge when the device check passes."
+  },
+  "verifyMismatch": "Tidak cocok",
+  "@verifyMismatch": {
+    "description": "S39 badge when the device check fails."
+  },
+  "verifyReport": "Laporkan",
+  "@verifyReport": {
+    "description": "S39 link to report a mismatch."
+  },
+  "verifyFixedOrder": "Grup ini memakai urutan tetap, jadi tidak ada kunci rahasia. Giliran mengikuti urutan yang disepakati.",
+  "@verifyFixedOrder": {
+    "description": "S39 note for fixed-order draws."
+  },
+  "verifyCopied": "Disalin",
+  "@verifyCopied": {
+    "description": "Toast after copying a value on S39."
+  },
+  "payoutTitle": "Penyerahan",
+  "@payoutTitle": {
+    "description": "S40 app bar title."
+  },
+  "payoutHeadline": "Serahkan **{amount}** ke {winner}",
+  "@payoutHeadline": {
+    "description": "S40 organizer headline.",
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "Rp2.000.000"
+      },
+      "winner": {
+        "type": "String",
+        "example": "Bu Rina"
+      }
+    }
+  },
+  "payoutCaption": "Transfer atau serahkan tunai seperti biasa.",
+  "@payoutCaption": {
+    "description": "S40 organizer caption."
+  },
+  "payoutProofLabel": "Bukti penyerahan (opsional)",
+  "@payoutProofLabel": {
+    "description": "S40 upload tile label."
+  },
+  "payoutNoteLabel": "Catatan (opsional)",
+  "@payoutNoteLabel": {
+    "description": "S40 note field label."
+  },
+  "payoutConsent": "Uang sudah saya serahkan",
+  "@payoutConsent": {
+    "description": "S40 consent row."
+  },
+  "payoutRecordButton": "Catat penyerahan",
+  "@payoutRecordButton": {
+    "description": "S40 primary button."
+  },
+  "payoutRecorded": "Penyerahan dicatat.",
+  "@payoutRecorded": {
+    "description": "Toast after recording."
+  },
+  "payoutWaiting": "Menunggu konfirmasi {winner}",
+  "@payoutWaiting": {
+    "description": "S40 status card after recording.",
+    "placeholders": {
+      "winner": {
+        "type": "String",
+        "example": "Bu Rina"
+      }
+    }
+  },
+  "payoutRecordedBy": "Dicatat {name} · {date}",
+  "@payoutRecordedBy": {
+    "description": "S40 recorded caption.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Pak Budi"
+      },
+      "date": {
+        "type": "String",
+        "example": "Min, 26 Okt"
+      }
+    }
+  },
+  "payoutWinnerHeadline": "Sudah terima **{amount}**?",
+  "@payoutWinnerHeadline": {
+    "description": "S40 winner headline.",
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "Rp2.000.000"
+      }
+    }
+  },
+  "payoutConfirmButton": "Ya, sudah saya terima",
+  "@payoutConfirmButton": {
+    "description": "S40 winner primary button."
+  },
+  "payoutNotYetButton": "Belum terima",
+  "@payoutNotYetButton": {
+    "description": "S40 winner secondary button."
+  },
+  "payoutNotYetTitle": "Belum terima uangnya?",
+  "@payoutNotYetTitle": {
+    "description": "Sheet title after \"Belum terima\"."
+  },
+  "payoutNotYetBody": "Hubungi pengurus dulu. Konfirmasi hanya setelah uangnya benar-benar kamu terima.",
+  "@payoutNotYetBody": {
+    "description": "Sheet body after \"Belum terima\"."
+  },
+  "payoutConfirmed": "Diterima {winner} · {date}",
+  "@payoutConfirmed": {
+    "description": "S40 confirmed card.",
+    "placeholders": {
+      "winner": {
+        "type": "String",
+        "example": "Bu Rina"
+      },
+      "date": {
+        "type": "String",
+        "example": "Min, 26 Okt"
+      }
+    }
+  },
+  "payoutConfirmedToast": "Terima kasih, penerimaan dikonfirmasi.",
+  "@payoutConfirmedToast": {
+    "description": "Toast after the winner confirms."
+  },
+  "payoutNotRecorded": "Pengurus belum mencatat penyerahan.",
+  "@payoutNotRecorded": {
+    "description": "S40 state for members before recording."
+  },
+  "payoutAlreadyRecorded": "Penyerahan sudah dicatat pengurus lain.",
+  "@payoutAlreadyRecorded": {
+    "description": "Toast on payout_already_recorded."
+  },
+  "payoutProofSemantics": "Bukti penyerahan",
+  "@payoutProofSemantics": {
+    "description": "Semantics of the payout proof thumbnail."
   }
 }

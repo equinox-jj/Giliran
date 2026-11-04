@@ -8,12 +8,14 @@ class FakeShareService() implements ShareService {
   final sharedTexts = <String>[];
   final openedUrls = <Uri>[];
   final whatsApp = <({String? phone, String text})>[];
+  final sharedImages = <({Uint8List png, String? text})>[];
 
   @override
   Future<void> shareText(String text, {Rect? origin}) async => sharedTexts.add(text);
 
   @override
-  Future<void> shareImage(Uint8List png, {String? text, Rect? origin}) async {}
+  Future<void> shareImage(Uint8List png, {String? text, Rect? origin}) async =>
+      sharedImages.add((png: png, text: text));
 
   @override
   Future<bool> openWhatsApp({String? phone, required String text}) async {

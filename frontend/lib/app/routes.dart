@@ -36,6 +36,9 @@ import '../features/member/presentation/shared/widgets/join_link_sheet.dart';
 import '../features/member/presentation/start_group/page/start_group_page.dart';
 import '../features/member/presentation/transfer_offer/page/transfer_offer_page.dart';
 import '../features/member/presentation/transfer_respond/page/transfer_respond_page.dart';
+import '../features/draw/presentation/draw_result/page/draw_result_page.dart';
+import '../features/draw/presentation/draw_stage/page/draw_stage_page.dart';
+import '../features/payment/presentation/payout/page/payout_page.dart';
 import '../features/payment/presentation/proof_review/page/proof_review_page.dart';
 import '../features/payment/presentation/shared/widgets/payment_sync_listener.dart';
 import '../features/profile/presentation/delete_account/page/delete_account_page.dart';
@@ -115,6 +118,18 @@ final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
                 TypedGoRoute<ProofReviewRoute>(
                   name: 'proofReview',
                   path: 'payments/:payId/review',
+                ),
+                TypedGoRoute<DrawRoute>(
+                  name: 'draw',
+                  path: 'periods/:pid/draw',
+                ),
+                TypedGoRoute<DrawResultRoute>(
+                  name: 'drawResult',
+                  path: 'periods/:pid/draw/result',
+                ),
+                TypedGoRoute<PayoutRoute>(
+                  name: 'payout',
+                  path: 'periods/:pid/payout',
                 ),
               ],
             ),
@@ -264,6 +279,52 @@ class const GroupDetailRoute({required final String gid, final String? tab, fina
     onLeaveRequests: () => LeaveRequestsRoute(gid: gid).push<void>(context),
     onTransfer: () => TransferOfferRoute(gid: gid).push<void>(context),
     onOpenProof: (payId) => ProofReviewRoute(gid: gid, payId: payId).push<void>(context),
+    onDraw: (pid) => DrawRoute(gid: gid, pid: pid).push<void>(context),
+    onBuktiKocok: (pid) => DrawResultRoute(gid: gid, pid: pid).push<void>(context),
+    onPayout: (pid) => PayoutRoute(gid: gid, pid: pid).push<void>(context),
+  );
+}
+
+/// Draw stage (S37), over the tabs. A finished draw replaces it with the
+/// result (S38), playing the reveal when this device ran the draw.
+class const DrawRoute({required final String gid, required final String pid}) extends GoRouteData with $DrawRoute {
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => DrawStagePage(
+    groupId: gid,
+    periodId: pid,
+    onDrawn: (reveal) => DrawResultRoute(gid: gid, pid: pid, reveal: reveal).pushReplacement(context),
+    onClose: () => _popOr(context, GroupDetailRoute(gid: gid).location),
+  );
+}
+
+/// Draw result with the Bukti Kocok (S38), over the tabs. `reveal` plays the
+/// winner reveal once.
+class const DrawResultRoute({required final String gid, required final String pid, final bool reveal = false})
+    extends GoRouteData
+    with $DrawResultRoute {
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => DrawResultPage(
+    groupId: gid,
+    periodId: pid,
+    reveal: reveal,
+    onPayout: () => PayoutRoute(gid: gid, pid: pid).push<void>(context),
+    onClose: () => _popOr(context, GroupDetailRoute(gid: gid).location),
+  );
+}
+
+/// Payout (S40), over the tabs.
+class const PayoutRoute({required final String gid, required final String pid}) extends GoRouteData with $PayoutRoute {
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => PayoutPage(
+    groupId: gid,
+    periodId: pid,
+    onClose: () => _popOr(context, GroupDetailRoute(gid: gid).location),
   );
 }
 

@@ -100,4 +100,71 @@ void main() {
     final groups = await db.groupsDao.watchAll().first;
     expect(groups.map((g) => g.id), unorderedEquals(['fresh', 'done']));
   });
+
+  group('syncPaymentTallies', () {
+    setUp(() async {
+      await db.groupsDao.upsertAll([
+        groupRow('g1').copyWith(
+          currentPeriodId: const Value('p1'),
+          myPaymentStatus: const Value('unpaid'),
+          paidCount: const Value(0),
+          pendingReviewCount: const Value(0),
+        ),
+      ]);
+      await db.periodsDao.upsertAll([periodRow('p1', 'g1', 1)]);
+    });
+
+    test('copies my status and the counts from the cached board', () async {
+      // Arrange
+      await db.paymentsDao.replaceForPeriod('p1', [
+        paymentRow('pay1', 'g1', 'p1', 1, status: 'paid'),
+        paymentRow('pay2', 'g1', 'p1', 2, status: 'pending_review').copyWith(isMine: const Value(true)),
+        paymentRow('pay3', 'g1', 'p1', 3),
+      ]);
+
+      // Act
+      await db.groupsDao.syncPaymentTallies('g1');
+
+      // Assert
+      final group = await db.groupsDao.getById('g1');
+      expect(group?.myPaymentStatus, 'pending_review');
+      expect(group?.paidCount, 1);
+      expect(group?.pendingReviewCount, 1);
+    });
+
+    test('keeps the counts while the cached board is incomplete', () async {
+      // Arrange
+      await db.periodsDao.upsertAll([periodRow('p1', 'g1', 1).copyWith(summaryTotalCount: const Value(8))]);
+      await db.paymentsDao.upsertAll([
+        paymentRow('pay1', 'g1', 'p1', 1, status: 'paid').copyWith(isMine: const Value(true)),
+      ]);
+
+      // Act
+      await db.groupsDao.syncPaymentTallies('g1');
+
+      // Assert
+      final group = await db.groupsDao.getById('g1');
+      expect(group?.myPaymentStatus, 'paid');
+      expect(group?.paidCount, 0);
+    });
+
+    test('finds the current period by number when its id is not cached', () async {
+      // Arrange
+      await db.groupsDao.upsertAll([
+        groupRow('g2').copyWith(currentPeriodNo: const Value(1), myPaymentStatus: const Value('unpaid')),
+      ]);
+      await db.periodsDao.upsertAll([periodRow('p2', 'g2', 1)]);
+      await db.paymentsDao.replaceForPeriod('p2', [
+        paymentRow('pay9', 'g2', 'p2', 1, status: 'paid').copyWith(isMine: const Value(true)),
+      ]);
+
+      // Act
+      await db.groupsDao.syncPaymentTallies('g2');
+
+      // Assert
+      final group = await db.groupsDao.getById('g2');
+      expect(group?.myPaymentStatus, 'paid');
+      expect(group?.paidCount, 1);
+    });
+  });
 }

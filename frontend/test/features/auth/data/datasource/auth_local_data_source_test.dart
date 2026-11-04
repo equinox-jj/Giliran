@@ -216,14 +216,16 @@ void main() {
     });
   });
 
-  test('clearSession removes tokens, user and pending request', () async {
+  test('clearSession removes tokens, user, pending request and saved settings', () async {
     // Arrange
     secure
       ..access = 'a'
       ..refresh = 'r'
       ..currentUser = '{}'
       ..pendingOtp = '{}';
-    prefs.biometricEnabled = true;
+    prefs
+      ..biometricEnabled = true
+      ..userSettings = '{}';
 
     // Act
     await dataSource.clearSession();
@@ -233,6 +235,7 @@ void main() {
     expect(secure.refresh, isNull);
     expect(secure.currentUser, isNull);
     expect(secure.pendingOtp, isNull);
+    expect(prefs.userSettings, isNull, reason: 'account settings leave with the account');
     expect(prefs.biometricEnabled, isTrue, reason: 'device setting stays');
   });
 

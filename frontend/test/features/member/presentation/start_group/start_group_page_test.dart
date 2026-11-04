@@ -12,12 +12,14 @@ import 'package:giliran/features/group/domain/entities/group.dart';
 import 'package:giliran/features/member/data/repositories/member_repository_impl.dart';
 import 'package:giliran/features/member/domain/entities/member.dart';
 import 'package:giliran/features/member/presentation/start_group/page/start_group_page.dart';
+import 'package:giliran/features/payment/data/repositories/payment_repository_impl.dart';
 import 'package:giliran/shared/widgets/widgets.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import '../../../../helpers/failures.dart';
 import '../../../../helpers/fake_group_repository.dart';
 import '../../../../helpers/fake_member_repository.dart';
+import '../../../../helpers/fake_payment_repository.dart';
 import '../../../../helpers/pump_app.dart';
 
 GroupDetail _group({DrawMethod draw = DrawMethod.random, int filled = 2, bool account = true}) => GroupDetail(
@@ -40,6 +42,7 @@ void main() {
 
   late FakeGroupRepository groups;
   late FakeMemberRepository members;
+  late FakePaymentRepository payments;
   late List<String> events;
 
   setUp(() {
@@ -49,6 +52,7 @@ void main() {
         Member(id: 'm1', displayName: 'Rina', slotNo: 1, fixedOrderPosition: 1),
         Member(id: 'm2', displayName: 'Dedi', slotNo: 2),
       ];
+    payments = FakePaymentRepository();
     events = [];
   });
 
@@ -60,6 +64,7 @@ void main() {
       overrides: [
         groupRepositoryProvider.overrideWithValue(groups),
         memberRepositoryProvider.overrideWithValue(members),
+        paymentRepositoryProvider.overrideWithValue(payments),
         clockProvider.overrideWithValue(() => DateTime.utc(2026, 11, 4, 3)),
       ],
     );
@@ -131,6 +136,22 @@ void main() {
     expect(disabledFirst, isTrue);
     expect(members.calls, contains('startGroup'));
     expect(events, ['started']);
+  });
+
+  testWidgets('a started group refetches its periods so the detail shows period 1', (tester) async {
+    // Arrange
+    await pumpStart(tester, _group());
+    await confirmStart(tester);
+    await tester.tap(find.byType(CheckRow));
+    await tester.pumpAndSettle();
+    payments.calls.clear();
+
+    // Act
+    await tester.tap(find.widgetWithText(AppButton, 'Mulai arisan').last);
+    await tester.pumpAndSettle();
+
+    // Assert
+    expect(payments.calls, contains('refreshPeriods'));
   });
 
   testWidgets('payment_info_missing highlights the payment info item', (tester) async {

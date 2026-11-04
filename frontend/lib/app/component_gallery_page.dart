@@ -253,6 +253,28 @@ class const _GroupsSection() extends StatelessWidget {
           ],
         ),
         _gap,
+        DrawStage(
+          tone: c.toneFor('g-gallery-1'),
+          people: [for (var n = 1; n <= 8; n++) AvatarData(name: 'Anggota $n')],
+          commitmentHash: '9f2c4b1e7d3a8c6f0e5b2a9d4c7f1e3b8a6d2c5f9e0b7a4d1c8f3e6b2a5d9c7e',
+          onCommitmentTap: () => showAppToast(context, 'Kode komitmen'),
+          onDraw: () => showAppToast(context, 'Kocok'),
+          onPeople: () {},
+          onHelp: () {},
+        ),
+        _gap,
+        BuktiKocokTicket(
+          groupName: 'Arisan RT 05',
+          periodNo: 4,
+          totalPeriods: 10,
+          slotNo: 7,
+          winnerName: 'Bu Rina',
+          drawnAt: DateTime.utc(2026, 10, 26, 12, 30),
+          code: '7H2K9QX4MP',
+          verifyUrl: 'https://giliran.monai.my.id/v/7H2K9QX4MP',
+          onTap: () => showAppToast(context, 'Cek keaslian'),
+        ),
+        _gap,
         PeriodStrip(
           periods: [
             for (var n = 1; n <= 10; n++)
