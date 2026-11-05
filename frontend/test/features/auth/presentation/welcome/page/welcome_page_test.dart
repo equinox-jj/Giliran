@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:giliran/core/l10n/l10n.dart';
 import 'package:giliran/core/themes/themes.dart';
 import 'package:giliran/features/auth/presentation/splash/page/splash_page.dart';
 import 'package:giliran/features/auth/presentation/welcome/page/welcome_page.dart';
@@ -17,6 +18,9 @@ Future<void> _pumpPage(
   await tester.pumpWidget(
     MaterialApp(
       theme: dark ? AppTheme.dark() : AppTheme.light(),
+      locale: const Locale('id'),
+      localizationsDelegates: appLocalizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       home: page,
     ),
   );

@@ -13,6 +13,7 @@ class const Preferences(final SharedPreferencesAsync _prefs) {
   static const _themeModeKey = 'theme_mode';
   static const _pendingDeepLinkKey = 'pending_deep_link';
   static const _userSettingsKey = 'user_settings';
+  static const _secureScreenKey = 'secure_screen';
 
   Future<bool> readBiometricEnabled() async => await _prefs.getBool(_biometricEnabledKey) ?? false;
 
@@ -47,6 +48,12 @@ class const Preferences(final SharedPreferencesAsync _prefs) {
   /// Stores [value], or clears the saved settings when it is null.
   Future<void> saveUserSettings(String? value) =>
       value == null ? _prefs.remove(_userSettingsKey) : _prefs.setString(_userSettingsKey, value);
+
+  /// Whether S47 "Sembunyikan layar di app terbaru" is on (Android
+  /// `FLAG_SECURE`). Off by default.
+  Future<bool> readSecureScreen() async => await _prefs.getBool(_secureScreenKey) ?? false;
+
+  Future<void> saveSecureScreen(bool value) => _prefs.setBool(_secureScreenKey, value);
 }
 
 @Riverpod(keepAlive: true)

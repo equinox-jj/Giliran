@@ -46,7 +46,7 @@ class const DrawResultPage({
       body = Padding(
         padding: EdgeInsets.all(margin),
         child: AppBanner(
-          message: error is Failure ? error.displayMessage : l10n.drawLoadFailed,
+          message: error is Failure ? error.displayMessage(context.l10n) : l10n.drawLoadFailed,
           variant: AppBannerVariant.error,
           actionLabel: l10n.commonRetry,
           onAction: () => ref.invalidate(drawControllerProvider(groupId, periodId)),

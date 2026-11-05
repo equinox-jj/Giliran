@@ -1,3 +1,5 @@
+import '../../../../../core/l10n/l10n.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -53,7 +55,7 @@ class _BiometricOptInPageState() extends ConsumerState<BiometricOptInPage> {
     _saving.value = enabled;
     final failure = await ref.read(biometricControllerProvider.notifier).setEnabled(enabled);
     if (!mounted) return;
-    if (failure != null) showAppToast(context, failure.displayMessage);
+    if (failure != null) showAppToast(context, failure.displayMessage(context.l10n));
     _leave();
   }
 
@@ -86,7 +88,7 @@ class const _Offer() extends ConsumerWidget {
 
     final c = context.colors;
     final t = AppTextStyles.of(context);
-    final name = kind.nameOn(Theme.of(context).platform);
+    final name = kind.nameOn(context.l10n, Theme.of(context).platform);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -98,10 +100,10 @@ class const _Offer() extends ConsumerWidget {
           child: const Illustration(AppIllustrations.biometricUnlock, width: 220, height: 240),
         ),
         const SizedBox(height: AppSpace.s8),
-        HeadlineText('Buka Giliran dengan **$name**'),
+        HeadlineText(context.l10n.authBiometricOptInHeadline(name)),
         const SizedBox(height: AppSpace.s3),
         Text(
-          'Lebih cepat dari mengetik PIN. PIN tetap bisa dipakai kapan saja.',
+          context.l10n.authBiometricOptInCaption,
           style: t.bodyLg.copyWith(color: c.textSecondary),
         ),
       ],
@@ -132,7 +134,7 @@ class const _Actions({
             height: AppSizes.buttonH,
             child: Center(
               child: AppButton.ghost(
-                label: 'Nanti saja',
+                label: context.l10n.laterButton,
                 block: true,
                 loading: choice == false,
                 onPressed: choice == null ? () => onChoose(false) : null,
@@ -155,7 +157,7 @@ class const _EnableButton({
     final kind = ref.watch(biometricControllerProvider.select((s) => s.value?.kind));
 
     return AppButton(
-      label: 'Aktifkan',
+      label: context.l10n.authEnable,
       icon: kind?.icon,
       block: true,
       loading: loading,

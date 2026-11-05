@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../core/constants/app_doodles.dart';
 import '../core/constants/app_icons.dart';
 import '../core/constants/app_illustrations.dart';
+import '../core/l10n/l10n.dart';
 import '../core/themes/themes.dart';
 import '../core/utils/enums/group_status.dart';
 import '../core/utils/enums/member_role.dart';
@@ -790,7 +791,7 @@ class const _OnboardingSection() extends StatelessWidget {
               AppIllustrations.biometricUnlock,
             ])
               Illustration(asset, width: 72, height: 72),
-            for (final (i, page) in WelcomePage.pages.indexed)
+            for (final (i, page) in WelcomePage.pagesOf(context.l10n).indexed)
               SizedBox(
                 width: 150,
                 child: OnboardingPanel(

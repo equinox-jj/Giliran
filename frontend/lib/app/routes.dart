@@ -57,7 +57,7 @@ part 'routes.g.dart';
 
 final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
-/// Main tabs. Branch order must match [AppNavDestination.main].
+/// Main tabs. Branch order must match [AppNavDestination.mainOf].
 @TypedStatefulShellRoute<AppShellRoute>(
   branches: [
     TypedStatefulShellBranch<HomeBranch>(

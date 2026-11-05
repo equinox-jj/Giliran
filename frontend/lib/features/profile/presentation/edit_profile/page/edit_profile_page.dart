@@ -106,7 +106,7 @@ class _EditProfilePageState() extends ConsumerState<EditProfilePage> {
     }
     final failure = ref.read(editProfileControllerProvider).error;
     if (failure is Failure && failure is! ValidationFailure) {
-      showAppToast(context, failure.displayMessage);
+      showAppToast(context, failure.displayMessage(context.l10n));
     }
   }
 
@@ -221,7 +221,7 @@ class const _AvatarSection() extends ConsumerWidget {
       case AvatarSheetAction.remove:
         final failure = await controller.remove();
         if (failure != null && context.mounted) {
-          showAppToast(context, failure.displayMessage);
+          showAppToast(context, failure.displayMessage(context.l10n));
           return;
         }
     }
@@ -236,7 +236,7 @@ class const _AvatarSection() extends ConsumerWidget {
       localPath: avatar.localPath,
       imageUrl: avatar.imageUrl,
       progress: avatar.progress,
-      errorText: avatar.failure?.displayMessage,
+      errorText: avatar.failure?.displayMessage(context.l10n),
       // The check badge only confirms a photo picked on this screen.
       done: avatar.done && avatar.localPath != null,
       size: AppSizes.avatarXxl,

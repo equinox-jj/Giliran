@@ -1,3 +1,5 @@
+import '../../../../../core/l10n/l10n.dart';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
@@ -53,7 +55,7 @@ class _SignInPageState() extends ConsumerState<SignInPage> {
     if (_retryUntil.value != null) return;
     final email = EmailField.normalize(_email.text);
     if (!EmailField.isValidShape(email)) {
-      _error.value = EmailField.formatError;
+      _error.value = context.l10n.widgetEmailFormatError;
       return;
     }
 
@@ -79,17 +81,17 @@ class _SignInPageState() extends ConsumerState<SignInPage> {
         if (wait != null) {
           _retryUntil.value = DateTime.now().add(wait);
         } else {
-          _error.value = failure.displayMessage;
+          _error.value = failure.displayMessage(context.l10n);
         }
       case NetworkFailure() || TimeoutFailure() || ServerFailure() || UnknownFailure():
         showAppToast(
           context,
-          failure.displayMessage,
-          actionLabel: 'Coba lagi',
+          failure.displayMessage(context.l10n),
+          actionLabel: context.l10n.commonRetry,
           onAction: _submit,
         );
       default:
-        _error.value = failure.fieldMessage('email') ?? failure.displayMessage;
+        _error.value = failure.fieldMessage('email') ?? failure.displayMessage(context.l10n);
     }
   }
 
@@ -154,10 +156,10 @@ class const _Form({
           const _HeroIllustration(),
           const SizedBox(height: AppSpace.s6),
         ],
-        const HeadlineText('Masuk dengan **email**'),
+        HeadlineText(context.l10n.authSignInHeadline),
         const SizedBox(height: AppSpace.s2),
         Text(
-          'Kami kirim kode 6 digit ke email kamu. Tanpa kata sandi.',
+          context.l10n.authSignInCaption,
           style: t.body.copyWith(color: c.textSecondary),
         ),
         const SizedBox(height: AppSpace.s5),
@@ -165,7 +167,7 @@ class const _Form({
           valueListenable: error,
           builder: (context, error, _) => EmailField(
             controller: email,
-            helper: 'Akun baru dibuat otomatis kalau email ini belum terdaftar.',
+            helper: context.l10n.authSignInHelper,
             errorText: error,
             autofocus: true,
             onSubmitted: (_) => onSubmit(),
@@ -173,12 +175,10 @@ class const _Form({
         ),
         _RetryCountdown(retryUntil: retryUntil),
         const SizedBox(height: 18),
-        const AppBanner(
+        AppBanner(
           note: true,
           icon: AppIcons.shieldCheck,
-          message:
-              'Email kamu hanya untuk masuk dan pemulihan akun. '
-              'Tidak ditampilkan ke anggota lain.',
+          message: context.l10n.authSignInPrivacyNote,
         ),
       ],
     );
@@ -212,7 +212,7 @@ class const _RetryCountdown({required final ValueNotifier<DateTime?> retryUntil}
           : Padding(
               padding: const EdgeInsets.only(top: AppSpace.s2),
               child: CountdownText(
-                prefix: 'Terlalu sering. Coba lagi dalam ',
+                prefix: context.l10n.authRateLimitedPrefix,
                 until: until,
                 showTimeOnSameDay: false,
                 onFinished: () => retryUntil.value = null,
@@ -236,7 +236,7 @@ class const _SendButton({
     return ValueListenableBuilder(
       valueListenable: retryUntil,
       builder: (context, until, _) => AppButton(
-        label: 'Kirim kode',
+        label: context.l10n.authSendCode,
         block: true,
         loading: loading,
         onPressed: until == null ? onSubmit : null,
@@ -280,11 +280,11 @@ class _LegalNoteState() extends State<_LegalNote> {
 
     return Text.rich(
       TextSpan(
-        text: 'Dengan lanjut, kamu setuju dengan ',
+        text: context.l10n.authConsentPrefix,
         children: [
-          TextSpan(text: 'Syarat', style: link, recognizer: _terms),
+          TextSpan(text: context.l10n.authTerms, style: link, recognizer: _terms),
           const TextSpan(text: ' & '),
-          TextSpan(text: 'Kebijakan Privasi', style: link, recognizer: _privacy),
+          TextSpan(text: context.l10n.authPrivacyPolicy, style: link, recognizer: _privacy),
           const TextSpan(text: '.'),
         ],
       ),

@@ -1,3 +1,5 @@
+import '../../core/l10n/l10n.dart';
+
 import 'dart:async';
 
 import 'package:flutter/services.dart';
@@ -113,9 +115,9 @@ class _AppStepperState() extends State<AppStepper> {
     final atMax = widget.value >= widget.max;
     final unit = widget.unit == null ? '' : ' ${widget.unit}';
     final limit = atMax
-        ? 'Maksimal ${widget.max}$unit'
+        ? context.l10n.widgetStepperMax('${widget.max}$unit')
         : atMin
-        ? 'Minimal ${widget.min}$unit'
+        ? context.l10n.widgetStepperMin('${widget.min}$unit')
         : null;
     final valueStyle = t.amountLg.copyWith(color: c.textPrimary);
     final valuePad = (AppSizes.tapMin - valueStyle.fontSize! * valueStyle.height!) / 2;
@@ -134,7 +136,7 @@ class _AppStepperState() extends State<AppStepper> {
             ),
             _StepButton(
               icon: AppIcons.minusBold,
-              label: 'Kurangi',
+              label: context.l10n.widgetDecrease,
               onTap: !atMin ? () => _set(widget.value - 1) : null,
               onRepeatStart: !atMin ? () => _startRepeat(-1) : null,
               onRepeatEnd: _stopRepeat,
@@ -179,7 +181,7 @@ class _AppStepperState() extends State<AppStepper> {
             const SizedBox(width: AppSpace.s1),
             _StepButton(
               icon: AppIcons.plusBold,
-              label: 'Tambah',
+              label: context.l10n.widgetIncrease,
               onTap: !atMax ? () => _set(widget.value + 1) : null,
               onRepeatStart: !atMax ? () => _startRepeat(1) : null,
               onRepeatEnd: _stopRepeat,

@@ -44,7 +44,7 @@ class const JoinPage({
         ),
         (false, final Failure f) => EmptyState(
           title: l10n.joinInvalidTitle,
-          message: f.displayMessage,
+          message: f.displayMessage(context.l10n),
           primaryLabel: l10n.commonRetry,
           onPrimary: () => ref.invalidate(provider),
         ),
@@ -80,7 +80,7 @@ class const _JoinContent({
         showAppToast(context, l10n.joinedToast);
         onOpenGroup(id);
       } else if (outcome.failure case final f?) {
-        showAppToast(context, f.displayMessage);
+        showAppToast(context, f.displayMessage(context.l10n));
       }
     }
 

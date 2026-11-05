@@ -50,7 +50,9 @@ class const TransferOfferPage({super.key, required final String groupId}) extend
       if (!context.mounted || failure == null) return;
       showAppToast(
         context,
-        failure.apiCode == ApiErrorCode.pendingRequestExists ? l10n.transferPendingExists : failure.displayMessage,
+        failure.apiCode == ApiErrorCode.pendingRequestExists
+            ? l10n.transferPendingExists
+            : failure.displayMessage(context.l10n),
       );
     }
 

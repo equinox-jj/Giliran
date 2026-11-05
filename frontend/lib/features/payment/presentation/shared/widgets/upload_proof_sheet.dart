@@ -121,7 +121,7 @@ class const _UploadProofSheet({
     return switch (failure.apiCode) {
       ApiErrorCode.fileTooLarge => l10n.uploadTooLarge,
       ApiErrorCode.unsupportedMediaType => l10n.uploadUnsupported,
-      _ => failure.displayMessage,
+      _ => failure.displayMessage(l10n),
     };
   }
 }

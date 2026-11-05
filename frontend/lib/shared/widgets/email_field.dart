@@ -1,3 +1,5 @@
+import '../../core/l10n/l10n.dart';
+
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/constants/app_icons.dart';
@@ -12,8 +14,8 @@ import 'app_text_field.dart';
 class const EmailField({
   super.key,
   required final TextEditingController controller,
-  final String label = 'Email',
-  final String hint = 'nama@email.com',
+  final String? label,
+  final String? hint,
   final String? helper,
 
   /// Server-side error; takes precedence over the inline format check.
@@ -31,8 +33,6 @@ class const EmailField({
   /// Whether [input], once normalized, looks like an email address. Checks the
   /// shape only, not that the address exists.
   static bool isValidShape(String input) => _shape.hasMatch(normalize(input));
-
-  static const formatError = 'Format email belum benar';
 
   @override
   State<EmailField> createState() => _EmailFieldState();
@@ -66,13 +66,15 @@ class _EmailFieldState() extends State<EmailField> {
   @override
   Widget build(BuildContext context) {
     final text = widget.controller.text;
-    final inline = _checked && text.isNotEmpty && !EmailField.isValidShape(text) ? EmailField.formatError : null;
+    final inline = _checked && text.isNotEmpty && !EmailField.isValidShape(text)
+        ? context.l10n.widgetEmailFormatError
+        : null;
 
     return AppTextField(
       controller: widget.controller,
       focusNode: _focus,
-      label: widget.label,
-      hint: widget.hint,
+      label: widget.label ?? context.l10n.editProfileEmail,
+      hint: widget.hint ?? context.l10n.widgetEmailHint,
       helper: widget.helper,
       errorText: widget.errorText ?? inline,
       keyboardType: TextInputType.emailAddress,

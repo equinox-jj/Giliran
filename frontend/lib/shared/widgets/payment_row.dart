@@ -57,7 +57,7 @@ class const PaymentRow({
       child: Pressable(
         onTap: onTap,
         shape: AppShapes.squircle(AppRadius.lg),
-        semanticLabel: l10n.paymentRowSemantics(slot, name, status.label, detail),
+        semanticLabel: l10n.paymentRowSemantics(slot, name, status.labelOf(l10n), detail),
         child: Container(
           constraints: const BoxConstraints(minHeight: AppSizes.paymentRowH),
           padding: const EdgeInsets.symmetric(horizontal: AppSpace.s4, vertical: AppSpace.s3),

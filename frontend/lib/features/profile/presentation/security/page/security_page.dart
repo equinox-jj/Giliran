@@ -75,11 +75,11 @@ class const _BiometricRow() extends ConsumerWidget {
 
     return SettingsRow.toggle(
       icon: kind.icon,
-      label: context.l10n.securityBiometric(kind.nameOn(Theme.of(context).platform)),
+      label: context.l10n.securityBiometric(kind.nameOn(context.l10n, Theme.of(context).platform)),
       toggleValue: enabled,
       onToggle: (value) async {
         final failure = await ref.read(biometricControllerProvider.notifier).setEnabled(value);
-        if (failure != null && context.mounted) showAppToast(context, failure.displayMessage);
+        if (failure != null && context.mounted) showAppToast(context, failure.displayMessage(context.l10n));
       },
     );
   }
@@ -129,7 +129,7 @@ class const _Header({required final String label}) extends StatelessWidget {
 class const _SessionList({required final List<Session> sessions}) extends ConsumerWidget {
   Future<void> _revoke(BuildContext context, WidgetRef ref, String id) async {
     final failure = await ref.read(sessionsControllerProvider.notifier).revoke(id);
-    if (failure != null && context.mounted) showAppToast(context, failure.displayMessage);
+    if (failure != null && context.mounted) showAppToast(context, failure.displayMessage(context.l10n));
   }
 
   Future<void> _revokeOthers(BuildContext context, WidgetRef ref) async {
@@ -147,7 +147,7 @@ class const _SessionList({required final List<Session> sessions}) extends Consum
     showAppToast(
       context,
       switch (result) {
-        Left(:final value) => value.displayMessage,
+        Left(:final value) => value.displayMessage(context.l10n),
         Right(:final value) => l10n.securitySignOutOthersDone(value),
       },
     );

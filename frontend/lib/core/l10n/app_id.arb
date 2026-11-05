@@ -4426,5 +4426,881 @@
         "example": "10"
       }
     }
+  },
+  "failureNetwork": "Tidak ada koneksi internet. Periksa jaringanmu.",
+  "@failureNetwork": {
+    "description": "Fallback message for a network failure."
+  },
+  "failureTimeout": "Koneksi lambat. Coba lagi sebentar.",
+  "@failureTimeout": {
+    "description": "Fallback message for a request timeout."
+  },
+  "failureFileTooLarge": "Foto lebih dari 5 MB. Pilih foto lain.",
+  "@failureFileTooLarge": {
+    "description": "Upload rejected: file_too_large."
+  },
+  "failureUnsupportedMedia": "Format tidak didukung. Pakai JPG atau PNG.",
+  "@failureUnsupportedMedia": {
+    "description": "Upload rejected: unsupported_media_type."
+  },
+  "failureBadRequest": "Permintaan tidak dapat diproses.",
+  "@failureBadRequest": {
+    "description": "Fallback message for a 400-class business error."
+  },
+  "failureUnauthorized": "Sesi berakhir. Silakan masuk lagi.",
+  "@failureUnauthorized": {
+    "description": "Fallback message for an expired session."
+  },
+  "failureForbidden": "Kamu tidak punya akses untuk tindakan ini.",
+  "@failureForbidden": {
+    "description": "Fallback message for a forbidden action."
+  },
+  "failureNotFound": "Data tidak ditemukan.",
+  "@failureNotFound": {
+    "description": "Fallback message for a 404."
+  },
+  "failureDrawTooEarly": "Belum waktunya mengocok periode ini.",
+  "@failureDrawTooEarly": {
+    "description": "Conflict: draw_too_early."
+  },
+  "failureDrawAlreadyDone": "Periode ini sudah dikocok.",
+  "@failureDrawAlreadyDone": {
+    "description": "Conflict: draw_already_done."
+  },
+  "failurePaymentsIncomplete": "Belum semua anggota sudah bayar.",
+  "@failurePaymentsIncomplete": {
+    "description": "Conflict: payments_incomplete."
+  },
+  "failurePeriodNotOpen": "Periode ini belum dibuka.",
+  "@failurePeriodNotOpen": {
+    "description": "Conflict: period_not_open."
+  },
+  "failurePayoutAlreadyRecorded": "Penyerahan sudah dicatat pengurus lain.",
+  "@failurePayoutAlreadyRecorded": {
+    "description": "Conflict: payout_already_recorded."
+  },
+  "failureConflict": "Tindakan ini tidak bisa dilakukan sekarang.",
+  "@failureConflict": {
+    "description": "Fallback message for a 409 conflict."
+  },
+  "failureValidation": "Periksa lagi isian yang ditandai.",
+  "@failureValidation": {
+    "description": "Fallback message for a validation error."
+  },
+  "failureTooManyRequests": "Terlalu banyak percobaan. Tunggu sebentar.",
+  "@failureTooManyRequests": {
+    "description": "Fallback message for rate limiting."
+  },
+  "failureServer": "Terjadi gangguan di server. Coba lagi nanti.",
+  "@failureServer": {
+    "description": "Fallback message for a 5xx."
+  },
+  "failureCache": "Gagal membaca data di perangkat.",
+  "@failureCache": {
+    "description": "Fallback message for a local cache error."
+  },
+  "failureUnknown": "Terjadi kesalahan. Coba lagi.",
+  "@failureUnknown": {
+    "description": "Fallback message for an unknown error."
+  },
+  "commonClose": "Tutup",
+  "@commonClose": {
+    "description": "Close button or icon label."
+  },
+  "authStepOf": "Langkah {step} dari {total}",
+  "@authStepOf": {
+    "description": "Step counter on a multi-step auth screen.",
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "authStepPillsLabel": "Langkah {step} dari {total}, {label}",
+  "@authStepPillsLabel": {
+    "description": "Screen reader label of the step pills.",
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "authProgress": "{label} · {step} dari {total}",
+  "@authProgress": {
+    "description": "Flow title with progress in the auth top bar.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "authProgressSemantic": "{label}, langkah {step} dari {total}",
+  "@authProgressSemantic": {
+    "description": "Screen reader label of the auth top bar progress.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "authSetPinHeadline": "Buat **PIN 6 digit**",
+  "@authSetPinHeadline": {
+    "description": "S06 headline; **bold** run."
+  },
+  "authSetPinConfirmHeadline": "Ulangi **PIN**",
+  "@authSetPinConfirmHeadline": {
+    "description": "S06 confirm step headline."
+  },
+  "authSetPinCaption": "Dipakai untuk membuka Giliran di HP ini.",
+  "@authSetPinCaption": {
+    "description": "S06 caption."
+  },
+  "authRepeatPinCaption": "Masukkan PIN yang sama sekali lagi.",
+  "@authRepeatPinCaption": {
+    "description": "Caption of a repeat-PIN step."
+  },
+  "authPinWeakHint": "Hindari angka berurutan atau sama semua, seperti 123456.",
+  "@authPinWeakHint": {
+    "description": "Hint under a new PIN pad."
+  },
+  "authPinTooWeak": "Hindari angka berurutan atau sama semua.",
+  "@authPinTooWeak": {
+    "description": "Error: pin_too_weak."
+  },
+  "authPinMismatch": "PIN tidak sama. Ulangi dari awal.",
+  "@authPinMismatch": {
+    "description": "Error: the repeated PIN differs."
+  },
+  "authSplashLoading": "Giliran sedang dibuka",
+  "@authSplashLoading": {
+    "description": "Splash screen reader label."
+  },
+  "authTagline": "Arisan yang transparan",
+  "@authTagline": {
+    "description": "Splash tagline."
+  },
+  "authOtpHeadline": "Cek **email** kamu",
+  "@authOtpHeadline": {
+    "description": "S04 headline."
+  },
+  "authOpenMailApp": "Buka aplikasi email",
+  "@authOpenMailApp": {
+    "description": "Button that opens the mail app."
+  },
+  "authSpamHint": "Tidak ada di kotak masuk? Cek folder Spam atau Promosi.",
+  "@authSpamHint": {
+    "description": "Hint under the code card."
+  },
+  "authOtpNeverShare": "Jangan berikan kode ini ke siapa pun. Pengurus Giliran tidak pernah memintanya.",
+  "@authOtpNeverShare": {
+    "description": "S04 safety note."
+  },
+  "authCodeSentTo6": "Kode 6 digit dikirim ke",
+  "@authCodeSentTo6": {
+    "description": "Label above the masked email on S04."
+  },
+  "authCodeSentTo": "Kode dikirim ke",
+  "@authCodeSentTo": {
+    "description": "Label above the masked email."
+  },
+  "authOtpValidPrefix": "Berlaku ",
+  "@authOtpValidPrefix": {
+    "description": "Text before the code's remaining time, e.g. 'Berlaku 9:58'. Keep the trailing space."
+  },
+  "authResendIn": "Kirim ulang dalam {time}",
+  "@authResendIn": {
+    "description": "Resend countdown, e.g. 0:42.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "authResend": "Kirim ulang",
+  "@authResend": {
+    "description": "Resend code link."
+  },
+  "authCodeExpired": "Kode kedaluwarsa",
+  "@authCodeExpired": {
+    "description": "Code state: otp_expired."
+  },
+  "authCodeLocked": "Terlalu banyak percobaan. Minta kode baru.",
+  "@authCodeLocked": {
+    "description": "Code state: otp_too_many_attempts."
+  },
+  "authSendNewCode": "Kirim kode baru",
+  "@authSendNewCode": {
+    "description": "Button after the code expired."
+  },
+  "authRequestNewCode": "Minta kode baru",
+  "@authRequestNewCode": {
+    "description": "Button after the code locked."
+  },
+  "authMailAppFailed": "Aplikasi email tidak bisa dibuka. Buka sendiri, ya.",
+  "@authMailAppFailed": {
+    "description": "Toast when no mail app opens."
+  },
+  "authCodeCorrect": "Kode benar",
+  "@authCodeCorrect": {
+    "description": "Code card success state."
+  },
+  "authCodeWrongLeft": "Kode salah. Sisa {count} kali coba.",
+  "@authCodeWrongLeft": {
+    "description": "Wrong code with attempts left.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "authCodeWrong": "Kode salah. Coba lagi.",
+  "@authCodeWrong": {
+    "description": "Wrong code without a count."
+  },
+  "authPinLockedCaption": "PIN terkunci sementara. Coba lagi setelah waktu habis.",
+  "@authPinLockedCaption": {
+    "description": "Caption under the PIN lock countdown."
+  },
+  "authPinWrong": "PIN salah.",
+  "@authPinWrong": {
+    "description": "Wrong PIN without a count."
+  },
+  "authPinWrongTriesLeft": "PIN salah. Sisa {count} kali coba.",
+  "@authPinWrongTriesLeft": {
+    "description": "Wrong PIN on the sign-in PIN step.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "authPinWrongAttemptsLeft": "PIN salah. Sisa {count} percobaan.",
+  "@authPinWrongAttemptsLeft": {
+    "description": "Wrong PIN on the lock screen and PIN checks.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "authPinHeadline": "Masukkan **PIN** kamu",
+  "@authPinHeadline": {
+    "description": "PIN step headline."
+  },
+  "authPinCaption": "PIN memastikan ini benar-benar kamu.",
+  "@authPinCaption": {
+    "description": "PIN step caption."
+  },
+  "authForgotPin": "Lupa PIN?",
+  "@authForgotPin": {
+    "description": "Forgot PIN link."
+  },
+  "authBiometricReason": "Buka Giliran",
+  "@authBiometricReason": {
+    "description": "Reason shown in the system biometric prompt."
+  },
+  "authSignOutTitle": "Keluar dari Giliran?",
+  "@authSignOutTitle": {
+    "description": "S08 sign out confirm title."
+  },
+  "authSignOutMessage": "Kamu perlu masuk lagi dengan email di perangkat ini.",
+  "@authSignOutMessage": {
+    "description": "S08 sign out confirm body."
+  },
+  "authNotYou": "Bukan kamu? Keluar",
+  "@authNotYou": {
+    "description": "S08 sign out link."
+  },
+  "authHello": "Halo",
+  "@authHello": {
+    "description": "S08 greeting without a name."
+  },
+  "authHelloName": "Halo, {name}",
+  "@authHelloName": {
+    "description": "S08 greeting with the first name.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "authPinLockCaption": "Masukkan PIN untuk membuka Giliran",
+  "@authPinLockCaption": {
+    "description": "S08 caption."
+  },
+  "authPinLockTooMany": "Terlalu banyak PIN salah. Coba lagi setelah waktu habis.",
+  "@authPinLockTooMany": {
+    "description": "S08 locked caption."
+  },
+  "authUnlockWith": "Buka dengan {method}",
+  "@authUnlockWith": {
+    "description": "S08 biometric key label, e.g. 'Buka dengan sidik jari'.",
+    "placeholders": {
+      "method": {
+        "type": "String"
+      }
+    }
+  },
+  "authBiometricFaceId": "Face ID",
+  "@authBiometricFaceId": {
+    "description": "Biometric name on iOS face unlock."
+  },
+  "authBiometricFace": "wajah",
+  "@authBiometricFace": {
+    "description": "Biometric name for face unlock (lowercase, used mid-sentence)."
+  },
+  "authBiometricFingerprint": "sidik jari",
+  "@authBiometricFingerprint": {
+    "description": "Biometric name for fingerprint (lowercase, used mid-sentence)."
+  },
+  "authEmailChanged": "Email diganti. Perangkat lain sudah dikeluarkan.",
+  "@authEmailChanged": {
+    "description": "S46 success toast."
+  },
+  "authNewEmail": "Email baru",
+  "@authNewEmail": {
+    "description": "S46 step and field label."
+  },
+  "authStepPin": "PIN",
+  "@authStepPin": {
+    "description": "Step pill: PIN."
+  },
+  "authStepCode": "Kode",
+  "@authStepCode": {
+    "description": "Step pill: code."
+  },
+  "authChangeEmailHeadline": "Ganti **email**",
+  "@authChangeEmailHeadline": {
+    "description": "S46 headline."
+  },
+  "authChangeEmailCaption": "Kode dikirim ke email baru. Setelah diganti, perangkat lain akan dikeluarkan.",
+  "@authChangeEmailCaption": {
+    "description": "S46 caption."
+  },
+  "authCurrentEmail": "Email sekarang",
+  "@authCurrentEmail": {
+    "description": "S46 current email label."
+  },
+  "authNewEmailCodeHeadline": "Masukkan kode dari **email baru** kamu",
+  "@authNewEmailCodeHeadline": {
+    "description": "S46 code step headline."
+  },
+  "authOldEmailNotified": "Email lama akan dapat pemberitahuan. Setelah diganti, perangkat lain dikeluarkan.",
+  "@authOldEmailNotified": {
+    "description": "S46 code step note."
+  },
+  "authOldEmailNotifiedTo": "Email lama **{email}** akan dapat pemberitahuan. Setelah diganti, perangkat lain dikeluarkan.",
+  "@authOldEmailNotifiedTo": {
+    "description": "S46 code step note with the masked old email.",
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "authEmailTaken": "Email ini sudah punya akun Giliran.",
+  "@authEmailTaken": {
+    "description": "Error: email_already_registered."
+  },
+  "authSignInHeadline": "Masuk dengan **email**",
+  "@authSignInHeadline": {
+    "description": "S03 headline."
+  },
+  "authSignInCaption": "Kami kirim kode 6 digit ke email kamu. Tanpa kata sandi.",
+  "@authSignInCaption": {
+    "description": "S03 caption."
+  },
+  "authSignInHelper": "Akun baru dibuat otomatis kalau email ini belum terdaftar.",
+  "@authSignInHelper": {
+    "description": "S03 email field helper."
+  },
+  "authSignInPrivacyNote": "Email kamu hanya untuk masuk dan pemulihan akun. Tidak ditampilkan ke anggota lain.",
+  "@authSignInPrivacyNote": {
+    "description": "S03 privacy note."
+  },
+  "authRateLimitedPrefix": "Terlalu sering. Coba lagi dalam ",
+  "@authRateLimitedPrefix": {
+    "description": "Text before the retry countdown. Keep the trailing space."
+  },
+  "authSendCode": "Kirim kode",
+  "@authSendCode": {
+    "description": "S03 primary button."
+  },
+  "authConsentPrefix": "Dengan lanjut, kamu setuju dengan ",
+  "@authConsentPrefix": {
+    "description": "Legal note before the Terms link. Keep the trailing space."
+  },
+  "authTerms": "Syarat",
+  "@authTerms": {
+    "description": "Terms link in the legal note."
+  },
+  "authPrivacyPolicy": "Kebijakan Privasi",
+  "@authPrivacyPolicy": {
+    "description": "Privacy policy link in the legal note."
+  },
+  "authBiometricOptInHeadline": "Buka Giliran dengan **{method}**",
+  "@authBiometricOptInHeadline": {
+    "description": "S07 headline.",
+    "placeholders": {
+      "method": {
+        "type": "String"
+      }
+    }
+  },
+  "authBiometricOptInCaption": "Lebih cepat dari mengetik PIN. PIN tetap bisa dipakai kapan saja.",
+  "@authBiometricOptInCaption": {
+    "description": "S07 caption."
+  },
+  "authEnable": "Aktifkan",
+  "@authEnable": {
+    "description": "S07 primary button."
+  },
+  "authPinReset": "PIN baru tersimpan. Perangkat lain sudah dikeluarkan.",
+  "@authPinReset": {
+    "description": "S09 success toast."
+  },
+  "authForgotPinTitle": "Lupa PIN",
+  "@authForgotPinTitle": {
+    "description": "S09 flow title."
+  },
+  "authForgotHeadline": "Pastikan **ini kamu**",
+  "@authForgotHeadline": {
+    "description": "S09 headline."
+  },
+  "authForgotNoEmail": "Email akun tidak ditemukan di perangkat ini. Masuk lagi dengan email.",
+  "@authForgotNoEmail": {
+    "description": "S09 when the email is unknown."
+  },
+  "authForgotCaption": "Kami kirim kode 6 digit ke email akun kamu untuk memastikan ini kamu.",
+  "@authForgotCaption": {
+    "description": "S09 caption."
+  },
+  "authForgotStepCode": "Masukkan kode dari email",
+  "@authForgotStepCode": {
+    "description": "S09 step 1."
+  },
+  "authForgotStepCodeHint": "6 digit, berlaku 10 menit",
+  "@authForgotStepCodeHint": {
+    "description": "S09 step 1 caption."
+  },
+  "authForgotStepPin": "Buat PIN baru",
+  "@authForgotStepPin": {
+    "description": "S09 step 2."
+  },
+  "authForgotStepPinHint": "Masukkan dua kali",
+  "@authForgotStepPinHint": {
+    "description": "S09 step 2 caption."
+  },
+  "authForgotStepDone": "Selesai",
+  "@authForgotStepDone": {
+    "description": "S09 step 3."
+  },
+  "authForgotStepDoneHint": "Perangkat lain dikeluarkan dari akun",
+  "@authForgotStepDoneHint": {
+    "description": "S09 step 3 caption."
+  },
+  "authSendCodeToEmail": "Kirim kode ke email",
+  "@authSendCodeToEmail": {
+    "description": "S09 primary button."
+  },
+  "authNoEmailTitle": "Tidak bisa buka email?",
+  "@authNoEmailTitle": {
+    "description": "S09 help sheet title."
+  },
+  "authNoEmailBody1": "PIN hanya bisa diatur ulang lewat kode dari email akunmu. Tanpa email itu, akun tidak bisa dipulihkan.",
+  "@authNoEmailBody1": {
+    "description": "S09 help sheet paragraph 1."
+  },
+  "authNoEmailBody2": "Pengurus arisan tetap bisa mencatat kamu di grup sebagai anggota tamu, jadi iuranmu tidak hilang.",
+  "@authNoEmailBody2": {
+    "description": "S09 help sheet paragraph 2."
+  },
+  "authNoEmailLink": "Sudah tidak bisa buka email ini? Hubungi bantuan.",
+  "@authNoEmailLink": {
+    "description": "S09 link that opens the help sheet."
+  },
+  "authNewPinHeadline": "Buat **PIN baru**",
+  "@authNewPinHeadline": {
+    "description": "New PIN headline."
+  },
+  "authNewPinConfirmHeadline": "Ulangi **PIN baru**",
+  "@authNewPinConfirmHeadline": {
+    "description": "Repeat new PIN headline."
+  },
+  "authOldPinInvalid": "PIN lama tidak bisa dipakai lagi.",
+  "@authOldPinInvalid": {
+    "description": "S09 new PIN caption."
+  },
+  "authPinChanged": "PIN berhasil diganti.",
+  "@authPinChanged": {
+    "description": "S44 success toast."
+  },
+  "authStepOldPin": "PIN lama",
+  "@authStepOldPin": {
+    "description": "Step pill: old PIN."
+  },
+  "authStepNewPin": "PIN baru",
+  "@authStepNewPin": {
+    "description": "Step pill: new PIN."
+  },
+  "authStepRepeat": "Ulangi",
+  "@authStepRepeat": {
+    "description": "Step pill: repeat."
+  },
+  "authOldPinHeadline": "Masukkan **PIN lama**",
+  "@authOldPinHeadline": {
+    "description": "S44 step 1 headline."
+  },
+  "authOldPinCaption": "Pastikan ini kamu sebelum mengganti PIN.",
+  "@authOldPinCaption": {
+    "description": "S44 step 1 caption."
+  },
+  "authEnterNewPinHeadline": "Masukkan **PIN baru**",
+  "@authEnterNewPinHeadline": {
+    "description": "S44 step 2 headline."
+  },
+  "authNewPinCaption": "Perangkat lain tetap masuk seperti biasa.",
+  "@authNewPinCaption": {
+    "description": "S44 step 2 caption."
+  },
+  "authOnboarding1Headline": "Arisan rapi, **semua bisa cek**.",
+  "@authOnboarding1Headline": {
+    "description": "S02 page 1 headline."
+  },
+  "authOnboarding1Body": "Catat iuran tiap periode, lihat siapa yang sudah bayar, dan buktikan setiap kocokan. Semua anggota melihat papan yang sama.",
+  "@authOnboarding1Body": {
+    "description": "S02 page 1 body."
+  },
+  "authOnboarding2Headline": "Kocokan yang **bisa dibuktikan**.",
+  "@authOnboarding2Headline": {
+    "description": "S02 page 2 headline."
+  },
+  "authOnboarding2Body": "Setiap kocokan menghasilkan Bukti Kocok. Siapa pun di grup bisa cek ulang hasilnya, tidak ada yang bisa mengatur pemenang.",
+  "@authOnboarding2Body": {
+    "description": "S02 page 2 body."
+  },
+  "authOnboarding3Headline": "Giliran **tidak pernah memegang uang** kamu.",
+  "@authOnboarding3Headline": {
+    "description": "S02 page 3 headline."
+  },
+  "authOnboarding3Body": "Iuran tetap ditransfer langsung ke pengurus seperti biasa. Giliran hanya mencatat, supaya semua anggota bisa melihat.",
+  "@authOnboarding3Body": {
+    "description": "S02 page 3 body."
+  },
+  "authSkip": "Lewati",
+  "@authSkip": {
+    "description": "S02 skip link."
+  },
+  "authSkipSemantic": "Lewati ke halaman terakhir",
+  "@authSkipSemantic": {
+    "description": "S02 skip screen reader label."
+  },
+  "authNeverHoldsMoney": "Giliran tidak pernah memegang uang kamu.",
+  "@authNeverHoldsMoney": {
+    "description": "S02 footer line."
+  },
+  "authSignInWithEmail": "Masuk dengan email",
+  "@authSignInWithEmail": {
+    "description": "S02 primary button."
+  },
+  "authFillNameHeadline": "Siapa **nama kamu**?",
+  "@authFillNameHeadline": {
+    "description": "S05 headline."
+  },
+  "authFillNameCaption": "Nama ini dilihat anggota arisan lain.",
+  "@authFillNameCaption": {
+    "description": "S05 caption."
+  },
+  "authNameHelper": "Pakai nama yang dikenal anggota.",
+  "@authNameHelper": {
+    "description": "S05 name helper."
+  },
+  "widgetClearField": "Hapus isian",
+  "@widgetClearField": {
+    "description": "Text field clear button label."
+  },
+  "widgetGotIt": "Mengerti",
+  "@widgetGotIt": {
+    "description": "Help sheet dismiss button."
+  },
+  "widgetSearch": "Cari",
+  "@widgetSearch": {
+    "description": "Search field hint."
+  },
+  "widgetPickDate": "Pilih tanggal",
+  "@widgetPickDate": {
+    "description": "Date field hint."
+  },
+  "widgetMenu": "Menu",
+  "@widgetMenu": {
+    "description": "Overflow menu button label."
+  },
+  "widgetOtpLabel": "Kode 6 digit",
+  "@widgetOtpLabel": {
+    "description": "OTP boxes screen reader label."
+  },
+  "widgetBack": "Kembali",
+  "@widgetBack": {
+    "description": "Top bar back button label."
+  },
+  "widgetUnreadNotifications": "Notifikasi, {count} belum dibaca",
+  "@widgetUnreadNotifications": {
+    "description": "Bell button label with unread count.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "widgetHelloName": "Halo, {name}",
+  "@widgetHelloName": {
+    "description": "Home top bar greeting.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "widgetEmailHint": "nama@email.com",
+  "@widgetEmailHint": {
+    "description": "Email field hint."
+  },
+  "widgetEmailFormatError": "Format email belum benar",
+  "@widgetEmailFormatError": {
+    "description": "Email field inline format error."
+  },
+  "widgetDone": "Selesai",
+  "@widgetDone": {
+    "description": "Date picker done button."
+  },
+  "widgetUnlockFingerprint": "Buka dengan sidik jari",
+  "@widgetUnlockFingerprint": {
+    "description": "PIN pad biometric key default label."
+  },
+  "widgetPinChecking": "Memeriksa PIN",
+  "@widgetPinChecking": {
+    "description": "PIN dots screen reader label while checking."
+  },
+  "widgetPinProgress": "PIN, {entered} dari {length} digit diisi",
+  "@widgetPinProgress": {
+    "description": "PIN dots screen reader label.",
+    "placeholders": {
+      "entered": {
+        "type": "int"
+      },
+      "length": {
+        "type": "int"
+      }
+    }
+  },
+  "widgetDelete": "Hapus",
+  "@widgetDelete": {
+    "description": "PIN pad backspace key label."
+  },
+  "chipPaid": "Sudah bayar",
+  "@chipPaid": {
+    "description": "Status chip: paid."
+  },
+  "chipPendingReview": "Menunggu cek",
+  "@chipPendingReview": {
+    "description": "Status chip: pending_review."
+  },
+  "chipUnpaid": "Belum bayar",
+  "@chipUnpaid": {
+    "description": "Status chip: unpaid."
+  },
+  "chipRejected": "Ditolak",
+  "@chipRejected": {
+    "description": "Status chip: rejected."
+  },
+  "chipOverdue": "Lewat jatuh tempo",
+  "@chipOverdue": {
+    "description": "Status chip: overdue."
+  },
+  "chipWon": "Sudah dapat",
+  "@chipWon": {
+    "description": "Status chip: already won."
+  },
+  "chipPreparing": "Persiapan",
+  "@chipPreparing": {
+    "description": "Status chip: group in setup."
+  },
+  "widgetPageOf": "Halaman {page} dari {count}",
+  "@widgetPageOf": {
+    "description": "Onboarding dot screen reader label.",
+    "placeholders": {
+      "page": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "widgetCopied": "{label} disalin",
+  "@widgetCopied": {
+    "description": "Toast after copying a value.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "widgetPeopleCount": "{count} orang",
+  "@widgetPeopleCount": {
+    "description": "Avatar stack screen reader label.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "widgetStepperMax": "Maksimal {value}",
+  "@widgetStepperMax": {
+    "description": "Stepper limit note, e.g. 'Maksimal 50 slot'.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "widgetStepperMin": "Minimal {value}",
+  "@widgetStepperMin": {
+    "description": "Stepper limit note, e.g. 'Minimal 2 slot'.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "widgetDecrease": "Kurangi",
+  "@widgetDecrease": {
+    "description": "Stepper minus button."
+  },
+  "widgetIncrease": "Tambah",
+  "@widgetIncrease": {
+    "description": "Stepper plus button."
+  },
+  "widgetProfilePhoto": "Foto profil",
+  "@widgetProfilePhoto": {
+    "description": "Avatar source sheet title."
+  },
+  "widgetAvatarUploading": "Foto profil, mengunggah {percent} persen",
+  "@widgetAvatarUploading": {
+    "description": "Avatar picker screen reader label while uploading.",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "widgetAvatarChange": "Foto profil, ketuk untuk mengganti",
+  "@widgetAvatarChange": {
+    "description": "Avatar picker screen reader label with a photo."
+  },
+  "widgetAvatarAdd": "Tambah foto profil",
+  "@widgetAvatarAdd": {
+    "description": "Avatar picker screen reader label without a photo."
+  },
+  "widgetAvatarUploadingShort": "Mengunggah… {percent}%",
+  "@widgetAvatarUploadingShort": {
+    "description": "Avatar picker caption while uploading.",
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "widgetAvatarTapToChange": "Ketuk untuk ganti",
+  "@widgetAvatarTapToChange": {
+    "description": "Avatar picker caption with a photo."
+  },
+  "widgetAvatarOptional": "Foto profil (opsional)",
+  "@widgetAvatarOptional": {
+    "description": "Avatar picker caption without a photo."
+  },
+  "widgetCountdownDays": "{days} hari {clock}",
+  "@widgetCountdownDays": {
+    "description": "Countdown of a day or more, e.g. '2 hari 04:12:30'.",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "clock": {
+        "type": "String"
+      }
+    }
+  },
+  "widgetMinutesLeft": "{minutes} menit lagi",
+  "@widgetMinutesLeft": {
+    "description": "Countdown screen reader label.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "widgetTodayAt": "Hari ini, {time}",
+  "@widgetTodayAt": {
+    "description": "Countdown that ends today, e.g. 'Hari ini, 19.30'.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "widgetEnterEmailCode": "Masukkan kode dari email",
+  "@widgetEnterEmailCode": {
+    "description": "Email code card title."
+  },
+  "widgetSentTo": "Dikirim ke {email}",
+  "@widgetSentTo": {
+    "description": "Email code card recipient line.",
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "widgetSpamHintShort": "Belum dapat? Cek folder Spam/Promosi",
+  "@widgetSpamHintShort": {
+    "description": "Email code card hint after 30 s."
+  },
+  "profileLicenses": "Lisensi",
+  "@profileLicenses": {
+    "description": "S42 About row that opens the open-source license page."
+  },
+  "settingsGroupPrivacy": "Privasi",
+  "@settingsGroupPrivacy": {
+    "description": "S47 group header for privacy settings."
+  },
+  "settingsSecureScreen": "Sembunyikan layar di app terbaru",
+  "@settingsSecureScreen": {
+    "description": "S47 toggle that blocks screenshots and the recents preview (Android FLAG_SECURE)."
+  },
+  "settingsSecureScreenHint": "Layar Giliran kosong di daftar app terbaru. Tangkapan layar juga diblokir.",
+  "@settingsSecureScreenHint": {
+    "description": "S47 secure screen toggle subtitle."
   }
 }

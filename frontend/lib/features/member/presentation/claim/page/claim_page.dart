@@ -40,7 +40,7 @@ class _ClaimPageState() extends ConsumerState<ClaimPage> {
     if (known) {
       setState(() => _failure = failure);
     } else {
-      showAppToast(context, failure.displayMessage);
+      showAppToast(context, failure.displayMessage(context.l10n));
     }
   }
 

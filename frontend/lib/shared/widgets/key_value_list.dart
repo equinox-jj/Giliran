@@ -1,3 +1,5 @@
+import '../../core/l10n/l10n.dart';
+
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -66,7 +68,7 @@ class const _KeyValueRow(final KeyValueItem item, {required final bool strong}) 
   void _copy(BuildContext context) {
     Clipboard.setData(ClipboardData(text: item.value.replaceAll(' ', '')));
     HapticFeedback.lightImpact();
-    showAppToast(context, '${item.label} disalin');
+    showAppToast(context, context.l10n.widgetCopied(item.label));
   }
 
   @override
@@ -81,7 +83,7 @@ class const _KeyValueRow(final KeyValueItem item, {required final bool strong}) 
         ? t.mono.copyWith(color: c.textPrimary)
         : t.body.copyWith(color: c.textPrimary, fontWeight: strong ? FontWeight.w600 : FontWeight.w500);
     final value = item.valueWidget ?? Text(item.value, style: valueStyle);
-    final copy = item.copyable ? AppTextButton(label: 'Salin', onPressed: () => _copy(context)) : null;
+    final copy = item.copyable ? AppTextButton(label: context.l10n.copyButton, onPressed: () => _copy(context)) : null;
 
     return MergeSemantics(
       child: ConstrainedBox(

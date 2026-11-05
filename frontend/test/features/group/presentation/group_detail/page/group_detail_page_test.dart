@@ -15,7 +15,9 @@ import 'package:giliran/features/group/presentation/group_detail/page/group_deta
 import 'package:giliran/features/payment/data/repositories/payment_repository_impl.dart';
 import 'package:giliran/shared/widgets/widgets.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:material_ui/material_ui.dart' show Size;
 
+import '../../../../../helpers/a11y.dart';
 import '../../../../../helpers/fake_group_repository.dart';
 import '../../../../../helpers/fake_payment_repository.dart';
 import '../../../../../helpers/pump_app.dart';
@@ -48,7 +50,12 @@ void main() {
     opened = [];
   });
 
-  Future<void> pumpDetail(WidgetTester tester, GroupDetail group, {bool created = false}) async {
+  Future<void> pumpDetail(
+    WidgetTester tester,
+    GroupDetail group, {
+    bool created = false,
+    Size size = const Size(390, 844),
+  }) async {
     groups
       ..group = group
       ..groupResult = null;
@@ -79,6 +86,7 @@ void main() {
         onReminders: () => opened.add('reminders'),
       ),
       container: container,
+      size: size,
     );
     await tester.pumpAndSettle();
   }
@@ -87,6 +95,19 @@ void main() {
     await tester.tap(find.byType(OverflowMenuButton));
     await tester.pumpAndSettle();
   }
+
+  testWidgets('fits a 360 dp phone at 130 percent text and meets the a11y guidelines', (tester) async {
+    // Arrange
+    final semantics = tester.ensureSemantics();
+    useLargeText(tester);
+
+    // Act
+    await pumpDetail(tester, _active, size: a11yPhone);
+
+    // Assert
+    await expectAccessibleScreen(tester);
+    semantics.dispose();
+  });
 
   testWidgets('an active group says who paid this period', (tester) async {
     // Act

@@ -1,3 +1,5 @@
+import '../../core/l10n/l10n.dart';
+
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -46,7 +48,7 @@ class const PinPad({
 
   /// `AppIcons.fingerprint` on Android, `AppIcons.scanSmiley` for Face ID.
   final String biometricIcon = AppIcons.fingerprint,
-  final String biometricLabel = 'Buka dengan sidik jari',
+  final String? biometricLabel,
 }) extends StatefulWidget {
   /// Width cap of a split pad, so the two panes stay close on wide phones.
   static const splitMaxWidth = 720.0;
@@ -139,7 +141,7 @@ class _PinPadState() extends State<PinPad> {
       onDelete: _delete,
       onBiometric: widget.onBiometric,
       biometricIcon: widget.biometricIcon,
-      biometricLabel: widget.biometricLabel,
+      biometricLabel: widget.biometricLabel ?? context.l10n.widgetUnlockFingerprint,
     );
 
     if (split) {
@@ -226,7 +228,7 @@ class const _Dots({
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Semantics(
-    label: checking ? 'Memeriksa PIN' : 'PIN, $entered dari $length digit diisi',
+    label: checking ? context.l10n.widgetPinChecking : context.l10n.widgetPinProgress(entered, length),
     liveRegion: true,
     child: ExcludeSemantics(
       child: Column(
@@ -343,7 +345,7 @@ class const _Keypad({
                   _DigitKey('0', size: key, enabled: enabled, onPress: onPress),
                   _PinKey(
                     size: key,
-                    label: 'Hapus',
+                    label: context.l10n.widgetDelete,
                     onTap: canDelete ? onDelete : null,
                     filled: false,
                     child: AppIcon(AppIcons.backspace, size: 26, color: c.textPrimary),

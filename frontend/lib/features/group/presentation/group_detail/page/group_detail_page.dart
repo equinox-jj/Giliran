@@ -231,7 +231,7 @@ class _GroupDetailPageState() extends ConsumerState<GroupDetailPage> {
     if (!confirmed || !mounted) return;
     final failure = await ref.read(provider.notifier).close();
     if (!mounted) return;
-    showAppToast(context, failure?.displayMessage ?? l10n.groupClosedToast);
+    showAppToast(context, failure?.displayMessage(context.l10n) ?? l10n.groupClosedToast);
     // A closed group is an archive: show its summary (S24).
     if (failure == null) widget.onSummary();
   }
@@ -353,7 +353,7 @@ class const _DetailBody({
         ],
       ]);
       final failure = results.nonNulls.firstOrNull;
-      if (failure != null && context.mounted) showAppToast(context, failure.displayMessage);
+      if (failure != null && context.mounted) showAppToast(context, failure.displayMessage(context.l10n));
     }
 
     if (phase == _Phase.notFound) {

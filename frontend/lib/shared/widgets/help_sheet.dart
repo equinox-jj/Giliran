@@ -1,3 +1,5 @@
+import '../../core/l10n/l10n.dart';
+
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/themes/themes.dart';
@@ -11,14 +13,14 @@ Future<void> showHelpSheet(
   required String title,
   required List<String> paragraphs,
   Widget? diagram,
-  String dismissLabel = 'Mengerti',
+  String? dismissLabel,
 }) => showAppSheet<void>(
   context,
   builder: (context) => _HelpSheet(
     title: title,
     paragraphs: paragraphs,
     diagram: diagram,
-    dismissLabel: dismissLabel,
+    dismissLabel: dismissLabel ?? context.l10n.widgetGotIt,
   ),
 );
 

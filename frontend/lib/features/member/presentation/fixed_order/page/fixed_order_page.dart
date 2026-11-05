@@ -30,7 +30,7 @@ class const FixedOrderPage({super.key, required final String groupId, required f
     Future<bool> save() async {
       final failure = await ref.read(provider.notifier).save(total);
       if (!context.mounted) return false;
-      showAppToast(context, failure?.displayMessage ?? l10n.fixedOrderSaved);
+      showAppToast(context, failure?.displayMessage(context.l10n) ?? l10n.fixedOrderSaved);
       return failure == null;
     }
 

@@ -104,7 +104,7 @@ class _ProofReviewPageState() extends ConsumerState<ProofReviewPage> {
       await notifier.reload();
       return;
     }
-    showAppToast(context, failure.displayMessage);
+    showAppToast(context, failure.displayMessage(context.l10n));
   }
 
   void _swipe(DragEndDetails d) {

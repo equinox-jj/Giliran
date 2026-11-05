@@ -1,3 +1,5 @@
+import '../../../../../core/l10n/l10n.dart';
+
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -65,7 +67,7 @@ class _VerifyOtpPageState() extends ConsumerState<VerifyOtpPage> {
         break;
       default:
         if (failure.apiCode != ApiErrorCode.otpTooManyAttempts) {
-          showAppToast(context, failure.displayMessage);
+          showAppToast(context, failure.displayMessage(context.l10n));
         }
     }
   }
@@ -129,7 +131,7 @@ class const _Body({
       );
     }
 
-    final (cardState, message) = emailCodeCardStateOf(state);
+    final (cardState, message) = emailCodeCardStateOf(context.l10n, state);
     final notifier = ref.read(emailOtpControllerProvider.notifier);
     return _CodeStep(
       emailMasked: emailMasked,
@@ -168,7 +170,7 @@ class const _CodeStep({
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const HeadlineText('Cek **email** kamu'),
+        HeadlineText(context.l10n.authOtpHeadline),
         const SizedBox(height: AppSpace.s4),
         _SentTo(emailMasked: emailMasked, onChange: onChangeEmail),
         const SizedBox(height: AppSpace.s6),
@@ -208,7 +210,7 @@ class const _CodeStep({
             ),
             const SizedBox(height: AppSpace.s5),
             AppButton.secondary(
-              label: 'Buka aplikasi email',
+              label: context.l10n.authOpenMailApp,
               icon: AppIcons.envelopeSimple,
               block: true,
               onPressed: onOpenMail,
@@ -219,14 +221,14 @@ class const _CodeStep({
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpace.s3),
           child: Text(
-            'Tidak ada di kotak masuk? Cek folder Spam atau Promosi.',
+            context.l10n.authSpamHint,
             textAlign: TextAlign.center,
             style: t.caption.copyWith(color: c.textTertiary),
           ),
         ),
         const SizedBox(height: AppSpace.s4),
-        const AppBanner(
-          message: 'Jangan berikan kode ini ke siapa pun. Pengurus Giliran tidak pernah memintanya.',
+        AppBanner(
+          message: context.l10n.authOtpNeverShare,
           variant: AppBannerVariant.warning,
           icon: AppIcons.shieldWarning,
           note: true,
@@ -263,7 +265,7 @@ class const _SentTo({required final String emailMasked, required final VoidCallb
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Kode 6 digit dikirim ke', style: t.caption.copyWith(color: c.textTertiary)),
+                Text(context.l10n.authCodeSentTo6, style: t.caption.copyWith(color: c.textTertiary)),
                 Text(
                   emailMasked,
                   maxLines: 1,
@@ -274,8 +276,8 @@ class const _SentTo({required final String emailMasked, required final VoidCallb
             ),
           ),
           AppButton.link(
-            label: 'Ubah',
-            semanticLabel: 'Ubah email',
+            label: context.l10n.editLink,
+            semanticLabel: context.l10n.securityChangeEmail,
             size: AppButtonSize.small,
             onPressed: onChange,
           ),
@@ -350,7 +352,7 @@ class _OtpTimersState() extends State<OtpTimers> {
         if (expires != null)
           Text.rich(
             TextSpan(
-              text: 'Berlaku ',
+              text: context.l10n.authOtpValidPrefix,
               children: [
                 TextSpan(
                   text: _clock(expires),
@@ -362,10 +364,10 @@ class _OtpTimersState() extends State<OtpTimers> {
           ),
         const Spacer(),
         if (resend != null)
-          Text('Kirim ulang dalam ${_clock(resend)}', style: caption)
+          Text(context.l10n.authResendIn(_clock(resend)), style: caption)
         else
           AppButton.link(
-            label: 'Kirim ulang',
+            label: context.l10n.authResend,
             size: AppButtonSize.xsmall,
             loading: widget.resending,
             onPressed: widget.onResend,
@@ -391,15 +393,15 @@ class const OtpClosedState({
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         AppBanner(
-          message: message ?? (expired ? 'Kode kedaluwarsa' : 'Terlalu banyak percobaan. Minta kode baru.'),
+          message: message ?? (expired ? context.l10n.authCodeExpired : context.l10n.authCodeLocked),
           variant: expired ? AppBannerVariant.offline : AppBannerVariant.error,
           icon: expired ? AppIcons.hourglassMedium : AppIcons.warningCircle,
         ),
         const SizedBox(height: AppSpace.s4),
         if (expired)
-          AppButton(label: 'Kirim kode baru', block: true, loading: resending, onPressed: onRequestNew)
+          AppButton(label: context.l10n.authSendNewCode, block: true, loading: resending, onPressed: onRequestNew)
         else
-          AppButton(label: 'Minta kode baru', block: true, onPressed: onRestart),
+          AppButton(label: context.l10n.authRequestNewCode, block: true, onPressed: onRestart),
       ],
     );
   }
@@ -408,13 +410,13 @@ class const OtpClosedState({
 Future<void> openMailApp(BuildContext context, WidgetRef ref) async {
   final opened = await ref.read(mailAppLauncherProvider).open();
   if (!opened && context.mounted) {
-    showAppToast(context, 'Aplikasi email tidak bisa dibuka. Buka sendiri, ya.');
+    showAppToast(context, context.l10n.authMailAppFailed);
   }
 }
 
-(EmailCodeCardState, String?) emailCodeCardStateOf(EmailOtpState? state) {
+(EmailCodeCardState, String?) emailCodeCardStateOf(AppLocalizations l10n, EmailOtpState? state) {
   if (state == null) return (EmailCodeCardState.waiting, null);
-  if (state.result != null) return (EmailCodeCardState.success, 'Kode benar');
+  if (state.result != null) return (EmailCodeCardState.success, l10n.authCodeCorrect);
   if (state.submitting) return (EmailCodeCardState.checking, null);
 
   final failure = state.failure;
@@ -422,14 +424,14 @@ Future<void> openMailApp(BuildContext context, WidgetRef ref) async {
     ApiErrorCode.otpInvalid => (
       EmailCodeCardState.wrong,
       switch (failure?.attemptsRemaining) {
-        final n? => 'Kode salah. Sisa $n kali coba.',
-        null => 'Kode salah. Coba lagi.',
+        final n? => l10n.authCodeWrongLeft(n),
+        null => l10n.authCodeWrong,
       },
     ),
-    ApiErrorCode.otpExpired => (EmailCodeCardState.expired, 'Kode kedaluwarsa'),
+    ApiErrorCode.otpExpired => (EmailCodeCardState.expired, l10n.authCodeExpired),
     ApiErrorCode.otpTooManyAttempts => (
       EmailCodeCardState.locked,
-      'Terlalu banyak percobaan. Minta kode baru.',
+      l10n.authCodeLocked,
     ),
     _ => (EmailCodeCardState.waiting, null),
   };
@@ -458,7 +460,7 @@ class const _PinStep({
               header: header,
               countdown: CountdownText.lock(
                 until: until,
-                caption: 'PIN terkunci sementara. Coba lagi setelah waktu habis.',
+                caption: context.l10n.authPinLockedCaption,
                 onFinished: () => lockedUntil.value = null,
               ),
               footer: footer,
@@ -475,8 +477,8 @@ class const _PinStep({
                 message: !wrongPin
                     ? null
                     : attempts == null
-                    ? 'PIN salah.'
-                    : 'PIN salah. Sisa $attempts kali coba.',
+                    ? context.l10n.authPinWrong
+                    : context.l10n.authPinWrongTriesLeft(attempts),
               ),
             ),
     );
@@ -495,10 +497,10 @@ class const _PinHeading({required final String emailMasked}) extends StatelessWi
       children: [
         _CodeAccepted(emailMasked: emailMasked),
         const SizedBox(height: 28),
-        const HeadlineText('Masukkan **PIN** kamu', textAlign: TextAlign.center),
+        HeadlineText(context.l10n.authPinHeadline, textAlign: TextAlign.center),
         const SizedBox(height: AppSpace.s2),
         Text(
-          'PIN memastikan ini benar-benar kamu.',
+          context.l10n.authPinCaption,
           textAlign: TextAlign.center,
           style: t.body.copyWith(color: c.textSecondary, fontWeight: FontWeight.w500),
         ),
@@ -515,7 +517,7 @@ class const _ForgotPinLink({required final VoidCallback onPressed}) extends Stat
     mainAxisSize: MainAxisSize.min,
     children: [
       const SizedBox(height: AppSpace.s4),
-      AppButton.link(label: 'Lupa PIN?', size: AppButtonSize.small, onPressed: onPressed),
+      AppButton.link(label: context.l10n.authForgotPin, size: AppButtonSize.small, onPressed: onPressed),
       const SizedBox(height: AppSpace.s1),
     ],
   );
@@ -543,7 +545,7 @@ class const _CodeAccepted({required final String emailMasked}) extends Stateless
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Kode benar',
+                    context.l10n.authCodeCorrect,
                     style: t.bodyLg.copyWith(color: c.paid.fg, fontWeight: FontWeight.w600),
                   ),
                   Text(

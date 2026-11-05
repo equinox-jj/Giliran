@@ -1,3 +1,5 @@
+import '../../../../../core/l10n/l10n.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -66,7 +68,7 @@ class _ForgotPinPageState() extends ConsumerState<ForgotPinPage> {
     final state = next.value;
     if (state == null) return;
     if (state.result != null && previous?.value?.result == null) {
-      showAppToast(context, 'PIN baru tersimpan. Perangkat lain sudah dikeluarkan.');
+      showAppToast(context, context.l10n.authPinReset);
       widget.onDone?.call();
       return;
     }
@@ -82,9 +84,9 @@ class _ForgotPinPageState() extends ConsumerState<ForgotPinPage> {
           ApiErrorCode.otpNotFound:
         _step.value = ForgotPinStep.code;
       case ApiErrorCode.validationError:
-        _pinError.value = setPinErrorMessage(failure);
+        _pinError.value = setPinErrorMessage(context.l10n, failure);
       default:
-        showAppToast(context, failure.displayMessage);
+        showAppToast(context, failure.displayMessage(context.l10n));
     }
   }
 
@@ -102,7 +104,7 @@ class _ForgotPinPageState() extends ConsumerState<ForgotPinPage> {
     if (!mounted) return;
     if (!sent) {
       final failure = ref.read(emailOtpRequestControllerProvider).error;
-      if (failure is Failure) showAppToast(context, failure.displayMessage);
+      if (failure is Failure) showAppToast(context, failure.displayMessage(context.l10n));
       return;
     }
     // Reload the code screen from the request just saved.
@@ -152,7 +154,7 @@ class _ForgotPinPageState() extends ConsumerState<ForgotPinPage> {
       child: ValueListenableBuilder(
         valueListenable: _step,
         builder: (context, step, _) => AuthScaffold(
-          progress: (label: 'Lupa PIN', step: step.index + 1, total: ForgotPinStep.values.length),
+          progress: (label: context.l10n.authForgotPinTitle, step: step.index + 1, total: ForgotPinStep.values.length),
           onBack: widget.onBack,
           topPadding: step == ForgotPinStep.explain ? AppSpace.s4 : AppSpace.s2,
           centerBody: step == ForgotPinStep.code,
@@ -186,12 +188,10 @@ class const _Explain({required final String? email}) extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const HeadlineText('Pastikan **ini kamu**'),
+        HeadlineText(context.l10n.authForgotHeadline),
         const SizedBox(height: 10),
         Text(
-          email == null
-              ? 'Email akun tidak ditemukan di perangkat ini. Masuk lagi dengan email.'
-              : 'Kami kirim kode 6 digit ke email akun kamu untuk memastikan ini kamu.',
+          email == null ? context.l10n.authForgotNoEmail : context.l10n.authForgotCaption,
           style: t.body.copyWith(color: c.textSecondary),
         ),
         if (email != null) ...[
@@ -237,7 +237,7 @@ class const _SendTarget({required final String emailMasked}) extends StatelessWi
               crossAxisAlignment: CrossAxisAlignment.start,
               spacing: 2,
               children: [
-                Text('Kode dikirim ke', style: t.caption.copyWith(color: c.textTertiary)),
+                Text(context.l10n.authCodeSentTo, style: t.caption.copyWith(color: c.textTertiary)),
                 Text(
                   emailMasked,
                   maxLines: 1,
@@ -255,23 +255,23 @@ class const _SendTarget({required final String emailMasked}) extends StatelessWi
 
 /// The three steps of the flow in a white card, the first one current.
 class const _StepList() extends StatelessWidget {
-  static const _steps = [
-    ('Masukkan kode dari email', '6 digit, berlaku 10 menit'),
-    ('Buat PIN baru', 'Masukkan dua kali'),
-    ('Selesai', 'Perangkat lain dikeluarkan dari akun'),
-  ];
-
   @override
   Widget build(BuildContext context) {
     final c = context.colors;
+    final l10n = context.l10n;
+    final steps = [
+      (l10n.authForgotStepCode, l10n.authForgotStepCodeHint),
+      (l10n.authForgotStepPin, l10n.authForgotStepPinHint),
+      (l10n.authForgotStepDone, l10n.authForgotStepDoneHint),
+    ];
 
     return Container(
       decoration: ShapeDecoration(color: c.surface, shape: AppShapes.squircle(AppRadius.lg)),
       child: Column(
         children: [
-          for (var i = 0; i < _steps.length; i++) ...[
+          for (var i = 0; i < steps.length; i++) ...[
             if (i > 0) Divider(height: 1, thickness: 1, color: c.hairline),
-            _StepRow(number: i + 1, title: _steps[i].$1, caption: _steps[i].$2, current: i == 0),
+            _StepRow(number: i + 1, title: steps[i].$1, caption: steps[i].$2, current: i == 0),
           ],
         ],
       ),
@@ -356,7 +356,7 @@ class const _SendButton({required final String? email, required final VoidCallba
       spacing: 10,
       children: [
         AppButton(
-          label: 'Kirim kode ke email',
+          label: context.l10n.authSendCodeToEmail,
           block: true,
           loading: loading,
           onPressed: email == null ? null : onSend,
@@ -368,16 +368,11 @@ class const _SendButton({required final String? email, required final VoidCallba
             behavior: HitTestBehavior.opaque,
             onTap: () => showHelpSheet(
               context,
-              title: 'Tidak bisa buka email?',
-              paragraphs: const [
-                'PIN hanya bisa diatur ulang lewat kode dari email akunmu. '
-                    'Tanpa email itu, akun tidak bisa dipulihkan.',
-                'Pengurus arisan tetap bisa mencatat kamu di grup sebagai '
-                    'anggota tamu, jadi iuranmu tidak hilang.',
-              ],
+              title: context.l10n.authNoEmailTitle,
+              paragraphs: [context.l10n.authNoEmailBody1, context.l10n.authNoEmailBody2],
             ),
             child: Text(
-              'Sudah tidak bisa buka email ini? Hubungi bantuan.',
+              context.l10n.authNoEmailLink,
               textAlign: TextAlign.center,
               style: t.caption.copyWith(color: c.textTertiary),
             ),
@@ -399,7 +394,7 @@ class const _CodeStep({
     final state = ref.watch(emailOtpControllerProvider).value;
     final challenge = state?.pending?.challenge;
     if (challenge == null) return const SizedBox.shrink();
-    final (cardState, message) = emailCodeCardStateOf(state);
+    final (cardState, message) = emailCodeCardStateOf(context.l10n, state);
     final notifier = ref.read(emailOtpControllerProvider.notifier);
 
     return EmailCodeCard(
@@ -432,8 +427,8 @@ class const _NewPinStep({
     return ListenableBuilder(
       listenable: Listenable.merge([firstPin, error]),
       builder: (context, _) => PinEntry(
-        headline: firstPin.value == null ? 'Buat **PIN baru**' : 'Ulangi **PIN baru**',
-        caption: 'PIN lama tidak bisa dipakai lagi.',
+        headline: firstPin.value == null ? context.l10n.authNewPinHeadline : context.l10n.authNewPinConfirmHeadline,
+        caption: context.l10n.authOldPinInvalid,
         error: error.value,
         controller: controller,
         checking: submitting,

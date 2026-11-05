@@ -1,3 +1,5 @@
+import '../../core/l10n/l10n.dart';
+
 import 'dart:async';
 
 import 'package:flutter/semantics.dart';
@@ -136,7 +138,7 @@ class _EmailCodeCardState() extends State<EmailCodeCard> {
                 if (widget.onOpenMail case final onOpenMail?) ...[
                   const SizedBox(height: AppSpace.s3),
                   AppButton.secondary(
-                    label: 'Buka aplikasi email',
+                    label: context.l10n.authOpenMailApp,
                     icon: AppIcons.envelopeSimple,
                     size: AppButtonSize.small,
                     onPressed: onOpenMail,
@@ -171,13 +173,13 @@ class const _Header({
             AppIcons.checkCircleFill,
             size: 72,
             color: c.paid.fg,
-            semanticLabel: 'Kode benar',
+            semanticLabel: context.l10n.authCodeCorrect,
           )
         else
           const Illustration(AppIllustrations.emailWaiting, width: 72, height: 72),
         const SizedBox(height: AppSpace.s4),
         Text(
-          'Masukkan kode dari email',
+          context.l10n.widgetEnterEmailCode,
           textAlign: TextAlign.center,
           style: t.titleLg.copyWith(color: c.textPrimary),
         ),
@@ -187,13 +189,13 @@ class const _Header({
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             Text(
-              'Dikirim ke $emailMasked',
+              context.l10n.widgetSentTo(emailMasked),
               style: t.body.copyWith(color: c.textSecondary),
             ),
             if (onChangeEmail != null)
               AppButton.ghost(
-                label: 'Ubah',
-                semanticLabel: 'Ubah email',
+                label: context.l10n.editLink,
+                semanticLabel: context.l10n.securityChangeEmail,
                 size: AppButtonSize.xsmall,
                 onPressed: onChangeEmail,
               ),
@@ -223,21 +225,21 @@ class const _ClosedState({
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          message ?? (expired ? 'Kode kedaluwarsa' : 'Terlalu banyak percobaan. Minta kode baru.'),
+          message ?? (expired ? context.l10n.authCodeExpired : context.l10n.authCodeLocked),
           textAlign: TextAlign.center,
           style: t.label.copyWith(color: fg),
         ),
         const SizedBox(height: AppSpace.s4),
         if (expired)
           AppButton(
-            label: 'Kirim kode baru',
+            label: context.l10n.authSendNewCode,
             block: true,
             loading: resending,
             onPressed: onRequestNew,
           )
         else
           AppButton(
-            label: 'Minta kode baru',
+            label: context.l10n.authRequestNewCode,
             block: true,
             onPressed: onRestart,
           ),
@@ -313,7 +315,7 @@ class _ResendRowState() extends State<_ResendRow> {
       final left = until.difference(DateTime.now());
       final seconds = (left.inSeconds % 60).toString().padLeft(2, '0');
       return Text(
-        'Kirim ulang dalam ${left.inMinutes}:$seconds',
+        context.l10n.authResendIn('${left.inMinutes}:$seconds'),
         style: t.body.copyWith(
           color: c.textSecondary,
           fontFeatures: AppTextStyles.tabularFigures,
@@ -321,7 +323,7 @@ class _ResendRowState() extends State<_ResendRow> {
       );
     }
     return AppButton.ghost(
-      label: 'Kirim ulang',
+      label: context.l10n.authResend,
       size: AppButtonSize.small,
       loading: widget.resending,
       onPressed: widget.onResend,
@@ -366,7 +368,7 @@ class _SpamHintState() extends State<_SpamHint> {
       child: ExcludeSemantics(
         excluding: !_visible,
         child: Text(
-          'Belum dapat? Cek folder Spam/Promosi',
+          context.l10n.widgetSpamHintShort,
           textAlign: TextAlign.center,
           style: t.caption.copyWith(color: c.textTertiary),
         ),

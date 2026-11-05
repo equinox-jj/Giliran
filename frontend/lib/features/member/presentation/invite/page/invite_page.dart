@@ -35,7 +35,7 @@ class const InvitePage({super.key, required final String groupId}) extends Consu
         ref.read(membersProvider.notifier).refresh(),
       ]);
       final failure = results.nonNulls.firstOrNull;
-      if (failure != null && context.mounted) showAppToast(context, failure.displayMessage);
+      if (failure != null && context.mounted) showAppToast(context, failure.displayMessage(context.l10n));
     }
 
     Future<void> reset() async {
@@ -48,7 +48,7 @@ class const InvitePage({super.key, required final String groupId}) extends Consu
       );
       if (!ok || !context.mounted) return;
       final failure = await ref.read(inviteControllerProvider(groupId).notifier).resetCode();
-      if (context.mounted) showAppToast(context, failure?.displayMessage ?? l10n.inviteResetDone);
+      if (context.mounted) showAppToast(context, failure?.displayMessage(context.l10n) ?? l10n.inviteResetDone);
     }
 
     final hero = _InviteHero(groupId: groupId);

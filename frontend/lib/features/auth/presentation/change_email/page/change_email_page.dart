@@ -1,3 +1,5 @@
+import '../../../../../core/l10n/l10n.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -57,7 +59,7 @@ class _ChangeEmailPageState() extends ConsumerState<ChangeEmailPage> {
       ChangeEmailStep.pin => failure.apiCode == ApiErrorCode.pinInvalid || failure.apiCode == ApiErrorCode.pinLocked,
       ChangeEmailStep.code => false,
     };
-    if (!shownInline) showAppToast(context, failure.displayMessage);
+    if (!shownInline) showAppToast(context, failure.displayMessage(context.l10n));
   }
 
   void _onVerify(AsyncValue<EmailOtpState>? previous, AsyncValue<EmailOtpState> next) {
@@ -65,7 +67,7 @@ class _ChangeEmailPageState() extends ConsumerState<ChangeEmailPage> {
     final state = next.value;
     if (state == null) return;
     if (state.result != null && previous?.value?.result == null) {
-      showAppToast(context, 'Email diganti. Perangkat lain sudah dikeluarkan.');
+      showAppToast(context, context.l10n.authEmailChanged);
       widget.onDone();
       return;
     }
@@ -77,7 +79,7 @@ class _ChangeEmailPageState() extends ConsumerState<ChangeEmailPage> {
       case ApiErrorCode.otpInvalid || ApiErrorCode.otpExpired || ApiErrorCode.otpTooManyAttempts:
         break;
       default:
-        showAppToast(context, failure.displayMessage);
+        showAppToast(context, failure.displayMessage(context.l10n));
     }
   }
 
@@ -93,7 +95,7 @@ class _ChangeEmailPageState() extends ConsumerState<ChangeEmailPage> {
   void _submitEmail() {
     final email = EmailField.normalize(_email.text);
     if (!EmailField.isValidShape(email)) {
-      _formatError.value = EmailField.formatError;
+      _formatError.value = context.l10n.widgetEmailFormatError;
       return;
     }
     ref.read(changeEmailControllerProvider.notifier).submitEmail(email);
@@ -114,7 +116,7 @@ class _ChangeEmailPageState() extends ConsumerState<ChangeEmailPage> {
         if (!didPop) _back();
       },
       child: AuthScaffold(
-        progress: (label: 'Ubah email', step: step.index + 1, total: ChangeEmailStep.values.length),
+        progress: (label: context.l10n.securityChangeEmail, step: step.index + 1, total: ChangeEmailStep.values.length),
         onBack: widget.onDone,
         pinPad: step == ChangeEmailStep.pin,
         bottom: switch (step) {
@@ -140,7 +142,10 @@ class _ChangeEmailPageState() extends ConsumerState<ChangeEmailPage> {
 /// "Email baru · PIN · Kode" under the bar.
 class const _Steps({required final ChangeEmailStep step}) extends StatelessWidget {
   @override
-  Widget build(BuildContext context) => StepPills(labels: const ['Email baru', 'PIN', 'Kode'], current: step.index);
+  Widget build(BuildContext context) => StepPills(
+    labels: [context.l10n.authNewEmail, context.l10n.authStepPin, context.l10n.authStepCode],
+    current: step.index,
+  );
 }
 
 /// Step 1: "Ganti **email**", the current address and the new one.
@@ -168,15 +173,15 @@ class const _EmailStep({
       children: [
         const _Steps(step: ChangeEmailStep.email),
         const SizedBox(height: AppSpace.s5),
-        const HeadlineText('Ganti **email**'),
+        HeadlineText(context.l10n.authChangeEmailHeadline),
         const SizedBox(height: AppSpace.s2),
         Text(
-          'Kode dikirim ke email baru. Setelah diganti, perangkat lain akan dikeluarkan.',
+          context.l10n.authChangeEmailCaption,
           style: t.bodyLg.copyWith(color: c.textSecondary),
         ),
         if (current != null) ...[
           const SizedBox(height: AppSpace.s6),
-          Text('Email sekarang', style: t.caption.copyWith(color: c.textTertiary)),
+          Text(context.l10n.authCurrentEmail, style: t.caption.copyWith(color: c.textTertiary)),
           const SizedBox(height: AppSpace.s1),
           Text(current, style: t.bodyLg.copyWith(color: c.textPrimary)),
         ],
@@ -185,9 +190,9 @@ class const _EmailStep({
           valueListenable: formatError,
           builder: (context, format, _) => EmailField(
             controller: controller,
-            label: 'Email baru',
+            label: context.l10n.authNewEmail,
             autofocus: true,
-            errorText: format ?? newEmailErrorMessage(failure),
+            errorText: format ?? newEmailErrorMessage(context.l10n, failure),
             onSubmitted: (_) => onSubmit(),
           ),
         ),
@@ -202,7 +207,7 @@ class const _NextButton({required final VoidCallback onPressed}) extends Consume
   Widget build(BuildContext context, WidgetRef ref) {
     final submitting = ref.watch(changeEmailControllerProvider.select((s) => s.submitting));
 
-    return AppButton(label: 'Lanjut', block: true, loading: submitting, onPressed: onPressed);
+    return AppButton(label: context.l10n.nextButton, block: true, loading: submitting, onPressed: onPressed);
   }
 }
 
@@ -222,9 +227,9 @@ class const _PinStep({required final PinPadController controller, required final
       top: const _Steps(step: ChangeEmailStep.pin),
       headingTop: AppSpace.s8,
       dotsGap: 36,
-      headline: 'Masukkan **PIN** kamu',
-      caption: 'PIN memastikan ini benar-benar kamu.',
-      error: wrongPinMessage(failure),
+      headline: context.l10n.authPinHeadline,
+      caption: context.l10n.authPinCaption,
+      error: wrongPinMessage(context.l10n, failure),
       controller: controller,
       checking: submitting,
       lockedUntil: lockedUntil,
@@ -257,7 +262,7 @@ class const _CodeStep() extends ConsumerWidget {
       children: [
         const _Steps(step: ChangeEmailStep.code),
         const SizedBox(height: AppSpace.s5),
-        const HeadlineText('Masukkan kode dari **email baru** kamu'),
+        HeadlineText(context.l10n.authNewEmailCodeHeadline),
         const SizedBox(height: AppSpace.s4),
         _CodeCard(sentTo: state?.pending?.email ?? challenge.emailMasked ?? ''),
         const SizedBox(height: 14),
@@ -266,9 +271,8 @@ class const _CodeStep() extends ConsumerWidget {
           variant: AppBannerVariant.warning,
           icon: AppIcons.warningCircle,
           message: oldEmail == null
-              ? 'Email lama akan dapat pemberitahuan. Setelah diganti, perangkat lain dikeluarkan.'
-              : 'Email lama **${maskEmail(oldEmail)}** akan dapat pemberitahuan. '
-                    'Setelah diganti, perangkat lain dikeluarkan.',
+              ? context.l10n.authOldEmailNotified
+              : context.l10n.authOldEmailNotifiedTo(maskEmail(oldEmail)),
         ),
       ],
     );
@@ -285,7 +289,7 @@ class const _CodeCard({required final String sentTo}) extends ConsumerWidget {
     final t = AppTextStyles.of(context);
     final state = ref.watch(emailOtpControllerProvider).value;
     final challenge = state?.pending?.challenge;
-    final (cardState, message) = emailCodeCardStateOf(state);
+    final (cardState, message) = emailCodeCardStateOf(context.l10n, state);
     final notifier = ref.read(emailOtpControllerProvider.notifier);
     final editEmail = ref.read(changeEmailControllerProvider.notifier).editEmail;
     final resending = state?.resending ?? false;
@@ -335,7 +339,7 @@ class const _CodeCard({required final String sentTo}) extends ConsumerWidget {
               SizedBox(
                 height: 48,
                 child: AppButton.secondary(
-                  label: 'Buka aplikasi email',
+                  label: context.l10n.authOpenMailApp,
                   icon: AppIcons.envelopeSimple,
                   block: true,
                   onPressed: () => openMailApp(context, ref),
@@ -370,7 +374,7 @@ class const _SentTo({required final String email}) extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Kode dikirim ke', style: t.caption.copyWith(color: c.textTertiary)),
+              Text(context.l10n.authCodeSentTo, style: t.caption.copyWith(color: c.textTertiary)),
               Text(
                 email,
                 maxLines: 1,
@@ -392,7 +396,7 @@ class const _SpamHint() extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.symmetric(horizontal: AppSpace.s3),
     child: Text(
-      'Tidak ada di kotak masuk? Cek folder Spam atau Promosi.',
+      context.l10n.authSpamHint,
       textAlign: TextAlign.center,
       style: AppTextStyles.of(context).caption.copyWith(color: context.colors.textTertiary),
     ),
@@ -401,9 +405,9 @@ class const _SpamHint() extends StatelessWidget {
 
 /// Step 1 copy for a rejected new address: the same address, a taken one
 /// (`email_already_registered`) or the server's field error.
-String? newEmailErrorMessage(Failure? failure) => switch (failure) {
+String? newEmailErrorMessage(AppLocalizations l10n, Failure? failure) => switch (failure) {
   null => null,
-  ConflictFailure(code: ApiErrorCode.emailAlreadyRegistered) => 'Email ini sudah punya akun Giliran.',
-  ValidationFailure() => failure.fieldMessage('email') ?? failure.displayMessage,
+  ConflictFailure(code: ApiErrorCode.emailAlreadyRegistered) => l10n.authEmailTaken,
+  ValidationFailure() => failure.fieldMessage('email') ?? failure.displayMessage(l10n),
   _ => null,
 };

@@ -1,3 +1,5 @@
+import '../../../../../core/l10n/l10n.dart';
+
 import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
@@ -177,14 +179,14 @@ class const _ProgressTopBar({required final AuthProgress progress, required fina
               children: [
                 CircleIconButton(
                   icon: AppIcons.x,
-                  semanticLabel: 'Tutup',
+                  semanticLabel: context.l10n.commonClose,
                   onPressed: onClose ?? () => Navigator.of(context).maybePop(),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Semantics(
                     header: true,
-                    label: '$label, langkah $step dari $total',
+                    label: context.l10n.authProgressSemantic(label, step, total),
                     child: ExcludeSemantics(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -192,7 +194,7 @@ class const _ProgressTopBar({required final AuthProgress progress, required fina
                         spacing: 6,
                         children: [
                           Text(
-                            '$label · $step dari $total',
+                            context.l10n.authProgress(label, step, total),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: t.caption.copyWith(fontWeight: FontWeight.w600, color: c.textPrimary),

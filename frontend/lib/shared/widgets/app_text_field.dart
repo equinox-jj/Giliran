@@ -1,3 +1,5 @@
+import '../../core/l10n/l10n.dart';
+
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -213,7 +215,7 @@ class const FieldClearButton({super.key, required final VoidCallback onPressed})
   @override
   Widget build(BuildContext context) => Semantics(
     button: true,
-    label: 'Hapus isian',
+    label: context.l10n.widgetClearField,
     child: GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onPressed,

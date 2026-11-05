@@ -96,7 +96,7 @@ class const _Body({
 
     Future<void> refresh() async {
       final failure = await ref.read(provider.notifier).refresh();
-      if (failure != null && context.mounted) showAppToast(context, failure.displayMessage);
+      if (failure != null && context.mounted) showAppToast(context, failure.displayMessage(context.l10n));
     }
 
     return RefreshIndicator(

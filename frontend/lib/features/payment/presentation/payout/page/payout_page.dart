@@ -84,7 +84,7 @@ Future<void> _afterWrite(BuildContext context, WidgetRef ref, _Ids ids, Failure?
     await ref.read(payoutControllerProvider(ids.groupId, ids.periodId).notifier).refresh();
     return;
   }
-  showAppToast(context, failure.displayMessage);
+  showAppToast(context, failure.displayMessage(context.l10n));
 }
 
 class const _RecordForm({required final _Ids ids}) extends ConsumerWidget {
