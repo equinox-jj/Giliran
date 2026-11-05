@@ -41,7 +41,7 @@ class const TransferRespondPage({
         accept ? onAccepted() : onDone();
       } else {
         final gone = failure is NotFoundFailure || failure is ConflictFailure || failure is ForbiddenFailure;
-        showAppToast(context, gone ? l10n.transferExpired : failure.displayMessage);
+        showAppToast(context, gone ? l10n.transferExpired : failure.displayMessage(context.l10n));
       }
     }
 

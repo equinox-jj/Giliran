@@ -1,3 +1,5 @@
+import '../../../../../core/l10n/l10n.dart';
+
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
@@ -45,7 +47,7 @@ class _SplashPageState() extends State<SplashPage> {
     return Scaffold(
       backgroundColor: c.page,
       body: Semantics(
-        label: 'Giliran sedang dibuka',
+        label: context.l10n.authSplashLoading,
         child: ExcludeSemantics(
           child: Stack(
             children: [
@@ -87,7 +89,7 @@ class _SplashPageState() extends State<SplashPage> {
                 child: SafeArea(
                   top: false,
                   child: Text(
-                    'Arisan yang transparan',
+                    context.l10n.authTagline,
                     textAlign: TextAlign.center,
                     style: t.caption.copyWith(color: c.textTertiary),
                   ),

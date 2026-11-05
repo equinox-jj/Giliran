@@ -5,6 +5,7 @@ import 'package:giliran/core/error/failure.dart';
 import 'package:giliran/core/l10n/l10n.dart';
 import 'package:giliran/core/l10n/locale_controller.dart';
 import 'package:giliran/core/services/push_service.dart';
+import 'package:giliran/core/services/secure_window_service.dart';
 import 'package:giliran/core/storage/preferences.dart';
 import 'package:giliran/core/themes/theme_mode_controller.dart';
 import 'package:giliran/core/themes/themes.dart';
@@ -15,12 +16,14 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../../../helpers/fake_preferences.dart';
 import '../../../../../helpers/fake_push_service.dart';
+import '../../../../../helpers/fake_secure_window_service.dart';
 import '../../../../../helpers/fake_settings_repository.dart';
 
 void main() {
   late FakeSettingsRepository repository;
   late FakePreferences prefs;
   late FakePushService push;
+  late FakeSecureWindowService window;
   late ProviderContainer container;
   late int deleteTaps;
 
@@ -28,11 +31,13 @@ void main() {
     repository = FakeSettingsRepository();
     prefs = FakePreferences();
     push = FakePushService();
+    window = FakeSecureWindowService();
     container = ProviderContainer(
       overrides: [
         settingsRepositoryProvider.overrideWithValue(repository),
         pushServiceProvider.overrideWithValue(push),
         preferencesProvider.overrideWithValue(prefs),
+        secureWindowServiceProvider.overrideWithValue(window),
       ],
     );
     addTearDown(container.dispose);
@@ -73,6 +78,23 @@ void main() {
         ),
       )
       .value;
+
+  testWidgets('the secure screen toggle saves the choice and secures the window', (tester) async {
+    // Arrange
+    await pumpSettings(tester);
+    const label = 'Sembunyikan layar di app terbaru';
+    await tester.scrollUntilVisible(find.text(label), 200);
+
+    // Act
+    await tester.tap(find.text(label));
+    await tester.pumpAndSettle();
+
+    // Assert
+    expect(switchOf(tester, label), isTrue);
+    expect(prefs.secureScreen, isTrue);
+    expect(window.calls, [true]);
+    expect(repository.patches, isEmpty);
+  });
 
   testWidgets('toggling a switch sends only that field', (tester) async {
     // Arrange
@@ -179,6 +201,7 @@ void main() {
   testWidgets('Hapus akun opens Delete account', (tester) async {
     // Arrange
     await pumpSettings(tester);
+    await tester.scrollUntilVisible(find.text('Hapus akun'), 200);
 
     // Act
     await tester.tap(find.text('Hapus akun'));

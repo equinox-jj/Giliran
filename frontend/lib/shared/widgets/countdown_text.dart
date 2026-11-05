@@ -1,3 +1,5 @@
+import '../../core/l10n/l10n.dart';
+
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
@@ -24,7 +26,7 @@ class CountdownText extends StatefulWidget {
   const new lock({
     super.key,
     required this.until,
-    this.caption = 'Coba lagi setelah waktu habis',
+    this.caption,
     this.onFinished,
   }) : lock = true,
        prefix = '',
@@ -44,11 +46,11 @@ class CountdownText extends StatefulWidget {
   /// Formats [d] as `HH:mm:ss`, with a leading day count (`2 hari 04:12:30`) when
   /// it is a day or more.
   @visibleForTesting
-  static String formatInline(Duration d) {
+  static String formatInline(AppLocalizations l10n, Duration d) {
     String two(int n) => n.toString().padLeft(2, '0');
     final days = d.inDays;
     final clock = '${two(d.inHours % 24)}:${two(d.inMinutes % 60)}:${two(d.inSeconds % 60)}';
-    return days > 0 ? '$days hari $clock' : clock;
+    return days > 0 ? l10n.widgetCountdownDays(days, clock) : clock;
   }
 
   /// Formats [d] as `mm:ss`. Minutes are not wrapped at 60.
@@ -105,11 +107,12 @@ class _CountdownTextState() extends State<CountdownText> {
   Widget build(BuildContext context) {
     final c = context.colors;
     final t = AppTextStyles.of(context);
+    final l10n = context.l10n;
     final minutesLeft = (_left.inSeconds / 60).ceil();
 
     if (widget.lock) {
       return Semantics(
-        label: '$minutesLeft menit lagi. ${widget.caption ?? ''}',
+        label: [l10n.widgetMinutesLeft(minutesLeft), ?widget.caption].join('. '),
         excludeSemantics: true,
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -135,11 +138,11 @@ class _CountdownTextState() extends State<CountdownText> {
         now.month == widget.until.month &&
         now.day == widget.until.day;
     final text = sameDay
-        ? 'Hari ini, ${AppDate.time(widget.until)}'
-        : '${widget.prefix}${CountdownText.formatInline(_left)}';
+        ? l10n.widgetTodayAt(AppDate.time(widget.until))
+        : '${widget.prefix}${CountdownText.formatInline(l10n, _left)}';
 
     return Semantics(
-      label: sameDay ? text : '${widget.prefix}$minutesLeft menit lagi',
+      label: sameDay ? text : '${widget.prefix}${l10n.widgetMinutesLeft(minutesLeft)}',
       excludeSemantics: true,
       child: Text(
         text,

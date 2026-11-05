@@ -40,7 +40,7 @@ class const LeaveRequestsPage({super.key, required final String groupId}) extend
         ),
         (null, final Failure f) => EmptyState(
           title: l10n.leaveRequestsTitle,
-          message: f.displayMessage,
+          message: f.displayMessage(context.l10n),
           primaryLabel: l10n.commonRetry,
           onPrimary: () => ref.invalidate(provider),
         ),
@@ -67,14 +67,14 @@ class const _RequestCard({required final String groupId, required final LeaveReq
 
     Future<void> approve() async {
       final failure = await ref.read(provider.notifier).approve(id);
-      if (context.mounted) showAppToast(context, failure?.displayMessage ?? l10n.leaveApproved(name));
+      if (context.mounted) showAppToast(context, failure?.displayMessage(context.l10n) ?? l10n.leaveApproved(name));
     }
 
     Future<void> reject() async {
       final reason = await showAppSheet<String>(context, builder: (_) => _RejectSheet(name: name));
       if (reason == null || !context.mounted) return;
       final failure = await ref.read(provider.notifier).reject(id, reason);
-      if (context.mounted) showAppToast(context, failure?.displayMessage ?? l10n.leaveRejected);
+      if (context.mounted) showAppToast(context, failure?.displayMessage(context.l10n) ?? l10n.leaveRejected);
     }
 
     return AppCard(

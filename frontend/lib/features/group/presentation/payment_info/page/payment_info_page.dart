@@ -177,7 +177,7 @@ class _PaymentInfoFormState() extends ConsumerState<_PaymentInfoForm> {
     if (failure == null) {
       showAppToast(context, l10n.paymentInfoSaved);
     } else if (failure is! ValidationFailure) {
-      showAppToast(context, failure.displayMessage);
+      showAppToast(context, failure.displayMessage(context.l10n));
     }
   }
 
@@ -197,7 +197,7 @@ class _PaymentInfoFormState() extends ConsumerState<_PaymentInfoForm> {
 
   Future<void> _removeQris() async {
     final failure = await ref.read(widget.provider.notifier).removeQris();
-    if (failure != null && mounted) showAppToast(context, failure.displayMessage);
+    if (failure != null && mounted) showAppToast(context, failure.displayMessage(context.l10n));
   }
 
   static const _fieldGap = 18.0;

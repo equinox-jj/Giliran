@@ -1,3 +1,5 @@
+import '../../core/l10n/l10n.dart';
+
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -27,25 +29,25 @@ Future<AvatarSheetAction?> showAvatarSourceSheet(
   return showAppSheet<AvatarSheetAction>(
     context,
     builder: (context) => AppSheetBody(
-      title: 'Foto profil',
+      title: context.l10n.widgetProfilePhoto,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const _SheetRow(
+          _SheetRow(
             icon: AppIcons.camera,
-            label: 'Kamera',
+            label: context.l10n.uploadSourceCamera,
             action: AvatarSheetAction.camera,
           ),
-          const _SheetRow(
+          _SheetRow(
             icon: AppIcons.image,
-            label: 'Galeri',
+            label: context.l10n.uploadSourceGallery,
             action: AvatarSheetAction.gallery,
           ),
           if (canRemove)
-            const _SheetRow(
+            _SheetRow(
               icon: AppIcons.trash,
-              label: 'Hapus foto',
+              label: context.l10n.uploadTileRemove,
               action: AvatarSheetAction.remove,
               destructive: true,
             ),
@@ -112,10 +114,10 @@ class const AvatarPicker({
   @override
   Widget build(BuildContext context) {
     final semantic = _uploading
-        ? 'Foto profil, mengunggah ${(progress! * 100).round()} persen'
+        ? context.l10n.widgetAvatarUploading((progress! * 100).round())
         : _hasPhoto
-        ? 'Foto profil, ketuk untuk mengganti'
-        : 'Tambah foto profil';
+        ? context.l10n.widgetAvatarChange
+        : context.l10n.widgetAvatarAdd;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -310,7 +312,7 @@ class const _Caption({
           ),
           if (onRetry != null)
             AppButton.link(
-              label: 'Coba lagi',
+              label: context.l10n.commonRetry,
               size: AppButtonSize.xsmall,
               onPressed: onRetry,
             ),
@@ -319,10 +321,10 @@ class const _Caption({
     }
 
     final text = uploading
-        ? 'Mengunggah… $percent%'
+        ? context.l10n.widgetAvatarUploadingShort(percent)
         : hasPhoto
-        ? 'Ketuk untuk ganti'
-        : 'Foto profil (opsional)';
+        ? context.l10n.widgetAvatarTapToChange
+        : context.l10n.widgetAvatarOptional;
     return Text(
       text,
       textAlign: TextAlign.center,

@@ -21,6 +21,7 @@ import 'package:giliran/shared/widgets/widgets.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../helpers/a11y.dart';
 import '../../../../helpers/fake_connectivity.dart';
 import '../../../../helpers/fake_draw_repository.dart';
 import '../../../../helpers/fake_group_repository.dart';
@@ -78,7 +79,13 @@ void main() {
     }
   }
 
-  Future<void> pumpStage(WidgetTester tester, {bool online = true, DateTime? now, bool reduced = false}) async {
+  Future<void> pumpStage(
+    WidgetTester tester, {
+    bool online = true,
+    DateTime? now,
+    bool reduced = false,
+    Size size = const Size(390, 844),
+  }) async {
     final container = ProviderContainer(
       overrides: [
         groupRepositoryProvider.overrideWithValue(groups),
@@ -94,6 +101,7 @@ void main() {
     await tester.pumpPage(
       reduced ? MediaQuery(data: const MediaQueryData(disableAnimations: true), child: page) : page,
       container: container,
+      size: size,
     );
     await settle(tester);
   }
@@ -103,6 +111,19 @@ void main() {
     await tester.tap(_drawButton);
     await settle(tester);
   }
+
+  testWidgets('fits a 360 dp phone at 130 percent text and meets the a11y guidelines', (tester) async {
+    // Arrange
+    final semantics = tester.ensureSemantics();
+    useLargeText(tester);
+
+    // Act
+    await pumpStage(tester, size: a11yPhone);
+
+    // Assert
+    await expectAccessibleScreen(tester);
+    semantics.dispose();
+  });
 
   testWidgets('shows the headline, the eligible count and the commitment', (tester) async {
     // Arrange

@@ -8,6 +8,7 @@ class FakePreferences() implements Preferences {
   String themeMode = 'system';
   String? pendingDeepLink;
   String? userSettings;
+  bool secureScreen = false;
 
   @override
   Future<bool> readBiometricEnabled() async => biometricEnabled;
@@ -44,4 +45,10 @@ class FakePreferences() implements Preferences {
 
   @override
   Future<void> saveUserSettings(String? value) async => userSettings = value;
+
+  @override
+  Future<bool> readSecureScreen() async => secureScreen;
+
+  @override
+  Future<void> saveSecureScreen(bool value) async => secureScreen = value;
 }

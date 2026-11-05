@@ -20,14 +20,18 @@ class const AgendaStrip({
   final int? selectedIndex,
   required final ValueChanged<int> onSelect,
 }) extends StatelessWidget {
+  /// The width seven days need to keep a 48 dp tap target each.
+  static const minWidth = 7 * AppSizes.tapMin;
+
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         for (var i = 0; i < days.length; i++)
-          // Flexible lets each day shrink below the tap-target width on
-          // narrow phones, where seven fixed-width days overflow the row.
+          // Flexible keeps seven days from overflowing a row narrower than
+          // [minWidth]; give the strip at least that width (Home lets it use
+          // part of the page margin) so the targets stay 48 dp.
           Flexible(
             child: _AgendaDayToken(
               day: days[i],

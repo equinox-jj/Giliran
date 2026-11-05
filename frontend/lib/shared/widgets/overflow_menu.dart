@@ -1,3 +1,5 @@
+import '../../core/l10n/l10n.dart';
+
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/constants/app_icons.dart';
@@ -22,7 +24,7 @@ class const OverflowMenuItem({
 class const OverflowMenuButton({
   super.key,
   required final List<OverflowMenuItem> items,
-  final String semanticLabel = 'Menu',
+  final String? semanticLabel,
 }) extends StatelessWidget {
   this : assert(items.length <= 7, 'Never more than 7 items');
 
@@ -84,7 +86,7 @@ class const OverflowMenuButton({
   @override
   Widget build(BuildContext context) => CircleIconButton(
     icon: AppIcons.dotsThree,
-    semanticLabel: semanticLabel,
+    semanticLabel: semanticLabel ?? context.l10n.widgetMenu,
     onPressed: () => _open(context),
   );
 }

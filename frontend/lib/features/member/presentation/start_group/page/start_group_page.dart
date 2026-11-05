@@ -86,7 +86,7 @@ class const _StartBody({
         showAppToast(context, l10n.startedToast);
         onStarted();
       } else {
-        showAppToast(context, failure.displayMessage);
+        showAppToast(context, failure.displayMessage(context.l10n));
       }
     }
 

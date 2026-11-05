@@ -1,3 +1,5 @@
+import '../../../../../core/l10n/l10n.dart';
+
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../../core/constants/app_icons.dart';
@@ -89,7 +91,7 @@ class const CurrentPinEntry({
         header: header,
         countdown: CountdownText.lock(
           until: until,
-          caption: 'PIN terkunci sementara. Coba lagi setelah waktu habis.',
+          caption: context.l10n.authPinLockedCaption,
           onFinished: onLockFinished,
         ),
         footer: footer,
@@ -119,7 +121,7 @@ class const _ForgotPinLink({
     children: [
       const SizedBox(height: AppSpace.s4),
       AppButton.link(
-        label: 'Lupa PIN?',
+        label: context.l10n.authForgotPin,
         size: AppButtonSize.small,
         onPressed: onPressed,
       ),
@@ -128,11 +130,11 @@ class const _ForgotPinLink({
   );
 }
 
-String? wrongPinMessage(Failure? failure) {
+String? wrongPinMessage(AppLocalizations l10n, Failure? failure) {
   if (failure?.apiCode != ApiErrorCode.pinInvalid) return null;
   return switch (failure?.attemptsRemaining) {
-    final n? => 'PIN salah. Sisa $n percobaan.',
-    null => 'PIN salah.',
+    final n? => l10n.authPinWrongAttemptsLeft(n),
+    null => l10n.authPinWrong,
   };
 }
 

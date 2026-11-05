@@ -1,3 +1,5 @@
+import '../../../../../core/l10n/l10n.dart';
+
 import 'package:material_ui/material_ui.dart';
 
 import '../../../../../core/constants/app_icons.dart';
@@ -14,7 +16,7 @@ class const StepPills({
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Semantics(
-    label: 'Langkah ${current + 1} dari ${labels.length}, ${labels[current]}',
+    label: context.l10n.authStepPillsLabel(current + 1, labels.length, labels[current]),
     child: ExcludeSemantics(
       // Wraps instead of overflowing on narrow screens or large text.
       child: Wrap(

@@ -192,9 +192,9 @@ class const _PinStep({
     final notifier = ref.read(deleteAccountControllerProvider.notifier);
     final error = switch (failure) {
       null => null,
-      _ when failure.apiCode == ApiErrorCode.pinInvalid => wrongPinMessage(failure),
+      _ when failure.apiCode == ApiErrorCode.pinInvalid => wrongPinMessage(context.l10n, failure),
       _ when failure.apiCode == ApiErrorCode.pinLocked => null,
-      _ => failure.displayMessage,
+      _ => failure.displayMessage(context.l10n),
     };
 
     return CurrentPinEntry(

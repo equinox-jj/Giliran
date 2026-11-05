@@ -1,3 +1,5 @@
+import '../../core/l10n/l10n.dart';
+
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/constants/app_icons.dart';
@@ -111,7 +113,7 @@ class const AppBanner({
             if (onDismiss != null)
               Semantics(
                 button: true,
-                label: 'Tutup',
+                label: context.l10n.commonClose,
                 child: GestureDetector(
                   onTap: onDismiss,
                   behavior: HitTestBehavior.opaque,

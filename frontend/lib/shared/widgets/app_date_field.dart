@@ -1,3 +1,5 @@
+import '../../core/l10n/l10n.dart';
+
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/constants/app_icons.dart';
@@ -17,7 +19,7 @@ class const AppDateField({
   required final DateTime firstDate,
   required final DateTime lastDate,
   final String? label,
-  final String hint = 'Pilih tanggal',
+  final String? hint,
   final String? helper,
   final String? errorText,
 }) extends StatefulWidget {
@@ -58,7 +60,7 @@ class _AppDateFieldState() extends State<AppDateField> {
   Widget build(BuildContext context) => AppTextField(
     controller: _controller,
     label: widget.label,
-    hint: widget.hint,
+    hint: widget.hint ?? context.l10n.widgetPickDate,
     helper: widget.helper,
     errorText: widget.errorText,
     readOnly: true,

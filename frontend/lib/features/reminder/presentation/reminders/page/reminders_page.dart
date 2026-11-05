@@ -81,7 +81,7 @@ class const _LoadError({required final String groupId, required final Object err
     }
 
     return EmptyState(
-      title: failure?.displayMessage ?? l10n.commonRetry,
+      title: failure?.displayMessage(context.l10n) ?? l10n.commonRetry,
       primaryLabel: l10n.commonRetry,
       onPrimary: () => ref.invalidate(remindersControllerProvider(groupId)),
     );
@@ -273,7 +273,7 @@ class const _SendBar({required final String groupId}) extends ConsumerWidget {
       final outcome = await ref.read(provider.notifier).send();
       if (!context.mounted) return;
       if (outcome.failure case final failure?) {
-        showAppToast(context, failure.displayMessage);
+        showAppToast(context, failure.displayMessage(context.l10n));
         return;
       }
       final result = outcome.result;

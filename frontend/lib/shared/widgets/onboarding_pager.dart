@@ -1,3 +1,5 @@
+import '../../core/l10n/l10n.dart';
+
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/themes/themes.dart';
@@ -128,7 +130,7 @@ class const PageDots({super.key, required final int count, required final int in
     final c = context.colors;
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
     return Semantics(
-      label: 'Halaman ${index + 1} dari $count',
+      label: context.l10n.widgetPageOf(index + 1, count),
       child: ExcludeSemantics(
         child: Row(
           mainAxisSize: MainAxisSize.min,

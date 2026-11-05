@@ -1,3 +1,5 @@
+import '../../core/l10n/l10n.dart';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -157,7 +159,7 @@ class const AvatarStack({
     final count = shown.length + (extra > 0 ? 1 : 0);
 
     return Semantics(
-      label: '${people.length} orang',
+      label: context.l10n.widgetPeopleCount(people.length),
       excludeSemantics: true,
       child: SizedBox(
         height: outer,

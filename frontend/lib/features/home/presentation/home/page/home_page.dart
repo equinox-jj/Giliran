@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -93,7 +95,7 @@ class const _HomeBody({
 
     Future<void> refresh() async {
       final failure = await ref.read(homeControllerProvider.notifier).refresh();
-      if (failure != null && context.mounted) showAppToast(context, failure.displayMessage);
+      if (failure != null && context.mounted) showAppToast(context, failure.displayMessage(context.l10n));
     }
 
     final slivers = switch (phase) {
@@ -146,7 +148,7 @@ class const _HomeBody({
     SliverToBoxAdapter(
       child: _Margins(child: _HeroSection(onOpenGroup: onOpenGroup)),
     ),
-    const SliverToBoxAdapter(child: _Margins(child: _AgendaSection())),
+    const SliverToBoxAdapter(child: _AgendaSection(ownMargins: true)),
     const SliverToBoxAdapter(child: _Margins(child: _GroupsHeader())),
     SliverToBoxAdapter(
       child: _CarouselSection(
@@ -239,8 +241,10 @@ class const _HeroSection({required final ValueChanged<String> onOpenGroup}) exte
   }
 }
 
-/// The agenda strip and, under it, the selected day's events.
-class const _AgendaSection() extends ConsumerStatefulWidget {
+/// The agenda strip and, under it, the selected day's events. With
+/// [ownMargins] (phone layout) it pads itself, and on narrow phones the strip
+/// takes part of the page margin so each day keeps a 48 dp tap target.
+class const _AgendaSection({final bool ownMargins = false}) extends ConsumerStatefulWidget {
   @override
   ConsumerState<_AgendaSection> createState() => _AgendaSectionState();
 }
@@ -252,17 +256,27 @@ class _AgendaSectionState() extends ConsumerState<_AgendaSection> {
   Widget build(BuildContext context) {
     final days = ref.watch(homeControllerProvider.select((s) => s.value?.agenda ?? const <AgendaDay>[]));
     final selected = _selected;
+    final margin = widget.ownMargins ? context.screenMargin : 0.0;
+    final spare = (MediaQuery.sizeOf(context).width - AgendaStrip.minWidth) / 2;
+    final stripMargin = widget.ownMargins ? math.min(margin, math.max(0.0, spare)) : 0.0;
     return Padding(
       padding: const EdgeInsets.only(top: AppSpace.s4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          AgendaStrip(
-            days: days,
-            selectedIndex: selected,
-            onSelect: (i) => setState(() => _selected = i == _selected ? null : i),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: stripMargin),
+            child: AgendaStrip(
+              days: days,
+              selectedIndex: selected,
+              onSelect: (i) => setState(() => _selected = i == _selected ? null : i),
+            ),
           ),
-          if (selected != null && selected < days.length) _DayEvents(day: days[selected]),
+          if (selected != null && selected < days.length)
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: margin),
+              child: _DayEvents(day: days[selected]),
+            ),
         ],
       ),
     );

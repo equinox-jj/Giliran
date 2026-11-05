@@ -1,3 +1,5 @@
+import '../../../../../core/l10n/l10n.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -33,7 +35,7 @@ class _ChangePinPageState() extends ConsumerState<ChangePinPage> {
 
   void _onState(ChangePinState? previous, ChangePinState next) {
     if (next.done && previous?.done != true) {
-      showAppToast(context, 'PIN berhasil diganti.');
+      showAppToast(context, context.l10n.authPinChanged);
       widget.onDone();
       return;
     }
@@ -63,7 +65,7 @@ class _ChangePinPageState() extends ConsumerState<ChangePinPage> {
         if (!didPop) _back();
       },
       child: AuthScaffold(
-        step: 'Ubah PIN',
+        step: context.l10n.securityChangePin,
         stepColor: context.colors.textPrimary,
         modal: true,
         pinPad: true,
@@ -89,7 +91,7 @@ class const _Entry({
     );
     final notifier = ref.read(changePinControllerProvider.notifier);
     final pills = StepPills(
-      labels: const ['PIN lama', 'PIN baru', 'Ulangi'],
+      labels: [context.l10n.authStepOldPin, context.l10n.authStepNewPin, context.l10n.authStepRepeat],
       current: step.index,
       alignment: WrapAlignment.center,
     );
@@ -99,9 +101,9 @@ class const _Entry({
         top: pills,
         headingTop: AppSpace.s8,
         dotsGap: 36,
-        headline: 'Masukkan **PIN lama**',
-        caption: 'Pastikan ini kamu sebelum mengganti PIN.',
-        error: wrongPinMessage(failure),
+        headline: context.l10n.authOldPinHeadline,
+        caption: context.l10n.authOldPinCaption,
+        error: wrongPinMessage(context.l10n, failure),
         controller: controller,
         lockedUntil: lockedUntil,
         onLockFinished: notifier.lockFinished,
@@ -112,9 +114,9 @@ class const _Entry({
         top: pills,
         headingTop: AppSpace.s8,
         dotsGap: 36,
-        headline: 'Masukkan **PIN baru**',
-        caption: 'Perangkat lain tetap masuk seperti biasa.',
-        error: setPinErrorMessage(failure),
+        headline: context.l10n.authEnterNewPinHeadline,
+        caption: context.l10n.authNewPinCaption,
+        error: setPinErrorMessage(context.l10n, failure),
         controller: controller,
         onCompleted: notifier.enter,
       ),
@@ -122,9 +124,9 @@ class const _Entry({
         top: pills,
         headingTop: AppSpace.s8,
         dotsGap: 36,
-        headline: 'Ulangi **PIN baru**',
-        caption: 'Masukkan PIN yang sama sekali lagi.',
-        error: setPinErrorMessage(failure),
+        headline: context.l10n.authNewPinConfirmHeadline,
+        caption: context.l10n.authRepeatPinCaption,
+        error: setPinErrorMessage(context.l10n, failure),
         controller: controller,
         checking: checking,
         onCompleted: notifier.enter,

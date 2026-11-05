@@ -1,3 +1,5 @@
+import '../../core/l10n/l10n.dart';
+
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -12,10 +14,10 @@ import 'app_text_field.dart';
 class const PhoneField({
   super.key,
   required final TextEditingController controller,
-  final String label = 'Nomor WhatsApp',
+  final String? label,
 
-  /// The lighter note after [label].
-  final String? labelHint = '(opsional)',
+  /// The lighter note after [label]; "(opsional)" when null.
+  final String? labelHint,
   final String? helper,
 
   /// An `AppIcons` asset in front of [helper].
@@ -53,8 +55,8 @@ class _PhoneFieldState() extends State<PhoneField> {
 
     return AppTextField(
       controller: widget.controller,
-      label: widget.label,
-      labelHint: widget.labelHint,
+      label: widget.label ?? context.l10n.editProfilePhoneLabel,
+      labelHint: widget.labelHint ?? context.l10n.editProfileOptional,
       helper: widget.helper,
       helperIcon: widget.helperIcon,
       errorText: widget.errorText,

@@ -78,7 +78,7 @@ class _GuestSheetState() extends ConsumerState<GuestSheet> {
     final failure = ref.read(guestControllerProvider(widget.groupId)).failure;
     setState(() => _nameError = failure?.fieldMessage('name') != null);
     if (failure != null && failure is! ValidationFailure && failure.apiCode != ApiErrorCode.groupFull) {
-      showAppToast(context, failure.displayMessage);
+      showAppToast(context, failure.displayMessage(context.l10n));
     }
   }
 

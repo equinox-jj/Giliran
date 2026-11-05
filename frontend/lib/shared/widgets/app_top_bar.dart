@@ -1,3 +1,5 @@
+import '../../core/l10n/l10n.dart';
+
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/constants/app_icons.dart';
@@ -82,7 +84,7 @@ class _AppTopBarState() extends State<AppTopBar> with _ScrolledUnder {
         (widget.showBack && (canPop || widget.onBack != null)
             ? CircleIconButton(
                 icon: widget.modal ? AppIcons.x : AppIcons.arrowLeft,
-                semanticLabel: widget.modal ? 'Tutup' : 'Kembali',
+                semanticLabel: widget.modal ? context.l10n.commonClose : context.l10n.widgetBack,
                 onPressed: widget.onBack ?? () => Navigator.of(context).maybePop(),
               )
             : null);
@@ -179,7 +181,7 @@ class _GreetingTopBarState() extends State<GreetingTopBar> with _ScrolledUnder {
                   children: [
                     Semantics(
                       button: widget.onAvatar != null,
-                      label: 'Profil',
+                      label: context.l10n.profileTitle,
                       child: GestureDetector(
                         onTap: widget.onAvatar,
                         child: AppAvatar(
@@ -197,7 +199,7 @@ class _GreetingTopBarState() extends State<GreetingTopBar> with _ScrolledUnder {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Halo, $firstName',
+                            context.l10n.widgetHelloName(firstName),
                             style: t.title.copyWith(color: c.textPrimary),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -213,8 +215,8 @@ class _GreetingTopBarState() extends State<GreetingTopBar> with _ScrolledUnder {
                     CircleIconButton(
                       icon: AppIcons.bellSimple,
                       semanticLabel: widget.unreadCount != null && widget.unreadCount! > 0
-                          ? 'Notifikasi, ${widget.unreadCount} belum dibaca'
-                          : 'Notifikasi',
+                          ? context.l10n.widgetUnreadNotifications(widget.unreadCount!)
+                          : context.l10n.settingsNotifications,
                       showDot: widget.unread,
                       onPressed: widget.onBell,
                     ),

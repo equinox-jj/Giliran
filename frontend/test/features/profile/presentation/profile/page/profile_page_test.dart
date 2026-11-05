@@ -6,6 +6,7 @@ import 'package:giliran/features/auth/presentation/shared/controllers/auth_sessi
 import 'package:giliran/features/profile/domain/entity/profile.dart';
 import 'package:giliran/features/profile/presentation/profile/page/profile_page.dart';
 import 'package:giliran/shared/widgets/widgets.dart';
+import 'package:material_ui/material_ui.dart' show LicensePage;
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../../../../helpers/fake_auth_repository.dart';
@@ -92,6 +93,7 @@ void main() {
       'Hubungi kami',
       'Kebijakan privasi',
       'Syarat',
+      'Lisensi',
       'Versi app',
     ]) {
       expect(find.text(label), findsOneWidget, reason: label);
@@ -110,6 +112,22 @@ void main() {
 
     // Assert
     expect(opened, ['edit', 'security', 'settings']);
+  });
+
+  testWidgets('Lisensi opens the license page', (tester) async {
+    // Arrange
+    await pumpProfile(tester);
+    await tester.ensureVisible(find.text('Lisensi'));
+    await tester.pumpAndSettle();
+
+    // Act
+    await tester.tap(find.text('Lisensi'));
+    // The license page spins while it loads, so it never settles.
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+
+    // Assert
+    expect(find.byType(LicensePage), findsOneWidget);
   });
 
   testWidgets('a help row opens its explanation sheet', (tester) async {

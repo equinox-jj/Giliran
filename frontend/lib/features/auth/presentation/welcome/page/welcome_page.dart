@@ -10,30 +10,27 @@ import '../../../../../shared/widgets/widgets.dart';
 /// telang banner when an invite link is waiting for the sign-in.
 class const WelcomePage({super.key, required final VoidCallback onSignIn, final bool invited = false})
     extends StatefulWidget {
-  static const pages = [
+  /// Number of onboarding pages; [pagesOf] builds them in the app language.
+  static const pageCount = 3;
+
+  static List<OnboardingPageData> pagesOf(AppLocalizations l10n) => [
     OnboardingPageData(
       illustration: AppIllustrations.onboardingTikar,
       toneIndex: 0,
-      headline: 'Arisan rapi, **semua bisa cek**.',
-      body:
-          'Catat iuran tiap periode, lihat siapa yang sudah bayar, dan '
-          'buktikan setiap kocokan. Semua anggota melihat papan yang sama.',
+      headline: l10n.authOnboarding1Headline,
+      body: l10n.authOnboarding1Body,
     ),
     OnboardingPageData(
       illustration: AppIllustrations.onboardingProof,
       toneIndex: 1,
-      headline: 'Kocokan yang **bisa dibuktikan**.',
-      body:
-          'Setiap kocokan menghasilkan Bukti Kocok. Siapa pun di grup bisa '
-          'cek ulang hasilnya, tidak ada yang bisa mengatur pemenang.',
+      headline: l10n.authOnboarding2Headline,
+      body: l10n.authOnboarding2Body,
     ),
     OnboardingPageData(
       illustration: AppIllustrations.onboardingTrust,
       toneIndex: 2,
-      headline: 'Giliran **tidak pernah memegang uang** kamu.',
-      body:
-          'Iuran tetap ditransfer langsung ke pengurus seperti biasa. '
-          'Giliran hanya mencatat, supaya semua anggota bisa melihat.',
+      headline: l10n.authOnboarding3Headline,
+      body: l10n.authOnboarding3Body,
     ),
   ];
 
@@ -45,7 +42,7 @@ class _WelcomePageState() extends State<WelcomePage> {
   final _controller = PageController();
   int _index = 0;
 
-  bool get _isLast => _index == WelcomePage.pages.length - 1;
+  bool get _isLast => _index == WelcomePage.pageCount - 1;
 
   @override
   void dispose() {
@@ -91,7 +88,7 @@ class _WelcomePageState() extends State<WelcomePage> {
                         index: _index,
                         isLast: _isLast,
                         onPageChanged: (i) => setState(() => _index = i),
-                        onSkip: () => _goTo(WelcomePage.pages.length - 1),
+                        onSkip: () => _goTo(WelcomePage.pageCount - 1),
                         onNext: () => _goTo(_index + 1),
                         onSignIn: widget.onSignIn,
                       )
@@ -127,8 +124,8 @@ class const _PhoneLayout({
           trailing: isLast
               ? null
               : AppButton.ghost(
-                  label: 'Lewati',
-                  semanticLabel: 'Lewati ke halaman terakhir',
+                  label: context.l10n.authSkip,
+                  semanticLabel: context.l10n.authSkipSemantic,
                   size: AppButtonSize.small,
                   onPressed: onSkip,
                 ),
@@ -136,7 +133,7 @@ class const _PhoneLayout({
         const SizedBox(height: AppSpace.s3),
         Expanded(
           child: OnboardingPager(
-            pages: WelcomePage.pages,
+            pages: WelcomePage.pagesOf(context.l10n),
             controller: controller,
             index: index,
             onPageChanged: onPageChanged,
@@ -147,7 +144,7 @@ class const _PhoneLayout({
           _SignInButton(onPressed: onSignIn)
         else
           AppButton(
-            label: 'Lanjut',
+            label: context.l10n.nextButton,
             trailingIcon: AppIcons.arrowRight,
             block: true,
             onPressed: onNext,
@@ -159,7 +156,7 @@ class const _PhoneLayout({
           child: ExcludeSemantics(
             excluding: isLast,
             child: Text(
-              'Giliran tidak pernah memegang uang kamu.',
+              context.l10n.authNeverHoldsMoney,
               textAlign: TextAlign.center,
               style: t.caption.copyWith(color: c.textTertiary),
             ),
@@ -174,8 +171,8 @@ class const _PhoneLayout({
 class const _WideLayout({required final VoidCallback onSignIn}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final first = WelcomePage.pages.first;
-    const pages = WelcomePage.pages;
+    final pages = WelcomePage.pagesOf(context.l10n);
+    final first = pages.first;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -270,7 +267,7 @@ class const _TopRow({final Widget? trailing}) extends StatelessWidget {
 class const _SignInButton({required final VoidCallback onPressed}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) => AppButton(
-    label: 'Masuk dengan email',
+    label: context.l10n.authSignInWithEmail,
     icon: AppIcons.envelopeSimple,
     block: true,
     onPressed: onPressed,

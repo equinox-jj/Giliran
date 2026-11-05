@@ -133,7 +133,7 @@ class const _ConfirmAndSubmit({
         ),
         if (state.failure case final failure?) ...[
           const SizedBox(height: AppSpace.s2),
-          Text(failure.displayMessage, style: t.caption.copyWith(color: c.rejected.fg)),
+          Text(failure.displayMessage(context.l10n), style: t.caption.copyWith(color: c.rejected.fg)),
         ],
         const SizedBox(height: AppSpace.s5),
         AppButton(

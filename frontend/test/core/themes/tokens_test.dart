@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:giliran/core/l10n/l10n.dart';
 import 'package:giliran/core/utils/enums/payment_status.dart';
 import 'package:giliran/core/themes/themes.dart';
 import 'package:giliran/core/utils/input_formatters.dart';
@@ -6,6 +7,7 @@ import 'package:giliran/core/utils/phone_formatter.dart';
 import 'package:giliran/shared/widgets/avatar.dart';
 import 'package:giliran/shared/widgets/countdown_text.dart';
 import 'package:giliran/shared/widgets/headline_text.dart';
+import 'package:material_ui/material_ui.dart' show Locale;
 
 void main() {
   group('Rupiah', () {
@@ -138,17 +140,21 @@ void main() {
   });
 
   test('CountdownText formats', () {
-    expect(
-      CountdownText.formatInline(
-        const Duration(days: 2, hours: 4, minutes: 12, seconds: 30),
-      ),
-      '2 hari 04:12:30',
+    // Arrange
+    final l10n = lookupAppLocalizations(const Locale('id'));
+
+    // Act
+    final days = CountdownText.formatInline(
+      l10n,
+      const Duration(days: 2, hours: 4, minutes: 12, seconds: 30),
     );
-    expect(CountdownText.formatInline(const Duration(seconds: 42)), '00:00:42');
-    expect(
-      CountdownText.formatLock(const Duration(minutes: 14, seconds: 52)),
-      '14:52',
-    );
+    final seconds = CountdownText.formatInline(l10n, const Duration(seconds: 42));
+    final lock = CountdownText.formatLock(const Duration(minutes: 14, seconds: 52));
+
+    // Assert
+    expect(days, '2 hari 04:12:30');
+    expect(seconds, '00:00:42');
+    expect(lock, '14:52');
   });
 
   test('AppAvatar.initials', () {

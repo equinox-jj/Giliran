@@ -1,3 +1,5 @@
+import '../../../core/l10n/l10n.dart';
+
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -15,10 +17,11 @@ Future<bool> showAppDialog(
   required String title,
   String? message,
   required String confirmLabel,
-  String cancelLabel = 'Batal',
+  String? cancelLabel,
   bool destructive = true,
   bool showCancel = true,
 }) async {
+  final cancel = cancelLabel ?? context.l10n.commonCancel;
   final platform = Theme.of(context).platform;
   final isCupertino = platform == TargetPlatform.iOS || platform == TargetPlatform.macOS;
 
@@ -33,7 +36,7 @@ Future<bool> showAppDialog(
             if (showCancel)
               CupertinoDialogAction(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: Text(cancelLabel),
+                child: Text(cancel),
               ),
             CupertinoDialogAction(
               isDestructiveAction: destructive,
@@ -86,7 +89,7 @@ Future<bool> showAppDialog(
                   children: [
                     if (showCancel)
                       AppButton.ghost(
-                        label: cancelLabel,
+                        label: cancel,
                         onPressed: () => Navigator.of(context).pop(false),
                       ),
                     AppButton(

@@ -107,7 +107,7 @@ class const _EditGroupBody({
       if (!confirmed || !context.mounted) return;
       final failure = await controller.close();
       if (!context.mounted) return;
-      showAppToast(context, failure?.displayMessage ?? l10n.groupClosedToast);
+      showAppToast(context, failure?.displayMessage(context.l10n) ?? l10n.groupClosedToast);
       if (failure == null) onClosed();
     }
 
@@ -310,9 +310,9 @@ class const _EditGroupBody({
         'name' => context.l10n.groupNameError,
         'amount' => context.l10n.groupAmountError,
         'total_slots' => context.l10n.groupSlotsError,
-        _ => failure.displayMessage,
+        _ => failure.displayMessage(context.l10n),
       };
     }
-    return failure.displayMessage;
+    return failure.displayMessage(context.l10n);
   }
 }

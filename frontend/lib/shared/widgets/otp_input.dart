@@ -1,3 +1,5 @@
+import '../../core/l10n/l10n.dart';
+
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -20,7 +22,7 @@ class const OtpInput({
   final bool error = false,
   final bool checking = false,
   final bool autofocus = true,
-  final String semanticLabel = 'Kode 6 digit',
+  final String? semanticLabel,
 
   final bool onCard = false,
 }) extends StatefulWidget {
@@ -105,7 +107,7 @@ class _OtpInputState() extends State<OtpInput> {
                 ExcludeSemantics(child: boxes),
                 Positioned.fill(
                   child: Semantics(
-                    label: widget.semanticLabel,
+                    label: widget.semanticLabel ?? context.l10n.widgetOtpLabel,
                     textField: true,
                     child: Opacity(
                       opacity: 0,

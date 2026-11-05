@@ -179,6 +179,11 @@ class const _AboutGroup() extends StatelessWidget {
           // The privacy page carries the terms too (PRD privacy section).
           onTap: () => _open(context, ProfilePage.privacyUrl),
         ),
+        SettingsRow.navigation(
+          icon: AppIcons.sealCheck,
+          label: l10n.profileLicenses,
+          onTap: () => showLicensePage(context: context, applicationName: l10n.appName),
+        ),
         const _VersionRow(),
       ],
     );
@@ -231,7 +236,7 @@ class const _LogoutGroup() extends ConsumerWidget {
     );
     if (!confirmed || !context.mounted) return;
     final failure = await ref.read(authSessionControllerProvider.notifier).logout();
-    if (failure != null && context.mounted) showAppToast(context, failure.displayMessage);
+    if (failure != null && context.mounted) showAppToast(context, failure.displayMessage(context.l10n));
   }
 
   @override

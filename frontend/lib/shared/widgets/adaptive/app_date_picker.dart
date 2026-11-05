@@ -1,3 +1,5 @@
+import '../../../core/l10n/l10n.dart';
+
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -60,7 +62,7 @@ abstract final class AppDatePicker() {
             ),
             const SizedBox(height: AppSpace.s4),
             AppButton(
-              label: 'Selesai',
+              label: context.l10n.widgetDone,
               block: true,
               onPressed: () => Navigator.of(context).pop(selected),
             ),

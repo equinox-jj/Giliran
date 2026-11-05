@@ -16,6 +16,7 @@ import 'package:giliran/shared/widgets/widgets.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../../helpers/a11y.dart';
 import '../../../../../helpers/fake_auth_repository.dart';
 import '../../../../../helpers/fake_connectivity.dart';
 import '../../../../../helpers/fake_group_repository.dart';
@@ -35,7 +36,11 @@ void main() {
     opened = [];
   });
 
-  Future<ProviderContainer> pumpHome(WidgetTester tester, {bool online = true}) async {
+  Future<ProviderContainer> pumpHome(
+    WidgetTester tester, {
+    bool online = true,
+    Size size = const Size(390, 844),
+  }) async {
     final auth = FakeAuthRepository()..userResult = Right(ProfileData(name: 'Joshua Jeremia', pinSet: true));
     final container = ProviderContainer(
       overrides: [
@@ -56,10 +61,28 @@ void main() {
         onJoinByLink: () => opened.add('join'),
       ),
       container: container,
+      size: size,
     );
     await tester.pumpAndSettle();
     return container;
   }
+
+  testWidgets('fits a 360 dp phone at 130 percent text and meets the a11y guidelines', (tester) async {
+    // Arrange
+    final semantics = tester.ensureSemantics();
+    useLargeText(tester);
+    groups.groups = [
+      summary('a', payment: PaymentStatus.unpaid, due: DateTime.utc(2026, 11, 20)),
+      summary('b'),
+    ];
+
+    // Act
+    await pumpHome(tester, size: a11yPhone);
+
+    // Assert
+    await expectAccessibleScreen(tester);
+    semantics.dispose();
+  });
 
   testWidgets('headline counts my open dues', (tester) async {
     // Arrange

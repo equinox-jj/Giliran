@@ -1,3 +1,5 @@
+import '../../../../../core/l10n/l10n.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -17,7 +19,6 @@ import '../controllers/pin_lock_controller.dart';
 
 class const PinLockPage({super.key, required final ValueChanged<String?> onForgotPin}) extends ConsumerStatefulWidget {
   /// The reason shown in the system biometric prompt.
-  static const biometricReason = 'Buka Giliran';
 
   /// "Sisa {n} percobaan" shows from this many wrong PINs on.
   static const showAttemptsAfter = 3;
@@ -57,7 +58,7 @@ class _PinLockPageState() extends ConsumerState<PinLockPage> {
       case ApiErrorCode.pinLocked:
         _lockedUntil.value = next.lockedUntil;
       default:
-        showAppToast(context, failure.displayMessage);
+        showAppToast(context, failure.displayMessage(context.l10n));
     }
   }
 
@@ -72,7 +73,7 @@ class _PinLockPageState() extends ConsumerState<PinLockPage> {
     try {
       final status = await ref.read(biometricControllerProvider.future);
       if (!mounted || status.enabled != true || status.kind == null) return;
-      await ref.read(pinLockControllerProvider.notifier).unlockWithBiometric(PinLockPage.biometricReason);
+      await ref.read(pinLockControllerProvider.notifier).unlockWithBiometric(context.l10n.authBiometricReason);
     } on Failure {
       // No biometric status: the PIN pad stays.
     }
@@ -81,13 +82,13 @@ class _PinLockPageState() extends ConsumerState<PinLockPage> {
   Future<void> _logout() async {
     final confirmed = await showAppDialog(
       context,
-      title: 'Keluar dari Giliran?',
-      message: 'Kamu perlu masuk lagi dengan email di perangkat ini.',
-      confirmLabel: 'Keluar',
+      title: context.l10n.authSignOutTitle,
+      message: context.l10n.authSignOutMessage,
+      confirmLabel: context.l10n.profileLogout,
     );
     if (!confirmed || !mounted) return;
     final failure = await ref.read(pinLockControllerProvider.notifier).logout();
-    if (failure != null && mounted) showAppToast(context, failure.displayMessage);
+    if (failure != null && mounted) showAppToast(context, failure.displayMessage(context.l10n));
   }
 
   void _forgotPin() {
@@ -119,7 +120,7 @@ class const _Links({required final VoidCallback onForgotPin, required final Void
     mainAxisSize: MainAxisSize.min,
     children: [
       const SizedBox(height: AppSpace.s5),
-      AppButton.link(label: 'Lupa PIN?', size: AppButtonSize.small, onPressed: onForgotPin),
+      AppButton.link(label: context.l10n.authForgotPin, size: AppButtonSize.small, onPressed: onForgotPin),
       const SizedBox(height: AppSpace.s1),
       _LogoutButton(onPressed: onLogout),
     ],
@@ -142,7 +143,7 @@ class const _LogoutButton({required final VoidCallback onPressed}) extends State
           child: Center(
             widthFactor: 1,
             child: Text(
-              'Bukan kamu? Keluar',
+              context.l10n.authNotYou,
               style: t.label.copyWith(color: c.textSecondary, fontWeight: FontWeight.w500),
             ),
           ),
@@ -183,13 +184,13 @@ class const _Greeting() extends ConsumerWidget {
         ),
         const SizedBox(height: AppSpace.s3),
         Text(
-          firstName.isEmpty ? 'Halo' : 'Halo, $firstName',
+          firstName.isEmpty ? context.l10n.authHello : context.l10n.authHelloName(firstName),
           textAlign: TextAlign.center,
           style: t.title.copyWith(color: c.textPrimary),
         ),
         const SizedBox(height: AppSpace.s3),
         Text(
-          'Masukkan PIN untuk membuka Giliran',
+          context.l10n.authPinLockCaption,
           textAlign: TextAlign.center,
           style: t.caption.copyWith(color: c.textTertiary),
         ),
@@ -223,13 +224,13 @@ class const _LockPad({
             header: const _Greeting(),
             countdown: CountdownText.lock(
               until: until,
-              caption: 'Terlalu banyak PIN salah. Coba lagi setelah waktu habis.',
+              caption: context.l10n.authPinLockTooMany,
               onFinished: () => lockedUntil.value = null,
             ),
             footer: footer,
           );
         }
-        final name = kind?.nameOn(Theme.of(context).platform);
+        final name = kind?.nameOn(context.l10n, Theme.of(context).platform);
         return PinPad(
           controller: controller,
           error: wrongPin,
@@ -239,18 +240,18 @@ class const _LockPad({
           footer: footer,
           onCompleted: notifier.verify,
           onBiometric: biometric?.enabled == true && kind != null
-              ? () => notifier.unlockWithBiometric(PinLockPage.biometricReason)
+              ? () => notifier.unlockWithBiometric(context.l10n.authBiometricReason)
               : null,
           biometricIcon: kind?.icon ?? AppIcons.fingerprint,
-          biometricLabel: 'Buka dengan ${name ?? 'sidik jari'}',
+          biometricLabel: context.l10n.authUnlockWith(name ?? context.l10n.authBiometricFingerprint),
           belowDots: ValueListenableBuilder(
             valueListenable: wrong,
             builder: (context, count, _) => PinErrorLine(
               message: !wrongPin
                   ? null
                   : count >= PinLockPage.showAttemptsAfter && state.attemptsRemaining != null
-                  ? 'PIN salah. Sisa ${state.attemptsRemaining} percobaan.'
-                  : 'PIN salah.',
+                  ? context.l10n.authPinWrongAttemptsLeft(state.attemptsRemaining!)
+                  : context.l10n.authPinWrong,
             ),
           ),
         );

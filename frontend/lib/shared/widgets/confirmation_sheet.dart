@@ -1,3 +1,5 @@
+import '../../core/l10n/l10n.dart';
+
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/themes/themes.dart';
@@ -18,7 +20,7 @@ Future<bool> showConfirmationSheet(
   required String icon,
   required String title,
   required String confirmLabel,
-  String cancelLabel = 'Batal',
+  String? cancelLabel,
   List<KeyValueItem> summary = const [],
   String? consentLabel,
   Color? toneColor,
@@ -29,7 +31,7 @@ Future<bool> showConfirmationSheet(
       icon: icon,
       title: title,
       confirmLabel: confirmLabel,
-      cancelLabel: cancelLabel,
+      cancelLabel: cancelLabel ?? context.l10n.commonCancel,
       summary: summary,
       consentLabel: consentLabel,
       toneColor: toneColor,

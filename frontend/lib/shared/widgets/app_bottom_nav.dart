@@ -1,3 +1,5 @@
+import '../../core/l10n/l10n.dart';
+
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/constants/app_icons.dart';
@@ -14,25 +16,25 @@ class const AppNavDestination({
   required final String activeIcon,
   final bool showDot = false,
 }) {
-  /// Beranda · Grup · Aktivitas · Profil.
-  static const main = [
+  /// Beranda · Grup · Aktivitas · Profil, in the app's language.
+  static List<AppNavDestination> mainOf(AppLocalizations l10n) => [
     AppNavDestination(
-      label: 'Beranda',
+      label: l10n.homeTitle,
       icon: AppIcons.houseSimple,
       activeIcon: AppIcons.houseSimpleFill,
     ),
     AppNavDestination(
-      label: 'Grup',
+      label: l10n.groupsTitle,
       icon: AppIcons.usersThree,
       activeIcon: AppIcons.usersThreeFill,
     ),
     AppNavDestination(
-      label: 'Aktivitas',
+      label: l10n.tabActivity,
       icon: AppIcons.bellSimple,
       activeIcon: AppIcons.bellSimpleFill,
     ),
     AppNavDestination(
-      label: 'Profil',
+      label: l10n.profileTitle,
       icon: AppIcons.userCircle,
       activeIcon: AppIcons.userCircleFill,
     ),
@@ -203,11 +205,14 @@ class const AppNavShell({
   required final Widget body,
   required final int selectedIndex,
   required final ValueChanged<int> onSelected,
-  final List<AppNavDestination> destinations = AppNavDestination.main,
+
+  /// Defaults to [AppNavDestination.mainOf].
+  final List<AppNavDestination>? destinations,
   final Widget? railLeading,
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final destinations = this.destinations ?? AppNavDestination.mainOf(context.l10n);
     if (context.isCompact) {
       return Scaffold(
         extendBody: true,

@@ -81,7 +81,7 @@ class _LeaveRequestSheetState() extends ConsumerState<LeaveRequestSheet> {
       case ApiErrorCode.organizerCannotLeave || ApiErrorCode.obligationsOutstanding || ApiErrorCode.validationError:
         break;
       case _:
-        if (failure != null) showAppToast(context, failure.displayMessage);
+        if (failure != null) showAppToast(context, failure.displayMessage(context.l10n));
     }
   }
 

@@ -95,7 +95,7 @@ class _DrawStagePageState() extends ConsumerState<DrawStagePage> {
       case ConflictFailure(code: ApiErrorCode.drawAlreadyDone):
         _leave(reveal: false);
       default:
-        showAppToast(context, failure.displayMessage);
+        showAppToast(context, failure.displayMessage(context.l10n));
     }
   }
 
@@ -154,7 +154,7 @@ class const _Stage({
     final draw = ref.watch(drawControllerProvider(groupId, periodId));
     if (draw case AsyncError(:final error)) {
       return AppBanner(
-        message: error is Failure ? error.displayMessage : l10n.drawLoadFailed,
+        message: error is Failure ? error.displayMessage(context.l10n) : l10n.drawLoadFailed,
         variant: AppBannerVariant.error,
         actionLabel: l10n.commonRetry,
         onAction: () => ref.invalidate(drawControllerProvider(groupId, periodId)),

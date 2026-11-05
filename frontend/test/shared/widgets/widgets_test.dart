@@ -57,8 +57,9 @@ void main() {
     await tester.pumpApp(
       Wrap(children: [for (final s in ChipStatus.values) StatusChip(s)]),
     );
+    final l10n = lookupAppLocalizations(const Locale('id'));
     for (final s in ChipStatus.values) {
-      expect(find.text(s.label), findsOneWidget);
+      expect(find.text(s.labelOf(l10n)), findsOneWidget);
     }
     expect(find.byType(TikarHatch), findsOneWidget);
   });

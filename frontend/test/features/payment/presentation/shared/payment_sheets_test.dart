@@ -21,6 +21,7 @@ import 'package:giliran/shared/widgets/widgets.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../helpers/a11y.dart';
 import '../../../../helpers/fake_connectivity.dart';
 import '../../../../helpers/fake_image_picker_service.dart';
 import '../../../../helpers/fake_payment_repository.dart';
@@ -74,7 +75,12 @@ void main() {
     results = [];
   });
 
-  Future<void> open(WidgetTester tester, Future<Object?> Function(BuildContext) sheet, {bool online = true}) async {
+  Future<void> open(
+    WidgetTester tester,
+    Future<Object?> Function(BuildContext) sheet, {
+    bool online = true,
+    Size size = const Size(390, 844),
+  }) async {
     final container = ProviderContainer(
       overrides: [
         paymentRepositoryProvider.overrideWithValue(payments),
@@ -88,6 +94,7 @@ void main() {
     await tester.pumpPage(
       _Launcher(open: sheet, results: results),
       container: container,
+      size: size,
     );
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
@@ -107,6 +114,19 @@ void main() {
       tester.widget<AppButton>(find.widgetWithText(AppButton, label));
 
   group('UploadProofSheet', () {
+    testWidgets('fits a 360 dp phone at 130 percent text and meets the a11y guidelines', (tester) async {
+      // Arrange
+      final semantics = tester.ensureSemantics();
+      useLargeText(tester);
+
+      // Act
+      await open(tester, upload, size: a11yPhone);
+
+      // Assert
+      await expectAccessibleScreen(tester);
+      semantics.dispose();
+    });
+
     testWidgets('a rejected payment shows the reason banner', (tester) async {
       // Act
       await open(

@@ -1,3 +1,5 @@
+import '../../../../../core/l10n/l10n.dart';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
@@ -38,7 +40,7 @@ class _FillNamePageState() extends ConsumerState<FillNamePage> {
     final local = _phone.text.trim();
     final phone = local.isEmpty ? null : PhoneFormatter.normalize(local);
     if (local.isNotEmpty && (phone == null || !PhoneFormatter.isValid(phone))) {
-      _phoneError.value = 'Nomor WhatsApp belum benar';
+      _phoneError.value = context.l10n.editProfilePhoneError;
       return;
     }
     _phoneError.value = null;
@@ -47,7 +49,7 @@ class _FillNamePageState() extends ConsumerState<FillNamePage> {
     if (!mounted || saved) return;
     final failure = ref.read(fillNameControllerProvider).error;
     if (failure is Failure && failure is! ValidationFailure) {
-      showAppToast(context, failure.displayMessage);
+      showAppToast(context, failure.displayMessage(context.l10n));
     }
   }
 
@@ -79,10 +81,10 @@ class const _Form({
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const HeadlineText('Siapa **nama kamu**?'),
+        HeadlineText(context.l10n.authFillNameHeadline),
         const SizedBox(height: AppSpace.s2),
         Text(
-          'Nama ini dilihat anggota arisan lain.',
+          context.l10n.authFillNameCaption,
           style: t.body.copyWith(color: c.textSecondary),
         ),
         const SizedBox(height: AppSpace.s6),
@@ -101,7 +103,7 @@ class const _Form({
           valueListenable: phoneError,
           builder: (context, error, _) => PhoneField(
             controller: phone,
-            helper: 'Hanya untuk pengingat bayar. Bukan untuk masuk.',
+            helper: context.l10n.editProfilePhoneHelper,
             helperIcon: AppIcons.bellSimple,
             errorText: error ?? serverError?.fieldMessage('phone'),
             onChanged: (_) => phoneError.value = null,
@@ -126,13 +128,13 @@ class const _AvatarSection() extends ConsumerWidget {
         if (!allowed && context.mounted) {
           showAppToast(
             context,
-            source == PhotoSource.camera ? 'Izinkan akses kamera di Pengaturan.' : 'Izinkan akses foto di Pengaturan.',
+            source == PhotoSource.camera ? context.l10n.avatarCameraDenied : context.l10n.avatarGalleryDenied,
           );
         }
       case AvatarSheetAction.remove:
         final failure = await controller.remove();
         if (failure != null && context.mounted) {
-          showAppToast(context, failure.displayMessage);
+          showAppToast(context, failure.displayMessage(context.l10n));
         }
     }
   }
@@ -145,7 +147,7 @@ class const _AvatarSection() extends ConsumerWidget {
       localPath: avatar.localPath,
       imageUrl: avatar.imageUrl,
       progress: avatar.progress,
-      errorText: avatar.failure?.displayMessage,
+      errorText: avatar.failure?.displayMessage(context.l10n),
       done: avatar.done,
       onTap: () => _change(context, ref, hasPhoto: avatar.hasPhoto),
       onRetry: ref.read(avatarControllerProvider.notifier).retry,
@@ -163,9 +165,9 @@ class const _NameField({
   Widget build(BuildContext context) {
     return AppTextField(
       controller: controller,
-      label: 'Nama',
-      hint: 'Nama panggilan atau lengkap',
-      helper: 'Pakai nama yang dikenal anggota.',
+      label: context.l10n.editProfileName,
+      hint: context.l10n.editProfileNameHint,
+      helper: context.l10n.authNameHelper,
       counter: '$length/${FillNamePage.maxName}',
       errorText: errorText,
       autofocus: true,
@@ -197,10 +199,10 @@ class const _NextButton({
     return ValueListenableBuilder(
       valueListenable: name,
       builder: (context, value, _) => AppButton(
-        label: 'Lanjut',
+        label: context.l10n.nextButton,
         block: true,
         loading: loading,
-        disabledReason: uploading ? 'Tunggu foto selesai diunggah' : null,
+        disabledReason: uploading ? context.l10n.editProfileWaitUpload : null,
         onPressed: value.text.trim().length >= FillNamePage.minName && !uploading ? onSubmit : null,
       ),
     );

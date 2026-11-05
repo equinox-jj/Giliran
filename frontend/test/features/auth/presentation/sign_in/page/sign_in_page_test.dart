@@ -37,6 +37,19 @@ void main() {
     expect(find.text(email), findsOneWidget);
   });
 
+  testWidgets('renders in English when the app language is English', (tester) async {
+    // Arrange
+    final page = SignInPage(onCodeSent: () => sent++);
+
+    // Act
+    await tester.pumpPage(page, container: container, locale: const Locale('en'));
+
+    // Assert
+    expect(find.text('Sign in with email'), findsOneWidget);
+    expect(find.text('Send code'), findsOneWidget);
+    expect(find.text('Masuk dengan email'), findsNothing);
+  });
+
   testWidgets('a malformed email shows the format error and sends nothing', (tester) async {
     // Arrange
     await pumpSignIn(tester);
@@ -47,7 +60,7 @@ void main() {
     await tester.pump();
 
     // Assert
-    expect(find.text(EmailField.formatError), findsOneWidget);
+    expect(find.text('Format email belum benar'), findsOneWidget);
     expect(repository.calls, isNot(contains('requestEmailOtp')));
     expect(sent, 0);
   });

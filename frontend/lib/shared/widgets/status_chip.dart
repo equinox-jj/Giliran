@@ -1,3 +1,5 @@
+import '../../core/l10n/l10n.dart';
+
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/constants/app_icons.dart';
@@ -7,17 +9,29 @@ import 'app_icon.dart';
 import 'dashed_border.dart';
 import 'tikar_hatch_painter.dart';
 
-/// Statuses a chip can show. Labels are fixed and map 1:1 to API values.
-enum ChipStatus(final String label, final String icon) {
-  paid('Sudah bayar', AppIcons.checkCircleFill),
-  pendingReview('Menunggu cek', AppIcons.hourglassMedium),
-  unpaid('Belum bayar', AppIcons.circleDashed),
-  rejected('Ditolak', AppIcons.xCircle),
-  overdue('Lewat jatuh tempo', AppIcons.warningCircle),
-  won('Sudah dapat', AppIcons.scrollFill),
+/// Statuses a chip can show. Labels are fixed ([labelOf]) and map 1:1 to API
+/// values.
+enum ChipStatus(final String icon) {
+  paid(AppIcons.checkCircleFill),
+  pendingReview(AppIcons.hourglassMedium),
+  unpaid(AppIcons.circleDashed),
+  rejected(AppIcons.xCircle),
+  overdue(AppIcons.warningCircle),
+  won(AppIcons.scrollFill),
 
   /// A group still in setup (draft), on the Groups list card.
-  preparing('Persiapan', AppIcons.info);
+  preparing(AppIcons.info);
+
+  /// The chip word in the app's language.
+  String labelOf(AppLocalizations l10n) => switch (this) {
+    ChipStatus.paid => l10n.chipPaid,
+    ChipStatus.pendingReview => l10n.chipPendingReview,
+    ChipStatus.unpaid => l10n.chipUnpaid,
+    ChipStatus.rejected => l10n.chipRejected,
+    ChipStatus.overdue => l10n.chipOverdue,
+    ChipStatus.won => l10n.chipWon,
+    ChipStatus.preparing => l10n.chipPreparing,
+  };
 
   /// Overdue is derived: unpaid or rejected with `due_date` before today.
   static ChipStatus fromPayment(PaymentStatus status, {bool overdue = false}) {
@@ -56,7 +70,7 @@ class const StatusChip(
     final c = context.colors;
     final t = AppTextStyles.of(context);
     final colors = status.colorsOf(c);
-    final text = label ?? status.label;
+    final text = label ?? status.labelOf(context.l10n);
 
     Widget chip = Container(
       height: AppSizes.statusChipH,

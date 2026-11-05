@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/l10n/locale_controller.dart';
+import '../core/services/secure_screen_controller.dart';
 import '../core/themes/theme_mode_controller.dart';
 import '../core/themes/themes.dart';
 import '../features/auth/presentation/shared/widgets/app_lock_gate.dart';
@@ -23,6 +24,8 @@ class const GiliranApp({super.key}) extends ConsumerWidget {
     final router = ref.watch(routerProvider);
     // Starts push for the app's lifetime (token, storage, tap routing).
     ref.watch(pushControllerProvider);
+    // Applies the saved S47 secure screen choice to the window.
+    ref.watch(secureScreenControllerProvider);
 
     return MaterialApp.router(
       onGenerateTitle: (context) => context.l10n.appName,

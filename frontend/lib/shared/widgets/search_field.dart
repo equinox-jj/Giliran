@@ -1,3 +1,5 @@
+import '../../core/l10n/l10n.dart';
+
 import 'package:material_ui/material_ui.dart';
 
 import '../../core/constants/app_icons.dart';
@@ -9,7 +11,7 @@ import 'app_text_field.dart';
 class const SearchField({
   super.key,
   required final TextEditingController controller,
-  final String hint = 'Cari',
+  final String? hint,
   final ValueChanged<String>? onChanged,
   final bool autofocus = false,
 }) extends StatefulWidget {
@@ -50,7 +52,7 @@ class _SearchFieldState() extends State<SearchField> {
         textInputAction: TextInputAction.search,
         style: t.bodyLg.copyWith(color: c.textPrimary),
         decoration: InputDecoration(
-          hintText: widget.hint,
+          hintText: widget.hint ?? context.l10n.widgetSearch,
           filled: true,
           fillColor: c.subtle,
           constraints: const BoxConstraints(minHeight: AppSizes.searchH),

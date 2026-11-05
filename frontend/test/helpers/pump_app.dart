@@ -18,11 +18,13 @@ extension PumpApp on WidgetTester {
   );
 
   /// Pumps a full-screen [page] on a phone-sized view, with its providers
-  /// read from [container].
+  /// read from [container], in [locale] (Indonesian unless a test checks
+  /// English).
   Future<void> pumpPage(
     Widget page, {
     required ProviderContainer container,
     Size size = const Size(390, 844),
+    Locale locale = const Locale('id'),
   }) async {
     view
       ..physicalSize = size
@@ -33,7 +35,7 @@ extension PumpApp on WidgetTester {
         container: container,
         child: MaterialApp(
           theme: AppTheme.light(),
-          locale: const Locale('id'),
+          locale: locale,
           localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: page,

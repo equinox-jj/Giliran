@@ -6,6 +6,7 @@ import '../../../../../core/error/failure_message.dart';
 import '../../../../../core/l10n/l10n.dart';
 import '../../../../../core/l10n/locale_controller.dart';
 import '../../../../../core/services/push_service.dart';
+import '../../../../../core/services/secure_screen_controller.dart';
 import '../../../../../core/themes/theme_mode_controller.dart';
 import '../../../../../core/themes/themes.dart';
 import '../../../../../shared/widgets/widgets.dart';
@@ -36,6 +37,12 @@ class const SettingsPage({
               header: l10n.settingsAppearance,
               children: const [_ThemeRow(), _LanguageRow()],
             ),
+            // FLAG_SECURE exists on Android only.
+            if (Theme.of(context).platform == TargetPlatform.android)
+              SettingsGroup(
+                header: l10n.settingsGroupPrivacy,
+                children: const [_SecureScreenRow()],
+              ),
             SettingsGroup(
               header: l10n.settingsData,
               children: const [_ClearCacheRow()],
@@ -60,7 +67,7 @@ class const SettingsPage({
 class const _Notifications() extends ConsumerWidget {
   Future<void> _toggle(BuildContext context, WidgetRef ref, UserSettingsPatch patch) async {
     final failure = await ref.read(settingsControllerProvider.notifier).change(patch);
-    if (failure != null && context.mounted) showAppToast(context, failure.displayMessage);
+    if (failure != null && context.mounted) showAppToast(context, failure.displayMessage(context.l10n));
   }
 
   @override
@@ -163,8 +170,26 @@ class const _LanguageRow() extends ConsumerWidget {
         final picked = await _pick(context, title: l10n.settingsLanguage, selected: code, options: options);
         if (picked == null || picked == code || !context.mounted) return;
         final failure = await ref.read(settingsControllerProvider.notifier).setLanguage(picked);
-        if (failure != null && context.mounted) showAppToast(context, failure.displayMessage);
+        if (failure != null && context.mounted) showAppToast(context, failure.displayMessage(context.l10n));
       },
+    );
+  }
+}
+
+/// "Sembunyikan layar di app terbaru": Android `FLAG_SECURE`, kept on the
+/// device (backs up the S08 privacy cover).
+class const _SecureScreenRow() extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final secure = ref.watch(secureScreenControllerProvider.select((s) => s.value ?? false));
+
+    return SettingsRow.toggle(
+      icon: AppIcons.eyeSlash,
+      label: l10n.settingsSecureScreen,
+      subtitle: l10n.settingsSecureScreenHint,
+      toggleValue: secure,
+      onToggle: ref.read(secureScreenControllerProvider.notifier).set,
     );
   }
 }
@@ -179,7 +204,7 @@ class const _ClearCacheRow() extends ConsumerWidget {
       onTap: () async {
         final failure = await ref.read(settingsControllerProvider.notifier).clearImageCache();
         if (!context.mounted) return;
-        showAppToast(context, failure?.displayMessage ?? l10n.settingsCacheCleared);
+        showAppToast(context, failure?.displayMessage(context.l10n) ?? l10n.settingsCacheCleared);
       },
     );
   }

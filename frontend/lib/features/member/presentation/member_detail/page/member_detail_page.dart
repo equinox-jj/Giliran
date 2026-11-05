@@ -179,7 +179,7 @@ class const _ManagerActions({
         case Right(:final value):
           await showClaimLinkSheet(context, guest: member, link: value, groupName: group.name ?? '');
         case Left(:final value):
-          showAppToast(context, value.displayMessage);
+          showAppToast(context, value.displayMessage(context.l10n));
       }
     }
 
@@ -213,7 +213,7 @@ class const _ManagerActions({
           showCancel: false,
         );
       } else {
-        showAppToast(context, failure.displayMessage);
+        showAppToast(context, failure.displayMessage(context.l10n));
       }
     }
 

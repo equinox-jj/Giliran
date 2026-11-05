@@ -1,3 +1,5 @@
+import '../../../../../core/l10n/l10n.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -49,7 +51,7 @@ class _SetPinPageState() extends ConsumerState<SetPinPage> {
     final confirming = ref.watch(setPinControllerProvider.select((s) => s.firstPin != null));
 
     return AuthScaffold(
-      step: confirming ? 'Langkah 2 dari 2' : 'Langkah 1 dari 2',
+      step: context.l10n.authStepOf(confirming ? 2 : 1, 2),
       showBack: confirming,
       pinPad: true,
       topPadding: 0,
@@ -70,10 +72,10 @@ class const _Entry({
     );
 
     return PinEntry(
-      headline: confirming ? 'Ulangi **PIN**' : 'Buat **PIN 6 digit**',
-      caption: confirming ? 'Masukkan PIN yang sama sekali lagi.' : 'Dipakai untuk membuka Giliran di HP ini.',
-      hint: confirming ? null : 'Hindari angka berurutan atau sama semua, seperti 123456.',
-      error: setPinErrorMessage(failure),
+      headline: confirming ? context.l10n.authSetPinConfirmHeadline : context.l10n.authSetPinHeadline,
+      caption: confirming ? context.l10n.authRepeatPinCaption : context.l10n.authSetPinCaption,
+      hint: confirming ? null : context.l10n.authPinWeakHint,
+      error: setPinErrorMessage(context.l10n, failure),
       controller: controller,
       checking: checking,
       onCompleted: ref.read(setPinControllerProvider.notifier).enter,
@@ -81,15 +83,15 @@ class const _Entry({
   }
 }
 
-String? setPinErrorMessage(Failure? failure) {
+String? setPinErrorMessage(AppLocalizations l10n, Failure? failure) {
   if (failure == null) return null;
   if (failure case ValidationFailure(:final fieldErrors)) {
     final codes = {for (final e in fieldErrors) e.code};
     if (codes.contains('pin_too_weak')) {
-      return 'Hindari angka berurutan atau sama semua.';
+      return l10n.authPinTooWeak;
     }
-    if (codes.contains('mismatch')) return 'PIN tidak sama. Ulangi dari awal.';
+    if (codes.contains('mismatch')) return l10n.authPinMismatch;
   }
 
-  return failure.displayMessage;
+  return failure.displayMessage(l10n);
 }

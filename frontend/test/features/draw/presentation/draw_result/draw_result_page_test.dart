@@ -19,6 +19,7 @@ import 'package:giliran/features/payment/data/repositories/payment_repository_im
 import 'package:giliran/features/payment/domain/entities/period.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
+import '../../../../helpers/a11y.dart';
 import '../../../../helpers/clipboard.dart';
 import '../../../../helpers/fake_connectivity.dart';
 import '../../../../helpers/fake_draw_repository.dart';
@@ -66,7 +67,12 @@ void main() {
     payouts = 0;
   });
 
-  Future<void> pumpResult(WidgetTester tester, {bool reveal = false}) async {
+  Future<void> pumpResult(
+    WidgetTester tester, {
+    bool reveal = false,
+    // Tall enough that the cards below the ticket are built.
+    Size size = const Size(390, 1800),
+  }) async {
     final container = ProviderContainer(
       overrides: [
         groupRepositoryProvider.overrideWithValue(groups),
@@ -83,8 +89,7 @@ void main() {
     await tester.pumpPage(
       DrawResultPage(groupId: 'g1', periodId: 'p1', reveal: reveal, onPayout: () => payouts++, onClose: () {}),
       container: container,
-      // Tall enough that the cards below the ticket are built.
-      size: const Size(390, 1800),
+      size: size,
     );
     await tester.pumpAndSettle();
   }
@@ -94,6 +99,19 @@ void main() {
     await tester.tap(find.text('Cek keasliannya'));
     await tester.pumpAndSettle();
   }
+
+  testWidgets('fits a 360 dp phone at 130 percent text and meets the a11y guidelines', (tester) async {
+    // Arrange
+    final semantics = tester.ensureSemantics();
+    useLargeText(tester);
+
+    // Act
+    await pumpResult(tester, size: a11yPhone);
+
+    // Assert
+    await expectAccessibleScreen(tester);
+    semantics.dispose();
+  });
 
   testWidgets('shows the winner headline and the ticket', (tester) async {
     // Arrange

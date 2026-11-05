@@ -59,7 +59,7 @@ class _CreateGroupPageState() extends ConsumerState<CreateGroupPage> {
       return;
     }
     final failure = ref.read(_provider).failure;
-    if (failure != null && failure is! ValidationFailure) showAppToast(context, failure.displayMessage);
+    if (failure != null && failure is! ValidationFailure) showAppToast(context, failure.displayMessage(context.l10n));
   }
 
   @override
