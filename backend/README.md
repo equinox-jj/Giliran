@@ -126,7 +126,7 @@ The tool reads `.env` (its `DATABASE_URL` and `JWT_SECRET` must match the server
 `deploy/docker-compose.prod.yml` runs the whole stack on one host (Dokploy):
 
 ```sh
-docker compose -f deploy/docker-compose.prod.yml up -d --build
+docker compose --env-file .env -f deploy/docker-compose.prod.yml up -d --build
 ```
 
 - Only the API is published, on `127.0.0.1:8080`, for the Cloudflare Tunnel. Set `HTTP_TRUSTED_PROXIES` so rate limits see the client IP from `X-Forwarded-For`.
@@ -164,19 +164,19 @@ Two log events need an alert (log alerting or an Uptime Kuma push monitor):
 Set `BACKUP_S3_URL`, `BACKUP_S3_ACCESS_KEY`, `BACKUP_S3_SECRET_KEY` and `BACKUP_S3_BUCKET` in `.env`. The remote can be any S3-compatible store off the home server (Cloudflare R2, Backblaze B2…), and the bucket must exist. Schedule the backup daily with host cron or a Dokploy schedule:
 
 ```cron
-0 2 * * *  cd /srv/giliran/backend && docker compose -f deploy/docker-compose.prod.yml run --rm backup >> /var/log/giliran-backup.log 2>&1
+0 2 * * *  cd /srv/giliran/backend && docker compose --env-file .env -f deploy/docker-compose.prod.yml run --rm backup >> /var/log/giliran-backup.log 2>&1
 ```
 
 **Restore:**
 
 ```sh
 # 1. stop the writers
-docker compose -f deploy/docker-compose.prod.yml stop api worker
+docker compose --env-file .env -f deploy/docker-compose.prod.yml stop api worker
 
 # 2. fetch a dump and restore it into the running postgres container
 mc alias set remote "$BACKUP_S3_URL" "$BACKUP_S3_ACCESS_KEY" "$BACKUP_S3_SECRET_KEY"
 mc cp remote/$BACKUP_S3_BUCKET/postgres/giliran-<stamp>.dump .
-docker compose -f deploy/docker-compose.prod.yml exec -T postgres \
+docker compose --env-file .env -f deploy/docker-compose.prod.yml exec -T postgres \
   pg_restore --clean --if-exists --no-owner -U "$POSTGRES_USER" -d "$POSTGRES_DB" < giliran-<stamp>.dump
 
 # 3. restore the objects (from a shell that can reach MinIO, e.g. the minio-init image)
@@ -184,7 +184,7 @@ mc alias set local http://minio:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"
 mc mirror --overwrite remote/$BACKUP_S3_BUCKET/minio local/$MINIO_BUCKET
 
 # 4. start again (migrations re-run and are no-ops)
-docker compose -f deploy/docker-compose.prod.yml up -d
+docker compose --env-file .env -f deploy/docker-compose.prod.yml up -d
 ```
 
 Test a restore on a scratch machine now and then. A backup that has never been restored hasn't been proven to work.
@@ -194,7 +194,7 @@ Test a restore on a scratch machine now and then. A backup that has never been r
 `GET /api/v1/health` pings the database. It returns `200 {"data":{"status":"ok","checks":{"database":"ok"}}}`, or `503 service_unavailable` (logged with its cause) when Postgres is unreachable. Uptime Kuma is in the prod Compose file behind a profile:
 
 ```sh
-docker compose -f deploy/docker-compose.prod.yml --profile monitoring up -d uptime-kuma
+docker compose --env-file .env -f deploy/docker-compose.prod.yml --profile monitoring up -d uptime-kuma
 ```
 
 Open it at `127.0.0.1:3001` (over Tailscale, like the Dokploy panel) and add two HTTP monitors:

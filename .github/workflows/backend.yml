@@ -69,4 +69,4 @@ jobs:
         run: |
           cp .env.example .env
           docker compose -f deploy/docker-compose.dev.yml config --quiet
-          docker compose -f deploy/docker-compose.prod.yml --profile backup --profile monitoring config --quiet
+          docker compose --env-file .env -f deploy/docker-compose.prod.yml --profile backup --profile monitoring config --quiet
