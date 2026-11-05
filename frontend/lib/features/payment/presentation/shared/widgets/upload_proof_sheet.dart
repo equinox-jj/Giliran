@@ -42,7 +42,7 @@ class const _UploadProofSheet({
     final provider = uploadProofControllerProvider(group.id ?? '', payment.id ?? '');
     final state = ref.watch(provider);
     final online = ref.watch(connectivityControllerProvider.select((s) => s.value ?? true));
-    final controller = ref.read(provider.notifier);
+    final controller = ref.watch(provider.notifier);
     final amount = Rupiah.format(payment.amount ?? group.amount ?? 0);
     final info = group.paymentInfo ?? const PaymentInfo();
 

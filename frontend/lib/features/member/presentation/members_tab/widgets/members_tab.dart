@@ -104,7 +104,7 @@ class const _TabHeader({
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final manager = group.isManager;
-    final nextSlot = ref.read(nextFreeSlotUseCaseProvider)((members: members, totalSlots: group.totalSlots ?? 0));
+    final nextSlot = ref.watch(nextFreeSlotUseCaseProvider)((members: members, totalSlots: group.totalSlots ?? 0));
 
     Future<void> addGuest() async {
       final added = await showGuestSheet(context, groupId: group.id ?? '', slotNo: nextSlot);

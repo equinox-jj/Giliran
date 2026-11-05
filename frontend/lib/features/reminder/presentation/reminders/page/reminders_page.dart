@@ -318,7 +318,7 @@ class const _SendBar({required final String groupId}) extends ConsumerWidget {
                         until: lockedUntil,
                         prefix: l10n.remindersRetryIn,
                         showTimeOnSameDay: false,
-                        onFinished: ref.read(provider.notifier).unlock,
+                        onFinished: ref.watch(provider.notifier).unlock,
                       ),
                     ),
                     const SizedBox(height: AppSpace.s2),

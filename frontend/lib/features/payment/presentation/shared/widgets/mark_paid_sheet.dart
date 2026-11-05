@@ -108,7 +108,7 @@ class const _NoteField({
       errorText: tooLong ? l10n.markPaidNoteTooLong : null,
       maxLines: 3,
       minLines: 1,
-      onChanged: ref.read(provider.notifier).setNote,
+      onChanged: ref.watch(provider.notifier).setNote,
     );
   }
 }
@@ -129,7 +129,7 @@ class const _ConfirmAndSubmit({
         CheckRow(
           label: l10n.markPaidConfirm,
           value: state.confirmed,
-          onChanged: state.submitting ? null : ref.read(provider.notifier).setConfirmed,
+          onChanged: state.submitting ? null : ref.watch(provider.notifier).setConfirmed,
         ),
         if (state.failure case final failure?) ...[
           const SizedBox(height: AppSpace.s2),

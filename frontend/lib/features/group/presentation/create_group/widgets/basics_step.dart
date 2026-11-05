@@ -22,7 +22,7 @@ class const BasicsStep({
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final draft = ref.watch(provider);
-    final controller = ref.read(provider.notifier);
+    final controller = ref.watch(provider.notifier);
     final amount = draft.amount;
     final end = controller.lastDueDate;
     final slots = draft.totalSlots;

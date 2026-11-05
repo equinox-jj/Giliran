@@ -94,7 +94,7 @@ class const _RecordForm({required final _Ids ids}) extends ConsumerWidget {
     final c = context.colors;
     final t = AppTextStyles.of(context);
     final provider = payoutControllerProvider(ids.groupId, ids.periodId);
-    final notifier = ref.read(provider.notifier);
+    final notifier = ref.watch(provider.notifier);
     final state = ref.watch(provider);
     final online = ref.watch(connectivityControllerProvider.select((s) => s.value ?? true));
     final pot = _watchPot(ref, ids);

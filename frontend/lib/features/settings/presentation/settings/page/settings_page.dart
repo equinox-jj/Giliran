@@ -109,7 +109,7 @@ class const _Notifications() extends ConsumerWidget {
           message: l10n.settingsFailed,
           variant: AppBannerVariant.error,
           actionLabel: l10n.commonRetry,
-          onAction: ref.read(settingsControllerProvider.notifier).reload,
+          onAction: ref.watch(settingsControllerProvider.notifier).reload,
         ),
       ),
       _ => const Padding(
@@ -189,7 +189,7 @@ class const _SecureScreenRow() extends ConsumerWidget {
       label: l10n.settingsSecureScreen,
       subtitle: l10n.settingsSecureScreenHint,
       toggleValue: secure,
-      onToggle: ref.read(secureScreenControllerProvider.notifier).set,
+      onToggle: ref.watch(secureScreenControllerProvider.notifier).set,
     );
   }
 }

@@ -29,7 +29,7 @@ class const TransferOfferPage({super.key, required final String groupId}) extend
     final provider = transferOfferControllerProvider(groupId);
     final myMemberId = ref.watch(groupDetailControllerProvider(groupId).select((s) => s.value?.group?.myMemberId));
     final members = ref.watch(membersControllerProvider(groupId).select((s) => s.value ?? const <Member>[]));
-    final candidates = ref.read(transferCandidatesUseCaseProvider)((members: members, myMemberId: myMemberId));
+    final candidates = ref.watch(transferCandidatesUseCaseProvider)((members: members, myMemberId: myMemberId));
     final selectedId = ref.watch(provider.select((s) => s.selectedId));
     final sending = ref.watch(provider.select((s) => s.sending));
     final offered = ref.watch(provider.select((s) => s.offered));

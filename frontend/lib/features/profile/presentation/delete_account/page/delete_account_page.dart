@@ -127,7 +127,7 @@ class const _Explain() extends ConsumerWidget {
         CheckRow(
           label: l10n.deleteAccountUnderstand,
           value: understood,
-          onChanged: blocked ? null : ref.read(deleteAccountControllerProvider.notifier).setUnderstood,
+          onChanged: blocked ? null : ref.watch(deleteAccountControllerProvider.notifier).setUnderstood,
         ),
       ],
     );
@@ -171,7 +171,7 @@ class const _ContinueButton() extends ConsumerWidget {
     return AppButton(
       label: context.l10n.deleteAccountContinue,
       block: true,
-      onPressed: enabled ? ref.read(deleteAccountControllerProvider.notifier).next : null,
+      onPressed: enabled ? ref.watch(deleteAccountControllerProvider.notifier).next : null,
     );
   }
 }
@@ -189,7 +189,7 @@ class const _PinStep({
         (s) => (failure: s.failure, checking: s.submitting, lockedUntil: s.lockedUntil),
       ),
     );
-    final notifier = ref.read(deleteAccountControllerProvider.notifier);
+    final notifier = ref.watch(deleteAccountControllerProvider.notifier);
     final error = switch (failure) {
       null => null,
       _ when failure.apiCode == ApiErrorCode.pinInvalid => wrongPinMessage(context.l10n, failure),
