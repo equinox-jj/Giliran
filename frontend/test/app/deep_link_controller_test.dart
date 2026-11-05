@@ -44,4 +44,18 @@ void main() {
     // Assert
     expect(controller.pending, '/j/NEWCODE2');
   });
+
+  test('a claim link is kept in memory only, never stored', () async {
+    // Arrange
+    final preferences = FakePreferences()..pendingDeepLink = '/j/OLDCODE1';
+    final controller = DeepLinkController(preferences);
+
+    // Act
+    controller.remember('/c/secret-token');
+    await Future<void>.delayed(Duration.zero);
+
+    // Assert
+    expect(controller.pending, '/c/secret-token');
+    expect(preferences.pendingDeepLink, isNull);
+  });
 }

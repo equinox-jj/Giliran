@@ -8,8 +8,10 @@ part 'deep_link_controller.g.dart';
 
 /// Keeps an invite (`/j/:code`) or claim (`/c/:token`) link that was opened
 /// before the user could see it (signed out, mid-onboarding, session still
-/// loading), so the router can resume it once the session is unlocked. The
-/// link is stored too, so it survives an app restart during sign-in.
+/// loading), so the router can resume it once the session is unlocked. An
+/// invite link is stored too, so it survives an app restart during sign-in. A
+/// claim link holds a bearer token that takes over a guest slot, so it stays
+/// in memory and is never written to shared preferences.
 ///
 /// A plain class rather than Riverpod state: the router reads and changes it
 /// inside `redirect`, which can run while widgets build.
@@ -27,7 +29,8 @@ class DeepLinkController(final Preferences _preferences) {
 
   void remember(String location) {
     _pending = location;
-    unawaited(_preferences.savePendingDeepLink(location));
+    // Drop any stored link too, so a stale one can't come back on restart.
+    unawaited(_preferences.savePendingDeepLink(_isPersistable(location) ? location : null));
   }
 
   /// Returns the pending link and clears it, so it resumes only once.
@@ -38,6 +41,8 @@ class DeepLinkController(final Preferences _preferences) {
     unawaited(_preferences.savePendingDeepLink(null));
     return link;
   }
+
+  static bool _isPersistable(String location) => location.startsWith('/j/');
 
   /// Whether [path] is a link worth resuming after sign-in.
   static bool isResumable(String path) => path.startsWith('/j/') || path.startsWith('/c/');

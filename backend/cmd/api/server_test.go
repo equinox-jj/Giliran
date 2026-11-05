@@ -268,3 +268,23 @@ func TestServerCORS(t *testing.T) {
 		t.Errorf("Access-Control-Allow-Origin %q", got)
 	}
 }
+
+func TestServerSecurityHeaders(t *testing.T) {
+	// Arrange
+	app := newTestApp()
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/health", nil)
+
+	// Act
+	resp, _ := do(t, app, req)
+
+	// Assert
+	if got := resp.Header.Get("X-Content-Type-Options"); got != "nosniff" {
+		t.Errorf("X-Content-Type-Options %q", got)
+	}
+	if got := resp.Header.Get("X-Frame-Options"); got == "" {
+		t.Error("X-Frame-Options missing")
+	}
+	if got := resp.Header.Get("Content-Security-Policy"); !strings.Contains(got, "default-src 'none'") {
+		t.Errorf("Content-Security-Policy %q", got)
+	}
+}

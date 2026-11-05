@@ -33,10 +33,14 @@ func newFiberApp(cfg *config.Config, log *slog.Logger) *fiber.App {
 		fc.TrustProxy = true
 		fc.TrustProxyConfig = fiber.TrustProxyConfig{Proxies: cfg.HTTP.TrustedProxies}
 		fc.ProxyHeader = fiber.HeaderXForwardedFor
+	} else if cfg.App.IsProduction() {
+		// Behind a tunnel or load balancer every client then shares one IP, so
+		// the per-IP rate limits become a single global bucket.
+		log.Warn("HTTP_TRUSTED_PROXIES is empty in production; per-IP rate limits see the proxy's address, not the client's")
 	}
 
 	app := fiber.New(fc)
-	app.Use(middleware.RequestID(), middleware.Recover(log))
+	app.Use(middleware.RequestID(), middleware.Recover(log), middleware.SecurityHeaders())
 	if len(cfg.HTTP.CORSAllowOrigins) > 0 {
 		app.Use(middleware.CORS(cfg.HTTP.CORSAllowOrigins))
 	}

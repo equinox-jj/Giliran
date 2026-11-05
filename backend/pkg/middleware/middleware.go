@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/cors"
+	"github.com/gofiber/fiber/v3/middleware/helmet"
 	"github.com/gofiber/fiber/v3/middleware/recover"
 	"github.com/gofiber/fiber/v3/middleware/requestid"
 )
@@ -37,5 +38,16 @@ func CORS(origins []string) fiber.Handler {
 		AllowOrigins:  origins,
 		AllowHeaders:  []string{fiber.HeaderAuthorization, fiber.HeaderContentType, "Idempotency-Key", fiber.HeaderXRequestID},
 		ExposeHeaders: []string{fiber.HeaderLocation, fiber.HeaderXRequestID, fiber.HeaderRetryAfter},
+	})
+}
+
+// SecurityHeaders sets nosniff, frame denial and a locked-down CSP on every
+// response. The only HTML the API serves is the public draw page, which has an
+// inline <style> and nothing else, so the policy allows inline styles only.
+func SecurityHeaders() fiber.Handler {
+	return helmet.New(helmet.Config{
+		ContentSecurityPolicy: "default-src 'none'; style-src 'unsafe-inline'; " +
+			"frame-ancestors 'none'; base-uri 'none'; form-action 'none'",
+		ReferrerPolicy: "no-referrer",
 	})
 }
