@@ -3,7 +3,7 @@
 # the MinIO bucket, both sent to an S3-compatible remote (R2, B2, another
 # MinIO...). Run it from the prod Compose file:
 #
-#   docker compose -f deploy/docker-compose.prod.yml run --rm backup
+#   docker compose --env-file .env -f deploy/docker-compose.prod.yml run --rm backup
 #
 # Reads POSTGRES_* and MINIO_* from ../.env like the other services, plus:
 #   BACKUP_S3_URL         remote endpoint, e.g. https://<account>.r2.cloudflarestorage.com

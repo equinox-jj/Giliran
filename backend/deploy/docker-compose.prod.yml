@@ -1,9 +1,17 @@
 # Production stack: API, worker, PostgreSQL and MinIO on one host (Dokploy).
 #
-#   docker compose -f deploy/docker-compose.prod.yml up -d --build
+#   docker compose --env-file .env -f deploy/docker-compose.prod.yml up -d --build
 #
-# Every container reads ../.env. Inside this network the services are reached
-# by name, so the production .env must use:
+# Run every command from backend/ with `--env-file .env` (Compose reads variables for
+# `${...}` from there; it only looks next to the compose file on its own), e.g.
+#   docker compose --env-file .env -f deploy/docker-compose.prod.yml up -d --build
+#
+# Least privilege: api, worker and river-migrate load the whole ../.env,
+# because the config validator needs it. postgres, migrate, minio, minio-init
+# and backup get only the variables listed under their `environment:`, so a
+# compromise of one of them doesn't expose the JWT, OTP or SMTP secrets.
+# Inside this network the services are reached by name, so the production .env
+# must use:
 #   DATABASE_URL=postgres://<user>:<password>@postgres:5432/<db>?sslmode=disable
 #   MINIO_ENDPOINT=minio:9000
 #   MINIO_PUBLIC_URL=https://<files hostname>
@@ -20,9 +28,9 @@
 # Two optional services sit behind profiles, so `up` leaves them out:
 #   backup      daily off-site pg_dump + MinIO mirror; schedule it on the host
 #               (cron or a Dokploy schedule), e.g. at 02:00 WIB:
-#               docker compose -f deploy/docker-compose.prod.yml run --rm backup
+#               docker compose --env-file .env -f deploy/docker-compose.prod.yml run --rm backup
 #   monitoring  Uptime Kuma on 127.0.0.1:3001 (reach it over Tailscale):
-#               docker compose -f deploy/docker-compose.prod.yml --profile monitoring up -d
+#               docker compose --env-file .env -f deploy/docker-compose.prod.yml --profile monitoring up -d
 name: giliran
 
 services:
@@ -77,7 +85,10 @@ services:
   postgres:
     image: postgres:18.6-alpine3.24
     restart: unless-stopped
-    env_file: ../.env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB}
     volumes:
       - postgres-data:/var/lib/postgresql
     healthcheck:
@@ -89,7 +100,10 @@ services:
 
   migrate:
     image: migrate/migrate:v4.20.1
-    env_file: ../.env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB}
     volumes:
       - ../db/migrations:/migrations:ro
     entrypoint:
@@ -107,7 +121,9 @@ services:
   minio:
     image: pgsty/minio:RELEASE.2026-08-04T00-00-00Z
     restart: unless-stopped
-    env_file: ../.env
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?set MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD}
     command: ["server", "/data", "--console-address", ":9001"]
     volumes:
       - minio-data:/data
@@ -120,7 +136,10 @@ services:
 
   minio-init:
     image: pgsty/minio:RELEASE.2026-08-04T00-00-00Z
-    env_file: ../.env
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?set MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD}
+      MINIO_BUCKET: ${MINIO_BUCKET:-giliran}
     entrypoint:
       - sh
       - -c
@@ -138,7 +157,18 @@ services:
     build:
       context: backup
     image: giliran-backup:local
-    env_file: ../.env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?set MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD}
+      MINIO_BUCKET: ${MINIO_BUCKET:-giliran}
+      BACKUP_S3_URL: ${BACKUP_S3_URL:-}
+      BACKUP_S3_ACCESS_KEY: ${BACKUP_S3_ACCESS_KEY:-}
+      BACKUP_S3_SECRET_KEY: ${BACKUP_S3_SECRET_KEY:-}
+      BACKUP_S3_BUCKET: ${BACKUP_S3_BUCKET:-}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-30}
     depends_on:
       postgres:
         condition: service_healthy
