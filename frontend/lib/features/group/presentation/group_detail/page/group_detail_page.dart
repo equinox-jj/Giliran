@@ -63,6 +63,9 @@ class const GroupDetailPage({
 
   /// Opens the group summary (S24) of a completed or closed group.
   required final VoidCallback onSummary,
+
+  /// Opens Reminders and recap (S41) for managers.
+  required final VoidCallback onReminders,
 }) extends ConsumerStatefulWidget {
   @override
   ConsumerState<GroupDetailPage> createState() => _GroupDetailPageState();
@@ -211,7 +214,7 @@ class _GroupDetailPageState() extends ConsumerState<GroupDetailPage> {
       case GroupMenuAction.leave:
         await _leave();
       case GroupMenuAction.reminders:
-        _comingSoon();
+        widget.onReminders();
     }
   }
 

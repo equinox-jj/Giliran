@@ -57,6 +57,7 @@ void main() {
         onFixedOrder: () => events.add('fixedOrder'),
         onLeaveRequests: () => events.add('leaveRequests'),
         onTransfer: () => events.add('transfer'),
+        onReminders: () => events.add('reminders'),
         onClosed: () => events.add('closed'),
       ),
       container: container,
@@ -86,6 +87,20 @@ void main() {
     // Assert
     expect(row(tester, 'Iuran').onTap, isNotNull);
     expect(find.text('Terkunci setelah arisan dimulai, supaya adil untuk semua anggota.'), findsNothing);
+  });
+
+  testWidgets('Pengingat & rekap opens Reminders and recap', (tester) async {
+    // Arrange
+    await pumpEdit(tester, _group);
+    final reminders = find.widgetWithText(SettingsRow, 'Pengingat & rekap');
+    await tester.scrollUntilVisible(reminders, 100);
+
+    // Act
+    await tester.tap(reminders);
+    await tester.pumpAndSettle();
+
+    // Assert
+    expect(events, ['reminders']);
   });
 
   testWidgets('group_not_draft on save shows the lock caption', (tester) async {

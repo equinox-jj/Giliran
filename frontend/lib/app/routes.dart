@@ -41,6 +41,7 @@ import '../features/draw/presentation/draw_result/page/draw_result_page.dart';
 import '../features/draw/presentation/draw_stage/page/draw_stage_page.dart';
 import '../features/payment/presentation/payout/page/payout_page.dart';
 import '../features/payment/presentation/proof_review/page/proof_review_page.dart';
+import '../features/reminder/presentation/reminders/page/reminders_page.dart';
 import '../features/payment/presentation/shared/widgets/payment_sync_listener.dart';
 import '../features/profile/presentation/delete_account/page/delete_account_page.dart';
 import '../features/profile/presentation/edit_profile/page/edit_profile_page.dart';
@@ -136,6 +137,10 @@ final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
                 TypedGoRoute<PayoutRoute>(
                   name: 'payout',
                   path: 'periods/:pid/payout',
+                ),
+                TypedGoRoute<RemindersRoute>(
+                  name: 'reminders',
+                  path: 'reminders',
                 ),
               ],
             ),
@@ -289,6 +294,7 @@ class const GroupDetailRoute({required final String gid, final String? tab, fina
     onBuktiKocok: (pid) => DrawResultRoute(gid: gid, pid: pid).push<void>(context),
     onPayout: (pid) => PayoutRoute(gid: gid, pid: pid).push<void>(context),
     onSummary: () => GroupSummaryRoute(gid: gid).push<void>(context),
+    onReminders: () => RemindersRoute(gid: gid).push<void>(context),
   );
 }
 
@@ -351,6 +357,17 @@ class const PayoutRoute({required final String gid, required final String pid}) 
   );
 }
 
+/// Reminders and recap (S41) for managers, over the tabs.
+class const RemindersRoute({required final String gid}) extends GoRouteData with $RemindersRoute {
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => RemindersPage(
+    groupId: gid,
+    onClose: () => _popOr(context, GroupDetailRoute(gid: gid).location),
+  );
+}
+
 /// Proof review (S35) for managers, or the payer's own proof, over the
 /// tabs.
 class const ProofReviewRoute({required final String gid, required final String payId})
@@ -377,6 +394,7 @@ class const EditGroupRoute({required final String gid}) extends GoRouteData with
     onFixedOrder: () => FixedOrderRoute(gid: gid).push<void>(context),
     onLeaveRequests: () => LeaveRequestsRoute(gid: gid).push<void>(context),
     onTransfer: () => TransferOfferRoute(gid: gid).push<void>(context),
+    onReminders: () => RemindersRoute(gid: gid).push<void>(context),
     // Closing ends the group (S19 → S24): the summary replaces Edit group.
     onClosed: () => GroupSummaryRoute(gid: gid).pushReplacement(context),
   );

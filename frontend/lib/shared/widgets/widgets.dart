@@ -54,6 +54,7 @@ export 'pin_pad.dart';
 export 'pressable.dart';
 export 'qris_card.dart';
 export 'readiness_checklist.dart';
+export 'recap_card.dart';
 export 'reorderable_member_row.dart';
 export 'search_field.dart';
 export 'section_header.dart';

@@ -330,6 +330,28 @@ class const _GroupsSection() extends StatelessWidget {
           onProof: (_) => showAppToast(context, 'Bukti Kocok'),
         ),
         _gap,
+        AspectRatio(
+          aspectRatio: 4 / 5,
+          child: FittedBox(
+            child: RecapExportFrame(
+              card: RecapCard(
+                groupName: 'Arisan RT 05',
+                periodNo: 4,
+                totalPeriods: 10,
+                paidCount: 8,
+                totalCount: 10,
+                collectedAmount: 1600000,
+                expectedAmount: 2000000,
+                unpaidNames: const ['Pak Dedi', 'Bu Ani'],
+                dueDate: DateTime.utc(2026, 10, 25),
+                drawDate: DateTime.utc(2026, 10, 26),
+                account: 'BCA 1234567890 a.n. Rina',
+                tone: GiliranColors.exportTones[0],
+              ),
+            ),
+          ),
+        ),
+        _gap,
         CurrentPeriodHero(
           title: 'Arisan RT 05',
           subtitle: 'Periode 4 dari 10',

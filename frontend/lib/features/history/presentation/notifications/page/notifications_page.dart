@@ -24,25 +24,7 @@ class const NotificationsPage({super.key, required final ValueChanged<Notificati
   ConsumerState<NotificationsPage> createState() => _NotificationsPageState();
 }
 
-class _NotificationsPageState() extends ConsumerState<NotificationsPage> with WidgetsBindingObserver {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  // Coming back from the system settings may have turned notifications on.
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) ref.read(pushPermissionControllerProvider.notifier).recheck();
-  }
-
+class _NotificationsPageState() extends ConsumerState<NotificationsPage> {
   Future<void> _open(NotificationEntry entry) async {
     final target = await ref.read(notificationsControllerProvider.notifier).open(entry);
     if (mounted) widget.onOpen(target);

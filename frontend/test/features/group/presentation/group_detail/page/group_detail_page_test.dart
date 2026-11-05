@@ -76,6 +76,7 @@ void main() {
         onBuktiKocok: (pid) => opened.add('bukti:$pid'),
         onPayout: (pid) => opened.add('payout:$pid'),
         onSummary: () => opened.add('summary'),
+        onReminders: () => opened.add('reminders'),
       ),
       container: container,
     );
@@ -168,6 +169,19 @@ void main() {
 
     // Assert
     expect(opened, ['edit']);
+  });
+
+  testWidgets('Pengingat in the menu opens Reminders and recap', (tester) async {
+    // Arrange
+    await pumpDetail(tester, _active.copyWith(myRole: MemberRole.organizer));
+    await openMenu(tester);
+
+    // Act
+    await tester.tap(find.text('Pengingat'));
+    await tester.pumpAndSettle();
+
+    // Assert
+    expect(opened, ['reminders']);
   });
 
   testWidgets('the organizer sees the review action with the pending count', (tester) async {

@@ -165,6 +165,12 @@ abstract final class ApiEndpoints() {
   /// The winner confirms the pot arrived (`POST`).
   static String payoutConfirm(String groupId, String periodId) => '/groups/$groupId/periods/$periodId/payout/confirm';
 
+  /// A period's recap data for the WhatsApp image and messages (`GET`).
+  static String recap(String groupId, String periodId) => '/groups/$groupId/periods/$periodId/recap';
+
+  /// Push reminders to unpaid members (`POST`).
+  static String reminders(String groupId, String periodId) => '/groups/$groupId/periods/$periodId/reminders';
+
   /// `extra` flag: skip attaching the access token (sign-in, refresh, public
   /// pages).
   static const String kNoAuth = 'noAuth';
