@@ -2,7 +2,7 @@
 
 Giliran is a transparent arisan (rotating savings group) manager. An organizer runs a group of members who each pay a fixed share every period. The app records who paid, draws the period's winner with a verifiable commit-reveal draw, and records the payout. **It records money; it never moves it.**
 
-This directory is the Go backend: a modular monolith with two binaries, `cmd/api` (Fiber HTTP API) and `cmd/worker` (River background jobs), on PostgreSQL and MinIO. The Flutter app lives in `../frontend`.
+This directory is the Go backend: a modular monolith with two binaries, `cmd/api` (Fiber HTTP API) and `cmd/worker` (River background jobs), on PostgreSQL and MinIO. The Flutter app lives in [`../frontend`](../frontend), and the [root README](../README.md) gives the overview of both.
 
 - Product spec: [`docs/PRD.md`](docs/PRD.md)
 - Database schema, state machines and the draw algorithm: [`docs/DB_SCHEME.md`](docs/DB_SCHEME.md)
