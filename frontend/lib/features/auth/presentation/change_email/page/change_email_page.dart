@@ -221,7 +221,6 @@ class const _PinStep({required final PinPadController controller, required final
         (s) => (failure: s.failure, submitting: s.submitting, lockedUntil: s.lockedUntil),
       ),
     );
-    final notifier = ref.read(changeEmailControllerProvider.notifier);
 
     return CurrentPinEntry(
       top: const _Steps(step: ChangeEmailStep.pin),
@@ -233,9 +232,9 @@ class const _PinStep({required final PinPadController controller, required final
       controller: controller,
       checking: submitting,
       lockedUntil: lockedUntil,
-      onLockFinished: notifier.lockFinished,
+      onLockFinished: () => ref.read(changeEmailControllerProvider.notifier).lockFinished(),
       onForgotPin: onForgotPin,
-      onCompleted: notifier.submitPin,
+      onCompleted: (pin) => ref.read(changeEmailControllerProvider.notifier).submitPin(pin),
     );
   }
 }
@@ -248,6 +247,7 @@ class const _CodeStep() extends ConsumerWidget {
     final state = ref.watch(emailOtpControllerProvider).value;
     final challenge = state?.pending?.challenge;
     if (challenge == null) return const SizedBox.shrink();
+
     final oldEmail = ref.watch(
       authSessionControllerProvider.select(
         (s) => switch (s.value) {
@@ -290,8 +290,6 @@ class const _CodeCard({required final String sentTo}) extends ConsumerWidget {
     final state = ref.watch(emailOtpControllerProvider).value;
     final challenge = state?.pending?.challenge;
     final (cardState, message) = emailCodeCardStateOf(context.l10n, state);
-    final notifier = ref.read(emailOtpControllerProvider.notifier);
-    final editEmail = ref.read(changeEmailControllerProvider.notifier).editEmail;
     final resending = state?.resending ?? false;
     final closed = cardState == EmailCodeCardState.expired || cardState == EmailCodeCardState.locked;
 
@@ -308,15 +306,15 @@ class const _CodeCard({required final String sentTo}) extends ConsumerWidget {
               expired: cardState == EmailCodeCardState.expired,
               message: message,
               resending: resending,
-              onRequestNew: notifier.resend,
-              onRestart: editEmail,
+              onRequestNew: () => ref.read(emailOtpControllerProvider.notifier).resend(),
+              onRestart: () => ref.read(changeEmailControllerProvider.notifier).editEmail(),
             )
           else ...[
             OtpInput(
               onCard: true,
               error: cardState == EmailCodeCardState.wrong,
               checking: cardState == EmailCodeCardState.checking || cardState == EmailCodeCardState.success,
-              onCompleted: notifier.verify,
+              onCompleted: (code) => ref.read(emailOtpControllerProvider.notifier).verify(code),
             ),
             if (message != null)
               Semantics(
@@ -333,7 +331,7 @@ class const _CodeCard({required final String sentTo}) extends ConsumerWidget {
                 expiresAt: challenge?.expiresAt,
                 resendAvailableAt: challenge?.resendAvailableAt,
                 resending: resending,
-                onResend: notifier.resend,
+                onResend: () => ref.read(emailOtpControllerProvider.notifier).resend(),
               ),
               // A 48 high secondary, between the regular and small sizes.
               SizedBox(

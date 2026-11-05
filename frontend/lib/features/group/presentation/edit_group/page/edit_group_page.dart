@@ -72,7 +72,7 @@ class const _EditGroupBody({
     final provider = editGroupControllerProvider(group.id ?? '');
     // Watched so the controller stays alive while a save is in flight.
     ref.watch(provider);
-    final controller = ref.read(provider.notifier);
+    final controller = ref.watch(provider.notifier);
     final draft = group.status == GroupStatus.draft;
     final organizer = group.myRole == MemberRole.organizer;
     final reminder = group.reminderDaysBefore ?? GroupRules.defaultReminderDays;

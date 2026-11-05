@@ -71,7 +71,7 @@ class _CreateGroupPageState() extends ConsumerState<CreateGroupPage> {
         if (!didPop) ref.read(_provider.notifier).editBasics();
       },
       child: Scaffold(
-        appBar: _StepTopBar(step: step, onBack: ref.read(_provider.notifier).editBasics),
+        appBar: _StepTopBar(step: step, onBack: () => ref.read(_provider.notifier).editBasics()),
         body: SafeArea(
           top: false,
           child: Column(
@@ -144,7 +144,7 @@ class const _BottomAction({required final CreateGroupControllerProvider provider
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final draft = ref.watch(provider);
-    final controller = ref.read(provider.notifier);
+    final controller = ref.watch(provider.notifier);
     final step1 = draft.step == 1;
     final ready = step1 ? controller.basicsErrors.isEmpty : draft.startDate != null;
     return Padding(

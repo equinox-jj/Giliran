@@ -103,7 +103,7 @@ class const _Header({required final NotificationFilter filter}) extends Consumer
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final controller = ref.read(notificationsControllerProvider.notifier);
+    final controller = ref.watch(notificationsControllerProvider.notifier);
     final labels = {
       NotificationFilter.all: l10n.notificationsFilterAll,
       NotificationFilter.unread: l10n.notificationsFilterUnread,

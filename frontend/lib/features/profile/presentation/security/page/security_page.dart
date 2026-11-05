@@ -101,7 +101,7 @@ class const _Devices() extends ConsumerWidget {
           message: l10n.securityDevicesFailed,
           variant: AppBannerVariant.error,
           actionLabel: l10n.commonRetry,
-          onAction: ref.read(sessionsControllerProvider.notifier).reload,
+          onAction: ref.watch(sessionsControllerProvider.notifier).reload,
         ),
       ),
       _ => const SliverToBoxAdapter(child: _LoadingRows()),

@@ -81,7 +81,7 @@ class const PaymentsTab({
             today: today,
             manager: manager,
             filter: state.filter,
-            onFilter: ref.read(provider.notifier).setFilter,
+            onFilter: ref.watch(provider.notifier).setFilter,
             onUpload: actions.onUpload,
           ),
         ),

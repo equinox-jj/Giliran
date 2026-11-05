@@ -132,7 +132,6 @@ class const _Body({
     }
 
     final (cardState, message) = emailCodeCardStateOf(context.l10n, state);
-    final notifier = ref.read(emailOtpControllerProvider.notifier);
     return _CodeStep(
       emailMasked: emailMasked,
       state: cardState,
@@ -142,7 +141,7 @@ class const _Body({
       resending: state.resending,
       onCompleted: onVerifyCode,
       onChangeEmail: () => onChangeEmail(email),
-      onResend: notifier.resend,
+      onResend: () => ref.read(emailOtpControllerProvider.notifier).resend(),
       onOpenMail: () => openMailApp(context, ref),
     );
   }

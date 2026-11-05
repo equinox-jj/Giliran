@@ -22,8 +22,8 @@ class const ScheduleStep({super.key, required final CreateGroupControllerProvide
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final draft = ref.watch(provider);
-    final controller = ref.read(provider.notifier);
-    final today = AppDate.jakartaToday(ref.read(clockProvider)());
+    final controller = ref.watch(provider.notifier);
+    final today = AppDate.jakartaToday(ref.watch(clockProvider)());
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [

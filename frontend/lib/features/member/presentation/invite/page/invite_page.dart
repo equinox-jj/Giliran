@@ -221,7 +221,7 @@ class const _SlotsSection({required final String groupId}) extends ConsumerWidge
     );
     final members = ref.watch(membersControllerProvider(groupId).select((s) => s.value ?? const <Member>[]));
     final bySlot = {for (final m in members) m.slotNo: m};
-    final nextSlot = ref.read(nextFreeSlotUseCaseProvider)((members: members, totalSlots: total));
+    final nextSlot = ref.watch(nextFreeSlotUseCaseProvider)((members: members, totalSlots: total));
     final margin = context.screenMargin;
 
     Future<void> addGuest() async {

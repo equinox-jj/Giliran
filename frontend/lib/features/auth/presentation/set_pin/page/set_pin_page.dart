@@ -78,7 +78,7 @@ class const _Entry({
       error: setPinErrorMessage(context.l10n, failure),
       controller: controller,
       checking: checking,
-      onCompleted: ref.read(setPinControllerProvider.notifier).enter,
+      onCompleted: (pin) => ref.read(setPinControllerProvider.notifier).enter(pin),
     );
   }
 }

@@ -83,7 +83,7 @@ class const _FixedOrderBody({
     final saving = ref.watch(provider.select((s) => s.value?.saving ?? false));
     final incomplete = order.length < totalSlots;
     final margin = context.screenMargin;
-    final notifier = ref.read(provider.notifier);
+    final notifier = ref.watch(provider.notifier);
 
     void move(int from, int to) {
       HapticFeedback.selectionClick();

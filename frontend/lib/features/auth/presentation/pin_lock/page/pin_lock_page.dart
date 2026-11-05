@@ -213,7 +213,6 @@ class const _LockPad({
     final state = ref.watch(pinLockControllerProvider);
     final biometric = ref.watch(biometricControllerProvider).value;
     final kind = biometric?.kind;
-    final notifier = ref.read(pinLockControllerProvider.notifier);
     final wrongPin = state.failure?.apiCode == ApiErrorCode.pinInvalid;
 
     return ValueListenableBuilder(
@@ -238,9 +237,9 @@ class const _LockPad({
           expand: true,
           header: const _Greeting(),
           footer: footer,
-          onCompleted: notifier.verify,
+          onCompleted: (pin) => ref.read(pinLockControllerProvider.notifier).verify(pin),
           onBiometric: biometric?.enabled == true && kind != null
-              ? () => notifier.unlockWithBiometric(context.l10n.authBiometricReason)
+              ? () => ref.read(pinLockControllerProvider.notifier).unlockWithBiometric(context.l10n.authBiometricReason)
               : null,
           biometricIcon: kind?.icon ?? AppIcons.fingerprint,
           biometricLabel: context.l10n.authUnlockWith(name ?? context.l10n.authBiometricFingerprint),

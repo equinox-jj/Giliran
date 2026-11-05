@@ -395,7 +395,6 @@ class const _CodeStep({
     final challenge = state?.pending?.challenge;
     if (challenge == null) return const SizedBox.shrink();
     final (cardState, message) = emailCodeCardStateOf(context.l10n, state);
-    final notifier = ref.read(emailOtpControllerProvider.notifier);
 
     return EmailCodeCard(
       emailMasked: challenge.emailMasked ?? '',
@@ -404,8 +403,8 @@ class const _CodeStep({
       onCompleted: onCompleted,
       resendAvailableAt: challenge.resendAvailableAt,
       resending: state?.resending ?? false,
-      onResend: notifier.resend,
-      onRequestNew: notifier.resend,
+      onResend: () => ref.read(emailOtpControllerProvider.notifier).resend(),
+      onRequestNew: () => ref.read(emailOtpControllerProvider.notifier).resend(),
       onRestart: onRestart,
       onOpenMail: () => openMailApp(context, ref),
     );

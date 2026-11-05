@@ -241,7 +241,7 @@ class const _AvatarSection() extends ConsumerWidget {
       done: avatar.done && avatar.localPath != null,
       size: AppSizes.avatarXxl,
       onTap: () => _change(context, ref, hasPhoto: avatar.hasPhoto),
-      onRetry: ref.read(avatarControllerProvider.notifier).retry,
+      onRetry: ref.watch(avatarControllerProvider.notifier).retry,
     );
   }
 }

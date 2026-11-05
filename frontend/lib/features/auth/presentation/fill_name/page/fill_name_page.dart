@@ -150,7 +150,7 @@ class const _AvatarSection() extends ConsumerWidget {
       errorText: avatar.failure?.displayMessage(context.l10n),
       done: avatar.done,
       onTap: () => _change(context, ref, hasPhoto: avatar.hasPhoto),
-      onRetry: ref.read(avatarControllerProvider.notifier).retry,
+      onRetry: () => ref.read(avatarControllerProvider.notifier).retry(),
     );
   }
 }

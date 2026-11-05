@@ -1,8 +1,7 @@
-import '../../../../../core/l10n/l10n.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../../../../core/l10n/l10n.dart';
 import '../../../../../core/themes/themes.dart';
 import '../../../../../shared/widgets/widgets.dart';
 import '../../set_pin/page/set_pin_page.dart';
@@ -89,7 +88,6 @@ class const _Entry({
         (s) => (failure: s.failure, checking: s.submitting || s.done, lockedUntil: s.lockedUntil),
       ),
     );
-    final notifier = ref.read(changePinControllerProvider.notifier);
     final pills = StepPills(
       labels: [context.l10n.authStepOldPin, context.l10n.authStepNewPin, context.l10n.authStepRepeat],
       current: step.index,
@@ -106,9 +104,9 @@ class const _Entry({
         error: wrongPinMessage(context.l10n, failure),
         controller: controller,
         lockedUntil: lockedUntil,
-        onLockFinished: notifier.lockFinished,
+        onLockFinished: () => ref.read(changePinControllerProvider.notifier).lockFinished(),
         onForgotPin: onForgotPin,
-        onCompleted: notifier.enter,
+        onCompleted: (pin) => ref.read(changePinControllerProvider.notifier).enter(pin),
       ),
       ChangePinStep.newPin => PinEntry(
         top: pills,
@@ -118,7 +116,7 @@ class const _Entry({
         caption: context.l10n.authNewPinCaption,
         error: setPinErrorMessage(context.l10n, failure),
         controller: controller,
-        onCompleted: notifier.enter,
+        onCompleted: (pin) => ref.read(changePinControllerProvider.notifier).enter(pin),
       ),
       ChangePinStep.confirm => PinEntry(
         top: pills,
@@ -129,7 +127,7 @@ class const _Entry({
         error: setPinErrorMessage(context.l10n, failure),
         controller: controller,
         checking: checking,
-        onCompleted: notifier.enter,
+        onCompleted: (pin) => ref.read(changePinControllerProvider.notifier).enter(pin),
       ),
     };
   }
