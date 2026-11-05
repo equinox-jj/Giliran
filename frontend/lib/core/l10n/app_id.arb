@@ -4152,5 +4152,279 @@
   "summaryClosedBanner": "Arisan sudah ditutup",
   "@summaryClosedBanner": {
     "description": "S24 banner over the read-only tabs of a closed group."
+  },
+  "remindersHeadline": "**{count} orang** belum bayar periode {period}",
+  "@remindersHeadline": {
+    "description": "S41 headline.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      },
+      "period": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  },
+  "remindersShareRecap": "Bagikan rekap ke grup WhatsApp",
+  "@remindersShareRecap": {
+    "description": "S41 primary under the recap preview."
+  },
+  "remindersShareText": "Rekap {group} periode {period}",
+  "@remindersShareText": {
+    "description": "S41 text sent with the recap image.",
+    "placeholders": {
+      "group": {
+        "type": "String",
+        "example": "Arisan RT 05"
+      },
+      "period": {
+        "type": "int",
+        "example": "4"
+      }
+    }
+  },
+  "remindersExportFailed": "Gambar rekap gagal dibuat. Coba lagi.",
+  "@remindersExportFailed": {
+    "description": "S41 toast when the recap image export fails."
+  },
+  "remindersOneByOne": "Ingatkan satu per satu",
+  "@remindersOneByOne": {
+    "description": "S41 section header over the unpaid rows."
+  },
+  "remindersGuestCaption": "Tamu · lewat WhatsApp saja",
+  "@remindersGuestCaption": {
+    "description": "S41 unpaid row caption for a guest (no app, no push)."
+  },
+  "remindersWhatsAppSemantics": "Ingatkan {name} lewat WhatsApp",
+  "@remindersWhatsAppSemantics": {
+    "description": "S41 WhatsApp circle button label.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Bu Ani"
+      }
+    }
+  },
+  "remindersSend": "Kirim notifikasi ke {count} orang",
+  "@remindersSend": {
+    "description": "S41 docked primary.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "remindersSelectSomeone": "Pilih siapa yang diingatkan.",
+  "@remindersSelectSomeone": {
+    "description": "S41 disabled reason of the send button."
+  },
+  "remindersSent": "Notifikasi terkirim ke {count} orang",
+  "@remindersSent": {
+    "description": "S41 toast after sending.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "remindersRetryIn": "Bisa kirim lagi dalam ",
+  "@remindersRetryIn": {
+    "description": "S41 countdown prefix after rate_limit_exceeded."
+  },
+  "remindersAllPaidTitle": "Semua sudah bayar",
+  "@remindersAllPaidTitle": {
+    "description": "S41 empty state title."
+  },
+  "remindersAllPaidMessage": "Bagikan rekap supaya grup tahu iuran periode ini sudah lengkap.",
+  "@remindersAllPaidMessage": {
+    "description": "S41 empty state message."
+  },
+  "remindersNoPeriodTitle": "Belum ada periode berjalan",
+  "@remindersNoPeriodTitle": {
+    "description": "S41 state when the group has no open period."
+  },
+  "remindersNoPeriodMessage": "Pengingat bisa dikirim setelah arisan dimulai.",
+  "@remindersNoPeriodMessage": {
+    "description": "S41 state message when there is no open period."
+  },
+  "remindersSkippedTitle": "{count} orang tidak dapat notifikasi",
+  "@remindersSkippedTitle": {
+    "description": "S41 skipped sheet title.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "remindersSkippedHint": "Ingatkan mereka lewat WhatsApp.",
+  "@remindersSkippedHint": {
+    "description": "S41 skipped sheet subtitle."
+  },
+  "remindersSkipGuest": "Tamu",
+  "@remindersSkipGuest": {
+    "description": "S41 skip reason: guest without the app."
+  },
+  "remindersSkipNoDevice": "Tidak ada perangkat",
+  "@remindersSkipNoDevice": {
+    "description": "S41 skip reason: no signed-in device."
+  },
+  "remindersSkipNotificationsOff": "Notifikasi mati",
+  "@remindersSkipNotificationsOff": {
+    "description": "S41 skip reason: reminders turned off."
+  },
+  "remindersSkipRecentlyReminded": "Baru diingatkan",
+  "@remindersSkipRecentlyReminded": {
+    "description": "S41 skip reason: reminded in the last 6 hours."
+  },
+  "remindersSkipAlreadyPaid": "Sudah bayar",
+  "@remindersSkipAlreadyPaid": {
+    "description": "S41 skip reason: paid or proof waiting."
+  },
+  "remindersSkipOther": "Lainnya",
+  "@remindersSkipOther": {
+    "description": "S41 skip reason this app version doesn't know."
+  },
+  "remindersWhatsAppBody": "Halo {name}, iuran {group} periode {period} sebesar {amount} jatuh tempo {due}.",
+  "@remindersWhatsAppBody": {
+    "description": "WhatsApp reminder text: first sentence.",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "Bu Ani"
+      },
+      "group": {
+        "type": "String",
+        "example": "Arisan RT 05"
+      },
+      "period": {
+        "type": "int",
+        "example": "4"
+      },
+      "amount": {
+        "type": "String",
+        "example": "Rp200.000"
+      },
+      "due": {
+        "type": "String",
+        "example": "Sab, 25 Okt"
+      }
+    }
+  },
+  "remindersWhatsAppAccount": "Transfer ke {bank} {number} a.n. {holder}.",
+  "@remindersWhatsAppAccount": {
+    "description": "WhatsApp reminder text: the organizer's account.",
+    "placeholders": {
+      "bank": {
+        "type": "String",
+        "example": "BCA"
+      },
+      "number": {
+        "type": "String",
+        "example": "1234567890"
+      },
+      "holder": {
+        "type": "String",
+        "example": "Rina"
+      }
+    }
+  },
+  "remindersWhatsAppClosing": "Terima kasih 🙏",
+  "@remindersWhatsAppClosing": {
+    "description": "WhatsApp reminder text: closing."
+  },
+  "recapPeriod": "Periode {period} dari {total}",
+  "@recapPeriod": {
+    "description": "Recap card (9.11) title.",
+    "placeholders": {
+      "period": {
+        "type": "int",
+        "example": "4"
+      },
+      "total": {
+        "type": "int",
+        "example": "10"
+      }
+    }
+  },
+  "recapOfExpected": "dari {amount}",
+  "@recapOfExpected": {
+    "description": "Recap card line under the collected amount.",
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "Rp2.000.000"
+      }
+    }
+  },
+  "recapUnpaidTitle": "Belum bayar:",
+  "@recapUnpaidTitle": {
+    "description": "Recap card unpaid list title."
+  },
+  "recapMore": "+{count} lainnya",
+  "@recapMore": {
+    "description": "Recap card after the first 8 unpaid names.",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "recapAllPaid": "Semua sudah bayar ✓",
+  "@recapAllPaid": {
+    "description": "Recap card when nobody is unpaid."
+  },
+  "recapDueDate": "Jatuh tempo",
+  "@recapDueDate": {
+    "description": "Recap card row label."
+  },
+  "recapDrawDate": "Kocokan",
+  "@recapDrawDate": {
+    "description": "Recap card row label."
+  },
+  "recapTransfer": "Transfer",
+  "@recapTransfer": {
+    "description": "Recap card row label."
+  },
+  "recapAccount": "{bank} {number} a.n. {holder}",
+  "@recapAccount": {
+    "description": "Recap card transfer value.",
+    "placeholders": {
+      "bank": {
+        "type": "String",
+        "example": "BCA"
+      },
+      "number": {
+        "type": "String",
+        "example": "1234567890"
+      },
+      "holder": {
+        "type": "String",
+        "example": "Rina"
+      }
+    }
+  },
+  "recapFooter": "dibuat dengan Giliran",
+  "@recapFooter": {
+    "description": "Recap card footer."
+  },
+  "recapRingSemantics": "{paid} dari {total} sudah bayar",
+  "@recapRingSemantics": {
+    "description": "Recap card ring screen reader label.",
+    "placeholders": {
+      "paid": {
+        "type": "int",
+        "example": "8"
+      },
+      "total": {
+        "type": "int",
+        "example": "10"
+      }
+    }
   }
 }

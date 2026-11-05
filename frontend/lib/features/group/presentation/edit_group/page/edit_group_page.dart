@@ -31,6 +31,9 @@ class const EditGroupPage({
   required final VoidCallback onLeaveRequests,
   required final VoidCallback onTransfer,
 
+  /// Opens Reminders and recap (S41).
+  required final VoidCallback onReminders,
+
   /// Called after the group was closed.
   required final VoidCallback onClosed,
 }) extends ConsumerWidget {
@@ -47,6 +50,7 @@ class const EditGroupPage({
               onFixedOrder: onFixedOrder,
               onLeaveRequests: onLeaveRequests,
               onTransfer: onTransfer,
+              onReminders: onReminders,
               onClosed: onClosed,
             ),
     );
@@ -59,6 +63,7 @@ class const _EditGroupBody({
   required final VoidCallback onFixedOrder,
   required final VoidCallback onLeaveRequests,
   required final VoidCallback onTransfer,
+  required final VoidCallback onReminders,
   required final VoidCallback onClosed,
 }) extends ConsumerWidget {
   @override
@@ -259,11 +264,10 @@ class const _EditGroupBody({
                   label: l10n.editGroupFixedOrder,
                   onTap: onFixedOrder,
                 ),
-              // Reminders (S41) land with Phase 7.
               SettingsRow.navigation(
                 icon: AppIcons.chatCircle,
                 label: l10n.editGroupRemindersRecap,
-                onTap: () => showAppToast(context, l10n.comingSoon),
+                onTap: onReminders,
               ),
               SettingsRow.navigation(
                 icon: AppIcons.signOut,

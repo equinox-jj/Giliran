@@ -1,3 +1,4 @@
+import 'package:material_ui/material_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../../core/services/push_service.dart';
@@ -9,7 +10,13 @@ part 'push_permission_controller.g.dart';
 @Riverpod(keepAlive: true)
 class PushPermissionController() extends _$PushPermissionController {
   @override
-  Future<PushPermission> build() => ref.watch(pushServiceProvider).permission();
+  Future<PushPermission> build() {
+    // The user can flip it in the system settings at any time, so read it
+    // again whenever the app comes back to the foreground.
+    final lifecycle = AppLifecycleListener(onResume: recheck);
+    ref.onDispose(lifecycle.dispose);
+    return ref.watch(pushServiceProvider).permission();
+  }
 
   /// Reads the permission again (after returning from the system settings).
   Future<void> recheck() async {
