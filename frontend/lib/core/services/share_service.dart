@@ -10,8 +10,8 @@ import '../utils/logger/app_logger.dart';
 part 'share_service.g.dart';
 
 /// Hands text, images and links to other apps: the system share sheet,
-/// WhatsApp through `wa.me`, and the browser. Used by Invite (S16), the claim
-/// link sheet (S28) and the public verification fallback (`/v/:code`).
+/// WhatsApp through `wa.me`, and the browser. Used by Invite, the claim
+/// link sheet and the public verification fallback (`/v/:code`).
 class const ShareService() {
   static const _tag = 'share';
 

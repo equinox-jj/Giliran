@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
 
 /// Push notifications received on this device, for the Aktivitas tab
-/// (S12). Not mirrored from the API: rows come from FCM payloads, and the
+///. Not mirrored from the API: rows come from FCM payloads, and the
 /// read flag is local only.
 @DataClassName('NotificationRow')
 @TableIndex.sql('CREATE INDEX notifications_created_idx ON notifications (created_at DESC)')

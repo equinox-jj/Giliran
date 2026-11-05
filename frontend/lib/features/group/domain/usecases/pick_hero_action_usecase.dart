@@ -17,7 +17,7 @@ enum HeroAction() {
   viewBuktiKocok,
   continueSetup,
 
-  /// The group is completed or closed: open its summary (S24).
+  /// The group is completed or closed: open its summary.
   viewSummary,
   none,
 }

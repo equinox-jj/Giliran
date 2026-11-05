@@ -7,8 +7,8 @@ import '../../../member/domain/entities/member.dart';
 
 part 'payment.freezed.dart';
 
-/// One slot's dues for one period: a row on the payment board (S20), and
-/// with [proofs] the detail Proof review (S35) reads.
+/// One slot's dues for one period: a row on the payment board, and
+/// with [proofs] the detail Proof review reads.
 @freezed
 abstract class const Payment._() with _$Payment {
   const factory({

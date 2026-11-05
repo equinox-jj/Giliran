@@ -7,7 +7,7 @@ part 'locale_controller.g.dart';
 
 /// The app language, `id` (default) or `en`, stored in [Preferences].
 ///
-/// `GiliranApp` reads it for `MaterialApp.locale`; the S47 language setting
+/// `GiliranApp` reads it for `MaterialApp.locale`; the language setting
 /// calls [set], which applies without a restart.
 @Riverpod(keepAlive: true)
 class LocaleController() extends _$LocaleController {

@@ -33,7 +33,7 @@ abstract class DeleteAccountState with _$DeleteAccountState {
   }) = _DeleteAccountState;
 }
 
-/// The three-step Delete account flow (S48).
+/// The three-step Delete account flow.
 @riverpod
 class DeleteAccountController() extends _$DeleteAccountController {
   @override

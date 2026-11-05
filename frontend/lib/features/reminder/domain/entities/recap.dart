@@ -12,7 +12,7 @@ abstract class RecapUnpaid with _$RecapUnpaid {
   const factory({MemberRef? member, String? whatsappPhone}) = _RecapUnpaid;
 }
 
-/// A period's status for Reminders and recap (S41): what the WhatsApp recap
+/// A period's status for Reminders and recap: what the WhatsApp recap
 /// image shows and what the reminder messages quote.
 @freezed
 abstract class const Recap._() with _$Recap {

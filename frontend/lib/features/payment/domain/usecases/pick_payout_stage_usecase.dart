@@ -6,7 +6,7 @@ import '../entities/period.dart';
 
 part 'pick_payout_stage_usecase.g.dart';
 
-/// Which version of the payout screen (S40) the viewer sees.
+/// Which version of the payout screen the viewer sees.
 enum PayoutStage() {
   /// Organizer, not recorded yet: the record form.
   record,

@@ -11,7 +11,7 @@ import '../../shared/activity_copy.dart';
 import '../../shared/widgets/day_header.dart';
 import '../controllers/activity_tab_controller.dart';
 
-/// The Aktivitas tab (S23) as a sliver inside the group detail scroll
+/// The Aktivitas tab as a sliver inside the group detail scroll
 /// view: the append-only notice, activity rows grouped by Jakarta day and
 /// an end row that loads older pages (cursor pagination, 30 per page)
 /// until "Ini awal riwayat grup.".

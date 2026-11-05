@@ -10,7 +10,7 @@ import '../repositories/member_repository.dart';
 
 part 'request_leave_usecase.g.dart';
 
-/// Asks the organizer to let the caller leave (S30). A blank reason is
+/// Asks the organizer to let the caller leave. A blank reason is
 /// left out; one over 500 characters fails before any request.
 class const RequestLeaveUseCase(final MemberRepository _repository)
     implements UseCase<LeaveRequest, ({String groupId, String? reason})> {

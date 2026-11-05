@@ -17,7 +17,7 @@ import '../../../domain/usecases/watch_payout_usecase.dart';
 part 'payout_controller.freezed.dart';
 part 'payout_controller.g.dart';
 
-/// The payout screen (S40): the cached payout, and the organizer's record
+/// The payout screen: the cached payout, and the organizer's record
 /// form (optional proof, note, "Uang sudah saya serahkan").
 @freezed
 abstract class const PayoutState._() with _$PayoutState {

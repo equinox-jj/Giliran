@@ -12,7 +12,7 @@ import '../../../../group/presentation/group_detail/controllers/group_detail_con
 import '../../../domain/entities/member.dart';
 import '../controllers/fixed_order_controller.dart';
 
-/// Fixed order (S17): "Atur urutan giliran", drag or move rows (1 wins
+/// Fixed order: "Atur urutan giliran", drag or move rows (1 wins
 /// first), "Acak urutan" with undo, and a docked "Simpan urutan". Leaving
 /// with unsaved changes asks "Simpan perubahan?". Outside draft the list is
 /// read-only under "Urutan dikunci setelah arisan dimulai".

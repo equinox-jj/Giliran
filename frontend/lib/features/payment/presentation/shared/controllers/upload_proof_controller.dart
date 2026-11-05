@@ -10,7 +10,7 @@ import '../../../domain/usecases/upload_proof_usecase.dart';
 part 'upload_proof_controller.freezed.dart';
 part 'upload_proof_controller.g.dart';
 
-/// The Upload proof sheet (S34): the picked image, the "I transferred"
+/// The Upload proof sheet: the picked image, the "I transferred"
 /// check, upload progress, and the last failure.
 @freezed
 abstract class const UploadProofState._() with _$UploadProofState {

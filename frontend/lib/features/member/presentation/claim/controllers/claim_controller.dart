@@ -10,7 +10,7 @@ part 'claim_controller.g.dart';
 /// failure.
 typedef ClaimOutcome = ({String? groupId, Failure? failure});
 
-/// Claim guest slot (S29): whether the claim is running.
+/// Claim guest slot: whether the claim is running.
 @riverpod
 class ClaimController() extends _$ClaimController {
   @override

@@ -17,7 +17,7 @@ import '../../../domain/entities/payment.dart';
 import '../controllers/proof_review_controller.dart';
 import '../widgets/reject_reason_sheet.dart';
 
-/// Proof review (S35) for managers, or the payer's own proof viewer: the
+/// Proof review for managers, or the payer's own proof viewer: the
 /// image viewer on top and a panel with the payer, the expected amount,
 /// the upload time and period. Managers approve (after a confirmation
 /// sheet) or reject (with a reason) a pending proof, and swipe between the
@@ -123,12 +123,14 @@ class _ProofReviewPageState() extends ConsumerState<ProofReviewPage> {
       groupDetailControllerProvider(widget.groupId).select((s) => s.value?.group?.isManager ?? false),
     );
     final viewer = _Viewer(
-      provider: _provider,
+      groupId: widget.groupId,
+      paymentId: widget.paymentId,
       title: manager ? l10n.proofReviewTitle : l10n.proofViewerTitle,
       onClose: widget.onClose,
     );
     final panel = _Panel(
-      provider: _provider,
+      groupId: widget.groupId,
+      paymentId: widget.paymentId,
       manager: manager,
       periodNo: _periodNo,
       onApprove: _approve,
@@ -157,13 +159,15 @@ class _ProofReviewPageState() extends ConsumerState<ProofReviewPage> {
 }
 
 class const _Viewer({
-  required final ProofReviewControllerProvider provider,
+  required final String groupId,
+  required final String paymentId,
   required final String title,
   required final VoidCallback onClose,
 }) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    final provider = proofReviewControllerProvider(groupId, paymentId);
     final payment = ref.watch(provider.select((s) => s.current));
     final failure = ref.watch(provider.select((s) => s.loadFailure));
     final proofs = payment?.proofs ?? [?payment?.currentProof];
@@ -191,7 +195,8 @@ class const _Viewer({
 }
 
 class const _Panel({
-  required final ProofReviewControllerProvider provider,
+  required final String groupId,
+  required final String paymentId,
   required final bool manager,
   required final int? Function(Payment?) periodNo,
   required final VoidCallback onApprove,
@@ -202,6 +207,7 @@ class const _Panel({
     final l10n = context.l10n;
     final c = context.colors;
     final t = AppTextStyles.of(context);
+    final provider = proofReviewControllerProvider(groupId, paymentId);
     final state = ref.watch(provider);
     final online = ref.watch(connectivityControllerProvider.select((s) => s.value ?? true));
     final payment = state.current;

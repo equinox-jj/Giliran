@@ -10,7 +10,7 @@ import '../repositories/member_repository.dart';
 
 part 'add_guest_usecase.g.dart';
 
-/// Adds a guest (no account) to the next free slot (S27). A name outside
+/// Adds a guest (no account) to the next free slot. A name outside
 /// [MemberRules] fails with a [ValidationFailure] before any request.
 class const AddGuestUseCase(final MemberRepository _repository)
     implements UseCase<Member, ({String groupId, GuestInput input})> {

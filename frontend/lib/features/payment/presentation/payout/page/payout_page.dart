@@ -19,7 +19,7 @@ import '../../../domain/usecases/pick_payout_stage_usecase.dart';
 import '../controllers/payout_controller.dart';
 import '../controllers/payout_stage_provider.dart';
 
-/// Payout (S40): the organizer records that the pot went to the winner
+/// Payout: the organizer records that the pot went to the winner
 /// (optional proof and note); the winner confirms receipt, or taps "Belum
 /// terima" for advice without telling the server anything; everyone else
 /// sees whether it is waiting or confirmed. No doodles on this screen.

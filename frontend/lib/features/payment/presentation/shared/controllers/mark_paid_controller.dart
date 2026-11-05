@@ -10,7 +10,7 @@ import '../../../domain/usecases/mark_paid_usecase.dart';
 part 'mark_paid_controller.freezed.dart';
 part 'mark_paid_controller.g.dart';
 
-/// The Mark paid sheet (S36): method, note and the "money received" check.
+/// The Mark paid sheet: method, note and the "money received" check.
 @freezed
 abstract class const MarkPaidState._() with _$MarkPaidState {
   const factory({
@@ -26,7 +26,7 @@ abstract class const MarkPaidState._() with _$MarkPaidState {
   bool get canSubmit => confirmed && !submitting && !noteTooLong;
 }
 
-/// Records a payment as paid (S36). The mark's [IdempotencyKey] is made on
+/// Records a payment as paid. The mark's [IdempotencyKey] is made on
 /// the first submit and reused on retries; offline the mark is queued.
 @riverpod
 class MarkPaidController() extends _$MarkPaidController {

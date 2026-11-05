@@ -15,7 +15,7 @@ import '../../../../../shared/widgets/widgets.dart';
 import '../../../domain/entities/invite_preview.dart';
 import '../controllers/join_controller.dart';
 
-/// Join preview (S25) for invite [code]: who invites, the dues, the start
+/// Join preview for invite [code]: who invites, the dues, the start
 /// date and the slot fill, then "Gabung". An existing member gets "Buka
 /// grup"; a full or started group a banner and a disabled button; a bad
 /// code the "Link undangan tidak berlaku" empty state.

@@ -7,7 +7,7 @@ import '../entities/cycle_summary.dart';
 
 part 'build_cycle_summary_usecase.g.dart';
 
-/// Sums up a finished cycle for the Cycle Summary card (S24): periods and
+/// Sums up a finished cycle for the Cycle Summary card: periods and
 /// winners, money collected, the share of dues paid, the members, and for
 /// a group closed early the periods it never drew. Works from the cached
 /// group and periods only (no extra API). Pure and synchronous, so it does

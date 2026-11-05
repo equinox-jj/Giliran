@@ -49,7 +49,7 @@ class const Preferences(final SharedPreferencesAsync _prefs) {
   Future<void> saveUserSettings(String? value) =>
       value == null ? _prefs.remove(_userSettingsKey) : _prefs.setString(_userSettingsKey, value);
 
-  /// Whether S47 "Sembunyikan layar di app terbaru" is on (Android
+  /// Whether "Sembunyikan layar di app terbaru" is on (Android
   /// `FLAG_SECURE`). Off by default.
   Future<bool> readSecureScreen() async => await _prefs.getBool(_secureScreenKey) ?? false;
 

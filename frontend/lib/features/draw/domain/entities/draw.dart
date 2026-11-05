@@ -14,7 +14,7 @@ abstract class DrawSlot with _$DrawSlot {
   const factory({String? slotId, int? slotNo, String? displayName}) = _DrawSlot;
 }
 
-/// A period's draw (S37–S39): the published commitment before it runs, and
+/// A period's draw: the published commitment before it runs, and
 /// the revealed seed, eligible slots and winner after.
 @freezed
 abstract class const Draw._() with _$Draw {
@@ -44,7 +44,7 @@ abstract class const Draw._() with _$Draw {
   bool get isFixedOrder => method == DrawMethod.fixedOrder || algorithm == DrawAlgorithm.fixedOrderV1;
 }
 
-/// The device's own check of a draw (S39): the seed matches the published
+/// The device's own check of a draw: the seed matches the published
 /// hash, and recomputing the algorithm picks the same winner.
 @freezed
 abstract class const DrawVerification._() with _$DrawVerification {

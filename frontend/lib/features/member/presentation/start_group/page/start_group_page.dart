@@ -14,7 +14,7 @@ import '../../../../group/domain/entities/group.dart';
 import '../../../domain/entities/readiness.dart';
 import '../controllers/start_group_controller.dart';
 
-/// Start group (S18): "Siap mulai arisan?", the readiness checklist with a
+/// Start group: "Siap mulai arisan?", the readiness checklist with a
 /// fix action per missing item, the settings summary, what happens next,
 /// and "Mulai arisan" behind a confirmation sheet with a consent row. A
 /// `409` from the server highlights the item it names.

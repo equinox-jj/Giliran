@@ -11,7 +11,7 @@ import '../../../../../shared/widgets/widgets.dart';
 import '../../../domain/entities/claim_link.dart';
 import '../../../domain/entities/member.dart';
 
-/// Opens Guest claim link (S28) for [guest] with a fresh [link].
+/// Opens Guest claim link for [guest] with a fresh [link].
 Future<void> showClaimLinkSheet(
   BuildContext context, {
   required Member guest,

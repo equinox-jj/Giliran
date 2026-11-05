@@ -16,7 +16,7 @@ import '../../../domain/usecases/transfer_candidates_usecase.dart';
 import '../../shared/controllers/members_controller.dart';
 import '../controllers/transfer_offer_controller.dart';
 
-/// Transfer ownership offer (S32), organizer only: "Serahkan pengurus ke
+/// Transfer ownership offer, organizer only: "Serahkan pengurus ke
 /// siapa?", what moves to the new organizer, a radio list of members with
 /// an account, and "Kirim tawaran" behind a confirmation sheet. A sent
 /// offer shows "Menunggu jawaban {name} · berlaku sampai {date}".

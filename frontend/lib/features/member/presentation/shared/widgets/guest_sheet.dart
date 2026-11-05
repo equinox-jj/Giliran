@@ -13,7 +13,7 @@ import '../../../domain/entities/member.dart';
 import '../../../domain/entities/member_input.dart';
 import '../controllers/guest_controller.dart';
 
-/// Opens Add / edit guest (S27). Adds a guest to [slotNo] (null when the
+/// Opens Add / edit guest. Adds a guest to [slotNo] (null when the
 /// group is full), or edits [guest]. Resolves to the saved member.
 Future<Member?> showGuestSheet(
   BuildContext context, {

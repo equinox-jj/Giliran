@@ -20,7 +20,7 @@ import '../../group_detail/controllers/group_detail_controller.dart';
 import '../controllers/edit_group_controller.dart';
 import '../widgets/edit_sheets.dart';
 
-/// Edit group (S19): settings rows that each save on their own. The group
+/// Edit group: settings rows that each save on their own. The group
 /// rules lock once the group has started; the organizer can close the group
 /// from the danger zone.
 class const EditGroupPage({
@@ -31,7 +31,7 @@ class const EditGroupPage({
   required final VoidCallback onLeaveRequests,
   required final VoidCallback onTransfer,
 
-  /// Opens Reminders and recap (S41).
+  /// Opens Reminders and recap.
   required final VoidCallback onReminders,
 
   /// Called after the group was closed.

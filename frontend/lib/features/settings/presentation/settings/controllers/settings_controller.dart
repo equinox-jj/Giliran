@@ -13,7 +13,7 @@ import '../../../domain/usecases/update_settings_usecase.dart';
 
 part 'settings_controller.g.dart';
 
-/// The account settings on Settings (S47). Opens with the copy saved on the
+/// The account settings on Settings. Opens with the copy saved on the
 /// device, then the server's. Toggles apply at once and revert when the
 /// server rejects them.
 @riverpod

@@ -62,6 +62,7 @@ dev_dependencies:
   freezed: ^4.0.3
   json_serializable: ^6.15.2
   drift_dev: ^2.35.2
+  riverpod_lint: ^3.1.9
 
 flutter:
   uses-material-design: true

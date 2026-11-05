@@ -13,7 +13,7 @@ part 'save_fixed_order_usecase.g.dart';
 
 typedef SaveFixedOrderParams = ({String groupId, int totalSlots, List<FixedOrderEntry> order});
 
-/// Saves the winning order of a fixed-order group (S17). Every slot must
+/// Saves the winning order of a fixed-order group. Every slot must
 /// appear exactly once with positions 1..[totalSlots]; anything else fails
 /// with a [ValidationFailure] on `order` before any request.
 class const SaveFixedOrderUseCase(final MemberRepository _repository)

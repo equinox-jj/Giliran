@@ -19,7 +19,7 @@ import '../widgets/group_carousel.dart';
 import '../widgets/home_headline.dart';
 import '../widgets/next_action_hero.dart';
 
-/// Beranda (S10): what needs me now across all my groups. Shows the cache
+/// Beranda: what needs me now across all my groups. Shows the cache
 /// at once and refreshes in the background; pull to refresh.
 class const HomePage({
   super.key,
@@ -160,7 +160,7 @@ class const _HomeBody({
   ];
 
   /// Medium: hero and agenda side by side over a 2-column grid. Expanded:
-  /// the same with a 3-column grid (Tikar S10 tablet).
+  /// the same with a 3-column grid.
   static List<Widget> _wideSlivers(
     BuildContext context,
     ValueChanged<String> onOpenGroup,

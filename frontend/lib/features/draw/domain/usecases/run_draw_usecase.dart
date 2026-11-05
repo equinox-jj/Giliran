@@ -14,7 +14,7 @@ part 'run_draw_usecase.g.dart';
 
 typedef RunDrawParams = ({String groupId, String periodId, bool confirmIncomplete, IdempotencyKey key});
 
-/// Runs a period's draw (S37). A `payments_incomplete` answer comes back as
+/// Runs a period's draw. A `payments_incomplete` answer comes back as
 /// a `ConflictFailure` carrying `paid_count` / `total_count`; the caller
 /// confirms and sends again with `confirmIncomplete` and the **same** key.
 /// After a draw the cached periods are refreshed so the strip and the hero

@@ -24,7 +24,7 @@ class const GiliranApp({super.key}) extends ConsumerWidget {
     final router = ref.watch(routerProvider);
     // Starts push for the app's lifetime (token, storage, tap routing).
     ref.watch(pushControllerProvider);
-    // Applies the saved S47 secure screen choice to the window.
+    // Applies the saved secure screen choice to the window.
     ref.watch(secureScreenControllerProvider);
 
     return MaterialApp.router(

@@ -5,8 +5,8 @@ import '../../../../../core/services/push_service.dart';
 
 part 'push_permission_controller.g.dart';
 
-/// Whether the OS lets Giliran show notifications, for the S12 "Notifikasi
-/// mati" banner and the S47 permission row.
+/// Whether the OS lets Giliran show notifications, for the "Notifikasi
+/// mati" banner and the Settings permission row.
 @Riverpod(keepAlive: true)
 class PushPermissionController() extends _$PushPermissionController {
   @override

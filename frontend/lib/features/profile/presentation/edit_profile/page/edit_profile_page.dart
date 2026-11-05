@@ -16,7 +16,7 @@ import '../../../../auth/presentation/shared/widgets/auth_scaffold.dart';
 import '../../shared/controllers/avatar_controller.dart';
 import '../controllers/edit_profile_controller.dart';
 
-/// Edit profile (S43): photo, name, the optional WhatsApp number, and the
+/// Edit profile: photo, name, the optional WhatsApp number, and the
 /// read-only email with a link to Change email.
 class const EditProfilePage({
   super.key,
@@ -246,7 +246,7 @@ class const _AvatarSection() extends ConsumerWidget {
   }
 }
 
-/// Read-only email with the "Ubah" link to Change email (S46).
+/// Read-only email with the "Ubah" link to Change email.
 class const _EmailRow({
   required final String email,
   required final VoidCallback onChange,

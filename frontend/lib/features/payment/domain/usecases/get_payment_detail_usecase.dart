@@ -11,7 +11,7 @@ part 'get_payment_detail_usecase.g.dart';
 
 typedef PaymentRef = ({String groupId, String paymentId});
 
-/// One payment with every proof, fresh from the API (S35, proof viewer).
+/// One payment with every proof, fresh from the API.
 class const GetPaymentDetailUseCase(final PaymentRepository _repository) implements UseCase<Payment, PaymentRef> {
   @override
   Future<Either<Failure, Payment>> call(PaymentRef params) =>

@@ -13,7 +13,7 @@ part 'reject_payment_usecase.g.dart';
 
 typedef RejectPaymentParams = ({String groupId, String paymentId, String reason, IdempotencyKey key});
 
-/// Rejects a pending proof with a reason the payer sees (S35). The trimmed
+/// Rejects a pending proof with a reason the payer sees. The trimmed
 /// reason must be [minLength]–[maxLength] characters, else it fails with a
 /// [ValidationFailure] on `reason` before any request.
 class const RejectPaymentUseCase(final PaymentRepository _repository) implements UseCase<Payment, RejectPaymentParams> {

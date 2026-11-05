@@ -14,7 +14,7 @@ import 'giliran_ring.dart';
 /// recipient sees the same image. Lists at most [maxNames] unpaid names,
 /// then "+{n} lainnya"; it only takes names, never phone numbers. Laid out
 /// for the [RecapExportFrame] (360 × 450, exported at 1080 × 1350) and
-/// scaled down as a preview on S41.
+/// scaled down as a preview.
 class const RecapCard({
   super.key,
   required final String groupName,
@@ -246,7 +246,7 @@ class const _Fact({required final String label, required final String value}) ex
 }
 
 /// The 4:5 frame the recap is exported in: 360 × 450 logical px, rendered
-/// at pixel ratio 3 for a 1080 × 1350 PNG. S41 shows the same frame scaled
+/// at pixel ratio 3 for a 1080 × 1350 PNG. The preview shows the same frame scaled
 /// to fit as the preview, so what the organizer sees is what gets shared.
 class const RecapExportFrame({super.key, required final Widget card}) extends StatelessWidget {
   static const size = Size(360, 450);

@@ -13,7 +13,7 @@ import '../widgets/basics_step.dart';
 import '../widgets/schedule_step.dart';
 import '../widgets/summary_card.dart';
 
-/// Create group (S13 → S14), a full-screen modal. Back on step 2 returns to
+/// Create group, a full-screen modal. Back on step 2 returns to
 /// step 1 with the values kept. [onCreated] gets the new group's id.
 class const CreateGroupPage({
   super.key,
@@ -27,18 +27,24 @@ class const CreateGroupPage({
 }
 
 class _CreateGroupPageState() extends ConsumerState<CreateGroupPage> {
-  late final CreateGroupControllerProvider _provider;
   late final TextEditingController _name;
   late final TextEditingController _amount;
+
+  CreateGroupPrefill get _prefill => (
+    amount: widget.prefillAmount,
+    periodType: widget.prefillPeriodType,
+    totalSlots: widget.prefillTotalSlots,
+  );
+
+  CreateGroupControllerProvider get _provider => createGroupControllerProvider(
+    prefillAmount: widget.prefillAmount,
+    prefillPeriodType: widget.prefillPeriodType,
+    prefillTotalSlots: widget.prefillTotalSlots,
+  );
 
   @override
   void initState() {
     super.initState();
-    _provider = createGroupControllerProvider(
-      prefillAmount: widget.prefillAmount,
-      prefillPeriodType: widget.prefillPeriodType,
-      prefillTotalSlots: widget.prefillTotalSlots,
-    );
     _name = TextEditingController();
     final amount = widget.prefillAmount;
     _amount = TextEditingController(text: amount == null ? '' : Rupiah.digits(amount));
@@ -58,6 +64,7 @@ class _CreateGroupPageState() extends ConsumerState<CreateGroupPage> {
       widget.onCreated(group.id ?? '');
       return;
     }
+
     final failure = ref.read(_provider).failure;
     if (failure != null && failure is! ValidationFailure) showAppToast(context, failure.displayMessage(context.l10n));
   }
@@ -65,6 +72,7 @@ class _CreateGroupPageState() extends ConsumerState<CreateGroupPage> {
   @override
   Widget build(BuildContext context) {
     final step = ref.watch(_provider.select((d) => d.step));
+
     return PopScope(
       canPop: step == 1,
       onPopInvokedWithResult: (didPop, _) {
@@ -82,13 +90,13 @@ class _CreateGroupPageState() extends ConsumerState<CreateGroupPage> {
                   children: [
                     MaxWidth(
                       child: step == 1
-                          ? BasicsStep(provider: _provider, nameController: _name, amountController: _amount)
-                          : ScheduleStep(provider: _provider),
+                          ? BasicsStep(prefill: _prefill, nameController: _name, amountController: _amount)
+                          : ScheduleStep(prefill: _prefill),
                     ),
                   ],
                 ),
               ),
-              _BottomAction(provider: _provider, onSubmit: _submit),
+              _BottomAction(prefill: _prefill, onSubmit: _submit),
             ],
           ),
         ),
@@ -97,7 +105,7 @@ class _CreateGroupPageState() extends ConsumerState<CreateGroupPage> {
   }
 }
 
-/// The S13/S14 top bar: close (step 1) or back (step 2) beside the
+/// The top bar: close (step 1) or back (step 2) beside the
 /// "1 dari 2" step bar, with no title.
 class const _StepTopBar({required final int step, required final VoidCallback onBack})
     extends StatelessWidget
@@ -138,15 +146,21 @@ class const _StepTopBar({required final int step, required final VoidCallback on
 
 /// Pinned under the form: on step 1 the "Total per periode" bar above
 /// "Lanjut"; on step 2 "Buat grup".
-class const _BottomAction({required final CreateGroupControllerProvider provider, required final VoidCallback onSubmit})
+class const _BottomAction({required final CreateGroupPrefill prefill, required final VoidCallback onSubmit})
     extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    final provider = createGroupControllerProvider(
+      prefillAmount: prefill.amount,
+      prefillPeriodType: prefill.periodType,
+      prefillTotalSlots: prefill.totalSlots,
+    );
     final draft = ref.watch(provider);
     final controller = ref.watch(provider.notifier);
     final step1 = draft.step == 1;
-    final ready = step1 ? controller.basicsErrors.isEmpty : draft.startDate != null;
+    final ready = step1 ? draft.basicsErrors.isEmpty : draft.startDate != null;
+
     return Padding(
       padding: EdgeInsets.fromLTRB(context.screenMargin, AppSpace.s3, context.screenMargin, AppSpace.s4),
       child: MaxWidth(

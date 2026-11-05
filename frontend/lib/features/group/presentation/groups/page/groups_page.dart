@@ -13,7 +13,7 @@ import '../../../../../shared/widgets/widgets.dart';
 import '../../../domain/usecases/filter_groups_usecase.dart';
 import '../controllers/groups_controller.dart';
 
-/// The Grup tab (S11): my groups by segment (Aktif · Selesai), narrowed by
+/// The Grup tab: my groups by segment (Aktif · Selesai), narrowed by
 /// role chips, with the floating "Buat grup" pill while the list has groups.
 class const GroupsPage({
   super.key,
@@ -29,7 +29,7 @@ class _GroupsPageState() extends State<GroupsPage> {
 
   @override
   Widget build(BuildContext context) {
-    // S11 has no top bar: the headline is the screen's title.
+    // Has no top bar: the headline is the screen's title.
     return Scaffold(
       body: SafeArea(
         bottom: false,

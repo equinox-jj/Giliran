@@ -20,31 +20,31 @@
   },
   "profileTitle": "Profil",
   "@profileTitle": {
-    "description": "Title of the Profil tab (S42)."
+    "description": "Title of the Profil tab."
   },
   "profileEditButton": "Ubah profil",
   "@profileEditButton": {
-    "description": "S42 button that opens Edit profile."
+    "description": "Button that opens Edit profile."
   },
   "profileGroupAccount": "Akun",
   "@profileGroupAccount": {
-    "description": "S42 settings group header."
+    "description": "Settings group header."
   },
   "profileSecurity": "Keamanan",
   "@profileSecurity": {
-    "description": "S42 row that opens Security (S44)."
+    "description": "Row that opens Security."
   },
   "profileSettings": "Pengaturan",
   "@profileSettings": {
-    "description": "S42 row that opens Settings (S47)."
+    "description": "Row that opens Settings."
   },
   "profileGroupHelp": "Bantuan",
   "@profileGroupHelp": {
-    "description": "S42 settings group header."
+    "description": "Settings group header."
   },
   "profileHelpDraw": "Cara kerja kocokan",
   "@profileHelpDraw": {
-    "description": "S42 help row."
+    "description": "Help row."
   },
   "profileHelpDrawBody1": "Setiap periode, satu anggota yang belum menang dipilih acak sebagai penerima.",
   "@profileHelpDrawBody1": {
@@ -56,7 +56,7 @@
   },
   "profileHelpMoney": "Kenapa Giliran tidak memegang uang",
   "@profileHelpMoney": {
-    "description": "S42 help row."
+    "description": "Help row."
   },
   "profileHelpMoneyBody1": "Uang arisan langsung dibayar ke rekening pengurus, bukan lewat Giliran.",
   "@profileHelpMoneyBody1": {
@@ -68,27 +68,27 @@
   },
   "profileHelpContact": "Hubungi kami",
   "@profileHelpContact": {
-    "description": "S42 help row, opens email."
+    "description": "Help row, opens email."
   },
   "profileGroupAbout": "Tentang",
   "@profileGroupAbout": {
-    "description": "S42 settings group header."
+    "description": "Settings group header."
   },
   "profilePrivacy": "Kebijakan privasi",
   "@profilePrivacy": {
-    "description": "S42 about row."
+    "description": "About row."
   },
   "profileTerms": "Syarat",
   "@profileTerms": {
-    "description": "S42 about row."
+    "description": "About row."
   },
   "profileVersion": "Versi app",
   "@profileVersion": {
-    "description": "S42 about row showing the version."
+    "description": "About row showing the version."
   },
   "profileLogout": "Keluar",
   "@profileLogout": {
-    "description": "S42 destructive sign-out row and dialog button."
+    "description": "Destructive sign-out row and dialog button."
   },
   "profileLogoutTitle": "Keluar dari Giliran?",
   "@profileLogoutTitle": {
@@ -104,7 +104,7 @@
   },
   "editProfileTitle": "Ubah profil",
   "@editProfileTitle": {
-    "description": "Title of Edit profile (S43)."
+    "description": "Title of Edit profile."
   },
   "editProfileName": "Nama",
   "@editProfileName": {
@@ -164,7 +164,7 @@
   },
   "securityTitle": "Keamanan",
   "@securityTitle": {
-    "description": "Title of Security (S44)."
+    "description": "Title of Security."
   },
   "securityChangePin": "Ubah PIN",
   "@securityChangePin": {
@@ -277,7 +277,7 @@
   },
   "settingsTitle": "Pengaturan",
   "@settingsTitle": {
-    "description": "Title of Settings (S47)."
+    "description": "Title of Settings."
   },
   "settingsNotifications": "Notifikasi",
   "@settingsNotifications": {
@@ -353,7 +353,7 @@
   },
   "settingsDeleteAccount": "Hapus akun",
   "@settingsDeleteAccount": {
-    "description": "Destructive row that opens S48."
+    "description": "Destructive row that opens Delete account."
   },
   "settingsFailed": "Pengaturan belum bisa dimuat.",
   "@settingsFailed": {
@@ -361,7 +361,7 @@
   },
   "deleteAccountTitle": "Hapus akun",
   "@deleteAccountTitle": {
-    "description": "Title of S48."
+    "description": "Title of Delete account."
   },
   "deleteAccountHeadline": "Hapus **akun** kamu?",
   "@deleteAccountHeadline": {
@@ -559,7 +559,7 @@
   },
   "homeTitle": "Beranda",
   "@homeTitle": {
-    "description": "Title of the Beranda tab (S10)."
+    "description": "Title of the Beranda tab."
   },
   "homeActiveCount": "{count} arisan aktif",
   "@homeActiveCount": {
@@ -687,7 +687,7 @@
   },
   "createGroupButton": "Buat grup",
   "@createGroupButton": {
-    "description": "Button that opens Create group (S13)."
+    "description": "Button that opens Create group."
   },
   "joinByLinkButton": "Gabung pakai link",
   "@joinByLinkButton": {
@@ -755,7 +755,7 @@
   },
   "groupsTitle": "Grup",
   "@groupsTitle": {
-    "description": "Title of the Grup tab (S11)."
+    "description": "Title of the Grup tab."
   },
   "groupsHeadline": "Grup **kamu**",
   "@groupsHeadline": {
@@ -797,15 +797,15 @@
   },
   "createGroupTitle": "Buat grup",
   "@createGroupTitle": {
-    "description": "Create group modal title (S13, S14)."
+    "description": "Create group modal title."
   },
   "createGroupBasicsHeadline": "Arisan **apa** yang mau dibuat?",
   "@createGroupBasicsHeadline": {
-    "description": "S13 headline. Keep the ** markers."
+    "description": "Headline. Keep the ** markers."
   },
   "createGroupScheduleHeadline": "Atur **jadwal & kocokan**",
   "@createGroupScheduleHeadline": {
-    "description": "S14 headline. Keep the ** markers."
+    "description": "Headline. Keep the ** markers."
   },
   "groupNameLabel": "Nama grup",
   "@groupNameLabel": {
@@ -813,7 +813,7 @@
   },
   "groupNameHelper": "3–60 huruf. Bisa diubah nanti.",
   "@groupNameHelper": {
-    "description": "Helper under the group name field (S13)."
+    "description": "Helper under the group name field."
   },
   "groupNameHint": "Contoh: Arisan RT 05",
   "@groupNameHint": {
@@ -878,7 +878,7 @@
   },
   "createGroupTotalLabel": "Total per periode",
   "@createGroupTotalLabel": {
-    "description": "Label of the pot summary on S13 and the review card on S14."
+    "description": "Label of the pot summary on step 1 and the review card on step 2."
   },
   "nextButton": "Lanjut",
   "@nextButton": {
@@ -926,27 +926,27 @@
   },
   "createGroupReminderHelper": "Hari sebelum jatuh tempo, ke anggota yang belum bayar.",
   "@createGroupReminderHelper": {
-    "description": "Helper under the reminder stepper on S14."
+    "description": "Helper under the reminder stepper on step 2."
   },
   "createGroupReview": "Periksa lagi",
   "@createGroupReview": {
-    "description": "Header of the review card on S14."
+    "description": "Header of the review card on step 2."
   },
   "createGroupReviewName": "Nama",
   "@createGroupReviewName": {
-    "description": "Review card row label (S14)."
+    "description": "Review card row label."
   },
   "createGroupReviewDues": "Iuran",
   "@createGroupReviewDues": {
-    "description": "Review card row label (S14)."
+    "description": "Review card row label."
   },
   "createGroupReviewSlots": "Slot",
   "@createGroupReviewSlots": {
-    "description": "Review card row label (S14)."
+    "description": "Review card row label."
   },
   "createGroupReviewSlotsValue": "{slots} orang · {periods} periode",
   "@createGroupReviewSlotsValue": {
-    "description": "Review card slots value (S14).",
+    "description": "Review card slots value.",
     "placeholders": {
       "slots": {
         "type": "int"
@@ -962,7 +962,7 @@
   },
   "createGroupOrganizerSlot": "Kamu otomatis memegang slot 01 sebagai pengurus.",
   "@createGroupOrganizerSlot": {
-    "description": "Caption under the review card (S14)."
+    "description": "Caption under the review card."
   },
   "editLink": "Ubah",
   "@editLink": {
@@ -970,7 +970,7 @@
   },
   "createGroupSubmit": "Buat grup",
   "@createGroupSubmit": {
-    "description": "Primary button on S14."
+    "description": "Primary button on step 2."
   },
   "groupNameError": "Nama grup 3–60 huruf.",
   "@groupNameError": {
@@ -1264,7 +1264,7 @@
   },
   "editGroupTitle": "Ubah grup",
   "@editGroupTitle": {
-    "description": "Edit group screen title (S19)."
+    "description": "Edit group screen title."
   },
   "editGroupGeneral": "Umum",
   "@editGroupGeneral": {
@@ -1288,31 +1288,31 @@
   },
   "editGroupDues": "Iuran",
   "@editGroupDues": {
-    "description": "Edit group row label (S19)."
+    "description": "Edit group row label."
   },
   "editGroupDrawMethod": "Cara kocokan",
   "@editGroupDrawMethod": {
-    "description": "Edit group row label (S19)."
+    "description": "Edit group row label."
   },
   "editGroupRemindersRecap": "Pengingat & rekap",
   "@editGroupRemindersRecap": {
-    "description": "Edit group row label (S19)."
+    "description": "Edit group row label."
   },
   "editGroupLeaveRequests": "Permintaan keluar",
   "@editGroupLeaveRequests": {
-    "description": "Edit group row label (S19)."
+    "description": "Edit group row label."
   },
   "closeGroupSubtitle": "Grup jadi arsip dan tidak bisa dibuka lagi",
   "@closeGroupSubtitle": {
-    "description": "Subtitle of the close group row (S19)."
+    "description": "Subtitle of the close group row."
   },
   "editGroupFixedOrder": "Atur urutan",
   "@editGroupFixedOrder": {
-    "description": "Edit group row that opens Fixed order (S17)."
+    "description": "Edit group row that opens Fixed order."
   },
   "editGroupTransfer": "Serahkan pengurus",
   "@editGroupTransfer": {
-    "description": "Edit group row that opens Transfer ownership (S32)."
+    "description": "Edit group row that opens Transfer ownership."
   },
   "editGroupReminderValue": "{days} hari sebelum",
   "@editGroupReminderValue": {
@@ -1334,19 +1334,19 @@
   },
   "paymentInfoTitle": "Info rekening",
   "@paymentInfoTitle": {
-    "description": "Payment info screen title (S15)."
+    "description": "Payment info screen title."
   },
   "paymentInfoHeadline": "Ke mana anggota **transfer**?",
   "@paymentInfoHeadline": {
-    "description": "S15 headline. Keep the ** markers."
+    "description": "Headline. Keep the ** markers."
   },
   "paymentInfoReadOnlyHeadline": "Bayar iuran **ke sini**",
   "@paymentInfoReadOnlyHeadline": {
-    "description": "S15 headline for read-only viewers. Keep the ** markers."
+    "description": "Headline for read-only viewers. Keep the ** markers."
   },
   "paymentInfoTrust": "Uang langsung masuk ke rekening kamu. Giliran tidak memegang uang.",
   "@paymentInfoTrust": {
-    "description": "S15 trust banner."
+    "description": "Trust banner."
   },
   "bankLabel": "Bank atau e-wallet",
   "@bankLabel": {
@@ -1378,7 +1378,7 @@
   },
   "accountHolderHelper": "Sesuai nama di buku tabungan, supaya anggota yakin.",
   "@accountHolderHelper": {
-    "description": "Helper under the account holder field (S15)."
+    "description": "Helper under the account holder field."
   },
   "accountHolderPrefix": "a.n. {name}",
   "@accountHolderPrefix": {
@@ -1416,11 +1416,11 @@
   },
   "qrisSection": "QRIS",
   "@qrisSection": {
-    "description": "S15 section header."
+    "description": "Section header."
   },
   "qrisOptional": "Opsional",
   "@qrisOptional": {
-    "description": "Caption beside the QRIS header (S15)."
+    "description": "Caption beside the QRIS header."
   },
   "qrisUpload": "Upload QRIS",
   "@qrisUpload": {
@@ -1482,11 +1482,11 @@
   },
   "invitedBanner": "Kamu diundang ke grup arisan. Masuk dulu untuk gabung.",
   "@invitedBanner": {
-    "description": "S02 banner when a pending invite link exists."
+    "description": "Banner when a pending invite link exists."
   },
   "inviteHeadline": "Undang **{count} orang** lagi",
   "@inviteHeadline": {
-    "description": "S16 headline; bold part is wrapped in **.",
+    "description": "Headline; bold part is wrapped in **.",
     "placeholders": {
       "count": {
         "type": "int"
@@ -1495,19 +1495,19 @@
   },
   "inviteFullHeadline": "Semua slot **terisi**",
   "@inviteFullHeadline": {
-    "description": "S16 headline when the group is full."
+    "description": "Headline when the group is full."
   },
   "inviteFull": "Semua slot terisi",
   "@inviteFull": {
-    "description": "S16 hero text when the group is full."
+    "description": "Hero text when the group is full."
   },
   "inviteShareWhatsApp": "Bagikan ke WhatsApp",
   "@inviteShareWhatsApp": {
-    "description": "S16 primary button."
+    "description": "Primary button."
   },
   "inviteCopyLink": "Salin link",
   "@inviteCopyLink": {
-    "description": "S16 secondary button."
+    "description": "Secondary button."
   },
   "inviteLinkCopied": "Link disalin.",
   "@inviteLinkCopied": {
@@ -1548,19 +1548,19 @@
   },
   "inviteSlotsSection": "Slot",
   "@inviteSlotsSection": {
-    "description": "S16 section header for the slot list."
+    "description": "Section header for the slot list."
   },
   "inviteEmptySlot": "Slot kosong",
   "@inviteEmptySlot": {
-    "description": "S16 row for a free slot."
+    "description": "Row for a free slot."
   },
   "inviteAddGuest": "Tambah tamu (tanpa aplikasi)",
   "@inviteAddGuest": {
-    "description": "S16 link to the guest sheet."
+    "description": "Link to the guest sheet."
   },
   "inviteResetMenu": "Buat link baru",
   "@inviteResetMenu": {
-    "description": "S16 overflow menu item."
+    "description": "Overflow menu item."
   },
   "inviteResetTitle": "Buat link baru? Link lama tidak bisa dipakai lagi.",
   "@inviteResetTitle": {
@@ -1572,11 +1572,11 @@
   },
   "inviteNoLink": "Link undangan belum tersedia. Tarik untuk memuat ulang.",
   "@inviteNoLink": {
-    "description": "S16 when the group has no invite loaded."
+    "description": "When the group has no invite loaded."
   },
   "joinHeadline": "{organizer} mengajak kamu ke **{group}**",
   "@joinHeadline": {
-    "description": "S25 headline.",
+    "description": "Headline.",
     "placeholders": {
       "organizer": {
         "type": "String"
@@ -1588,19 +1588,19 @@
   },
   "joinDues": "Iuran",
   "@joinDues": {
-    "description": "S25 key-value label."
+    "description": "Key-value label."
   },
   "joinStart": "Mulai",
   "@joinStart": {
-    "description": "S25 key-value label."
+    "description": "Key-value label."
   },
   "joinSlots": "Slot",
   "@joinSlots": {
-    "description": "S25 key-value label."
+    "description": "Key-value label."
   },
   "joinSlotsValue": "{filled} dari {total} terisi",
   "@joinSlotsValue": {
-    "description": "S25 slot fill value.",
+    "description": "Slot fill value.",
     "placeholders": {
       "filled": {
         "type": "int"
@@ -1612,39 +1612,39 @@
   },
   "joinPot": "Total per periode",
   "@joinPot": {
-    "description": "S25 key-value label."
+    "description": "Key-value label."
   },
   "joinTrustNote": "Kamu transfer langsung ke pengurus. Giliran hanya mencatat.",
   "@joinTrustNote": {
-    "description": "S25 trust note."
+    "description": "Trust note."
   },
   "joinButton": "Gabung",
   "@joinButton": {
-    "description": "S25 primary button."
+    "description": "Primary button."
   },
   "joinOpenGroup": "Buka grup",
   "@joinOpenGroup": {
-    "description": "S25 / S29 button when already a member."
+    "description": "Button when already a member."
   },
   "joinLater": "Nanti",
   "@joinLater": {
-    "description": "S25 ghost button."
+    "description": "Ghost button."
   },
   "joinFullBanner": "Slot grup ini sudah penuh. Minta pengurus menambah slot.",
   "@joinFullBanner": {
-    "description": "S25 banner when the group is full."
+    "description": "Banner when the group is full."
   },
   "joinStartedBanner": "Arisan ini sudah berjalan, jadi tidak bisa gabung lagi.",
   "@joinStartedBanner": {
-    "description": "S25 banner when the group is no longer draft."
+    "description": "Banner when the group is no longer draft."
   },
   "joinInvalidTitle": "Link undangan tidak berlaku",
   "@joinInvalidTitle": {
-    "description": "S25 empty state title."
+    "description": "Empty state title."
   },
   "joinInvalidMessage": "Link undangan tidak berlaku. Minta link baru ke pengurus.",
   "@joinInvalidMessage": {
-    "description": "S25 empty state message."
+    "description": "Empty state message."
   },
   "joinedToast": "Kamu sudah bergabung.",
   "@joinedToast": {
@@ -1672,35 +1672,35 @@
   },
   "guestSheetTitle": "Tambah tamu",
   "@guestSheetTitle": {
-    "description": "S27 title."
+    "description": "Title."
   },
   "guestEditTitle": "Ubah tamu",
   "@guestEditTitle": {
-    "description": "S27 title when editing."
+    "description": "Title when editing."
   },
   "guestSheetHelp": "Untuk anggota yang tidak pakai aplikasi. Kamu yang mencatat bayarannya.",
   "@guestSheetHelp": {
-    "description": "S27 help."
+    "description": "Help."
   },
   "guestNameLabel": "Nama",
   "@guestNameLabel": {
-    "description": "S27 name field label."
+    "description": "Name field label."
   },
   "guestNameError": "Nama 2–50 huruf.",
   "@guestNameError": {
-    "description": "S27 name field error."
+    "description": "Name field error."
   },
   "guestPhoneHelper": "Untuk pengingat WhatsApp",
   "@guestPhoneHelper": {
-    "description": "S27 phone helper."
+    "description": "Phone helper."
   },
   "guestPhoneLabel": "Nomor HP",
   "@guestPhoneLabel": {
-    "description": "S27 phone field label."
+    "description": "Phone field label."
   },
   "guestAddButton": "Tambahkan ke slot {slot}",
   "@guestAddButton": {
-    "description": "S27 primary button.",
+    "description": "Primary button.",
     "placeholders": {
       "slot": {
         "type": "String"
@@ -1709,11 +1709,11 @@
   },
   "guestSaveButton": "Simpan",
   "@guestSaveButton": {
-    "description": "S27 primary button when editing."
+    "description": "Primary button when editing."
   },
   "guestFull": "Semua slot sudah terisi.",
   "@guestFull": {
-    "description": "S27 when the group is full."
+    "description": "When the group is full."
   },
   "guestAdded": "{name} masuk slot {slot}.",
   "@guestAdded": {
@@ -1733,7 +1733,7 @@
   },
   "claimSheetTitle": "Biar {name} pakai aplikasi",
   "@claimSheetTitle": {
-    "description": "S28 title.",
+    "description": "Title.",
     "placeholders": {
       "name": {
         "type": "String"
@@ -1742,15 +1742,15 @@
   },
   "claimSheetHelp": "Kirim link ini. Setelah masuk, slot dan riwayat bayarnya pindah ke akunnya.",
   "@claimSheetHelp": {
-    "description": "S28 explanation."
+    "description": "Explanation."
   },
   "claimSendWhatsApp": "Kirim lewat WhatsApp",
   "@claimSendWhatsApp": {
-    "description": "S28 primary button."
+    "description": "Primary button."
   },
   "claimValidUntil": "Berlaku sampai {date}",
   "@claimValidUntil": {
-    "description": "S28 caption.",
+    "description": "Caption.",
     "placeholders": {
       "date": {
         "type": "String"
@@ -1782,27 +1782,27 @@
   },
   "claimHeadline": "Ambil **slot kamu** di grup ini",
   "@claimHeadline": {
-    "description": "S29 headline."
+    "description": "Headline."
   },
   "claimBody": "Slot tamu dan riwayat bayarnya akan pindah ke akun kamu.",
   "@claimBody": {
-    "description": "S29 body."
+    "description": "Body."
   },
   "claimButton": "Ini saya, ambil slot",
   "@claimButton": {
-    "description": "S29 primary button."
+    "description": "Primary button."
   },
   "claimExpiredTitle": "Link klaim tidak berlaku",
   "@claimExpiredTitle": {
-    "description": "S29 expired empty state title."
+    "description": "Expired empty state title."
   },
   "claimExpiredMessage": "Link ini sudah kedaluwarsa atau sudah dipakai. Minta link baru ke pengurus.",
   "@claimExpiredMessage": {
-    "description": "S29 expired empty state message."
+    "description": "Expired empty state message."
   },
   "claimAlreadyMember": "Kamu sudah jadi anggota grup ini.",
   "@claimAlreadyMember": {
-    "description": "S29 already-member explanation."
+    "description": "Already-member explanation."
   },
   "claimedToast": "Slot sudah jadi milikmu.",
   "@claimedToast": {
@@ -1864,11 +1864,11 @@
   },
   "obligationsSection": "Kewajiban setelah menang",
   "@obligationsSection": {
-    "description": "S22 section header."
+    "description": "Section header."
   },
   "membersSection": "Anggota ({count})",
   "@membersSection": {
-    "description": "S22 section header.",
+    "description": "Section header.",
     "placeholders": {
       "count": {
         "type": "int"
@@ -1877,15 +1877,15 @@
   },
   "membersInvite": "Undang",
   "@membersInvite": {
-    "description": "S22 organizer button."
+    "description": "Organizer button."
   },
   "membersAddGuest": "Tambah tamu",
   "@membersAddGuest": {
-    "description": "S22 organizer button."
+    "description": "Organizer button."
   },
   "membersLeaveRequests": "Permintaan keluar ({count})",
   "@membersLeaveRequests": {
-    "description": "S22 row when leave requests are pending.",
+    "description": "Row when leave requests are pending.",
     "placeholders": {
       "count": {
         "type": "int"
@@ -1924,23 +1924,23 @@
   },
   "memberDetailSlot": "Slot",
   "@memberDetailSlot": {
-    "description": "S26 key-value label."
+    "description": "Key-value label."
   },
   "memberDetailJoined": "Bergabung",
   "@memberDetailJoined": {
-    "description": "S26 key-value label."
+    "description": "Key-value label."
   },
   "memberDetailWon": "Sudah dapat",
   "@memberDetailWon": {
-    "description": "S26 key-value label."
+    "description": "Key-value label."
   },
   "memberDetailNotYet": "Belum",
   "@memberDetailNotYet": {
-    "description": "S26 value when the member hasn't won."
+    "description": "Value when the member hasn't won."
   },
   "memberDetailWonValue": "Periode {period}",
   "@memberDetailWonValue": {
-    "description": "S26 won value.",
+    "description": "Won value.",
     "placeholders": {
       "period": {
         "type": "int"
@@ -1949,19 +1949,19 @@
   },
   "memberDetailPhone": "Nomor HP",
   "@memberDetailPhone": {
-    "description": "S26 key-value label (managers only)."
+    "description": "Key-value label (managers only)."
   },
   "memberPaymentHistory": "Riwayat bayar",
   "@memberPaymentHistory": {
-    "description": "S26 section header."
+    "description": "Section header."
   },
   "memberPaymentHistoryLater": "Riwayat bayar muncul setelah arisan berjalan.",
   "@memberPaymentHistoryLater": {
-    "description": "S26 placeholder until payments exist."
+    "description": "Placeholder until payments exist."
   },
   "memberRemindWhatsApp": "Ingatkan lewat WhatsApp",
   "@memberRemindWhatsApp": {
-    "description": "S26 action."
+    "description": "Action."
   },
   "memberRemindMessage": "Halo {name}, ini pengingat iuran arisan {group} ya. Terima kasih!",
   "@memberRemindMessage": {
@@ -1977,15 +1977,15 @@
   },
   "memberCreateClaimLink": "Buat link klaim",
   "@memberCreateClaimLink": {
-    "description": "S26 action for guests."
+    "description": "Action for guests."
   },
   "memberEditGuest": "Ubah tamu",
   "@memberEditGuest": {
-    "description": "S26 action for guests."
+    "description": "Action for guests."
   },
   "memberRemove": "Keluarkan dari grup",
   "@memberRemove": {
-    "description": "S26 destructive action."
+    "description": "Destructive action."
   },
   "memberRemoveTitle": "Keluarkan {name} dari grup?",
   "@memberRemoveTitle": {
@@ -2027,7 +2027,7 @@
   },
   "memberNotFound": "Anggota tidak ditemukan.",
   "@memberNotFound": {
-    "description": "S26 when the member is gone."
+    "description": "When the member is gone."
   },
   "commonOk": "Oke",
   "@commonOk": {
@@ -2035,19 +2035,19 @@
   },
   "leavePendingBanner": "Permintaan keluar menunggu persetujuan",
   "@leavePendingBanner": {
-    "description": "S22 banner for the member's own pending request."
+    "description": "Banner for the member's own pending request."
   },
   "fixedOrderHeadline": "Atur **urutan giliran**",
   "@fixedOrderHeadline": {
-    "description": "S17 headline."
+    "description": "Headline."
   },
   "fixedOrderHelp": "Geser untuk mengubah urutan. Nomor 1 dapat duluan.",
   "@fixedOrderHelp": {
-    "description": "S17 help line."
+    "description": "Help line."
   },
   "fixedOrderShuffle": "Acak urutan",
   "@fixedOrderShuffle": {
-    "description": "S17 ghost button."
+    "description": "Ghost button."
   },
   "fixedOrderShuffled": "Urutan diacak.",
   "@fixedOrderShuffled": {
@@ -2059,7 +2059,7 @@
   },
   "fixedOrderSave": "Simpan urutan",
   "@fixedOrderSave": {
-    "description": "S17 docked primary button."
+    "description": "Docked primary button."
   },
   "fixedOrderSaved": "Urutan disimpan.",
   "@fixedOrderSaved": {
@@ -2067,11 +2067,11 @@
   },
   "fixedOrderLocked": "Urutan dikunci setelah arisan dimulai",
   "@fixedOrderLocked": {
-    "description": "S17 banner outside draft."
+    "description": "Banner outside draft."
   },
   "fixedOrderUnsavedTitle": "Simpan perubahan?",
   "@fixedOrderUnsavedTitle": {
-    "description": "Dialog when leaving S17 with unsaved changes."
+    "description": "Dialog when leaving Fixed order with unsaved changes."
   },
   "fixedOrderDiscard": "Buang",
   "@fixedOrderDiscard": {
@@ -2079,7 +2079,7 @@
   },
   "fixedOrderIncomplete": "Isi semua slot dulu sebelum mengatur urutan.",
   "@fixedOrderIncomplete": {
-    "description": "S17 when slots are still empty."
+    "description": "When slots are still empty."
   },
   "reorderMoveUp": "Naikkan",
   "@reorderMoveUp": {
@@ -2110,7 +2110,7 @@
   },
   "startHeadline": "Siap **mulai arisan**?",
   "@startHeadline": {
-    "description": "S18 headline."
+    "description": "Headline."
   },
   "readinessSlots": "Semua slot terisi",
   "@readinessSlots": {
@@ -2171,35 +2171,35 @@
   },
   "startSummaryDues": "Iuran",
   "@startSummaryDues": {
-    "description": "S18 summary label."
+    "description": "Summary label."
   },
   "startSummaryPeriod": "Periode",
   "@startSummaryPeriod": {
-    "description": "S18 summary label."
+    "description": "Summary label."
   },
   "startSummaryPot": "Total per periode",
   "@startSummaryPot": {
-    "description": "S18 summary label."
+    "description": "Summary label."
   },
   "startSummaryStart": "Mulai",
   "@startSummaryStart": {
-    "description": "S18 summary label."
+    "description": "Summary label."
   },
   "startSummaryDraw": "Kocokan",
   "@startSummaryDraw": {
-    "description": "S18 summary label."
+    "description": "Summary label."
   },
   "startInfo": "Periode 1 dibuka, kode komitmen kocokan dipublikasikan, semua anggota dapat notifikasi.",
   "@startInfo": {
-    "description": "S18 info card."
+    "description": "Info card."
   },
   "startButton": "Mulai arisan",
   "@startButton": {
-    "description": "S18 primary button."
+    "description": "Primary button."
   },
   "startConfirmTitle": "Mulai Arisan {group} sekarang?",
   "@startConfirmTitle": {
-    "description": "S18 confirmation sheet title.",
+    "description": "Confirmation sheet title.",
     "placeholders": {
       "group": {
         "type": "String"
@@ -2208,7 +2208,7 @@
   },
   "startConsent": "Saya sudah cek pengaturan. Iuran dan jumlah slot tidak bisa diubah lagi.",
   "@startConsent": {
-    "description": "S18 consent check row."
+    "description": "Consent check row."
   },
   "startedToast": "Arisan dimulai! Periode 1 sudah dibuka.",
   "@startedToast": {
@@ -2216,23 +2216,23 @@
   },
   "startNotDraft": "Arisan ini sudah dimulai.",
   "@startNotDraft": {
-    "description": "S18 when the group is no longer a draft."
+    "description": "When the group is no longer a draft."
   },
   "leaveSheetTitle": "Minta keluar dari grup",
   "@leaveSheetTitle": {
-    "description": "S30 title."
+    "description": "Title."
   },
   "leaveSheetHelp": "Pengurus perlu menyetujui. Slot kamu akan dikosongkan.",
   "@leaveSheetHelp": {
-    "description": "S30 explanation."
+    "description": "Explanation."
   },
   "leaveReasonLabel": "Alasan",
   "@leaveReasonLabel": {
-    "description": "S30 reason field label."
+    "description": "Reason field label."
   },
   "leaveReasonHint": "(opsional)",
   "@leaveReasonHint": {
-    "description": "S30 reason field label hint."
+    "description": "Reason field label hint."
   },
   "leaveReasonCounter": "{count}/500",
   "@leaveReasonCounter": {
@@ -2249,7 +2249,7 @@
   },
   "leaveSend": "Kirim permintaan",
   "@leaveSend": {
-    "description": "S30 primary button."
+    "description": "Primary button."
   },
   "leaveSent": "Permintaan keluar terkirim. Tunggu persetujuan pengurus.",
   "@leaveSent": {
@@ -2257,15 +2257,15 @@
   },
   "leaveOrganizerBlocked": "Pengurus tidak bisa keluar. Serahkan pengurus ke anggota lain dulu, atau tutup grup.",
   "@leaveOrganizerBlocked": {
-    "description": "S30 blocked state for the organizer."
+    "description": "Blocked state for the organizer."
   },
   "leaveTransferLink": "Serahkan pengurus",
   "@leaveTransferLink": {
-    "description": "S30 link to S32."
+    "description": "Link to Transfer ownership."
   },
   "leaveObligationsBlocked": "Kamu sudah menang dan masih punya {count} iuran. Lunasi dulu sebelum keluar.",
   "@leaveObligationsBlocked": {
-    "description": "S30 blocked state for a past winner.",
+    "description": "Blocked state for a past winner.",
     "placeholders": {
       "count": {
         "type": "int"
@@ -2278,15 +2278,15 @@
   },
   "leaveRequestsTitle": "Permintaan keluar",
   "@leaveRequestsTitle": {
-    "description": "S31 title."
+    "description": "Title."
   },
   "leaveRequestsEmpty": "Tidak ada permintaan keluar.",
   "@leaveRequestsEmpty": {
-    "description": "S31 empty state."
+    "description": "Empty state."
   },
   "leaveRequestedOn": "Diminta {date}",
   "@leaveRequestedOn": {
-    "description": "S31 card caption.",
+    "description": "Card caption.",
     "placeholders": {
       "date": {
         "type": "String"
@@ -2295,15 +2295,15 @@
   },
   "leaveNoReason": "Tanpa alasan.",
   "@leaveNoReason": {
-    "description": "S31 card when no reason was given."
+    "description": "Card when no reason was given."
   },
   "leaveApprove": "Setujui",
   "@leaveApprove": {
-    "description": "S31 approve button."
+    "description": "Approve button."
   },
   "leaveReject": "Tolak",
   "@leaveReject": {
-    "description": "S31 reject button."
+    "description": "Reject button."
   },
   "leaveApproved": "{name} sudah keluar. Slotnya kosong lagi.",
   "@leaveApproved": {
@@ -2341,27 +2341,27 @@
   },
   "leaveWinnerWarning": "Sudah menang. Pastikan sisa iurannya beres sebelum disetujui.",
   "@leaveWinnerWarning": {
-    "description": "S31 warning for a past winner."
+    "description": "Warning for a past winner."
   },
   "transferHeadline": "Serahkan **pengurus** ke siapa?",
   "@transferHeadline": {
-    "description": "S32 headline."
+    "description": "Headline."
   },
   "transferExplain": "Pengurus baru yang mengelola pembayaran, kocokan dan info rekening. Pengurus baru perlu mengisi rekeningnya sendiri. Kamu jadi anggota biasa.",
   "@transferExplain": {
-    "description": "S32 explanation."
+    "description": "Explanation."
   },
   "transferNoCandidates": "Belum ada anggota dengan akun Giliran. Tamu tidak bisa jadi pengurus.",
   "@transferNoCandidates": {
-    "description": "S32 when nobody is eligible."
+    "description": "When nobody is eligible."
   },
   "transferSend": "Kirim tawaran",
   "@transferSend": {
-    "description": "S32 primary button."
+    "description": "Primary button."
   },
   "transferConfirmTitle": "Tawarkan peran pengurus ke {name}?",
   "@transferConfirmTitle": {
-    "description": "S32 confirmation sheet title.",
+    "description": "Confirmation sheet title.",
     "placeholders": {
       "name": {
         "type": "String"
@@ -2370,7 +2370,7 @@
   },
   "transferPending": "Menunggu jawaban {name} · berlaku sampai {date}",
   "@transferPending": {
-    "description": "S32 pending state card.",
+    "description": "Pending state card.",
     "placeholders": {
       "name": {
         "type": "String"
@@ -2386,7 +2386,7 @@
   },
   "transferRespondHeadline": "{from} ingin kamu jadi **pengurus {group}**",
   "@transferRespondHeadline": {
-    "description": "S33 headline.",
+    "description": "Headline.",
     "placeholders": {
       "from": {
         "type": "String"
@@ -2398,27 +2398,27 @@
   },
   "transferDutyPayments": "Cek bukti bayar dan catat iuran anggota.",
   "@transferDutyPayments": {
-    "description": "S33 responsibility bullet."
+    "description": "Responsibility bullet."
   },
   "transferDutyDraws": "Jalankan kocokan dan catat penyerahan.",
   "@transferDutyDraws": {
-    "description": "S33 responsibility bullet."
+    "description": "Responsibility bullet."
   },
   "transferDutyMembers": "Kelola anggota, tamu dan permintaan keluar.",
   "@transferDutyMembers": {
-    "description": "S33 responsibility bullet."
+    "description": "Responsibility bullet."
   },
   "transferReminder": "Setelah menerima, isi info rekening kamu agar anggota transfer ke kamu.",
   "@transferReminder": {
-    "description": "S33 key reminder card."
+    "description": "Key reminder card."
   },
   "transferAccept": "Terima",
   "@transferAccept": {
-    "description": "S33 primary button."
+    "description": "Primary button."
   },
   "transferDecline": "Tolak",
   "@transferDecline": {
-    "description": "S33 secondary button."
+    "description": "Secondary button."
   },
   "transferAccepted": "Kamu sekarang pengurus. Isi info rekening kamu.",
   "@transferAccepted": {
@@ -2430,7 +2430,7 @@
   },
   "transferExpired": "Tawaran ini sudah tidak berlaku.",
   "@transferExpired": {
-    "description": "S33 when the transfer is gone or answered."
+    "description": "When the transfer is gone or answered."
   },
   "paymentPaidOn": "Dibayar {date}",
   "@paymentPaidOn": {
@@ -2517,7 +2517,7 @@
   },
   "paymentSummaryLine": "{paid} sudah bayar · {pending} menunggu cek · {unpaid} belum",
   "@paymentSummaryLine": {
-    "description": "S20 summary line.",
+    "description": "Summary line.",
     "placeholders": {
       "paid": {
         "type": "int"
@@ -2532,35 +2532,35 @@
   },
   "paymentFilterAll": "Semua",
   "@paymentFilterAll": {
-    "description": "S20 filter chip."
+    "description": "Filter chip."
   },
   "paymentFilterUnpaid": "Belum bayar",
   "@paymentFilterUnpaid": {
-    "description": "S20 filter chip."
+    "description": "Filter chip."
   },
   "paymentFilterPending": "Menunggu cek",
   "@paymentFilterPending": {
-    "description": "S20 filter chip."
+    "description": "Filter chip."
   },
   "paymentFilterEmpty": "Tidak ada pembayaran di filter ini.",
   "@paymentFilterEmpty": {
-    "description": "S20 when a filter hides every row."
+    "description": "When a filter hides every row."
   },
   "paymentsEmptyTitle": "Periode ini belum dibuka",
   "@paymentsEmptyTitle": {
-    "description": "S20 empty state for an upcoming period."
+    "description": "Empty state for an upcoming period."
   },
   "paymentsEmptyMessage": "Iuran bisa dibayar setelah periode sebelumnya selesai.",
   "@paymentsEmptyMessage": {
-    "description": "S20 empty state message."
+    "description": "Empty state message."
   },
   "paymentsAllPaid": "Semua sudah bayar periode ini.",
   "@paymentsAllPaid": {
-    "description": "S20 success banner."
+    "description": "Success banner."
   },
   "paymentsMyRejected": "Bukti kamu ditolak: {reason}",
   "@paymentsMyRejected": {
-    "description": "S20 banner when my proof was rejected.",
+    "description": "Banner when my proof was rejected.",
     "placeholders": {
       "reason": {
         "type": "String"
@@ -2569,7 +2569,7 @@
   },
   "paymentsDrawTomorrow": "Kocokan besok. {count} anggota belum bayar.",
   "@paymentsDrawTomorrow": {
-    "description": "S20 banner the day before the draw.",
+    "description": "Banner the day before the draw.",
     "placeholders": {
       "count": {
         "type": "int"
@@ -2578,11 +2578,11 @@
   },
   "paymentsLoadFailed": "Pembayaran gagal dimuat.",
   "@paymentsLoadFailed": {
-    "description": "S20 when the board fails to load and nothing is cached."
+    "description": "When the board fails to load and nothing is cached."
   },
   "paymentMarkPaidAction": "Tandai sudah bayar",
   "@paymentMarkPaidAction": {
-    "description": "S20 overflow item (managers)."
+    "description": "Overflow item (managers)."
   },
   "uploadTileEmpty": "Pilih bukti transfer",
   "@uploadTileEmpty": {
@@ -2639,7 +2639,7 @@
   },
   "uploadProofTitle": "Bayar iuran periode {n}",
   "@uploadProofTitle": {
-    "description": "S34 title.",
+    "description": "Title.",
     "placeholders": {
       "n": {
         "type": "int"
@@ -2648,7 +2648,7 @@
   },
   "uploadProofRejected": "Bukti sebelumnya ditolak: {reason}",
   "@uploadProofRejected": {
-    "description": "S34 banner.",
+    "description": "Banner.",
     "placeholders": {
       "reason": {
         "type": "String"
@@ -2657,23 +2657,23 @@
   },
   "uploadProofTransferTo": "Transfer ke",
   "@uploadProofTransferTo": {
-    "description": "S34 section label."
+    "description": "Section label."
   },
   "uploadProofQris": "Bayar pakai QRIS",
   "@uploadProofQris": {
-    "description": "S34 collapsible QRIS header."
+    "description": "Collapsible QRIS header."
   },
   "uploadProofNoAccount": "Pengurus belum mengisi rekening.",
   "@uploadProofNoAccount": {
-    "description": "S34 when payment info is missing."
+    "description": "When payment info is missing."
   },
   "uploadProofSteps": "1. Transfer lewat aplikasi bank/e-wallet kamu.\n2. Upload bukti di sini.",
   "@uploadProofSteps": {
-    "description": "S34 steps."
+    "description": "Steps."
   },
   "uploadProofConfirm": "Saya sudah transfer {amount}",
   "@uploadProofConfirm": {
-    "description": "S34 required check row.",
+    "description": "Required check row.",
     "placeholders": {
       "amount": {
         "type": "String"
@@ -2682,19 +2682,19 @@
   },
   "uploadProofSubmit": "Kirim bukti",
   "@uploadProofSubmit": {
-    "description": "S34 primary button."
+    "description": "Primary button."
   },
   "uploadProofSent": "Bukti terkirim. Pengurus akan mengecek.",
   "@uploadProofSent": {
-    "description": "S34 success toast."
+    "description": "Success toast."
   },
   "uploadProofPickFirst": "Pilih bukti transfer dulu.",
   "@uploadProofPickFirst": {
-    "description": "S34 disabled reason."
+    "description": "Disabled reason."
   },
   "uploadProofCheckFirst": "Centang konfirmasi transfer dulu.",
   "@uploadProofCheckFirst": {
-    "description": "S34 disabled reason."
+    "description": "Disabled reason."
   },
   "needsConnection": "Butuh koneksi internet.",
   "@needsConnection": {
@@ -2702,7 +2702,7 @@
   },
   "proofReviewTitle": "Cek bukti",
   "@proofReviewTitle": {
-    "description": "S35 title."
+    "description": "Title."
   },
   "proofViewerTitle": "Bukti transfer",
   "@proofViewerTitle": {
@@ -2710,7 +2710,7 @@
   },
   "proofReviewCounter": "{index} dari {count} menunggu",
   "@proofReviewCounter": {
-    "description": "S35 pending counter.",
+    "description": "Pending counter.",
     "placeholders": {
       "index": {
         "type": "int"
@@ -2734,31 +2734,31 @@
   },
   "proofExpected": "Seharusnya",
   "@proofExpected": {
-    "description": "S35 key-value label."
+    "description": "Key-value label."
   },
   "proofUploadedAt": "Diupload",
   "@proofUploadedAt": {
-    "description": "S35 key-value label."
+    "description": "Key-value label."
   },
   "proofPeriod": "Periode",
   "@proofPeriod": {
-    "description": "S35 key-value label."
+    "description": "Key-value label."
   },
   "proofStatus": "Status",
   "@proofStatus": {
-    "description": "S35 key-value label."
+    "description": "Key-value label."
   },
   "proofApprove": "Setujui",
   "@proofApprove": {
-    "description": "S35 button."
+    "description": "Button."
   },
   "proofReject": "Tolak",
   "@proofReject": {
-    "description": "S35 button."
+    "description": "Button."
   },
   "proofApproveTitle": "Setujui pembayaran {name}?",
   "@proofApproveTitle": {
-    "description": "S35 approve confirmation title.",
+    "description": "Approve confirmation title.",
     "placeholders": {
       "name": {
         "type": "String"
@@ -2767,7 +2767,7 @@
   },
   "proofApproveMessage": "{amount} untuk periode {period}. Persetujuan tidak bisa dibatalkan.",
   "@proofApproveMessage": {
-    "description": "S35 approve confirmation message.",
+    "description": "Approve confirmation message.",
     "placeholders": {
       "amount": {
         "type": "String"
@@ -2779,11 +2779,11 @@
   },
   "proofApproved": "Pembayaran disetujui.",
   "@proofApproved": {
-    "description": "S35 toast."
+    "description": "Toast."
   },
   "proofRejectTitle": "Tolak bukti {name}",
   "@proofRejectTitle": {
-    "description": "S35 reject sheet title.",
+    "description": "Reject sheet title.",
     "placeholders": {
       "name": {
         "type": "String"
@@ -2792,35 +2792,35 @@
   },
   "proofRejectHint": "Tulis alasannya",
   "@proofRejectHint": {
-    "description": "S35 reject field hint."
+    "description": "Reject field hint."
   },
   "proofRejectReasonShort": "Nominal kurang",
   "@proofRejectReasonShort": {
-    "description": "S35 quick-pick reason."
+    "description": "Quick-pick reason."
   },
   "proofRejectReasonBlurry": "Bukti tidak jelas",
   "@proofRejectReasonBlurry": {
-    "description": "S35 quick-pick reason."
+    "description": "Quick-pick reason."
   },
   "proofRejectReasonAccount": "Bukan transfer ke rekening ini",
   "@proofRejectReasonAccount": {
-    "description": "S35 quick-pick reason."
+    "description": "Quick-pick reason."
   },
   "proofRejectReasonDate": "Tanggal tidak sesuai",
   "@proofRejectReasonDate": {
-    "description": "S35 quick-pick reason."
+    "description": "Quick-pick reason."
   },
   "proofRejectLength": "Alasan 3–500 karakter.",
   "@proofRejectLength": {
-    "description": "S35 reject field error."
+    "description": "Reject field error."
   },
   "proofRejectSubmit": "Tolak bukti",
   "@proofRejectSubmit": {
-    "description": "S35 reject sheet button."
+    "description": "Reject sheet button."
   },
   "proofRejected": "Bukti ditolak. {name} akan diberi tahu.",
   "@proofRejected": {
-    "description": "S35 toast.",
+    "description": "Toast.",
     "placeholders": {
       "name": {
         "type": "String"
@@ -2829,15 +2829,15 @@
   },
   "proofAlreadyReviewed": "Sudah dicek pengurus lain",
   "@proofAlreadyReviewed": {
-    "description": "S35 toast on payment_already_reviewed."
+    "description": "Toast on payment_already_reviewed."
   },
   "proofNone": "Belum ada bukti.",
   "@proofNone": {
-    "description": "S35 when the payment has no proof."
+    "description": "When the payment has no proof."
   },
   "proofLoadFailed": "Bukti gagal dimuat.",
   "@proofLoadFailed": {
-    "description": "S35 load error."
+    "description": "Load error."
   },
   "imageViewerClose": "Tutup",
   "@imageViewerClose": {
@@ -2845,7 +2845,7 @@
   },
   "markPaidTitle": "Catat pembayaran {name}",
   "@markPaidTitle": {
-    "description": "S36 title.",
+    "description": "Title.",
     "placeholders": {
       "name": {
         "type": "String"
@@ -2854,31 +2854,31 @@
   },
   "markPaidMethod": "Cara bayar",
   "@markPaidMethod": {
-    "description": "S36 method label."
+    "description": "Method label."
   },
   "markPaidNoteLabel": "Catatan (opsional)",
   "@markPaidNoteLabel": {
-    "description": "S36 note field."
+    "description": "Note field."
   },
   "markPaidNoteHint": "Dibayar saat arisan di rumah Bu Ani",
   "@markPaidNoteHint": {
-    "description": "S36 note hint."
+    "description": "Note hint."
   },
   "markPaidConfirm": "Uang sudah saya terima",
   "@markPaidConfirm": {
-    "description": "S36 required check row."
+    "description": "Required check row."
   },
   "markPaidCheckFirst": "Centang konfirmasi dulu.",
   "@markPaidCheckFirst": {
-    "description": "S36 disabled reason."
+    "description": "Disabled reason."
   },
   "markPaidSubmit": "Catat sudah bayar",
   "@markPaidSubmit": {
-    "description": "S36 primary button."
+    "description": "Primary button."
   },
   "markPaidDone": "Pembayaran {name} dicatat.",
   "@markPaidDone": {
-    "description": "S36 toast.",
+    "description": "Toast.",
     "placeholders": {
       "name": {
         "type": "String"
@@ -2887,11 +2887,11 @@
   },
   "markPaidQueued": "Tersimpan di HP. Dikirim saat online.",
   "@markPaidQueued": {
-    "description": "S36 toast when offline."
+    "description": "Toast when offline."
   },
   "markPaidNoteTooLong": "Catatan maksimal 500 karakter.",
   "@markPaidNoteTooLong": {
-    "description": "S36 note error."
+    "description": "Note error."
   },
   "paymentSyncRejected": "Perubahan tidak tersimpan: pembayaran sudah dicatat pengurus lain.",
   "@paymentSyncRejected": {
@@ -2899,7 +2899,7 @@
   },
   "drawStageTitle": "Kocokan **periode {n}**",
   "@drawStageTitle": {
-    "description": "S37 app bar headline.",
+    "description": "App bar headline.",
     "placeholders": {
       "n": {
         "type": "int",
@@ -2909,7 +2909,7 @@
   },
   "drawCommitment": "Kode komitmen {hash}",
   "@drawCommitment": {
-    "description": "S37 commitment line with the shortened seed hash.",
+    "description": "Commitment line with the shortened seed hash.",
     "placeholders": {
       "hash": {
         "type": "String",
@@ -2931,15 +2931,15 @@
   },
   "drawButton": "Kocok",
   "@drawButton": {
-    "description": "S37 88 px draw button label."
+    "description": "88 px draw button label."
   },
   "drawFixedButton": "Tetapkan giliran",
   "@drawFixedButton": {
-    "description": "S37 button for fixed-order groups."
+    "description": "Button for fixed-order groups."
   },
   "drawAvailableOn": "Bisa dikocok {date}",
   "@drawAvailableOn": {
-    "description": "S37 disabled reason before the draw date.",
+    "description": "Disabled reason before the draw date.",
     "placeholders": {
       "date": {
         "type": "String",
@@ -2949,11 +2949,11 @@
   },
   "drawMemberCaption": "Pengurus akan mengocok. Kamu dapat notifikasi hasilnya.",
   "@drawMemberCaption": {
-    "description": "S37 caption for members."
+    "description": "Caption for members."
   },
   "drawEligibleCount": "{count} peserta belum dapat",
   "@drawEligibleCount": {
-    "description": "S37 caption under the eligible avatars.",
+    "description": "Caption under the eligible avatars.",
     "placeholders": {
       "count": {
         "type": "int",
@@ -2963,15 +2963,15 @@
   },
   "drawNextInOrder": "Giliran berikutnya",
   "@drawNextInOrder": {
-    "description": "S37 fixed-order label above the next person."
+    "description": "Fixed-order label above the next person."
   },
   "drawPeopleButton": "Lihat peserta",
   "@drawPeopleButton": {
-    "description": "S37 circle button that lists eligible slots."
+    "description": "Circle button that lists eligible slots."
   },
   "drawHelpButton": "Cara kerja kocokan",
   "@drawHelpButton": {
-    "description": "S37 circle button and help sheet title."
+    "description": "Circle button and help sheet title."
   },
   "drawHelpCommit": "Sebelum kocokan, Giliran membuat kunci rahasia dan langsung mempublikasikan kode komitmennya. Kode ini tidak bisa diubah.",
   "@drawHelpCommit": {
@@ -3023,11 +3023,11 @@
   },
   "drawLoadFailed": "Data kocokan belum bisa dimuat.",
   "@drawLoadFailed": {
-    "description": "S37/S38 load error."
+    "description": "Load error."
   },
   "drawResultHeadline": "Selamat, **{winner}** dapat giliran periode {n}!",
   "@drawResultHeadline": {
-    "description": "S38 headline.",
+    "description": "Headline.",
     "placeholders": {
       "winner": {
         "type": "String",
@@ -3041,15 +3041,15 @@
   },
   "drawResultHeadlineMine": "Selamat, **kamu** dapat giliran!",
   "@drawResultHeadlineMine": {
-    "description": "S38 headline for the winner."
+    "description": "Headline for the winner."
   },
   "drawResultMineCard": "Pengurus akan menyerahkan uangnya. Konfirmasi setelah kamu terima.",
   "@drawResultMineCard": {
-    "description": "S38 card for the winner."
+    "description": "Card for the winner."
   },
   "drawResultPaidAtDraw": "{paid}/{total} sudah bayar saat dikocok",
   "@drawResultPaidAtDraw": {
-    "description": "S38 caption with the payment count at draw time.",
+    "description": "Caption with the payment count at draw time.",
     "placeholders": {
       "paid": {
         "type": "int",
@@ -3063,19 +3063,19 @@
   },
   "drawShareWhatsApp": "Bagikan ke WhatsApp",
   "@drawShareWhatsApp": {
-    "description": "S38 primary button."
+    "description": "Primary button."
   },
   "drawSaveImage": "Simpan gambar",
   "@drawSaveImage": {
-    "description": "S38 secondary button."
+    "description": "Secondary button."
   },
   "drawVerifyButton": "Cek keasliannya",
   "@drawVerifyButton": {
-    "description": "S38 text button that opens S39."
+    "description": "Text button that opens Verify the draw."
   },
   "drawHandOver": "Serahkan {amount} ke {winner}",
   "@drawHandOver": {
-    "description": "S38 organizer next-step card.",
+    "description": "Organizer next-step card.",
     "placeholders": {
       "amount": {
         "type": "String",
@@ -3167,63 +3167,63 @@
   },
   "verifyTitle": "Cek keaslian kocokan",
   "@verifyTitle": {
-    "description": "S39 sheet title."
+    "description": "Sheet title."
   },
   "verifyStep1": "Kode komitmen dipublikasikan sebelum kocokan.",
   "@verifyStep1": {
-    "description": "S39 step 1."
+    "description": "Step 1."
   },
   "verifyStep2": "Kunci rahasia dibuka saat kocokan, dan harus cocok dengan kode komitmen.",
   "@verifyStep2": {
-    "description": "S39 step 2."
+    "description": "Step 2."
   },
   "verifyStep3": "HP ini menghitung ulang pemenang dari kunci itu dan daftar peserta.",
   "@verifyStep3": {
-    "description": "S39 step 3."
+    "description": "Step 3."
   },
   "verifyCommitment": "Kode komitmen",
   "@verifyCommitment": {
-    "description": "S39 key-value label."
+    "description": "Key-value label."
   },
   "verifySeed": "Kunci rahasia",
   "@verifySeed": {
-    "description": "S39 key-value label."
+    "description": "Key-value label."
   },
   "verifyParticipants": "Peserta",
   "@verifyParticipants": {
-    "description": "S39 key-value label."
+    "description": "Key-value label."
   },
   "verifyResult": "Hasil",
   "@verifyResult": {
-    "description": "S39 key-value label."
+    "description": "Key-value label."
   },
   "verifyMatch": "Cocok ✓ — hasil ini tidak diubah setelah kode dipublikasikan",
   "@verifyMatch": {
-    "description": "S39 badge when the device check passes."
+    "description": "Badge when the device check passes."
   },
   "verifyMismatch": "Tidak cocok",
   "@verifyMismatch": {
-    "description": "S39 badge when the device check fails."
+    "description": "Badge when the device check fails."
   },
   "verifyReport": "Laporkan",
   "@verifyReport": {
-    "description": "S39 link to report a mismatch."
+    "description": "Link to report a mismatch."
   },
   "verifyFixedOrder": "Grup ini memakai urutan tetap, jadi tidak ada kunci rahasia. Giliran mengikuti urutan yang disepakati.",
   "@verifyFixedOrder": {
-    "description": "S39 note for fixed-order draws."
+    "description": "Note for fixed-order draws."
   },
   "verifyCopied": "Disalin",
   "@verifyCopied": {
-    "description": "Toast after copying a value on S39."
+    "description": "Toast after copying a value on Verify the draw."
   },
   "payoutTitle": "Penyerahan",
   "@payoutTitle": {
-    "description": "S40 app bar title."
+    "description": "App bar title."
   },
   "payoutHeadline": "Serahkan **{amount}** ke {winner}",
   "@payoutHeadline": {
-    "description": "S40 organizer headline.",
+    "description": "Organizer headline.",
     "placeholders": {
       "amount": {
         "type": "String",
@@ -3237,23 +3237,23 @@
   },
   "payoutCaption": "Transfer atau serahkan tunai seperti biasa.",
   "@payoutCaption": {
-    "description": "S40 organizer caption."
+    "description": "Organizer caption."
   },
   "payoutProofLabel": "Bukti penyerahan (opsional)",
   "@payoutProofLabel": {
-    "description": "S40 upload tile label."
+    "description": "Upload tile label."
   },
   "payoutNoteLabel": "Catatan (opsional)",
   "@payoutNoteLabel": {
-    "description": "S40 note field label."
+    "description": "Note field label."
   },
   "payoutConsent": "Uang sudah saya serahkan",
   "@payoutConsent": {
-    "description": "S40 consent row."
+    "description": "Consent row."
   },
   "payoutRecordButton": "Catat penyerahan",
   "@payoutRecordButton": {
-    "description": "S40 primary button."
+    "description": "Primary button."
   },
   "payoutRecorded": "Penyerahan dicatat.",
   "@payoutRecorded": {
@@ -3261,7 +3261,7 @@
   },
   "payoutWaiting": "Menunggu konfirmasi {winner}",
   "@payoutWaiting": {
-    "description": "S40 status card after recording.",
+    "description": "Status card after recording.",
     "placeholders": {
       "winner": {
         "type": "String",
@@ -3271,7 +3271,7 @@
   },
   "payoutRecordedBy": "Dicatat {name} · {date}",
   "@payoutRecordedBy": {
-    "description": "S40 recorded caption.",
+    "description": "Recorded caption.",
     "placeholders": {
       "name": {
         "type": "String",
@@ -3285,7 +3285,7 @@
   },
   "payoutWinnerHeadline": "Sudah terima **{amount}**?",
   "@payoutWinnerHeadline": {
-    "description": "S40 winner headline.",
+    "description": "Winner headline.",
     "placeholders": {
       "amount": {
         "type": "String",
@@ -3295,11 +3295,11 @@
   },
   "payoutConfirmButton": "Ya, sudah saya terima",
   "@payoutConfirmButton": {
-    "description": "S40 winner primary button."
+    "description": "Winner primary button."
   },
   "payoutNotYetButton": "Belum terima",
   "@payoutNotYetButton": {
-    "description": "S40 winner secondary button."
+    "description": "Winner secondary button."
   },
   "payoutNotYetTitle": "Belum terima uangnya?",
   "@payoutNotYetTitle": {
@@ -3311,7 +3311,7 @@
   },
   "payoutConfirmed": "Diterima {winner} · {date}",
   "@payoutConfirmed": {
-    "description": "S40 confirmed card.",
+    "description": "Confirmed card.",
     "placeholders": {
       "winner": {
         "type": "String",
@@ -3329,7 +3329,7 @@
   },
   "payoutNotRecorded": "Pengurus belum mencatat penyerahan.",
   "@payoutNotRecorded": {
-    "description": "S40 state for members before recording."
+    "description": "State for members before recording."
   },
   "payoutAlreadyRecorded": "Penyerahan sudah dicatat pengurus lain.",
   "@payoutAlreadyRecorded": {
@@ -3341,15 +3341,15 @@
   },
   "scheduleScalePeriod": "Periode",
   "@scheduleScalePeriod": {
-    "description": "S21 segmented control: equal column per period."
+    "description": "Segmented control: equal column per period."
   },
   "scheduleScaleMonth": "Bulan",
   "@scheduleScaleMonth": {
-    "description": "S21 segmented control: month axis."
+    "description": "Segmented control: month axis."
   },
   "scheduleCompletion": "{percent}%",
   "@scheduleCompletion": {
-    "description": "S21 today-line pill: share of the cycle drawn.",
+    "description": "Today-line pill: share of the cycle drawn.",
     "placeholders": {
       "percent": {
         "type": "int",
@@ -3359,7 +3359,7 @@
   },
   "scheduleCompletionSemantics": "Hari ini, {percent}% putaran selesai",
   "@scheduleCompletionSemantics": {
-    "description": "S21 timeline semantics.",
+    "description": "Timeline semantics.",
     "placeholders": {
       "percent": {
         "type": "int",
@@ -3369,7 +3369,7 @@
   },
   "scheduleBarWinner": "P{period} · {name}",
   "@scheduleBarWinner": {
-    "description": "S21 bar and row label of a drawn period.",
+    "description": "Bar and row label of a drawn period.",
     "placeholders": {
       "period": {
         "type": "int",
@@ -3383,7 +3383,7 @@
   },
   "scheduleBarPeriod": "P{period}",
   "@scheduleBarPeriod": {
-    "description": "S21 bar label of an undrawn period.",
+    "description": "Bar label of an undrawn period.",
     "placeholders": {
       "period": {
         "type": "int",
@@ -3393,11 +3393,11 @@
   },
   "scheduleNotDrawn": "Belum dikocok",
   "@scheduleNotDrawn": {
-    "description": "S21 row of an undrawn period."
+    "description": "Row of an undrawn period."
   },
   "scheduleDrawnOn": "Dikocok {date}",
   "@scheduleDrawnOn": {
-    "description": "S21 row date of a drawn period.",
+    "description": "Row date of a drawn period.",
     "placeholders": {
       "date": {
         "type": "String",
@@ -3407,7 +3407,7 @@
   },
   "scheduleDrawOn": "Kocok {date}",
   "@scheduleDrawOn": {
-    "description": "S21 row date of an undrawn period.",
+    "description": "Row date of an undrawn period.",
     "placeholders": {
       "date": {
         "type": "String",
@@ -3417,11 +3417,11 @@
   },
   "scheduleProofLink": "Bukti",
   "@scheduleProofLink": {
-    "description": "S21 link to Bukti Kocok (S38)."
+    "description": "Link to Bukti Kocok."
   },
   "scheduleProofSemantics": "Bukti kocok periode {period}",
   "@scheduleProofSemantics": {
-    "description": "S21 semantics of the Bukti link.",
+    "description": "Semantics of the Bukti link.",
     "placeholders": {
       "period": {
         "type": "int",
@@ -3431,23 +3431,23 @@
   },
   "scheduleEmpty": "Jadwal muncul setelah arisan dimulai.",
   "@scheduleEmpty": {
-    "description": "S21 empty state before start."
+    "description": "Empty state before start."
   },
   "activityIntro": "Semua perubahan oleh pengurus tercatat di sini dan tidak bisa dihapus.",
   "@activityIntro": {
-    "description": "S23 intro caption."
+    "description": "Intro caption."
   },
   "activityEnd": "Ini awal riwayat grup.",
   "@activityEnd": {
-    "description": "S23 end of list."
+    "description": "End of list."
   },
   "activityEmpty": "Belum ada aktivitas di grup ini.",
   "@activityEmpty": {
-    "description": "S23 empty state."
+    "description": "Empty state."
   },
   "activityLoadMoreFailed": "Riwayat lama gagal dimuat.",
   "@activityLoadMoreFailed": {
-    "description": "S23 end row after a failed page."
+    "description": "End row after a failed page."
   },
   "activityToday": "Hari ini",
   "@activityToday": {
@@ -3979,39 +3979,39 @@
   },
   "notificationsHeadline": "**Aktivitas** terbaru",
   "@notificationsHeadline": {
-    "description": "S12 headline."
+    "description": "Headline."
   },
   "notificationsFilterAll": "Semua",
   "@notificationsFilterAll": {
-    "description": "S12 chip."
+    "description": "Chip."
   },
   "notificationsFilterUnread": "Belum dibaca",
   "@notificationsFilterUnread": {
-    "description": "S12 chip."
+    "description": "Chip."
   },
   "notificationsFilterAction": "Perlu tindakan",
   "@notificationsFilterAction": {
-    "description": "S12 chip."
+    "description": "Chip."
   },
   "notificationsMarkAllRead": "Tandai semua dibaca",
   "@notificationsMarkAllRead": {
-    "description": "S12 app bar action."
+    "description": "App bar action."
   },
   "notificationsEmpty": "Belum ada aktivitas.",
   "@notificationsEmpty": {
-    "description": "S12 empty state."
+    "description": "Empty state."
   },
   "notificationsEmptyFiltered": "Tidak ada notifikasi di sini.",
   "@notificationsEmptyFiltered": {
-    "description": "S12 empty state under a filter chip."
+    "description": "Empty state under a filter chip."
   },
   "notificationsPushOff": "Notifikasi mati. Aktifkan agar tidak lupa iuran.",
   "@notificationsPushOff": {
-    "description": "S12 banner when the OS permission is off."
+    "description": "Banner when the OS permission is off."
   },
   "notificationsOpenSettings": "Buka pengaturan",
   "@notificationsOpenSettings": {
-    "description": "S12 banner action."
+    "description": "Banner action."
   },
   "notificationUnreadSemantics": "Belum dibaca. {title}",
   "@notificationUnreadSemantics": {
@@ -4033,31 +4033,31 @@
   },
   "settingsPushPermission": "Izin notifikasi",
   "@settingsPushPermission": {
-    "description": "S47 system permission row."
+    "description": "System permission row."
   },
   "settingsPushPermissionOn": "Aktif",
   "@settingsPushPermissionOn": {
-    "description": "S47 permission value."
+    "description": "Permission value."
   },
   "settingsPushPermissionOff": "Mati",
   "@settingsPushPermissionOff": {
-    "description": "S47 permission value."
+    "description": "Permission value."
   },
   "settingsPushPermissionHint": "Diatur di pengaturan HP",
   "@settingsPushPermissionHint": {
-    "description": "S47 permission row subtitle."
+    "description": "Permission row subtitle."
   },
   "heroViewSummary": "Lihat ringkasan",
   "@heroViewSummary": {
-    "description": "Hero action on a completed or closed group (opens S24)."
+    "description": "Hero action on a completed or closed group."
   },
   "summaryTitle": "Ringkasan arisan",
   "@summaryTitle": {
-    "description": "S24 app bar title."
+    "description": "App bar title."
   },
   "summaryHeadlineCompleted": "Arisan selesai. **{periods} periode, {winners} pemenang.**",
   "@summaryHeadlineCompleted": {
-    "description": "S24 Cycle Summary headline.",
+    "description": "Cycle Summary headline.",
     "placeholders": {
       "periods": {
         "type": "int",
@@ -4071,7 +4071,7 @@
   },
   "summaryHeadlineClosed": "Arisan **ditutup** {date}",
   "@summaryHeadlineClosed": {
-    "description": "S24 headline of a group closed early.",
+    "description": "Headline of a group closed early.",
     "placeholders": {
       "date": {
         "type": "String",
@@ -4081,7 +4081,7 @@
   },
   "summaryClosedDrawn": "{drawn} dari {total} periode sempat dikocok.",
   "@summaryClosedDrawn": {
-    "description": "S24 line under the closed headline.",
+    "description": "Line under the closed headline.",
     "placeholders": {
       "drawn": {
         "type": "int",
@@ -4095,19 +4095,19 @@
   },
   "summaryStatCollected": "Terkumpul",
   "@summaryStatCollected": {
-    "description": "S24 stat label: total collected."
+    "description": "Stat label: total collected."
   },
   "summaryStatPaidRate": "Iuran lunas",
   "@summaryStatPaidRate": {
-    "description": "S24 stat label: share of dues paid."
+    "description": "Stat label: share of dues paid."
   },
   "summaryStatMembers": "Anggota",
   "@summaryStatMembers": {
-    "description": "S24 stat label: member count."
+    "description": "Stat label: member count."
   },
   "summaryPercent": "{percent}%",
   "@summaryPercent": {
-    "description": "S24 stat value.",
+    "description": "Stat value.",
     "placeholders": {
       "percent": {
         "type": "int",
@@ -4117,15 +4117,15 @@
   },
   "summaryWinnersTitle": "Pemenang per periode",
   "@summaryWinnersTitle": {
-    "description": "S24 list header."
+    "description": "List header."
   },
   "summaryNotDrawn": "Tidak dikocok",
   "@summaryNotDrawn": {
-    "description": "S24 label for periods a closed group never drew."
+    "description": "Label for periods a closed group never drew."
   },
   "summaryWinnerRow": "P{period} · {name}",
   "@summaryWinnerRow": {
-    "description": "S24 winner row title.",
+    "description": "Winner row title.",
     "placeholders": {
       "period": {
         "type": "int",
@@ -4139,23 +4139,23 @@
   },
   "summaryCreateNew": "Buat arisan baru",
   "@summaryCreateNew": {
-    "description": "S24 organizer action (opens S13 prefilled)."
+    "description": "Organizer action."
   },
   "summaryViewHistory": "Lihat riwayat",
   "@summaryViewHistory": {
-    "description": "S24 member action (opens the Aktivitas tab)."
+    "description": "Member action (opens the Aktivitas tab)."
   },
   "summaryFinishedBanner": "Arisan sudah selesai",
   "@summaryFinishedBanner": {
-    "description": "S24 banner over the read-only tabs."
+    "description": "Banner over the read-only tabs."
   },
   "summaryClosedBanner": "Arisan sudah ditutup",
   "@summaryClosedBanner": {
-    "description": "S24 banner over the read-only tabs of a closed group."
+    "description": "Banner over the read-only tabs of a closed group."
   },
   "remindersHeadline": "**{count} orang** belum bayar periode {period}",
   "@remindersHeadline": {
-    "description": "S41 headline.",
+    "description": "Headline.",
     "placeholders": {
       "count": {
         "type": "int",
@@ -4169,11 +4169,11 @@
   },
   "remindersShareRecap": "Bagikan rekap ke grup WhatsApp",
   "@remindersShareRecap": {
-    "description": "S41 primary under the recap preview."
+    "description": "Primary under the recap preview."
   },
   "remindersShareText": "Rekap {group} periode {period}",
   "@remindersShareText": {
-    "description": "S41 text sent with the recap image.",
+    "description": "Text sent with the recap image.",
     "placeholders": {
       "group": {
         "type": "String",
@@ -4187,19 +4187,19 @@
   },
   "remindersExportFailed": "Gambar rekap gagal dibuat. Coba lagi.",
   "@remindersExportFailed": {
-    "description": "S41 toast when the recap image export fails."
+    "description": "Toast when the recap image export fails."
   },
   "remindersOneByOne": "Ingatkan satu per satu",
   "@remindersOneByOne": {
-    "description": "S41 section header over the unpaid rows."
+    "description": "Section header over the unpaid rows."
   },
   "remindersGuestCaption": "Tamu · lewat WhatsApp saja",
   "@remindersGuestCaption": {
-    "description": "S41 unpaid row caption for a guest (no app, no push)."
+    "description": "Unpaid row caption for a guest (no app, no push)."
   },
   "remindersWhatsAppSemantics": "Ingatkan {name} lewat WhatsApp",
   "@remindersWhatsAppSemantics": {
-    "description": "S41 WhatsApp circle button label.",
+    "description": "WhatsApp circle button label.",
     "placeholders": {
       "name": {
         "type": "String",
@@ -4209,7 +4209,7 @@
   },
   "remindersSend": "Kirim notifikasi ke {count} orang",
   "@remindersSend": {
-    "description": "S41 docked primary.",
+    "description": "Docked primary.",
     "placeholders": {
       "count": {
         "type": "int",
@@ -4219,11 +4219,11 @@
   },
   "remindersSelectSomeone": "Pilih siapa yang diingatkan.",
   "@remindersSelectSomeone": {
-    "description": "S41 disabled reason of the send button."
+    "description": "Disabled reason of the send button."
   },
   "remindersSent": "Notifikasi terkirim ke {count} orang",
   "@remindersSent": {
-    "description": "S41 toast after sending.",
+    "description": "Toast after sending.",
     "placeholders": {
       "count": {
         "type": "int",
@@ -4233,27 +4233,27 @@
   },
   "remindersRetryIn": "Bisa kirim lagi dalam ",
   "@remindersRetryIn": {
-    "description": "S41 countdown prefix after rate_limit_exceeded."
+    "description": "Countdown prefix after rate_limit_exceeded."
   },
   "remindersAllPaidTitle": "Semua sudah bayar",
   "@remindersAllPaidTitle": {
-    "description": "S41 empty state title."
+    "description": "Empty state title."
   },
   "remindersAllPaidMessage": "Bagikan rekap supaya grup tahu iuran periode ini sudah lengkap.",
   "@remindersAllPaidMessage": {
-    "description": "S41 empty state message."
+    "description": "Empty state message."
   },
   "remindersNoPeriodTitle": "Belum ada periode berjalan",
   "@remindersNoPeriodTitle": {
-    "description": "S41 state when the group has no open period."
+    "description": "State when the group has no open period."
   },
   "remindersNoPeriodMessage": "Pengingat bisa dikirim setelah arisan dimulai.",
   "@remindersNoPeriodMessage": {
-    "description": "S41 state message when there is no open period."
+    "description": "State message when there is no open period."
   },
   "remindersSkippedTitle": "{count} orang tidak dapat notifikasi",
   "@remindersSkippedTitle": {
-    "description": "S41 skipped sheet title.",
+    "description": "Skipped sheet title.",
     "placeholders": {
       "count": {
         "type": "int",
@@ -4263,31 +4263,31 @@
   },
   "remindersSkippedHint": "Ingatkan mereka lewat WhatsApp.",
   "@remindersSkippedHint": {
-    "description": "S41 skipped sheet subtitle."
+    "description": "Skipped sheet subtitle."
   },
   "remindersSkipGuest": "Tamu",
   "@remindersSkipGuest": {
-    "description": "S41 skip reason: guest without the app."
+    "description": "Skip reason: guest without the app."
   },
   "remindersSkipNoDevice": "Tidak ada perangkat",
   "@remindersSkipNoDevice": {
-    "description": "S41 skip reason: no signed-in device."
+    "description": "Skip reason: no signed-in device."
   },
   "remindersSkipNotificationsOff": "Notifikasi mati",
   "@remindersSkipNotificationsOff": {
-    "description": "S41 skip reason: reminders turned off."
+    "description": "Skip reason: reminders turned off."
   },
   "remindersSkipRecentlyReminded": "Baru diingatkan",
   "@remindersSkipRecentlyReminded": {
-    "description": "S41 skip reason: reminded in the last 6 hours."
+    "description": "Skip reason: reminded in the last 6 hours."
   },
   "remindersSkipAlreadyPaid": "Sudah bayar",
   "@remindersSkipAlreadyPaid": {
-    "description": "S41 skip reason: paid or proof waiting."
+    "description": "Skip reason: paid or proof waiting."
   },
   "remindersSkipOther": "Lainnya",
   "@remindersSkipOther": {
-    "description": "S41 skip reason this app version doesn't know."
+    "description": "Skip reason this app version doesn't know."
   },
   "remindersWhatsAppBody": "Halo {name}, iuran {group} periode {period} sebesar {amount} jatuh tempo {due}.",
   "@remindersWhatsAppBody": {
@@ -4566,15 +4566,15 @@
   },
   "authSetPinHeadline": "Buat **PIN 6 digit**",
   "@authSetPinHeadline": {
-    "description": "S06 headline; **bold** run."
+    "description": "Headline; **bold** run."
   },
   "authSetPinConfirmHeadline": "Ulangi **PIN**",
   "@authSetPinConfirmHeadline": {
-    "description": "S06 confirm step headline."
+    "description": "Confirm step headline."
   },
   "authSetPinCaption": "Dipakai untuk membuka Giliran di HP ini.",
   "@authSetPinCaption": {
-    "description": "S06 caption."
+    "description": "Caption."
   },
   "authRepeatPinCaption": "Masukkan PIN yang sama sekali lagi.",
   "@authRepeatPinCaption": {
@@ -4602,7 +4602,7 @@
   },
   "authOtpHeadline": "Cek **email** kamu",
   "@authOtpHeadline": {
-    "description": "S04 headline."
+    "description": "Headline."
   },
   "authOpenMailApp": "Buka aplikasi email",
   "@authOpenMailApp": {
@@ -4614,11 +4614,11 @@
   },
   "authOtpNeverShare": "Jangan berikan kode ini ke siapa pun. Pengurus Giliran tidak pernah memintanya.",
   "@authOtpNeverShare": {
-    "description": "S04 safety note."
+    "description": "Safety note."
   },
   "authCodeSentTo6": "Kode 6 digit dikirim ke",
   "@authCodeSentTo6": {
-    "description": "Label above the masked email on S04."
+    "description": "Label above the masked email."
   },
   "authCodeSentTo": "Kode dikirim ke",
   "@authCodeSentTo": {
@@ -4722,23 +4722,23 @@
   },
   "authSignOutTitle": "Keluar dari Giliran?",
   "@authSignOutTitle": {
-    "description": "S08 sign out confirm title."
+    "description": "Sign out confirm title."
   },
   "authSignOutMessage": "Kamu perlu masuk lagi dengan email di perangkat ini.",
   "@authSignOutMessage": {
-    "description": "S08 sign out confirm body."
+    "description": "Sign out confirm body."
   },
   "authNotYou": "Bukan kamu? Keluar",
   "@authNotYou": {
-    "description": "S08 sign out link."
+    "description": "Sign out link."
   },
   "authHello": "Halo",
   "@authHello": {
-    "description": "S08 greeting without a name."
+    "description": "Greeting without a name."
   },
   "authHelloName": "Halo, {name}",
   "@authHelloName": {
-    "description": "S08 greeting with the first name.",
+    "description": "Greeting with the first name.",
     "placeholders": {
       "name": {
         "type": "String"
@@ -4747,15 +4747,15 @@
   },
   "authPinLockCaption": "Masukkan PIN untuk membuka Giliran",
   "@authPinLockCaption": {
-    "description": "S08 caption."
+    "description": "Caption."
   },
   "authPinLockTooMany": "Terlalu banyak PIN salah. Coba lagi setelah waktu habis.",
   "@authPinLockTooMany": {
-    "description": "S08 locked caption."
+    "description": "Locked caption."
   },
   "authUnlockWith": "Buka dengan {method}",
   "@authUnlockWith": {
-    "description": "S08 biometric key label, e.g. 'Buka dengan sidik jari'.",
+    "description": "Biometric key label, e.g. 'Buka dengan sidik jari'.",
     "placeholders": {
       "method": {
         "type": "String"
@@ -4776,11 +4776,11 @@
   },
   "authEmailChanged": "Email diganti. Perangkat lain sudah dikeluarkan.",
   "@authEmailChanged": {
-    "description": "S46 success toast."
+    "description": "Success toast."
   },
   "authNewEmail": "Email baru",
   "@authNewEmail": {
-    "description": "S46 step and field label."
+    "description": "Step and field label."
   },
   "authStepPin": "PIN",
   "@authStepPin": {
@@ -4792,27 +4792,27 @@
   },
   "authChangeEmailHeadline": "Ganti **email**",
   "@authChangeEmailHeadline": {
-    "description": "S46 headline."
+    "description": "Headline."
   },
   "authChangeEmailCaption": "Kode dikirim ke email baru. Setelah diganti, perangkat lain akan dikeluarkan.",
   "@authChangeEmailCaption": {
-    "description": "S46 caption."
+    "description": "Caption."
   },
   "authCurrentEmail": "Email sekarang",
   "@authCurrentEmail": {
-    "description": "S46 current email label."
+    "description": "Current email label."
   },
   "authNewEmailCodeHeadline": "Masukkan kode dari **email baru** kamu",
   "@authNewEmailCodeHeadline": {
-    "description": "S46 code step headline."
+    "description": "Code step headline."
   },
   "authOldEmailNotified": "Email lama akan dapat pemberitahuan. Setelah diganti, perangkat lain dikeluarkan.",
   "@authOldEmailNotified": {
-    "description": "S46 code step note."
+    "description": "Code step note."
   },
   "authOldEmailNotifiedTo": "Email lama **{email}** akan dapat pemberitahuan. Setelah diganti, perangkat lain dikeluarkan.",
   "@authOldEmailNotifiedTo": {
-    "description": "S46 code step note with the masked old email.",
+    "description": "Code step note with the masked old email.",
     "placeholders": {
       "email": {
         "type": "String"
@@ -4825,19 +4825,19 @@
   },
   "authSignInHeadline": "Masuk dengan **email**",
   "@authSignInHeadline": {
-    "description": "S03 headline."
+    "description": "Headline."
   },
   "authSignInCaption": "Kami kirim kode 6 digit ke email kamu. Tanpa kata sandi.",
   "@authSignInCaption": {
-    "description": "S03 caption."
+    "description": "Caption."
   },
   "authSignInHelper": "Akun baru dibuat otomatis kalau email ini belum terdaftar.",
   "@authSignInHelper": {
-    "description": "S03 email field helper."
+    "description": "Email field helper."
   },
   "authSignInPrivacyNote": "Email kamu hanya untuk masuk dan pemulihan akun. Tidak ditampilkan ke anggota lain.",
   "@authSignInPrivacyNote": {
-    "description": "S03 privacy note."
+    "description": "Privacy note."
   },
   "authRateLimitedPrefix": "Terlalu sering. Coba lagi dalam ",
   "@authRateLimitedPrefix": {
@@ -4845,7 +4845,7 @@
   },
   "authSendCode": "Kirim kode",
   "@authSendCode": {
-    "description": "S03 primary button."
+    "description": "Primary button."
   },
   "authConsentPrefix": "Dengan lanjut, kamu setuju dengan ",
   "@authConsentPrefix": {
@@ -4861,7 +4861,7 @@
   },
   "authBiometricOptInHeadline": "Buka Giliran dengan **{method}**",
   "@authBiometricOptInHeadline": {
-    "description": "S07 headline.",
+    "description": "Headline.",
     "placeholders": {
       "method": {
         "type": "String"
@@ -4870,75 +4870,75 @@
   },
   "authBiometricOptInCaption": "Lebih cepat dari mengetik PIN. PIN tetap bisa dipakai kapan saja.",
   "@authBiometricOptInCaption": {
-    "description": "S07 caption."
+    "description": "Caption."
   },
   "authEnable": "Aktifkan",
   "@authEnable": {
-    "description": "S07 primary button."
+    "description": "Primary button."
   },
   "authPinReset": "PIN baru tersimpan. Perangkat lain sudah dikeluarkan.",
   "@authPinReset": {
-    "description": "S09 success toast."
+    "description": "Success toast."
   },
   "authForgotPinTitle": "Lupa PIN",
   "@authForgotPinTitle": {
-    "description": "S09 flow title."
+    "description": "Flow title."
   },
   "authForgotHeadline": "Pastikan **ini kamu**",
   "@authForgotHeadline": {
-    "description": "S09 headline."
+    "description": "Headline."
   },
   "authForgotNoEmail": "Email akun tidak ditemukan di perangkat ini. Masuk lagi dengan email.",
   "@authForgotNoEmail": {
-    "description": "S09 when the email is unknown."
+    "description": "When the email is unknown."
   },
   "authForgotCaption": "Kami kirim kode 6 digit ke email akun kamu untuk memastikan ini kamu.",
   "@authForgotCaption": {
-    "description": "S09 caption."
+    "description": "Caption."
   },
   "authForgotStepCode": "Masukkan kode dari email",
   "@authForgotStepCode": {
-    "description": "S09 step 1."
+    "description": "Step 1."
   },
   "authForgotStepCodeHint": "6 digit, berlaku 10 menit",
   "@authForgotStepCodeHint": {
-    "description": "S09 step 1 caption."
+    "description": "Step 1 caption."
   },
   "authForgotStepPin": "Buat PIN baru",
   "@authForgotStepPin": {
-    "description": "S09 step 2."
+    "description": "Step 2."
   },
   "authForgotStepPinHint": "Masukkan dua kali",
   "@authForgotStepPinHint": {
-    "description": "S09 step 2 caption."
+    "description": "Step 2 caption."
   },
   "authForgotStepDone": "Selesai",
   "@authForgotStepDone": {
-    "description": "S09 step 3."
+    "description": "Step 3."
   },
   "authForgotStepDoneHint": "Perangkat lain dikeluarkan dari akun",
   "@authForgotStepDoneHint": {
-    "description": "S09 step 3 caption."
+    "description": "Step 3 caption."
   },
   "authSendCodeToEmail": "Kirim kode ke email",
   "@authSendCodeToEmail": {
-    "description": "S09 primary button."
+    "description": "Primary button."
   },
   "authNoEmailTitle": "Tidak bisa buka email?",
   "@authNoEmailTitle": {
-    "description": "S09 help sheet title."
+    "description": "Help sheet title."
   },
   "authNoEmailBody1": "PIN hanya bisa diatur ulang lewat kode dari email akunmu. Tanpa email itu, akun tidak bisa dipulihkan.",
   "@authNoEmailBody1": {
-    "description": "S09 help sheet paragraph 1."
+    "description": "Help sheet paragraph 1."
   },
   "authNoEmailBody2": "Pengurus arisan tetap bisa mencatat kamu di grup sebagai anggota tamu, jadi iuranmu tidak hilang.",
   "@authNoEmailBody2": {
-    "description": "S09 help sheet paragraph 2."
+    "description": "Help sheet paragraph 2."
   },
   "authNoEmailLink": "Sudah tidak bisa buka email ini? Hubungi bantuan.",
   "@authNoEmailLink": {
-    "description": "S09 link that opens the help sheet."
+    "description": "Link that opens the help sheet."
   },
   "authNewPinHeadline": "Buat **PIN baru**",
   "@authNewPinHeadline": {
@@ -4950,11 +4950,11 @@
   },
   "authOldPinInvalid": "PIN lama tidak bisa dipakai lagi.",
   "@authOldPinInvalid": {
-    "description": "S09 new PIN caption."
+    "description": "New PIN caption."
   },
   "authPinChanged": "PIN berhasil diganti.",
   "@authPinChanged": {
-    "description": "S44 success toast."
+    "description": "Success toast."
   },
   "authStepOldPin": "PIN lama",
   "@authStepOldPin": {
@@ -4970,71 +4970,71 @@
   },
   "authOldPinHeadline": "Masukkan **PIN lama**",
   "@authOldPinHeadline": {
-    "description": "S44 step 1 headline."
+    "description": "Step 1 headline."
   },
   "authOldPinCaption": "Pastikan ini kamu sebelum mengganti PIN.",
   "@authOldPinCaption": {
-    "description": "S44 step 1 caption."
+    "description": "Step 1 caption."
   },
   "authEnterNewPinHeadline": "Masukkan **PIN baru**",
   "@authEnterNewPinHeadline": {
-    "description": "S44 step 2 headline."
+    "description": "Step 2 headline."
   },
   "authNewPinCaption": "Perangkat lain tetap masuk seperti biasa.",
   "@authNewPinCaption": {
-    "description": "S44 step 2 caption."
+    "description": "Step 2 caption."
   },
   "authOnboarding1Headline": "Arisan rapi, **semua bisa cek**.",
   "@authOnboarding1Headline": {
-    "description": "S02 page 1 headline."
+    "description": "Page 1 headline."
   },
   "authOnboarding1Body": "Catat iuran tiap periode, lihat siapa yang sudah bayar, dan buktikan setiap kocokan. Semua anggota melihat papan yang sama.",
   "@authOnboarding1Body": {
-    "description": "S02 page 1 body."
+    "description": "Page 1 body."
   },
   "authOnboarding2Headline": "Kocokan yang **bisa dibuktikan**.",
   "@authOnboarding2Headline": {
-    "description": "S02 page 2 headline."
+    "description": "Page 2 headline."
   },
   "authOnboarding2Body": "Setiap kocokan menghasilkan Bukti Kocok. Siapa pun di grup bisa cek ulang hasilnya, tidak ada yang bisa mengatur pemenang.",
   "@authOnboarding2Body": {
-    "description": "S02 page 2 body."
+    "description": "Page 2 body."
   },
   "authOnboarding3Headline": "Giliran **tidak pernah memegang uang** kamu.",
   "@authOnboarding3Headline": {
-    "description": "S02 page 3 headline."
+    "description": "Page 3 headline."
   },
   "authOnboarding3Body": "Iuran tetap ditransfer langsung ke pengurus seperti biasa. Giliran hanya mencatat, supaya semua anggota bisa melihat.",
   "@authOnboarding3Body": {
-    "description": "S02 page 3 body."
+    "description": "Page 3 body."
   },
   "authSkip": "Lewati",
   "@authSkip": {
-    "description": "S02 skip link."
+    "description": "Skip link."
   },
   "authSkipSemantic": "Lewati ke halaman terakhir",
   "@authSkipSemantic": {
-    "description": "S02 skip screen reader label."
+    "description": "Skip screen reader label."
   },
   "authNeverHoldsMoney": "Giliran tidak pernah memegang uang kamu.",
   "@authNeverHoldsMoney": {
-    "description": "S02 footer line."
+    "description": "Footer line."
   },
   "authSignInWithEmail": "Masuk dengan email",
   "@authSignInWithEmail": {
-    "description": "S02 primary button."
+    "description": "Primary button."
   },
   "authFillNameHeadline": "Siapa **nama kamu**?",
   "@authFillNameHeadline": {
-    "description": "S05 headline."
+    "description": "Headline."
   },
   "authFillNameCaption": "Nama ini dilihat anggota arisan lain.",
   "@authFillNameCaption": {
-    "description": "S05 caption."
+    "description": "Caption."
   },
   "authNameHelper": "Pakai nama yang dikenal anggota.",
   "@authNameHelper": {
-    "description": "S05 name helper."
+    "description": "Name helper."
   },
   "widgetClearField": "Hapus isian",
   "@widgetClearField": {
@@ -5289,18 +5289,18 @@
   },
   "profileLicenses": "Lisensi",
   "@profileLicenses": {
-    "description": "S42 About row that opens the open-source license page."
+    "description": "About row that opens the open-source license page."
   },
   "settingsGroupPrivacy": "Privasi",
   "@settingsGroupPrivacy": {
-    "description": "S47 group header for privacy settings."
+    "description": "Group header for privacy settings."
   },
   "settingsSecureScreen": "Sembunyikan layar di app terbaru",
   "@settingsSecureScreen": {
-    "description": "S47 toggle that blocks screenshots and the recents preview (Android FLAG_SECURE)."
+    "description": "Toggle that blocks screenshots and the recents preview (Android FLAG_SECURE)."
   },
   "settingsSecureScreenHint": "Layar Giliran kosong di daftar app terbaru. Tangkapan layar juga diblokir.",
   "@settingsSecureScreenHint": {
-    "description": "S47 secure screen toggle subtitle."
+    "description": "Secure screen toggle subtitle."
   }
 }

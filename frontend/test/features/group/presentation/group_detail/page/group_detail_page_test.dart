@@ -139,7 +139,7 @@ void main() {
     expect(find.text('Arisan selesai.'), findsOneWidget);
   });
 
-  testWidgets('a completed group offers Lihat ringkasan, which opens S24', (tester) async {
+  testWidgets('a completed group offers Lihat ringkasan, which opens the group summary', (tester) async {
     // Arrange
     await pumpDetail(tester, _active.copyWith(status: GroupStatus.completed));
 

@@ -3,7 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../../../core/l10n/l10n.dart';
 import '../../../../../shared/widgets/widgets.dart';
 
-/// The Beranda headline (S10), built from the data: dues waiting, all
+/// The Beranda headline, built from the data: dues waiting, all
 /// settled, or no groups yet.
 class const HomeHeadline({
   super.key,

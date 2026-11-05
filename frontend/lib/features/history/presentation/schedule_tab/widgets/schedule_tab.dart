@@ -12,10 +12,10 @@ import '../../../../payment/domain/entities/period.dart';
 import '../../../domain/entities/schedule.dart';
 import '../controllers/schedule_controller.dart';
 
-/// The Jadwal tab (S21) as a sliver inside the group detail scroll view:
+/// The Jadwal tab as a sliver inside the group detail scroll view:
 /// the "Periode · Bulan" switch, the Jadwal timeline with today's line,
 /// then one row per period with its winner (or "Belum dikocok") and a
-/// "Bukti" link to the Bukti Kocok (S38) of drawn periods.
+/// "Bukti" link to the Bukti Kocok of drawn periods.
 class const ScheduleTab({
   super.key,
   required final GroupDetail group,

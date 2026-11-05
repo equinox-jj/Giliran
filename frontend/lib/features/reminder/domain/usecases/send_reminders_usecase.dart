@@ -13,7 +13,7 @@ part 'send_reminders_usecase.g.dart';
 
 typedef SendRemindersParams = ({String groupId, String periodId, List<String> memberIds, IdempotencyKey key});
 
-/// Pushes a reminder to the selected unpaid members (S41). An empty
+/// Pushes a reminder to the selected unpaid members. An empty
 /// selection fails with a [ValidationFailure] on `member_ids` before any
 /// request, because the API would read a missing list as "everyone". A
 /// retry must reuse the same [IdempotencyKey].

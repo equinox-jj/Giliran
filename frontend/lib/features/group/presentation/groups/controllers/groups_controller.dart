@@ -14,7 +14,7 @@ import '../../../domain/usecases/watch_my_groups_usecase.dart';
 part 'groups_controller.freezed.dart';
 part 'groups_controller.g.dart';
 
-/// The Groups list (S11) for one segment.
+/// The Groups list for one segment.
 @freezed
 abstract class GroupsState with _$GroupsState {
   const factory({

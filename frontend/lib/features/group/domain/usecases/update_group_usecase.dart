@@ -10,7 +10,7 @@ import '../repositories/group_repository.dart';
 
 part 'update_group_usecase.g.dart';
 
-/// Changes a group's settings (S19). Values outside [GroupRules] fail with
+/// Changes a group's settings. Values outside [GroupRules] fail with
 /// a [ValidationFailure] before any request. An empty change sends nothing
 /// and returns `null`, since the API needs at least one field.
 class const UpdateGroupUseCase(final GroupRepository _repository)

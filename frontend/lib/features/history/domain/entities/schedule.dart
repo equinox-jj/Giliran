@@ -1,6 +1,6 @@
 import '../../../payment/domain/entities/period.dart';
 
-/// The axis the Jadwal timeline (S21) lays periods on: equal columns per
+/// The axis the Jadwal timeline lays periods on: equal columns per
 /// period, or real dates on a month axis.
 enum ScheduleScale() {
   period,

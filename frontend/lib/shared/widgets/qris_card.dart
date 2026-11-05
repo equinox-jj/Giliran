@@ -29,7 +29,7 @@ class const QrisCard({
   final bool uploading = false,
   final String? errorText,
 
-  /// The organizer's editing layout (S15): a 112 px image beside the name,
+  /// The organizer's editing layout: a 112 px image beside the name,
   /// the "checked" line and Ganti / Hapus.
   final bool inline = false,
 }) extends StatelessWidget {
@@ -237,7 +237,7 @@ class const _InlineQrisCard({
   }
 }
 
-/// "Hapus" as plain `rejected.fg` text, as drawn on S15.
+/// "Hapus" as plain `rejected.fg` text, as designed.
 class const _RemoveButton({required final String label, required final VoidCallback onPressed})
     extends StatelessWidget {
   @override

@@ -18,7 +18,7 @@ part 'activity_tab_controller.g.dart';
 /// An entry with what its row says.
 typedef ActivityItem = ({ActivityEntry entry, ActivityDescription description});
 
-/// The Aktivitas tab (S23): the cached entries and where the next page
+/// The Aktivitas tab: the cached entries and where the next page
 /// starts.
 @freezed
 abstract class ActivityTabState with _$ActivityTabState {

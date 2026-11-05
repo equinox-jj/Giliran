@@ -6,7 +6,7 @@ import '../entities/schedule.dart';
 
 part 'build_schedule_usecase.g.dart';
 
-/// Lays a cycle's periods out for the Jadwal timeline (S21, Tikar §9.5).
+/// Lays a cycle's periods out for the Jadwal timeline.
 ///
 /// A period runs from the previous period's draw date to its own; the first
 /// one starts one period length (P1 to P2) before its draw. [ScheduleScale.period]

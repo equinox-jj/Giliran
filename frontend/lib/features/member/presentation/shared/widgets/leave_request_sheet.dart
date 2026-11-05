@@ -13,9 +13,9 @@ import '../../../domain/entities/member_input.dart';
 import '../../../domain/entities/obligation.dart';
 import '../controllers/leave_controller.dart';
 
-/// Opens Leave request (S30) for [group]. [obligation] is the caller's own,
+/// Opens Leave request for [group]. [obligation] is the caller's own,
 /// when known, so a past winner who still owes sees why up front.
-/// [onTransfer] opens Transfer ownership (S32) from the organizer's blocked
+/// [onTransfer] opens Transfer ownership from the organizer's blocked
 /// state. Resolves to true when the request was sent.
 Future<bool> showLeaveRequestSheet(
   BuildContext context, {
@@ -31,7 +31,7 @@ Future<bool> showLeaveRequestSheet(
 
 /// "Minta keluar dari grup": explanation, an optional reason (500) and a
 /// destructive "Kirim permintaan". The organizer (`organizer_cannot_leave`)
-/// gets a link to S32 instead; a past winner with dues
+/// gets a link to Transfer ownership instead; a past winner with dues
 /// (`obligations_outstanding`) sees them on the Obligation Meter.
 class const LeaveRequestSheet({
   super.key,

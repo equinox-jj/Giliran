@@ -8,7 +8,7 @@ import '../../members_tab/controllers/members_tab_controller.dart';
 part 'leave_controller.freezed.dart';
 part 'leave_controller.g.dart';
 
-/// The leave request sheet (S30) while it sends, and its last failure.
+/// The leave request sheet while it sends, and its last failure.
 @freezed
 abstract class LeaveState with _$LeaveState {
   const factory({@Default(false) bool sending, Failure? failure}) = _LeaveState;

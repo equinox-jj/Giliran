@@ -19,7 +19,7 @@ import '../../../domain/usecases/pick_next_action_usecase.dart';
 part 'home_controller.freezed.dart';
 part 'home_controller.g.dart';
 
-/// Everything Beranda (S10) shows, derived from the cached active groups.
+/// Everything Beranda shows, derived from the cached active groups.
 @freezed
 abstract class HomeState with _$HomeState {
   const factory({

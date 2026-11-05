@@ -7,7 +7,7 @@ import '../../../../../core/utils/code_formatter.dart';
 import '../../../../../shared/widgets/widgets.dart';
 import '../../../domain/entities/draw.dart';
 
-/// Verify the draw (S39): the three steps, the commitment, the revealed
+/// Verify the draw: the three steps, the commitment, the revealed
 /// seed, the participants and the result, each copyable, and the badge
 /// computed on this device ("Cocok ✓" or "Tidak cocok" with "Laporkan").
 Future<void> showVerifyDrawSheet(

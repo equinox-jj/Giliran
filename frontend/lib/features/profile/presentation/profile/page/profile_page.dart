@@ -13,7 +13,7 @@ import '../../../../auth/domain/entities/auth_status.dart';
 import '../../../../auth/presentation/shared/controllers/auth_session_controller.dart';
 import '../../../domain/entity/profile.dart';
 
-/// The Profil tab (S42): who is signed in, links to Security and Settings,
+/// The Profil tab: who is signed in, links to Security and Settings,
 /// help, about, and signing out.
 class const ProfilePage({
   super.key,

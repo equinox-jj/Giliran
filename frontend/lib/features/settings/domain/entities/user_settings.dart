@@ -2,7 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'user_settings.freezed.dart';
 
-/// The account's notification and language settings (S47).
+/// The account's notification and language settings.
 @freezed
 abstract class UserSettings with _$UserSettings {
   const factory({

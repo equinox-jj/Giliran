@@ -9,7 +9,7 @@ import '../repositories/member_repository.dart';
 
 part 'get_obligations_usecase.g.dart';
 
-/// What past winners still owe (S22), overdue members first (most overdue
+/// What past winners still owe, overdue members first (most overdue
 /// dues first), then by the period they won.
 class const GetObligationsUseCase(final MemberRepository _repository) implements UseCase<List<Obligation>, String> {
   @override

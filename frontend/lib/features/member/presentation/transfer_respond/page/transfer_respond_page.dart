@@ -11,11 +11,11 @@ import '../../../../../shared/widgets/widgets.dart';
 import '../../../../group/presentation/group_detail/controllers/group_detail_controller.dart';
 import '../controllers/transfer_respond_controller.dart';
 
-/// Transfer ownership respond (S33): "{from} ingin kamu jadi pengurus
+/// Transfer ownership respond: "{from} ingin kamu jadi pengurus
 /// {group}", the three responsibilities, the payment info reminder, and
 /// "Terima" / "Tolak". The API can't read one transfer back, so the names
 /// come from the cached group (its current organizer). After accepting,
-/// [onAccepted] opens Payment info (S15).
+/// [onAccepted] opens Payment info.
 class const TransferRespondPage({
   super.key,
   required final String groupId,

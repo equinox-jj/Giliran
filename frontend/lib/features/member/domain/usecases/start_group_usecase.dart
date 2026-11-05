@@ -9,7 +9,7 @@ import '../repositories/member_repository.dart';
 
 part 'start_group_usecase.g.dart';
 
-/// Starts a draft group and opens period 1 (S18).
+/// Starts a draft group and opens period 1.
 class const StartGroupUseCase(final MemberRepository _repository) implements UseCase<GroupDetail, String> {
   @override
   Future<Either<Failure, GroupDetail>> call(String params) => _repository.startGroup(params);

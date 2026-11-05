@@ -4,7 +4,7 @@ import '../entities/member.dart';
 
 part 'sort_by_fixed_order_usecase.g.dart';
 
-/// Members in their winning order for Fixed order (S17): by
+/// Members in their winning order for Fixed order: by
 /// `fixed_order_position`, members without one last by slot number.
 ///
 /// Pure and synchronous, so it does not go through `UseCase`.

@@ -11,7 +11,7 @@ import '../repositories/group_repository.dart';
 
 part 'update_payment_info_usecase.g.dart';
 
-/// Saves the organizer's bank account (S15). The account number is sent as
+/// Saves the organizer's bank account. The account number is sent as
 /// digits only; a bank, number or holder the API would reject fails with a
 /// [ValidationFailure] before any request.
 class const UpdatePaymentInfoUseCase(final GroupRepository _repository)

@@ -12,7 +12,7 @@ abstract class SkippedReminder with _$SkippedReminder {
   const factory({MemberRef? member, ReminderSkipReason? reason, String? whatsappPhone}) = _SkippedReminder;
 }
 
-/// The answer to "Kirim notifikasi" (S41): pushes sent, and who was skipped
+/// The answer to "Kirim notifikasi": pushes sent, and who was skipped
 /// so the organizer can use WhatsApp instead.
 @freezed
 abstract class ReminderResult with _$ReminderResult {

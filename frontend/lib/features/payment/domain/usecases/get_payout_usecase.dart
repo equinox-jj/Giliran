@@ -11,7 +11,7 @@ part 'get_payout_usecase.g.dart';
 
 typedef PayoutRef = ({String groupId, String periodId});
 
-/// A period's payout record, fetched into the cache (S40).
+/// A period's payout record, fetched into the cache.
 class const GetPayoutUseCase(final PaymentRepository _repository) implements UseCase<Payout, PayoutRef> {
   @override
   Future<Either<Failure, Payout>> call(PayoutRef params) => _repository.getPayout(params.groupId, params.periodId);

@@ -15,7 +15,7 @@ import '../../members_tab/controllers/members_tab_controller.dart';
 part 'leave_requests_controller.freezed.dart';
 part 'leave_requests_controller.g.dart';
 
-/// Leave requests review (S31): pending requests, newest first, and what
+/// Leave requests review: pending requests, newest first, and what
 /// past winners among them still owe.
 @freezed
 abstract class LeaveRequestsState with _$LeaveRequestsState {

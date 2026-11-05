@@ -16,7 +16,7 @@ import '../../../domain/usecases/watch_group_usecase.dart';
 part 'payment_info_controller.freezed.dart';
 part 'payment_info_controller.g.dart';
 
-/// Payment info (S15): the group as last fetched (with the signed QRIS URL
+/// Payment info: the group as last fetched (with the signed QRIS URL
 /// when online) and the state of the save and QRIS actions.
 @freezed
 abstract class PaymentInfoState with _$PaymentInfoState {

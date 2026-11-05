@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 /// Package names the bundled third-party licenses appear under on the
-/// license page (S42 "Lisensi").
+/// license page.
 abstract final class AppLicenses() {
   static const phosphor = 'Phosphor Icons';
   static const plusJakartaSans = 'Plus Jakarta Sans';

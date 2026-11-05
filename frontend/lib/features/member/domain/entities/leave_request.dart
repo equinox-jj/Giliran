@@ -6,7 +6,7 @@ import 'member.dart';
 
 part 'leave_request.freezed.dart';
 
-/// A member's request to leave a group (S30, S31).
+/// A member's request to leave a group.
 @freezed
 abstract class LeaveRequest with _$LeaveRequest {
   const factory({

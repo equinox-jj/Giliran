@@ -14,7 +14,7 @@ import '../../../domain/usecases/send_reminders_usecase.dart';
 part 'reminders_controller.freezed.dart';
 part 'reminders_controller.g.dart';
 
-/// Reminders and recap (S41): the current period's recap, who is selected
+/// Reminders and recap: the current period's recap, who is selected
 /// for a push reminder, and the rate-limit lock after a `429`.
 @freezed
 abstract class const RemindersState._() with _$RemindersState {

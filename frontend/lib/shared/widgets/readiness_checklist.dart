@@ -19,7 +19,7 @@ final class const ReadinessRow({
   final VoidCallback? onAction,
 });
 
-/// Readiness checklist (Tikar §8.29) for Start group (S18): turns the
+/// Readiness checklist (Tikar §8.29) for Start group: turns the
 /// `POST /start` conflicts into a visible list before the user tries. Done
 /// rows show a filled check in paid colors; missing ones a dashed circle
 /// and their fix action.

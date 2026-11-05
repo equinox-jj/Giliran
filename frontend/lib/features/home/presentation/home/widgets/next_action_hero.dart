@@ -7,7 +7,7 @@ import '../../../../../core/utils/date_formatter.dart';
 import '../../../../../shared/widgets/widgets.dart';
 import '../../../domain/entities/next_action.dart';
 
-/// The Home hero (S10): the single most urgent item across my groups with
+/// The Home hero: the single most urgent item across my groups with
 /// its group, payment ring, amount, due line and one ink button; or a calm
 /// "nothing to do" panel.
 class const NextActionHero({

@@ -5,7 +5,7 @@ import '../../../member/domain/entities/member.dart';
 
 part 'payout.freezed.dart';
 
-/// The record that a period's pot was handed to its winner (S40).
+/// The record that a period's pot was handed to its winner.
 @freezed
 abstract class Payout with _$Payout {
   const factory({

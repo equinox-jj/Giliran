@@ -6,7 +6,7 @@ import 'draw_controller.dart';
 
 part 'draw_verification_provider.g.dart';
 
-/// The device's own check of a finished draw (S39); null until the draw is
+/// The device's own check of a finished draw; null until the draw is
 /// loaded and has run.
 @riverpod
 DrawVerification? drawVerification(Ref ref, String groupId, String periodId) {

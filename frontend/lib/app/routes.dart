@@ -251,8 +251,8 @@ class const GroupsRoute() extends GoRouteData with $GroupsRoute {
   );
 }
 
-/// Create group (S13–S14), a full-screen modal over the tabs. The query
-/// carries the S24 "Buat arisan baru" prefill.
+/// Create group, a full-screen modal over the tabs. The query
+/// carries the "Buat arisan baru" prefill.
 class const CreateGroupRoute({final int? amount, final PeriodType? period, final int? slots})
     extends GoRouteData
     with $CreateGroupRoute {
@@ -271,7 +271,7 @@ class const CreateGroupRoute({final int? amount, final PeriodType? period, final
   );
 }
 
-/// Group detail (S20–S23). `?tab=pembayaran|jadwal|anggota|aktivitas`
+/// Group detail. `?tab=pembayaran|jadwal|anggota|aktivitas`
 /// picks the tab; `created` shows the invite prompt after Create group.
 class const GroupDetailRoute({required final String gid, final String? tab, final bool created = false})
     extends GoRouteData
@@ -298,7 +298,7 @@ class const GroupDetailRoute({required final String gid, final String? tab, fina
   );
 }
 
-/// Group summary (S24) of a completed or closed group, over the tabs.
+/// Group summary of a completed or closed group, over the tabs.
 class const GroupSummaryRoute({required final String gid}) extends GoRouteData with $GroupSummaryRoute {
   static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
 
@@ -314,8 +314,8 @@ class const GroupSummaryRoute({required final String gid}) extends GoRouteData w
   );
 }
 
-/// Draw stage (S37), over the tabs. A finished draw replaces it with the
-/// result (S38), playing the reveal when this device ran the draw.
+/// Draw stage, over the tabs. A finished draw replaces it with the
+/// result, playing the reveal when this device ran the draw.
 class const DrawRoute({required final String gid, required final String pid}) extends GoRouteData with $DrawRoute {
   static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
 
@@ -328,7 +328,7 @@ class const DrawRoute({required final String gid, required final String pid}) ex
   );
 }
 
-/// Draw result with the Bukti Kocok (S38), over the tabs. `reveal` plays the
+/// Draw result with the Bukti Kocok, over the tabs. `reveal` plays the
 /// winner reveal once.
 class const DrawResultRoute({required final String gid, required final String pid, final bool reveal = false})
     extends GoRouteData
@@ -345,7 +345,7 @@ class const DrawResultRoute({required final String gid, required final String pi
   );
 }
 
-/// Payout (S40), over the tabs.
+/// Payout, over the tabs.
 class const PayoutRoute({required final String gid, required final String pid}) extends GoRouteData with $PayoutRoute {
   static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
 
@@ -357,7 +357,7 @@ class const PayoutRoute({required final String gid, required final String pid}) 
   );
 }
 
-/// Reminders and recap (S41) for managers, over the tabs.
+/// Reminders and recap for managers, over the tabs.
 class const RemindersRoute({required final String gid}) extends GoRouteData with $RemindersRoute {
   static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
 
@@ -368,7 +368,7 @@ class const RemindersRoute({required final String gid}) extends GoRouteData with
   );
 }
 
-/// Proof review (S35) for managers, or the payer's own proof, over the
+/// Proof review for managers, or the payer's own proof, over the
 /// tabs.
 class const ProofReviewRoute({required final String gid, required final String payId})
     extends GoRouteData
@@ -383,7 +383,7 @@ class const ProofReviewRoute({required final String gid, required final String p
   );
 }
 
-/// Edit group (S19), over the tabs.
+/// Edit group, over the tabs.
 class const EditGroupRoute({required final String gid}) extends GoRouteData with $EditGroupRoute {
   static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
 
@@ -395,12 +395,12 @@ class const EditGroupRoute({required final String gid}) extends GoRouteData with
     onLeaveRequests: () => LeaveRequestsRoute(gid: gid).push<void>(context),
     onTransfer: () => TransferOfferRoute(gid: gid).push<void>(context),
     onReminders: () => RemindersRoute(gid: gid).push<void>(context),
-    // Closing ends the group (S19 → S24): the summary replaces Edit group.
+    // Closing ends the group: the summary replaces Edit group.
     onClosed: () => GroupSummaryRoute(gid: gid).pushReplacement(context),
   );
 }
 
-/// Payment info (S15), over the tabs.
+/// Payment info, over the tabs.
 class const PaymentInfoRoute({required final String gid}) extends GoRouteData with $PaymentInfoRoute {
   static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
 
@@ -408,7 +408,7 @@ class const PaymentInfoRoute({required final String gid}) extends GoRouteData wi
   Widget build(BuildContext context, GoRouterState state) => PaymentInfoPage(groupId: gid);
 }
 
-/// Invite (S16), over the tabs.
+/// Invite, over the tabs.
 class const InviteRoute({required final String gid}) extends GoRouteData with $InviteRoute {
   static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
 
@@ -416,7 +416,7 @@ class const InviteRoute({required final String gid}) extends GoRouteData with $I
   Widget build(BuildContext context, GoRouterState state) => InvitePage(groupId: gid);
 }
 
-/// Member detail (S26), over the tabs.
+/// Member detail, over the tabs.
 class const MemberDetailRoute({required final String gid, required final String mid})
     extends GoRouteData
     with $MemberDetailRoute {
@@ -430,7 +430,7 @@ class const MemberDetailRoute({required final String gid, required final String 
   );
 }
 
-/// Fixed order (S17), over the tabs.
+/// Fixed order, over the tabs.
 class const FixedOrderRoute({required final String gid}) extends GoRouteData with $FixedOrderRoute {
   static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
 
@@ -441,7 +441,7 @@ class const FixedOrderRoute({required final String gid}) extends GoRouteData wit
   );
 }
 
-/// Start group (S18), over the tabs.
+/// Start group, over the tabs.
 class const StartGroupRoute({required final String gid}) extends GoRouteData with $StartGroupRoute {
   static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
 
@@ -455,7 +455,7 @@ class const StartGroupRoute({required final String gid}) extends GoRouteData wit
   );
 }
 
-/// Leave requests review (S31), over the tabs.
+/// Leave requests review, over the tabs.
 class const LeaveRequestsRoute({required final String gid}) extends GoRouteData with $LeaveRequestsRoute {
   static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
 
@@ -463,7 +463,7 @@ class const LeaveRequestsRoute({required final String gid}) extends GoRouteData 
   Widget build(BuildContext context, GoRouterState state) => LeaveRequestsPage(groupId: gid);
 }
 
-/// Transfer ownership offer (S32), over the tabs.
+/// Transfer ownership offer, over the tabs.
 class const TransferOfferRoute({required final String gid}) extends GoRouteData with $TransferOfferRoute {
   static final GlobalKey<NavigatorState> $parentNavigatorKey = rootNavigatorKey;
 
@@ -471,8 +471,8 @@ class const TransferOfferRoute({required final String gid}) extends GoRouteData 
   Widget build(BuildContext context, GoRouterState state) => TransferOfferPage(groupId: gid);
 }
 
-/// Transfer ownership respond (S33), over the tabs. Accepting opens Payment
-/// info (S15) in its place.
+/// Transfer ownership respond, over the tabs. Accepting opens Payment
+/// info in its place.
 class const TransferRespondRoute({required final String gid, required final String tid})
     extends GoRouteData
     with $TransferRespondRoute {
@@ -579,7 +579,7 @@ class const SecurityForgotPinRoute() extends GoRouteData with $SecurityForgotPin
 /// directly (a deep link) and has nothing under it.
 void _popOr(BuildContext context, String fallback) => context.canPop() ? context.pop() : context.go(fallback);
 
-/// Join preview (S25), from an invite link `/j/:code`.
+/// Join preview, from an invite link `/j/:code`.
 @TypedGoRoute<JoinRoute>(
   name: 'join',
   path: '/j/:code',
@@ -593,7 +593,7 @@ class const JoinRoute({required final String code}) extends GoRouteData with $Jo
   );
 }
 
-/// Claim guest slot (S29), from a claim link `/c/:token`.
+/// Claim guest slot, from a claim link `/c/:token`.
 @TypedGoRoute<ClaimRoute>(
   name: 'claim',
   path: '/c/:token',
@@ -632,7 +632,7 @@ class const SplashRoute() extends GoRouteData with $SplashRoute {
   name: 'welcome',
   path: '/welcome',
 )
-/// Welcome (S02). [invited] is set when the guard turns away an invite
+/// Welcome. [invited] is set when the guard turns away an invite
 /// link; a link stored by an earlier run shows the banner too.
 class const WelcomeRoute({final bool invited = false}) extends GoRouteData with $WelcomeRoute {
   @override

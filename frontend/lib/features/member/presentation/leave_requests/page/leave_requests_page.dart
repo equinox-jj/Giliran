@@ -15,7 +15,7 @@ import '../../../domain/entities/member_input.dart';
 import '../../../domain/entities/obligation.dart';
 import '../controllers/leave_requests_controller.dart';
 
-/// Leave requests review (S31): one card per pending request with the
+/// Leave requests review: one card per pending request with the
 /// member, slot, reason and date, a warning with the Obligation Meter for
 /// past winners, and "Setujui" / "Tolak" (with an optional reason).
 class const LeaveRequestsPage({super.key, required final String groupId}) extends ConsumerWidget {

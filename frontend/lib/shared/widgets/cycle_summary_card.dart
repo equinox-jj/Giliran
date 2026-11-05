@@ -14,7 +14,7 @@ class const CycleStat({required final String value, required final String label}
 /// Kocok link.
 class const CycleWinnerRow({required final String periodId, required final String title, final String? date});
 
-/// The end-of-cycle card (Tikar §9.12) on the group summary (S24): a hero
+/// The end-of-cycle card (Tikar §9.12) on the group summary: a hero
 /// panel in the group tone with the headline, three key figures in
 /// `amountLg`, the full Period Strip wrapped (undrawn periods of a closed
 /// group as dashed tokens marked "Tidak dikocok") and the winners list with

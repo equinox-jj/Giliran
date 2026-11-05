@@ -18,7 +18,7 @@ import '../../shared/controllers/members_controller.dart';
 import '../../shared/widgets/guest_sheet.dart';
 import '../controllers/invite_controller.dart';
 
-/// Invite (S16): "Undang {n} orang lagi", the QR and code, WhatsApp share
+/// Invite: "Undang {n} orang lagi", the QR and code, WhatsApp share
 /// and copy, the slot list, and "Tambah tamu". Managers can make a new link
 /// from the menu; old links stop working.
 class const InvitePage({super.key, required final String groupId}) extends ConsumerWidget {

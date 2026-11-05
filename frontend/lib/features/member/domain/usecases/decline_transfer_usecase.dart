@@ -9,7 +9,7 @@ import '../repositories/member_repository.dart';
 
 part 'decline_transfer_usecase.g.dart';
 
-/// Declines the organizer role (S33).
+/// Declines the organizer role.
 class const DeclineTransferUseCase(final MemberRepository _repository)
     implements UseCase<OwnershipTransfer, ({String groupId, String transferId})> {
   @override

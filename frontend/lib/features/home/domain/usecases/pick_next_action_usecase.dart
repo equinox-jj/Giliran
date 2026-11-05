@@ -17,7 +17,7 @@ typedef NextActionParams = ({
   Set<String> payoutsToConfirm,
 });
 
-/// Picks the Home hero's item (S10) by priority: my payment rejected → my
+/// Picks the Home hero's item by priority: my payment rejected → my
 /// payment due within 3 days → proofs to review (manager) → draw today
 /// (manager) → payout to confirm (winner). Within one kind the soonest due
 /// date wins. Null when nothing is urgent.

@@ -11,7 +11,7 @@ part 'get_recap_usecase.g.dart';
 
 typedef RecapRef = ({String groupId, String periodId});
 
-/// A period's recap (S41): counts, unpaid members and payment info for the
+/// A period's recap: counts, unpaid members and payment info for the
 /// WhatsApp image and messages.
 class const GetRecapUseCase(final ReminderRepository _repository) implements UseCase<Recap, RecapRef> {
   @override

@@ -10,7 +10,7 @@ import '../../../domain/entities/payment.dart';
 import '../../../domain/usecases/mark_paid_usecase.dart';
 import '../controllers/mark_paid_controller.dart';
 
-/// Opens Mark paid (S36) for [payment]. Resolves to the saved payment
+/// Opens Mark paid for [payment]. Resolves to the saved payment
 /// (`pendingSync` when it was queued offline), or null when cancelled.
 Future<Payment?> showMarkPaidSheet(
   BuildContext context, {
@@ -56,21 +56,22 @@ class _MarkPaidSheetState() extends ConsumerState<_MarkPaidSheet> {
         children: [
           Text(Rupiah.format(widget.payment.amount ?? 0), style: t.amountXl.copyWith(color: c.textPrimary)),
           SectionHeader(title: l10n.markPaidMethod, top: AppSpace.s5),
-          _MethodChips(provider: _provider),
+          _MethodChips(groupId: widget.groupId, paymentId: widget.payment.id ?? ''),
           const SizedBox(height: AppSpace.s4),
-          _NoteField(provider: _provider, controller: _note),
+          _NoteField(groupId: widget.groupId, paymentId: widget.payment.id ?? '', controller: _note),
           const SizedBox(height: AppSpace.s4),
-          _ConfirmAndSubmit(provider: _provider, onSubmit: _submit),
+          _ConfirmAndSubmit(groupId: widget.groupId, paymentId: widget.payment.id ?? '', onSubmit: _submit),
         ],
       ),
     );
   }
 }
 
-class const _MethodChips({required final MarkPaidControllerProvider provider}) extends ConsumerWidget {
+class const _MethodChips({required final String groupId, required final String paymentId}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    final provider = markPaidControllerProvider(groupId, paymentId);
     final method = ref.watch(provider.select((s) => s.method));
     return Wrap(
       spacing: AppSpace.s2,
@@ -92,12 +93,14 @@ class const _MethodChips({required final MarkPaidControllerProvider provider}) e
 }
 
 class const _NoteField({
-  required final MarkPaidControllerProvider provider,
+  required final String groupId,
+  required final String paymentId,
   required final TextEditingController controller,
 }) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    final provider = markPaidControllerProvider(groupId, paymentId);
     final length = ref.watch(provider.select((s) => s.note.trim().length));
     final tooLong = length > MarkPaidUseCase.maxNoteLength;
     return AppTextField(
@@ -114,12 +117,14 @@ class const _NoteField({
 }
 
 class const _ConfirmAndSubmit({
-  required final MarkPaidControllerProvider provider,
+  required final String groupId,
+  required final String paymentId,
   required final VoidCallback onSubmit,
 }) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    final provider = markPaidControllerProvider(groupId, paymentId);
     final c = context.colors;
     final t = AppTextStyles.of(context);
     final state = ref.watch(provider);

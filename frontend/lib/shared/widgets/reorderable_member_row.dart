@@ -8,7 +8,7 @@ import '../../core/utils/code_formatter.dart';
 import 'app_icon.dart';
 import 'avatar.dart';
 
-/// Reorderable member row (Tikar §8.18) for Fixed order (S17): the position
+/// Reorderable member row (Tikar §8.18) for Fixed order: the position
 /// in a kunyit token, avatar and name, the slot number, and a drag handle.
 /// Screen readers get "Naikkan" / "Turunkan" actions instead of dragging.
 /// Inside a `ReorderableListView`, pass [dragIndex] so the handle starts a

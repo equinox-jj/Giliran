@@ -14,7 +14,7 @@ import '../../../../history/presentation/shared/controllers/push_permission_cont
 import '../../../domain/entities/user_settings.dart';
 import '../controllers/settings_controller.dart';
 
-/// Settings (S47): the system notification permission, notification
+/// Settings: the system notification permission, notification
 /// toggles, theme and language, the image
 /// cache, and the way to Delete account.
 class const SettingsPage({
@@ -177,7 +177,7 @@ class const _LanguageRow() extends ConsumerWidget {
 }
 
 /// "Sembunyikan layar di app terbaru": Android `FLAG_SECURE`, kept on the
-/// device (backs up the S08 privacy cover).
+/// device.
 class const _SecureScreenRow() extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
