@@ -39,9 +39,17 @@ android {
 
     // Release signing comes from the environment (CI secrets): the keystore
     // file path, its password, the key alias and the key password. Without
-    // ANDROID_KEYSTORE_PATH, release builds fall back to the debug keys so
-    // `flutter run --release` and local `flutter build appbundle` still work.
+    // ANDROID_KEYSTORE_PATH a release build fails, so a debug-signed bundle
+    // can't ship by accident. For a local `flutter run --release`, set
+    // ALLOW_DEBUG_SIGNED_RELEASE=true to sign with the debug keys.
     val releaseKeystore = System.getenv("ANDROID_KEYSTORE_PATH")?.takeIf { it.isNotBlank() }
+    val allowDebugSigned = System.getenv("ALLOW_DEBUG_SIGNED_RELEASE") == "true"
+    val buildsRelease = gradle.startParameter.taskNames.any { it.contains("release", ignoreCase = true) }
+    if (buildsRelease && releaseKeystore == null && !allowDebugSigned) {
+        throw GradleException(
+            "Release build without ANDROID_KEYSTORE_PATH. Set it, or set ALLOW_DEBUG_SIGNED_RELEASE=true for a local, debug-signed build.",
+        )
+    }
     signingConfigs {
         if (releaseKeystore != null) {
             create("release") {

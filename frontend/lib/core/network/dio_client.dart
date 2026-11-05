@@ -32,14 +32,21 @@ class DioClient({
   final Dio dio;
 
   /// Shared options: base URL, 15 s timeouts and JSON bodies.
-  static BaseOptions baseOptions() => BaseOptions(
-    baseUrl: ApiEndpoints.baseUrl,
-    connectTimeout: const Duration(seconds: 15),
-    receiveTimeout: const Duration(seconds: 15),
-    sendTimeout: const Duration(seconds: 15),
-    contentType: Headers.jsonContentType,
-    responseType: ResponseType.json,
-  );
+  static BaseOptions baseOptions() {
+    // The default URL is a local cleartext one; a release build must be given
+    // an https one with --dart-define=API_BASE_URL.
+    if (kReleaseMode && !ApiEndpoints.baseUrl.startsWith('https://')) {
+      throw StateError('Release builds need --dart-define=API_BASE_URL=https://…');
+    }
+    return BaseOptions(
+      baseUrl: ApiEndpoints.baseUrl,
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 15),
+      sendTimeout: const Duration(seconds: 15),
+      contentType: Headers.jsonContentType,
+      responseType: ResponseType.json,
+    );
+  }
 }
 
 /// The app-wide [Dio], with auth, refresh and logging interceptors.

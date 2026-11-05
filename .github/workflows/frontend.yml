@@ -52,6 +52,11 @@ jobs:
       - run: dart run build_runner build --delete-conflicting-outputs
       - run: flutter analyze
       - run: flutter test
+      - name: Known vulnerabilities in dependencies
+        run: |
+          curl -sSfL -o osv-scanner https://github.com/google/osv-scanner/releases/download/v2.0.2/osv-scanner_linux_amd64
+          chmod +x osv-scanner
+          ./osv-scanner --lockfile=pubspec.lock
 
   release:
     needs: check
@@ -88,7 +93,17 @@ jobs:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: flutter build appbundle --release
+          # Repository variable (Settings → Secrets and variables → Actions →
+          # Variables), e.g. https://giliran.monai.my.id/api/v1
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+        run: |
+          case "$API_BASE_URL" in
+            https://*) ;;
+            *) echo "::error::Set the API_BASE_URL repository variable to an https:// URL"; exit 1 ;;
+          esac
+          flutter build appbundle --release \
+            --dart-define=API_BASE_URL="$API_BASE_URL" \
+            --obfuscate --split-debug-info=build/symbols
       - uses: actions/upload-artifact@v4
         with:
           name: giliran-release-aab
