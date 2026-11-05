@@ -15,7 +15,7 @@ import '../../shared/controllers/members_controller.dart';
 import '../../shared/widgets/guest_sheet.dart';
 import '../controllers/members_tab_controller.dart';
 
-/// The Anggota tab (S22) as slivers inside the group detail scroll view:
+/// The Anggota tab as slivers inside the group detail scroll view:
 /// organizer buttons (Undang, Tambah tamu), pending leave requests or the
 /// member's own pending banner, Obligation Meters for past winners (overdue
 /// first, hidden while nobody has won), then every member by slot.

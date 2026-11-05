@@ -12,7 +12,7 @@ import '../../../domain/usecases/watch_notifications_usecase.dart';
 part 'notifications_controller.freezed.dart';
 part 'notifications_controller.g.dart';
 
-/// The Aktivitas tab (S12): the stored notifications under the chosen
+/// The Aktivitas tab: the stored notifications under the chosen
 /// chip.
 @freezed
 abstract class NotificationsState with _$NotificationsState {

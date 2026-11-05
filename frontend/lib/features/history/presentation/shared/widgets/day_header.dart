@@ -5,7 +5,7 @@ import '../../../../../core/themes/themes.dart';
 import '../../../../../core/utils/date_formatter.dart';
 
 /// "Hari ini", "Kemarin" or "Sab, 18 Okt" above the first item of a Jakarta
-/// day, in the Aktivitas lists (S12, S23). [day] is a Jakarta business date
+/// day, in the Aktivitas lists. [day] is a Jakarta business date
 /// at UTC midnight.
 class const DayHeader({
   super.key,

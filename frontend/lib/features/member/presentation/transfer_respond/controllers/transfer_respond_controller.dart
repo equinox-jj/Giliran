@@ -8,7 +8,7 @@ import '../../../domain/usecases/decline_transfer_usecase.dart';
 
 part 'transfer_respond_controller.g.dart';
 
-/// Transfer ownership respond (S33): whether an answer is being sent.
+/// Transfer ownership respond: whether an answer is being sent.
 @riverpod
 class TransferRespondController() extends _$TransferRespondController {
   @override

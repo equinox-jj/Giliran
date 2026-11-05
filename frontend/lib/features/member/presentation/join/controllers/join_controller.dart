@@ -11,7 +11,7 @@ import '../../../domain/usecases/join_group_usecase.dart';
 part 'join_controller.freezed.dart';
 part 'join_controller.g.dart';
 
-/// Join preview (S25): the group behind the code and the join action.
+/// Join preview: the group behind the code and the join action.
 @freezed
 abstract class JoinState with _$JoinState {
   const factory({required InvitePreview preview, @Default(false) bool joining}) = _JoinState;

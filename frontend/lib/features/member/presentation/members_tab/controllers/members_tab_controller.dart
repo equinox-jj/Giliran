@@ -10,7 +10,7 @@ import '../../../domain/usecases/get_obligations_usecase.dart';
 part 'members_tab_controller.freezed.dart';
 part 'members_tab_controller.g.dart';
 
-/// The live parts of the Anggota tab (S22). The members themselves come
+/// The live parts of the Anggota tab. The members themselves come
 /// from `MembersController`.
 @freezed
 abstract class MembersTabState with _$MembersTabState {

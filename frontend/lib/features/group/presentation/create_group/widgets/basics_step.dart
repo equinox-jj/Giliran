@@ -8,23 +8,32 @@ import '../../../../../core/utils/date_formatter.dart';
 import '../../../../../core/utils/enums/period_type.dart';
 import '../../../../../shared/widgets/widgets.dart';
 import '../../../domain/entities/group_input.dart';
+import '../../../domain/usecases/due_date_usecase.dart';
 import '../controllers/create_group_controller.dart';
 
-/// S13: name, dues, period and slots. The pot summary is pinned under the
+/// Step 1: name, dues, period and slots. The pot summary is pinned under the
 /// form by the page.
 class const BasicsStep({
   super.key,
-  required final CreateGroupControllerProvider provider,
+  required final CreateGroupPrefill prefill,
   required final TextEditingController nameController,
   required final TextEditingController amountController,
 }) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    final provider = createGroupControllerProvider(
+      prefillAmount: prefill.amount,
+      prefillPeriodType: prefill.periodType,
+      prefillTotalSlots: prefill.totalSlots,
+    );
     final draft = ref.watch(provider);
     final controller = ref.watch(provider.notifier);
     final amount = draft.amount;
-    final end = controller.lastDueDate;
+    final start = draft.startDate;
+    final end = start == null
+        ? null
+        : ref.read(dueDateUseCaseProvider)(start: start, periodType: draft.periodType, periodNo: draft.totalSlots);
     final slots = draft.totalSlots;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

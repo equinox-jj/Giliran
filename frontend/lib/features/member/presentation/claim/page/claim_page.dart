@@ -10,7 +10,7 @@ import '../../../../../core/utils/enums/api_error_code.dart';
 import '../../../../../shared/widgets/widgets.dart';
 import '../controllers/claim_controller.dart';
 
-/// Claim guest slot (S29) for claim [token]: "Ini saya, ambil slot". An
+/// Claim guest slot for claim [token]: "Ini saya, ambil slot". An
 /// expired or used link shows the expired empty state, and `already_member`
 /// explains and offers "Buka grup". The API gives no preview before the
 /// claim, so the page shows the explanation only.

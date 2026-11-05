@@ -33,7 +33,7 @@ import '../widgets/detail_tabs.dart';
 import '../widgets/group_headline.dart';
 import '../widgets/group_menu.dart';
 
-/// The group detail frame (S20–S23): headline, Period Strip, Current Period
+/// The group detail frame: headline, Period Strip, Current Period
 /// Hero and the four tabs. [created] shows the "invite now?" prompt once,
 /// right after Create group.
 class const GroupDetailPage({
@@ -49,22 +49,22 @@ class const GroupDetailPage({
   required final VoidCallback onLeaveRequests,
   required final VoidCallback onTransfer,
 
-  /// Opens Proof review (S35) or my own proof for a payment id.
+  /// Opens Proof review or my own proof for a payment id.
   required final ValueChanged<String> onOpenProof,
 
-  /// Opens the draw stage (S37) for a period id.
+  /// Opens the draw stage for a period id.
   required final ValueChanged<String> onDraw,
 
-  /// Opens the draw result and Bukti Kocok (S38) for a period id.
+  /// Opens the draw result and Bukti Kocok for a period id.
   required final ValueChanged<String> onBuktiKocok,
 
-  /// Opens the payout (S40) for a period id.
+  /// Opens the payout for a period id.
   required final ValueChanged<String> onPayout,
 
-  /// Opens the group summary (S24) of a completed or closed group.
+  /// Opens the group summary of a completed or closed group.
   required final VoidCallback onSummary,
 
-  /// Opens Reminders and recap (S41) for managers.
+  /// Opens Reminders and recap for managers.
   required final VoidCallback onReminders,
 }) extends ConsumerStatefulWidget {
   @override
@@ -101,9 +101,9 @@ class _GroupDetailPageState() extends ConsumerState<GroupDetailPage> {
 
   GroupDetailState? get _detail => ref.read(groupDetailControllerProvider(widget.groupId)).value;
 
-  /// "Lanjutkan persiapan" opens Start group (S18); upload, my proof and
+  /// "Lanjutkan persiapan" opens Start group; upload, my proof and
   /// review open the payment screens; draw, payout and Bukti Kocok open
-  /// S37, S40 and S38 for the current period.
+  /// the draw stage, payout and Bukti Kocok for the current period.
   void _onHeroAction() {
     final detail = _detail;
     final my = detail?.myPayment;
@@ -178,7 +178,7 @@ class _GroupDetailPageState() extends ConsumerState<GroupDetailPage> {
         );
   }
 
-  /// Opens the leave sheet (S30) with the caller's own obligation when the
+  /// Opens the leave sheet with the caller's own obligation when the
   /// Anggota tab has loaded it.
   Future<void> _leave() async {
     final group = ref.read(groupDetailControllerProvider(widget.groupId)).value?.group;
@@ -193,7 +193,7 @@ class _GroupDetailPageState() extends ConsumerState<GroupDetailPage> {
   }
 
   /// Only managers receive the invite link; sharing for members comes with
-  /// the group summary (S24).
+  /// the group summary.
   void _share() {
     final manager = ref.read(groupDetailControllerProvider(widget.groupId)).value?.group?.isManager ?? false;
     manager ? widget.onInvite() : _comingSoon();
@@ -232,17 +232,16 @@ class _GroupDetailPageState() extends ConsumerState<GroupDetailPage> {
     final failure = await ref.read(provider.notifier).close();
     if (!mounted) return;
     showAppToast(context, failure?.displayMessage(context.l10n) ?? l10n.groupClosedToast);
-    // A closed group is an archive: show its summary (S24).
+    // A closed group is an archive: show its summary.
     if (failure == null) widget.onSummary();
   }
 
   @override
   Widget build(BuildContext context) {
-    final provider = groupDetailControllerProvider(widget.groupId);
     return Scaffold(
-      appBar: _DetailTopBar(provider: provider, onShare: _share, onMenu: _onMenu),
+      appBar: _DetailTopBar(groupId: widget.groupId, onShare: _share, onMenu: _onMenu),
       body: _DetailBody(
-        provider: provider,
+        groupId: widget.groupId,
         tab: _tab,
         periodId: _periodId,
         onTab: (t) => setState(() => _tab = t),
@@ -271,7 +270,7 @@ class _GroupDetailPageState() extends ConsumerState<GroupDetailPage> {
 }
 
 class const _DetailTopBar({
-  required final GroupDetailControllerProvider provider,
+  required final String groupId,
   required final VoidCallback onShare,
   required final ValueChanged<GroupMenuAction> onMenu,
 }) extends ConsumerWidget implements PreferredSizeWidget {
@@ -280,6 +279,7 @@ class const _DetailTopBar({
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final provider = groupDetailControllerProvider(groupId);
     final name = ref.watch(provider.select((s) => s.value?.group?.name));
     final menu = ref.watch(provider.select((s) => s.value?.menu ?? const <GroupMenuAction>[]));
     final status = ref.watch(provider.select((s) => s.value?.group?.status));
@@ -316,7 +316,7 @@ typedef _TabActions = ({
 });
 
 class const _DetailBody({
-  required final GroupDetailControllerProvider provider,
+  required final String groupId,
   required final DetailTab tab,
   required final String? periodId,
   required final ValueChanged<DetailTab> onTab,
@@ -326,6 +326,7 @@ class const _DetailBody({
 }) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final provider = groupDetailControllerProvider(groupId);
     final phase = ref.watch(
       provider.select((s) {
         final state = s.value;
@@ -338,7 +339,6 @@ class const _DetailBody({
     final bottom = context.isCompact ? AppBottomNavBar.contentInset(context) : AppSpace.s8;
 
     Future<void> refresh() async {
-      final groupId = provider.argument! as String;
       final shownPeriod = periodId ?? ref.read(provider).value?.currentPeriod?.id;
       final results = await Future.wait([
         ref.read(provider.notifier).refresh(),
@@ -366,9 +366,9 @@ class const _DetailBody({
     }
     if (phase == _Phase.loading) return _DetailSkeleton(margin: margin);
 
-    final top = _TopSection(provider: provider, periodId: periodId, onPeriod: onPeriod, onHeroAction: onHeroAction);
-    final tabs = _TabsSection(provider: provider, tab: tab, onTab: onTab);
-    final body = _TabBody(provider: provider, tab: tab, periodId: periodId, actions: tabActions);
+    final top = _TopSection(groupId: groupId, periodId: periodId, onPeriod: onPeriod, onHeroAction: onHeroAction);
+    final tabs = _TabsSection(groupId: groupId, tab: tab, onTab: onTab);
+    final body = _TabBody(groupId: groupId, tab: tab, periodId: periodId, actions: tabActions);
 
     if (context.sizeClass == SizeClass.expanded) {
       // Expanded: the shared top section on the left (5 of 12 columns), the
@@ -431,18 +431,19 @@ class const _DetailBody({
 
 /// The selected tab's body, as a sliver.
 class const _TabBody({
-  required final GroupDetailControllerProvider provider,
+  required final String groupId,
   required final DetailTab tab,
   required final String? periodId,
   required final _TabActions actions,
 }) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final provider = groupDetailControllerProvider(groupId);
     final group = ref.watch(provider.select((s) => s.value?.group));
     if (group == null) return const SliverToBoxAdapter(child: SizedBox.shrink());
     return switch (tab) {
       DetailTab.payments => _PaymentsTabBody(
-        provider: provider,
+        groupId: groupId,
         group: group,
         periodId: periodId,
         actions: actions.payments,
@@ -454,7 +455,7 @@ class const _TabBody({
         onLeaveRequests: actions.onLeaveRequests,
         onLeave: actions.onLeave,
       ),
-      DetailTab.schedule => _ScheduleTabBody(provider: provider, group: group, onBuktiKocok: actions.onBuktiKocok),
+      DetailTab.schedule => _ScheduleTabBody(groupId: groupId, group: group, onBuktiKocok: actions.onBuktiKocok),
       DetailTab.activity => ActivityTab(groupId: group.id ?? ''),
     };
   }
@@ -462,12 +463,13 @@ class const _TabBody({
 
 /// The Jadwal tab over the cached periods.
 class const _ScheduleTabBody({
-  required final GroupDetailControllerProvider provider,
+  required final String groupId,
   required final GroupDetail group,
   required final ValueChanged<String> onBuktiKocok,
 }) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final provider = groupDetailControllerProvider(groupId);
     final periods = ref.watch(provider.select((s) => s.value?.periods ?? const <Period>[]));
     return ScheduleTab(group: group, periods: periods, onBuktiKocok: onBuktiKocok);
   }
@@ -475,13 +477,14 @@ class const _ScheduleTabBody({
 
 /// The Pembayaran tab for the selected period (the current one by default).
 class const _PaymentsTabBody({
-  required final GroupDetailControllerProvider provider,
+  required final String groupId,
   required final GroupDetail group,
   required final String? periodId,
   required final PaymentsTabActions actions,
 }) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final provider = groupDetailControllerProvider(groupId);
     final period = ref.watch(
       provider.select((s) {
         final state = s.value;
@@ -495,13 +498,14 @@ class const _PaymentsTabBody({
 
 /// Headline, Period Strip and hero.
 class const _TopSection({
-  required final GroupDetailControllerProvider provider,
+  required final String groupId,
   required final String? periodId,
   required final ValueChanged<String> onPeriod,
   required final VoidCallback onHeroAction,
 }) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final provider = groupDetailControllerProvider(groupId);
     final group = ref.watch(provider.select((s) => s.value?.group));
     final periods = ref.watch(provider.select((s) => s.value?.periods ?? const <Period>[]));
     final current = ref.watch(provider.select((s) => s.value?.currentPeriod));
@@ -636,12 +640,13 @@ class const _Hero({
 }
 
 class const _TabsSection({
-  required final GroupDetailControllerProvider provider,
+  required final String groupId,
   required final DetailTab tab,
   required final ValueChanged<DetailTab> onTab,
 }) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final provider = groupDetailControllerProvider(groupId);
     final pending = ref.watch(
       provider.select((s) {
         final state = s.value;

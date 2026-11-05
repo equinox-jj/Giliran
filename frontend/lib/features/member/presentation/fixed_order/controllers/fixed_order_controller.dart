@@ -13,7 +13,7 @@ import '../../../domain/usecases/watch_members_usecase.dart';
 part 'fixed_order_controller.freezed.dart';
 part 'fixed_order_controller.g.dart';
 
-/// Fixed order (S17): the order being edited, position 1 first.
+/// Fixed order: the order being edited, position 1 first.
 @freezed
 abstract class FixedOrderState with _$FixedOrderState {
   const factory({

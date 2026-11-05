@@ -12,7 +12,7 @@ part 'approve_payment_usecase.g.dart';
 
 typedef ApprovePaymentParams = ({String groupId, String paymentId, IdempotencyKey key});
 
-/// Approves a pending proof (S35): `pending_review` → `paid`. Reuse [key]
+/// Approves a pending proof: `pending_review` → `paid`. Reuse [key]
 /// when retrying the same approval.
 class const ApprovePaymentUseCase(final PaymentRepository _repository)
     implements UseCase<Payment, ApprovePaymentParams> {

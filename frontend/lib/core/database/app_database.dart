@@ -52,7 +52,7 @@ class AppDatabase([QueryExecutor? executor]) extends _$AppDatabase {
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) => m.createAll(),
     onUpgrade: (m, from, to) async {
-      // v2: push notifications for the Aktivitas tab (S12).
+      // v2: push notifications for the Aktivitas tab.
       if (from < 2) {
         await m.createTable(notifications);
         await m.createIndex(notificationsCreatedIdx);

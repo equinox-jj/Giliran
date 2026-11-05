@@ -6,7 +6,7 @@ import '../../../domain/usecases/update_me_usecase.dart';
 
 part 'edit_profile_controller.g.dart';
 
-/// Saves Edit profile (S43). Loading and the last failure live in the
+/// Saves Edit profile. Loading and the last failure live in the
 /// `AsyncValue`; the page decides which fields changed.
 @riverpod
 class EditProfileController() extends _$EditProfileController {

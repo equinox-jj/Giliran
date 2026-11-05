@@ -8,7 +8,7 @@ import '../../../domain/usecases/build_schedule_usecase.dart';
 
 part 'schedule_controller.g.dart';
 
-/// The Jadwal timeline (S21) of [periods] on [scale], as of today in
+/// The Jadwal timeline of [periods] on [scale], as of today in
 /// Jakarta. [periods] is the group detail's cached list, so it keeps its
 /// identity until the cache changes.
 @riverpod

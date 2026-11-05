@@ -6,7 +6,7 @@ import '../../../../../core/l10n/l10n.dart';
 import '../../../../../core/themes/themes.dart';
 import '../../../../../shared/widgets/widgets.dart';
 
-/// Welcome (S02): the onboarding pager and sign-in. [invited] shows the
+/// Welcome: the onboarding pager and sign-in. [invited] shows the
 /// telang banner when an invite link is waiting for the sign-in.
 class const WelcomePage({super.key, required final VoidCallback onSignIn, final bool invited = false})
     extends StatefulWidget {

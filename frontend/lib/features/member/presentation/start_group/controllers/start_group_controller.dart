@@ -17,7 +17,7 @@ import '../../shared/controllers/members_controller.dart';
 part 'start_group_controller.freezed.dart';
 part 'start_group_controller.g.dart';
 
-/// Start group (S18): the group, its readiness checklist and the start
+/// Start group: the group, its readiness checklist and the start
 /// action.
 @freezed
 abstract class const StartGroupState._() with _$StartGroupState {

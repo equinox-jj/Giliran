@@ -23,7 +23,7 @@ import '../../../domain/usecases/watch_group_usecase.dart';
 part 'group_detail_controller.freezed.dart';
 part 'group_detail_controller.g.dart';
 
-/// The group detail frame (S20–S23): the cached group, its periods, my
+/// The group detail frame: the cached group, its periods, my
 /// payment in the current period, the hero action and the role-based menu.
 @freezed
 abstract class const GroupDetailState._() with _$GroupDetailState {

@@ -9,7 +9,7 @@ import '../repositories/payment_repository.dart';
 
 part 'watch_payout_usecase.g.dart';
 
-/// A period's cached payout, live; null until one is recorded (S40).
+/// A period's cached payout, live; null until one is recorded.
 class const WatchPayoutUseCase(final PaymentRepository _repository) implements StreamUseCase<Payout?, String> {
   @override
   Stream<Either<Failure, Payout?>> call(String params) => _repository.watchPayout(params);

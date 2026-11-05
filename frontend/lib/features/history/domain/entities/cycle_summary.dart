@@ -8,7 +8,7 @@ class const CycleWinner({
   final DateTime? drawnAt,
 });
 
-/// The whole cycle of a completed or closed group (S24, Tikar §9.12).
+/// The whole cycle of a completed or closed group.
 class const CycleSummary({
   required final int periodCount,
   required final int winnerCount,

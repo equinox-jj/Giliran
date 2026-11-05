@@ -135,7 +135,6 @@ void main() {
     push.tap(_draw);
     await pumpEventQueue();
     expect(location(), '/');
-    expect(container.read(pushControllerProvider.notifier).pending, isA<DrawResultTarget>());
 
     // Act
     (container.read(authSessionControllerProvider.notifier) as _FakeSession).set(const AuthStatus.unlocked());

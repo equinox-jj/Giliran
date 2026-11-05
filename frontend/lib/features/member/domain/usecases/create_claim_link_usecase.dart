@@ -9,7 +9,7 @@ import '../repositories/member_repository.dart';
 
 part 'create_claim_link_usecase.g.dart';
 
-/// A 7-day link that lets a guest take over their slot (S28).
+/// A 7-day link that lets a guest take over their slot.
 class const CreateClaimLinkUseCase(final MemberRepository _repository)
     implements UseCase<ClaimLink, ({String groupId, String memberId})> {
   @override

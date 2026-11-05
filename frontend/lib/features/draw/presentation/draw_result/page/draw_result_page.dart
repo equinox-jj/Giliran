@@ -22,9 +22,9 @@ import '../../shared/widgets/verify_draw_sheet.dart';
 import '../controllers/draw_result_view_provider.dart';
 import '../widgets/reveal_sequence.dart';
 
-/// Draw result (S38): the winner headline, the Bukti Kocok ticket, share to
-/// WhatsApp / save the image, "Cek keasliannya" (S39), and the next step:
-/// organizers hand over the pot ([onPayout], S40), the winner waits for it.
+/// Draw result: the winner headline, the Bukti Kocok ticket, share to
+/// WhatsApp / save the image, "Cek keasliannya", and the next step:
+/// organizers hand over the pot, the winner waits for it.
 /// [reveal] plays the reveal sequence (right after the draw on this
 /// device); later visits are static.
 class const DrawResultPage({

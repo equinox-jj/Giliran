@@ -6,7 +6,7 @@ import 'member.dart';
 
 part 'ownership_transfer.freezed.dart';
 
-/// An offer of the organizer role to another member (S32, S33).
+/// An offer of the organizer role to another member.
 @freezed
 abstract class OwnershipTransfer with _$OwnershipTransfer {
   const factory({

@@ -64,7 +64,7 @@ void main() {
     expect(find.text('40%'), findsOneWidget);
   });
 
-  testWidgets('drawn rows read "P4 · {winner}" with a Bukti link to S38', (tester) async {
+  testWidgets('drawn rows read "P4 · {winner}" with a Bukti link to the draw result', (tester) async {
     // Arrange
     await pumpTab(tester);
     final row = find.ancestor(

@@ -23,7 +23,7 @@ import '../../../domain/usecases/build_whatsapp_reminder_usecase.dart';
 import '../controllers/reminders_controller.dart';
 import '../widgets/skipped_reminders_sheet.dart';
 
-/// Reminders and recap (S41, organizer): the recap image of the current
+/// Reminders and recap: the recap image of the current
 /// period to share to the group chat, one-tap WhatsApp reminders per
 /// unpaid member, and a push reminder to the selected members.
 class const RemindersPage({

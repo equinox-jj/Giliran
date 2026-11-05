@@ -20,7 +20,7 @@ class const ImageViewerPage({
 /// clearly. Pinch or double-tap zooms up to 4×; a swipe down closes it.
 /// The top bar shows close, the uploader and time, and "2 dari 3" when
 /// there are several [pages]. [bottom] docks content under the image, such
-/// as the review actions on S35.
+/// as the review actions.
 class const ImageViewer({
   super.key,
   required final List<ImageViewerPage> pages,

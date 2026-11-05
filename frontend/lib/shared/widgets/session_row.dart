@@ -9,7 +9,7 @@ import 'app_button.dart';
 import 'app_icon.dart';
 import 'status_chip.dart';
 
-/// Session row (8.25): one signed-in device on Security (S44). The current
+/// Session row (8.25): one signed-in device on Security. The current
 /// device shows the "Perangkat ini" pill; others get a ghost "Keluarkan"
 /// that confirms with an adaptive dialog before calling [onSignOut].
 class const SessionRow({

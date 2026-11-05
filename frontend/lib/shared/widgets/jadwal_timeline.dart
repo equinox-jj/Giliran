@@ -37,7 +37,7 @@ class const JadwalTick({required final double at, required final String label});
 
 /// The cycle as a Gantt (Tikar §9.5): one bar per period, five rows visible
 /// with the rest scrolling, and a 1.5 px ink today line topped by a pill
-/// with the cycle completion ("40%"). Used by the Jadwal tab (S21).
+/// with the cycle completion ("40%"). Used by the Jadwal tab.
 class const JadwalTimeline({
   super.key,
   required final List<JadwalBar> bars,

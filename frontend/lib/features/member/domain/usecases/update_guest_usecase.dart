@@ -12,7 +12,7 @@ part 'update_guest_usecase.g.dart';
 
 typedef UpdateGuestParams = ({String groupId, String memberId, UpdateGuestInput input});
 
-/// Edits a guest's name or phone (S27). A new name outside [MemberRules]
+/// Edits a guest's name or phone. A new name outside [MemberRules]
 /// fails with a [ValidationFailure] before any request.
 class const UpdateGuestUseCase(final MemberRepository _repository) implements UseCase<Member, UpdateGuestParams> {
   @override

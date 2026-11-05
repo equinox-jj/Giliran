@@ -21,7 +21,7 @@ typedef UploadProofParams = ({
   void Function(double progress)? onProgress,
 });
 
-/// Sends a transfer screenshot as the payment's proof (S34). The picker
+/// Sends a transfer screenshot as the payment's proof. The picker
 /// already resized and re-encoded it (§8.21); a file still over [maxBytes]
 /// fails with `file_too_large` before any upload, like the server would.
 class const UploadProofUseCase(

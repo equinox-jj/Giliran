@@ -10,7 +10,7 @@ part 'notifications_dao.g.dart';
 typedef NotificationWithGroup = ({NotificationRow row, String? groupName});
 
 /// Reads and writes the device's [Notifications], newest first, joined
-/// with the cached group name for the Aktivitas tab (S12).
+/// with the cached group name for the Aktivitas tab.
 @DriftAccessor(tables: [Notifications, Groups])
 class NotificationsDao(super.attachedDatabase) extends DatabaseAccessor<AppDatabase> with _$NotificationsDaoMixin {
   /// How many notifications the device keeps.

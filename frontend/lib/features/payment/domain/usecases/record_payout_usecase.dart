@@ -18,7 +18,7 @@ typedef RecordPayoutParams = ({
   IdempotencyKey key,
 });
 
-/// Records that the pot went to the winner (S40); the period closes and
+/// Records that the pot went to the winner; the period closes and
 /// the next one opens.
 class const RecordPayoutUseCase(final PaymentRepository _repository) implements UseCase<Payout, RecordPayoutParams> {
   @override

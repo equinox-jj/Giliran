@@ -22,7 +22,7 @@ typedef WhatsAppReminderCopy = ({
 typedef WhatsAppReminderParams = ({String memberName, Recap recap, WhatsAppReminderCopy copy, DateTime now});
 
 /// The polite pre-filled WhatsApp reminder an organizer sends to one
-/// unpaid member (S41, feature 32): the amount, the period, the due date
+/// unpaid member: the amount, the period, the due date
 /// and the organizer's account. The account line is left out when the
 /// group has no bank account yet. Pure, so the page can build it on tap.
 class const BuildWhatsAppReminderUseCase() {

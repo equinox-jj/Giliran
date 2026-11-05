@@ -4,7 +4,7 @@ import '../../core/l10n/l10n.dart';
 import '../../core/themes/themes.dart';
 
 /// "1 dari 2" over a segmented 4 px bar, ink for done and current steps and
-/// hairline for the rest. Create group (S13–S14) puts it in the top bar,
+/// hairline for the rest. Create group puts it in the top bar,
 /// beside the close or back button.
 class const StepProgressBar({
   super.key,

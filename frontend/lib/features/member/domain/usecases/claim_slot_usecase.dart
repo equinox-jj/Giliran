@@ -8,7 +8,7 @@ import '../repositories/member_repository.dart';
 
 part 'claim_slot_usecase.g.dart';
 
-/// Claims a guest slot with the signed-in account (S29). Returns the group id when it can be told.
+/// Claims a guest slot with the signed-in account. Returns the group id when it can be told.
 class const ClaimSlotUseCase(final MemberRepository _repository) implements UseCase<String?, String> {
   @override
   Future<Either<Failure, String?>> call(String params) => _repository.claimSlot(params);

@@ -10,7 +10,7 @@ import '../../../domain/usecases/revoke_session_usecase.dart';
 
 part 'sessions_controller.g.dart';
 
-/// The "Perangkat aktif" list on Security (S44).
+/// The "Perangkat aktif" list on Security.
 @riverpod
 class SessionsController() extends _$SessionsController {
   @override

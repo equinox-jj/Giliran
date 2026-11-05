@@ -17,7 +17,7 @@ import '../../../domain/usecases/watch_period_payments_usecase.dart';
 part 'proof_review_controller.freezed.dart';
 part 'proof_review_controller.g.dart';
 
-/// Proof review (S35), or the payer's own proof viewer: the payments to
+/// Proof review, or the payer's own proof viewer: the payments to
 /// swipe through, each one's detail (with signed proof URLs) once loaded.
 @freezed
 abstract class const ProofReviewState._() with _$ProofReviewState {

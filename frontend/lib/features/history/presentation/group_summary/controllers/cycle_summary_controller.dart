@@ -7,7 +7,7 @@ import '../../../domain/usecases/build_cycle_summary_usecase.dart';
 
 part 'cycle_summary_controller.g.dart';
 
-/// The Cycle Summary (S24) of a group, from its cached detail and periods;
+/// The Cycle Summary of a group, from its cached detail and periods;
 /// null until the group is loaded.
 @riverpod
 CycleSummary? cycleSummary(Ref ref, String groupId) {

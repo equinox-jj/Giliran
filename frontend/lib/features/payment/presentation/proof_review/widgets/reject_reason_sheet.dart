@@ -5,7 +5,7 @@ import '../../../../../core/themes/themes.dart';
 import '../../../../../shared/widgets/widgets.dart';
 import '../../../domain/usecases/reject_payment_usecase.dart';
 
-/// Opens the reject sheet (S35) for a proof from [name]: quick-pick reason
+/// Opens the reject sheet for a proof from [name]: quick-pick reason
 /// chips and a required 3–500 character reason. Resolves to the reason, or
 /// null when cancelled.
 Future<String?> showRejectReasonSheet(BuildContext context, {required String name}) => showAppSheet<String>(

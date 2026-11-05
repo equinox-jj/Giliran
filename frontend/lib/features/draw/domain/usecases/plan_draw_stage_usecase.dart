@@ -29,7 +29,7 @@ enum DrawBlocker() {
 
 typedef DrawStageInput = ({GroupDetail group, Period period, List<Member> members, bool online, DateTime now});
 
-/// What the draw stage (S37) shows: who takes part, the next person for
+/// What the draw stage shows: who takes part, the next person for
 /// fixed order, and whether the viewer can run the draw.
 @freezed
 abstract class const DrawStagePlan._() with _$DrawStagePlan {

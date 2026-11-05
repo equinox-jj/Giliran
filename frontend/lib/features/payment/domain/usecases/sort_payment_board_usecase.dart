@@ -5,7 +5,7 @@ import '../entities/payment.dart';
 
 part 'sort_payment_board_usecase.g.dart';
 
-/// The organizer filter chips on the Pembayaran tab (S20).
+/// The organizer filter chips on the Pembayaran tab.
 enum PaymentBoardFilter() {
   all,
 
@@ -16,7 +16,7 @@ enum PaymentBoardFilter() {
   pendingReview,
 }
 
-/// Orders a payment board for S20: my own row pinned first, then by slot
+/// Orders a payment board: my own row pinned first, then by slot
 /// number, narrowed by a filter chip. Pure and synchronous, so it does not
 /// go through `UseCase`.
 class const SortPaymentBoardUseCase() {

@@ -5,8 +5,8 @@ import '../entities/notification_entry.dart';
 part 'resolve_notification_target_usecase.g.dart';
 
 /// Where tapping a push goes (Tikar 8.24): draw result → Bukti Kocok
-/// (S38), proof uploaded → proof review (S35), payment updates and
-/// reminders → the Pembayaran tab (S20), payout recorded → payout (S40),
+///, proof uploaded → proof review, payment updates and
+/// reminders → the Pembayaran tab, payout recorded → payout,
 /// a past winner's missed payment → the Anggota tab. A push without the ids
 /// it needs falls back to its group, then to the Aktivitas tab. Pure and
 /// synchronous, so it does not go through `UseCase`.

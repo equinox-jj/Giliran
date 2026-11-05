@@ -1,5 +1,5 @@
 /// Indonesian banks and e-wallets offered by the Payment info bank picker
-/// (S15). Proper names, not translated; "Lainnya" (type your own) is added
+///. Proper names, not translated; "Lainnya" (type your own) is added
 /// by the picker from the l10n strings.
 abstract final class Banks() {
   static const all = [

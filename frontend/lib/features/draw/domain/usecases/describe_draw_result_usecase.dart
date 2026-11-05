@@ -11,7 +11,7 @@ part 'describe_draw_result_usecase.g.dart';
 
 typedef DrawResultInput = ({Draw draw, GroupDetail? group, Period? period, List<Member> members});
 
-/// What the result screen (S38) says about a finished draw.
+/// What the result screen says about a finished draw.
 @freezed
 abstract class DrawResultView with _$DrawResultView {
   const factory({

@@ -8,7 +8,7 @@ part 'secure_window_service.g.dart';
 
 /// Turns Android's `FLAG_SECURE` on or off for the app window, through the
 /// `giliran/secure_window` channel in `MainActivity`. A secure window shows
-/// blank in recent apps and blocks screenshots, which backs up the S08
+/// blank in recent apps and blocks screenshots, which backs up the
 /// privacy cover. Does nothing on other platforms.
 class const SecureWindowService() {
   static const _channel = MethodChannel('giliran/secure_window');

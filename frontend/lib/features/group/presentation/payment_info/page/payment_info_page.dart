@@ -17,7 +17,7 @@ import '../../../domain/entities/group_input.dart';
 import '../controllers/payment_info_controller.dart';
 import '../widgets/bank_picker_sheet.dart';
 
-/// Payment info (S15). The organizer edits the bank account and QRIS;
+/// Payment info. The organizer edits the bank account and QRIS;
 /// everyone else (co-organizers included) sees them read-only.
 class const PaymentInfoPage({super.key, required final String groupId}) extends ConsumerWidget {
   @override
@@ -33,7 +33,7 @@ class const PaymentInfoPage({super.key, required final String groupId}) extends 
       ),
     );
     return Scaffold(
-      // S15 draws the organizer's form with a back button only.
+      // Draws the organizer's form with a back button only.
       appBar: AppTopBar(title: phase == _Phase.edit ? null : l10n.paymentInfoTitle),
       body: switch (phase) {
         _Phase.loading => const Center(child: CircularProgressIndicator.adaptive()),
@@ -43,8 +43,8 @@ class const PaymentInfoPage({super.key, required final String groupId}) extends 
           primaryLabel: l10n.commonRetry,
           onPrimary: () => ref.invalidate(provider),
         ),
-        _Phase.readOnly => _ReadOnlyInfo(provider: provider),
-        _Phase.edit => _PaymentInfoForm(provider: provider),
+        _Phase.readOnly => _ReadOnlyInfo(groupId: groupId),
+        _Phase.edit => _PaymentInfoForm(groupId: groupId),
       },
     );
   }
@@ -57,12 +57,13 @@ enum _Phase() {
   edit,
 }
 
-class const _ReadOnlyInfo({required final PaymentInfoControllerProvider provider}) extends ConsumerWidget {
+class const _ReadOnlyInfo({required final String groupId}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final c = context.colors;
     final t = AppTextStyles.of(context);
+    final provider = paymentInfoControllerProvider(groupId);
     final info = ref.watch(provider.select((s) => s.value?.group.paymentInfo)) ?? const PaymentInfo();
     return MaxWidth(
       child: ListView(
@@ -86,12 +87,14 @@ class const _ReadOnlyInfo({required final PaymentInfoControllerProvider provider
   }
 }
 
-class const _PaymentInfoForm({required final PaymentInfoControllerProvider provider}) extends ConsumerStatefulWidget {
+class const _PaymentInfoForm({required final String groupId}) extends ConsumerStatefulWidget {
   @override
   ConsumerState<_PaymentInfoForm> createState() => _PaymentInfoFormState();
 }
 
 class _PaymentInfoFormState() extends ConsumerState<_PaymentInfoForm> {
+  PaymentInfoControllerProvider get _provider => paymentInfoControllerProvider(widget.groupId);
+
   late final TextEditingController _bankLabel;
   late final TextEditingController _otherBank;
   late final TextEditingController _number;
@@ -102,7 +105,7 @@ class _PaymentInfoFormState() extends ConsumerState<_PaymentInfoForm> {
   @override
   void initState() {
     super.initState();
-    final info = ref.read(widget.provider).value?.group.paymentInfo;
+    final info = ref.read(_provider).value?.group.paymentInfo;
     final bank = info?.bankName;
     _otherSelected = bank != null && bank.isNotEmpty && !Banks.all.contains(bank);
     _bank = _otherSelected ? null : bank;
@@ -153,7 +156,7 @@ class _PaymentInfoFormState() extends ConsumerState<_PaymentInfoForm> {
 
   Future<void> _save() async {
     final l10n = context.l10n;
-    final group = ref.read(widget.provider).value?.group;
+    final group = ref.read(_provider).value?.group;
     final info = group?.paymentInfo ?? const PaymentInfo();
     final input = _input;
     final changed =
@@ -172,7 +175,7 @@ class _PaymentInfoFormState() extends ConsumerState<_PaymentInfoForm> {
       );
       if (!ok || !mounted) return;
     }
-    final failure = await ref.read(widget.provider.notifier).save(input);
+    final failure = await ref.read(_provider.notifier).save(input);
     if (!mounted) return;
     if (failure == null) {
       showAppToast(context, l10n.paymentInfoSaved);
@@ -183,7 +186,7 @@ class _PaymentInfoFormState() extends ConsumerState<_PaymentInfoForm> {
 
   Future<void> _uploadQris() async {
     final l10n = context.l10n;
-    final outcome = await ref.read(widget.provider.notifier).uploadQris();
+    final outcome = await ref.read(_provider.notifier).uploadQris();
     if (!mounted) return;
     switch (outcome) {
       case QrisUploadOutcome.denied:
@@ -196,7 +199,7 @@ class _PaymentInfoFormState() extends ConsumerState<_PaymentInfoForm> {
   }
 
   Future<void> _removeQris() async {
-    final failure = await ref.read(widget.provider.notifier).removeQris();
+    final failure = await ref.read(_provider.notifier).removeQris();
     if (failure != null && mounted) showAppToast(context, failure.displayMessage(context.l10n));
   }
 
@@ -206,7 +209,7 @@ class _PaymentInfoFormState() extends ConsumerState<_PaymentInfoForm> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final t = AppTextStyles.of(context);
-    final state = ref.watch(widget.provider).value;
+    final state = ref.watch(_provider).value;
     if (state == null) return const SizedBox.shrink();
     final failure = state.saveFailure;
     final info = state.group.paymentInfo ?? const PaymentInfo();

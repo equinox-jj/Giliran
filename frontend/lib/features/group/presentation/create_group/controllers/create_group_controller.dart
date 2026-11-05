@@ -9,16 +9,15 @@ import '../../../../../core/utils/enums/period_type.dart';
 import '../../../domain/entities/group.dart';
 import '../../../domain/entities/group_input.dart';
 import '../../../domain/usecases/create_group_usecase.dart';
-import '../../../domain/usecases/due_date_usecase.dart';
 
 part 'create_group_controller.freezed.dart';
 part 'create_group_controller.g.dart';
 
-/// What the organizer has filled in so far on Create group (S13–S14).
+/// What the organizer has filled in so far on Create group.
 @freezed
 abstract class const CreateGroupDraft._() with _$CreateGroupDraft {
   const factory({
-    /// 1 = basics (S13), 2 = schedule and draw (S14).
+    /// 1 = basics, 2 = schedule and draw.
     @Default(1) int step,
     @Default('') String name,
     int? amount,
@@ -35,10 +34,21 @@ abstract class const CreateGroupDraft._() with _$CreateGroupDraft {
 
   /// What one period collects: dues × slots.
   int get potAmount => (amount ?? 0) * totalSlots;
+
+  /// Field errors for step 1 as it stands, from the domain limits.
+  List<FieldError> get basicsErrors => GroupRules.check(
+    name: name,
+    amount: amount ?? 0,
+    totalSlots: totalSlots,
+  );
 }
 
+/// The prefill, passed to the step widgets so each one resolves the same
+/// family instance of [CreateGroupController].
+typedef CreateGroupPrefill = ({int? amount, PeriodType? periodType, int? totalSlots});
+
 /// Holds the Create group draft across both steps and submits it. [build]
-/// takes the S24 "Buat arisan baru" prefill.
+/// takes the "Buat arisan baru" prefill.
 @riverpod
 class CreateGroupController() extends _$CreateGroupController {
   @override
@@ -48,21 +58,6 @@ class CreateGroupController() extends _$CreateGroupController {
         periodType: prefillPeriodType ?? PeriodType.monthly,
         totalSlots: prefillTotalSlots ?? 10,
       );
-
-  /// Field errors for step 1 as it stands, from the domain limits.
-  List<FieldError> get basicsErrors => GroupRules.check(
-    name: state.name,
-    amount: state.amount ?? 0,
-    totalSlots: state.totalSlots,
-  );
-
-  /// The last period's due date, shown under the slots stepper once a start
-  /// date is picked. Null before that.
-  DateTime? get lastDueDate {
-    final start = state.startDate;
-    if (start == null) return null;
-    return ref.read(dueDateUseCaseProvider)(start: start, periodType: state.periodType, periodNo: state.totalSlots);
-  }
 
   void setName(String value) => state = state.copyWith(name: value, failure: _without('name'));
 
@@ -80,7 +75,7 @@ class CreateGroupController() extends _$CreateGroupController {
 
   /// Moves to step 2 when the basics are valid.
   void next() {
-    if (basicsErrors.isEmpty) state = state.copyWith(step: 2);
+    if (state.basicsErrors.isEmpty) state = state.copyWith(step: 2);
   }
 
   /// Back to step 1 ("Ubah" on the review card, or back), keeping values.

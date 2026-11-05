@@ -11,7 +11,7 @@ import '../../../../auth/presentation/shared/widgets/auth_scaffold.dart';
 import '../../../../auth/presentation/shared/widgets/pin_entry.dart';
 import '../controllers/delete_account_controller.dart';
 
-/// Delete account (S48): explanation with "Saya mengerti", the PIN, then a
+/// Delete account: explanation with "Saya mengerti", the PIN, then a
 /// done screen that hands over to Welcome.
 class const DeleteAccountPage({
   super.key,

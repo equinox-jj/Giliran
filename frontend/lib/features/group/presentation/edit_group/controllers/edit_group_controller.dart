@@ -7,16 +7,13 @@ import '../../../domain/usecases/update_group_usecase.dart';
 
 part 'edit_group_controller.g.dart';
 
-/// Saves Edit group (S19) one setting at a time and closes the group. The
+/// Saves Edit group one setting at a time and closes the group. The
 /// group itself is read from the detail controller's cache stream, which
 /// picks up each saved change.
 @riverpod
 class EditGroupController() extends _$EditGroupController {
   @override
   bool build(String groupId) => false;
-
-  /// True while a save or close runs.
-  bool get busy => state;
 
   /// Sends [input]. Returns the failure, if any.
   Future<Failure?> save(UpdateGroupInput input) async {

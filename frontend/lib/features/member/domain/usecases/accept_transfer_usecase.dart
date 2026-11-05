@@ -9,7 +9,7 @@ import '../repositories/member_repository.dart';
 
 part 'accept_transfer_usecase.g.dart';
 
-/// Accepts the organizer role (S33).
+/// Accepts the organizer role.
 class const AcceptTransferUseCase(final MemberRepository _repository)
     implements UseCase<OwnershipTransfer, ({String groupId, String transferId})> {
   @override

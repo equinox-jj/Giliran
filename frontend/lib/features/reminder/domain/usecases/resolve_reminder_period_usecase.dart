@@ -9,7 +9,7 @@ import '../../../group/domain/repositories/group_repository.dart';
 
 part 'resolve_reminder_period_usecase.g.dart';
 
-/// The period Reminders and recap (S41) is about: the group's current
+/// The period Reminders and recap is about: the group's current
 /// period (the first `open` or `drawn` one), fetched fresh because the
 /// recap needs a connection anyway. A group without one fails with
 /// `period_not_open`.

@@ -22,7 +22,7 @@ import '../../shared/widgets/claim_link_sheet.dart';
 import '../../shared/widgets/guest_sheet.dart';
 import '../controllers/member_detail_controller.dart';
 
-/// Member detail (S26): avatar, name and badges; slot, join date and win;
+/// Member detail: avatar, name and badges; slot, join date and win;
 /// the Obligation Meter after a win; payment history (Phase 4); and, for
 /// managers, WhatsApp reminder, claim link and guest edit (guests) and
 /// "Keluarkan dari grup".
@@ -151,7 +151,7 @@ class const _MeterFor({
   }
 }
 
-/// Organizer actions at the bottom of S26.
+/// Organizer actions at the bottom of the page.
 class const _ManagerActions({
   required final GroupDetail group,
   required final Member member,

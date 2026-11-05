@@ -12,7 +12,7 @@ part 'confirm_payout_usecase.g.dart';
 
 typedef ConfirmPayoutParams = ({String groupId, String periodId, IdempotencyKey key});
 
-/// The winner confirms the pot arrived (S40).
+/// The winner confirms the pot arrived.
 class const ConfirmPayoutUseCase(final PaymentRepository _repository) implements UseCase<Payout, ConfirmPayoutParams> {
   @override
   Future<Either<Failure, Payout>> call(ConfirmPayoutParams params) =>

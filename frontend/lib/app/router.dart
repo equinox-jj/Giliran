@@ -46,7 +46,7 @@ GoRouter router(Ref ref) {
 /// [authRedirect] plus its side effects: an invite or claim link the guard
 /// turns away is remembered in [deepLinks], and the pending link is
 /// consumed when the guard sends the user to it. A draw verification link
-/// (`/v/:code`) opens the public page in the browser until Bukti Kocok (S38)
+/// (`/v/:code`) opens the public page in the browser until Bukti Kocok
 /// lands in Phase 5, and the app goes Home.
 String? _redirect(AsyncValue<AuthStatus> status, Uri uri, DeepLinkController deepLinks, ShareService share) {
   final segments = uri.pathSegments;

@@ -9,7 +9,7 @@ import '../repositories/member_repository.dart';
 
 part 'get_invite_preview_usecase.g.dart';
 
-/// The group behind an invite code, for Join preview (S25).
+/// The group behind an invite code, for Join preview.
 class const GetInvitePreviewUseCase(final MemberRepository _repository) implements UseCase<InvitePreview, String> {
   @override
   Future<Either<Failure, InvitePreview>> call(String params) =>

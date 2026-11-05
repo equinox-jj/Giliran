@@ -13,14 +13,19 @@ import '../../../domain/entities/group_input.dart';
 import '../controllers/create_group_controller.dart';
 import 'basics_step.dart';
 
-/// S14: start date, draw method, reminder, and the "Periksa lagi" card that
+/// Step 2: start date, draw method, reminder, and the "Periksa lagi" card that
 /// links back to step 1.
-class const ScheduleStep({super.key, required final CreateGroupControllerProvider provider}) extends ConsumerWidget {
+class const ScheduleStep({super.key, required final CreateGroupPrefill prefill}) extends ConsumerWidget {
   static const _fieldGap = 22.0;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    final provider = createGroupControllerProvider(
+      prefillAmount: prefill.amount,
+      prefillPeriodType: prefill.periodType,
+      prefillTotalSlots: prefill.totalSlots,
+    );
     final draft = ref.watch(provider);
     final controller = ref.watch(provider.notifier);
     final today = AppDate.jakartaToday(ref.watch(clockProvider)());

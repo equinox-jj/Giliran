@@ -13,7 +13,7 @@ import '../../../../group/domain/entities/group.dart';
 import '../../../domain/entities/payment.dart';
 import '../controllers/upload_proof_controller.dart';
 
-/// Opens Upload proof (S34) for my [payment] in period [periodNo]. Resolves
+/// Opens Upload proof for my [payment] in period [periodNo]. Resolves
 /// to true when the proof was sent; the caller shows the success toast.
 Future<bool> showUploadProofSheet(
   BuildContext context, {

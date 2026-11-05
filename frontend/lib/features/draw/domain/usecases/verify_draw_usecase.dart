@@ -9,7 +9,7 @@ import '../entities/draw.dart';
 
 part 'verify_draw_usecase.g.dart';
 
-/// Recomputes a draw on the device (S39), so members need not trust the
+/// Recomputes a draw on the device, so members need not trust the
 /// server's own "match" flags.
 ///
 /// Must stay byte-for-byte equal to `backend/internal/draw/draw.go`

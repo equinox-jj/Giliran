@@ -1,6 +1,6 @@
 import 'model/user_settings_model.dart';
 
-/// Device-only data behind Settings (S47). Throws `CacheException` on
+/// Device-only data behind Settings. Throws `CacheException` on
 /// failure.
 abstract interface class SettingsLocalDataSource() {
   /// The last account settings saved on this device, or null when there are

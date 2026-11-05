@@ -5,7 +5,7 @@ import '../../../domain/usecases/reset_invite_code_usecase.dart';
 
 part 'invite_controller.g.dart';
 
-/// Invite (S16) actions: whether a new invite code is being made. The
+/// Invite actions: whether a new invite code is being made. The
 /// group (with its invite) and the members come from their own controllers.
 @riverpod
 class InviteController() extends _$InviteController {

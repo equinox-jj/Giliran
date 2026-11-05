@@ -8,7 +8,7 @@ import '../../../../../core/utils/enums/reminder_skip_reason.dart';
 import '../../../../../shared/widgets/widgets.dart';
 import '../../../domain/entities/reminder_result.dart';
 
-/// Opens the sheet listing who the push reminder skipped (S41).
+/// Opens the sheet listing who the push reminder skipped.
 Future<void> showSkippedRemindersSheet(
   BuildContext context, {
   required List<SkippedReminder> skipped,

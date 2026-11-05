@@ -7,7 +7,7 @@ import '../entities/member_input.dart';
 
 part 'shuffle_order_usecase.g.dart';
 
-/// "Acak urutan" on Fixed order (S17): a random winning order, plus the
+/// "Acak urutan" on Fixed order: a random winning order, plus the
 /// entries `PUT /fixed-order` takes for an order (position 1 first).
 ///
 /// Pure and synchronous, so it does not go through `UseCase`. [_random] is

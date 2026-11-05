@@ -50,7 +50,7 @@ class const GroupCard({
         child: ClipRRect(
           borderRadius: BorderRadius.circular(AppRadius.lg),
           child: layout == GroupCardLayout.list
-              // S11 draws the list card without the doodle.
+              // Draws the list card without the doodle.
               ? Padding(
                   padding: const EdgeInsets.all(AppSpace.s4),
                   child: _ListBody(group: group, tone: tone),
@@ -108,7 +108,7 @@ class const _CardBody({required final GroupSummary group, required final Color a
   }
 }
 
-/// The Groups list card (S11): the initial (with the pending count), then
+/// The Groups list card: the initial (with the pending count), then
 /// the "PENGURUS" badge, name, "Rp200.000 / bulan · 10 slot" and my status
 /// with a date caption, and the ring at the end.
 class const _ListBody({required final GroupSummary group, required final GroupTone tone}) extends StatelessWidget {

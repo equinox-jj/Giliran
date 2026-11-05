@@ -26,7 +26,7 @@ typedef PaymentsTabActions = ({
   ValueChanged<Payment> onRemind,
 });
 
-/// The Pembayaran tab (S20) as slivers inside the group detail scroll
+/// The Pembayaran tab as slivers inside the group detail scroll
 /// view: banners (my proof rejected, draw tomorrow, everyone paid), the
 /// summary line, the organizer filter chips and one Payment Row per slot,
 /// mine pinned first. An upcoming period shows the `empty_payments` state.

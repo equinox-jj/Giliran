@@ -17,7 +17,7 @@ import '../../activity_tab/widgets/activity_tab.dart';
 import '../../schedule_tab/widgets/schedule_tab.dart';
 import '../controllers/cycle_summary_controller.dart';
 
-/// What "Buat arisan baru" carries into Create group (S13).
+/// What "Buat arisan baru" carries into Create group.
 typedef NewCyclePrefill = ({int? amount, PeriodType? periodType, int? totalSlots});
 
 /// The tabs a finished group keeps, read-only.
@@ -26,7 +26,7 @@ enum _SummaryTab() {
   activity,
 }
 
-/// Group summary (S24) of a completed or closed group: the Cycle Summary
+/// Group summary of a completed or closed group: the Cycle Summary
 /// card, "Buat arisan baru" (organizer, prefilled from this group) or
 /// "Lihat riwayat" (members), then the Jadwal and Aktivitas tabs read-only
 /// under an "Arisan sudah selesai" banner.

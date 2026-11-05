@@ -13,7 +13,7 @@ import '../../../domain/usecases/watch_period_payments_usecase.dart';
 part 'payments_tab_controller.freezed.dart';
 part 'payments_tab_controller.g.dart';
 
-/// The Pembayaran tab (S20) for one period: the cached board, the rows
+/// The Pembayaran tab for one period: the cached board, the rows
 /// to show under the selected filter, and whether a refresh failed.
 @freezed
 abstract class PaymentsTabState with _$PaymentsTabState {

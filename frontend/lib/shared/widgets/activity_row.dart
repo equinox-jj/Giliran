@@ -11,7 +11,7 @@ class const ActivityRowDiff({required final String label, required final String 
 /// One activity log entry (Tikar 8.23): a 32 circle with the action icon
 /// on `bg.subtle`, the generated sentence, its time in `caption` and an
 /// optional diff line per changed field. System entries (no actor) get an
-/// ink circle in place of the app mark. Used by the Aktivitas tab (S23).
+/// ink circle in place of the app mark. Used by the Aktivitas tab.
 class const ActivityRow({
   super.key,
   required final String icon,

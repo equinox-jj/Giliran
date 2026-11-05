@@ -11,8 +11,7 @@ part 'get_draw_usecase.g.dart';
 
 typedef DrawRef = ({String groupId, String periodId});
 
-/// A period's draw: the commitment before it runs, the result after (S37,
-/// S38).
+/// A period's draw: the commitment before it runs, the result after.
 class const GetDrawUseCase(final DrawRepository _repository) implements UseCase<Draw, DrawRef> {
   @override
   Future<Either<Failure, Draw>> call(DrawRef params) => _repository.getDraw(params.groupId, params.periodId);

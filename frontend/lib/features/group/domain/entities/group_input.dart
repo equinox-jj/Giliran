@@ -6,7 +6,7 @@ import '../../../../core/utils/enums/period_type.dart';
 
 part 'group_input.freezed.dart';
 
-/// What the organizer fills in on Create group (S13–S14).
+/// What the organizer fills in on Create group.
 @freezed
 abstract class CreateGroupInput with _$CreateGroupInput {
   const factory({
@@ -22,7 +22,7 @@ abstract class CreateGroupInput with _$CreateGroupInput {
   }) = _CreateGroupInput;
 }
 
-/// The group settings to change on Edit group (S19); a null field is left
+/// The group settings to change on Edit group; a null field is left
 /// as it is. Only [name] and [reminderDaysBefore] may change after start.
 @freezed
 abstract class UpdateGroupInput with _$UpdateGroupInput {
@@ -37,7 +37,7 @@ abstract class UpdateGroupInput with _$UpdateGroupInput {
   }) = _UpdateGroupInput;
 }
 
-/// The organizer's bank account on Payment info (S15).
+/// The organizer's bank account on Payment info.
 @freezed
 abstract class PaymentInfoInput with _$PaymentInfoInput {
   const factory({

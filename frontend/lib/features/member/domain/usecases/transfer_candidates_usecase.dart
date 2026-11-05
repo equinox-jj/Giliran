@@ -4,7 +4,7 @@ import '../entities/member.dart';
 
 part 'transfer_candidates_usecase.g.dart';
 
-/// Who can take over the organizer role (S32): members with an account,
+/// Who can take over the organizer role: members with an account,
 /// not guests and not the organizer making the offer.
 ///
 /// Pure and synchronous, so it does not go through `UseCase`.

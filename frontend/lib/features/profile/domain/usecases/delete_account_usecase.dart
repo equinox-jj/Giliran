@@ -12,7 +12,7 @@ import '../repository/profile_repository.dart';
 
 part 'delete_account_usecase.g.dart';
 
-/// Deletes the account with the PIN (S48, BR personal data). On success the
+/// Deletes the account with the PIN. On success the
 /// device forgets the account too: tokens, cached user, pending code and
 /// the offline mirror.
 class DeleteAccountUseCase(

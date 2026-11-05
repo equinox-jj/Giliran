@@ -8,7 +8,7 @@ import '../entities/readiness.dart';
 
 part 'build_readiness_usecase.g.dart';
 
-/// The Start group (S18) checklist, the same checks `POST /start` makes:
+/// The Start group checklist, the same checks `POST /start` makes:
 /// every slot filled (`slots_not_filled`), payment info set
 /// (`payment_info_missing`) and, for fixed-order groups only, every member
 /// placed (`fixed_order_incomplete`).

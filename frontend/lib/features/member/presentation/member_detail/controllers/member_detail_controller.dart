@@ -17,7 +17,7 @@ import '../../../domain/usecases/watch_member_usecase.dart';
 part 'member_detail_controller.freezed.dart';
 part 'member_detail_controller.g.dart';
 
-/// Member detail (S26): the cached member and what they still owe after
+/// Member detail: the cached member and what they still owe after
 /// winning.
 @freezed
 abstract class MemberDetailState with _$MemberDetailState {

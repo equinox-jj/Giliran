@@ -20,7 +20,7 @@ enum PushKind(final String api) {
   };
 }
 
-/// A push stored on this device for the Aktivitas tab (S12). The read flag
+/// A push stored on this device for the Aktivitas tab. The read flag
 /// is local only.
 class const NotificationEntry({
   required final String id,
@@ -41,7 +41,7 @@ class const NotificationEntry({
   bool get pendingAction => !read && kind.needsAction;
 }
 
-/// The S12 filter chips: Semua · Belum dibaca · Perlu tindakan.
+/// The filter chips: Semua · Belum dibaca · Perlu tindakan.
 enum NotificationFilter() {
   all,
   unread,
@@ -63,11 +63,11 @@ enum GroupTargetTab() {
 /// A group's detail on [tab], or its default tab.
 final class const GroupTarget(final String groupId, {final GroupTargetTab? tab}) extends NotificationTarget;
 
-/// Proof review (S35).
+/// Proof review.
 final class const ProofReviewTarget(final String groupId, final String paymentId) extends NotificationTarget;
 
-/// Bukti Kocok (S38).
+/// Bukti Kocok.
 final class const DrawResultTarget(final String groupId, final String periodId) extends NotificationTarget;
 
-/// Payout (S40), where the winner confirms.
+/// Payout, where the winner confirms.
 final class const PayoutTarget(final String groupId, final String periodId) extends NotificationTarget;

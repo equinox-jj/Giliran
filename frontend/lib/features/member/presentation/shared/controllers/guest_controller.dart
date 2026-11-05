@@ -11,7 +11,7 @@ import '../../../domain/usecases/update_guest_usecase.dart';
 part 'guest_controller.freezed.dart';
 part 'guest_controller.g.dart';
 
-/// The guest sheet (S27) while it saves, and its last failure.
+/// The guest sheet while it saves, and its last failure.
 @freezed
 abstract class GuestState with _$GuestState {
   const factory({@Default(false) bool saving, Failure? failure}) = _GuestState;

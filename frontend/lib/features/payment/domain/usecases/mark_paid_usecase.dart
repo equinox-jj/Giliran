@@ -20,7 +20,7 @@ typedef MarkPaidParams = ({
   IdempotencyKey key,
 });
 
-/// Records a payment as paid without a proof (S36): cash, guests. Works
+/// Records a payment as paid without a proof: cash, guests. Works
 /// offline: the mark is queued with `pendingSync` and synced later. A note
 /// over [maxNoteLength] fails with a [ValidationFailure] on `note`; a blank
 /// note is sent as none.

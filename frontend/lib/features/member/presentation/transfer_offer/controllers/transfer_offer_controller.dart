@@ -9,7 +9,7 @@ import '../../../domain/usecases/offer_transfer_usecase.dart';
 part 'transfer_offer_controller.freezed.dart';
 part 'transfer_offer_controller.g.dart';
 
-/// Transfer ownership offer (S32): the chosen member and the offer sent in
+/// Transfer ownership offer: the chosen member and the offer sent in
 /// this session. The API has no way to read a pending offer back, so after
 /// leaving the screen a second offer answers `pending_request_exists`.
 @freezed

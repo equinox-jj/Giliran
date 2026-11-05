@@ -14,7 +14,7 @@ import '../../shared/controllers/push_permission_controller.dart';
 import '../../shared/widgets/day_header.dart';
 import '../controllers/notifications_controller.dart';
 
-/// The Aktivitas tab (S12): pushes received on this device, grouped by
+/// The Aktivitas tab: pushes received on this device, grouped by
 /// day, under the chips Semua · Belum dibaca · Perlu tindakan, with "Tandai
 /// semua dibaca" in the app bar and a banner while the OS blocks
 /// notifications. Tapping an item marks it read and opens its target.

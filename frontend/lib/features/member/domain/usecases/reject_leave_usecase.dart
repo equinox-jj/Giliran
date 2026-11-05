@@ -12,7 +12,7 @@ part 'reject_leave_usecase.g.dart';
 
 typedef RejectLeaveParams = ({String groupId, String requestId, String? reason});
 
-/// Rejects a leave request (S31). A reason, when given, must be 3–500
+/// Rejects a leave request. A reason, when given, must be 3–500
 /// characters.
 class const RejectLeaveUseCase(final MemberRepository _repository) implements UseCase<LeaveRequest, RejectLeaveParams> {
   @override

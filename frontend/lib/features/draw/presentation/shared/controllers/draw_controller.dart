@@ -9,8 +9,8 @@ import '../../../domain/usecases/run_draw_usecase.dart';
 
 part 'draw_controller.g.dart';
 
-/// A period's draw from the API, shared by the stage (S37) and the result
-/// (S38). [run] keeps one [IdempotencyKey] for the user's intent until the
+/// A period's draw from the API, shared by the stage and the result
+///. [run] keeps one [IdempotencyKey] for the user's intent until the
 /// draw succeeds, so a retry after a timeout and the resend after the
 /// incomplete-payments confirmation are the same request to the server.
 @riverpod

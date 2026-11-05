@@ -9,7 +9,7 @@ import '../repositories/notification_repository.dart';
 
 part 'watch_notifications_usecase.g.dart';
 
-/// The stored notifications under an S12 filter chip, newest first, live.
+/// The stored notifications under a filter chip, newest first, live.
 class const WatchNotificationsUseCase(final NotificationRepository _repository)
     implements StreamUseCase<List<NotificationEntry>, NotificationFilter> {
   @override

@@ -6,7 +6,7 @@ import '../../../group/domain/entities/group.dart';
 
 part 'invite_preview.freezed.dart';
 
-/// What Join preview (S25) shows before the user joins.
+/// What Join preview shows before the user joins.
 @freezed
 abstract class InvitePreview with _$InvitePreview {
   const factory({

@@ -5,7 +5,7 @@ import '../storage/preferences.dart';
 
 part 'theme_mode_controller.g.dart';
 
-/// The theme choice from S47 (Ikuti sistem / Terang / Gelap), stored in
+/// The theme choice (Ikuti sistem / Terang / Gelap), stored in
 /// [Preferences] and read by `GiliranApp` for `MaterialApp.themeMode`.
 @Riverpod(keepAlive: true)
 class ThemeModeController() extends _$ThemeModeController {

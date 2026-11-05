@@ -3,7 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import '../../../../../core/l10n/l10n.dart';
 import '../../../../../core/themes/themes.dart';
 
-/// The live S13 summary pinned above "Lanjut": "Total per periode" on the
+/// The live summary pinned above "Lanjut": "Total per periode" on the
 /// left and the pot (dues × slots) on the right, on `bg.subtle`.
 class const SummaryCard({super.key, required final int potAmount}) extends StatelessWidget {
   @override

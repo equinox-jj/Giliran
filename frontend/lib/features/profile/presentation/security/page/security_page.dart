@@ -12,7 +12,7 @@ import '../../../../auth/presentation/shared/widgets/biometric_copy.dart';
 import '../../../domain/entity/session.dart';
 import '../controllers/sessions_controller.dart';
 
-/// Security (S44): PIN, biometric unlock, auto-lock, email, and the
+/// Security: PIN, biometric unlock, auto-lock, email, and the
 /// signed-in devices.
 class const SecurityPage({
   super.key,

@@ -17,7 +17,7 @@ import '../../shared/controllers/draw_controller.dart';
 import '../controllers/draw_stage_plan_provider.dart';
 import '../widgets/draw_stage_sheets.dart';
 
-/// Draw stage (S37): the kaleng with the eligible slots, the published
+/// Draw stage: the kaleng with the eligible slots, the published
 /// commitment, and for organizers the Kocok button (from `draw_date`,
 /// online). Members watch with "Pengurus akan mengocok…". A finished draw
 /// leaves through [onDrawn]: `true` right after this device ran it (play the

@@ -42,7 +42,7 @@ String notificationLocation(NotificationTarget target) => switch (target) {
 };
 
 /// Runs push for the app's lifetime: wires [PushService], keeps every
-/// received push for the Aktivitas tab (S12), saves the FCM token on the
+/// received push for the Aktivitas tab, saves the FCM token on the
 /// session once signed in and on every refresh, and opens a tapped
 /// notification's target, waiting until the app is unlocked.
 @Riverpod(keepAlive: true)
@@ -69,9 +69,6 @@ class PushController() extends _$PushController {
 
     unawaited(_start());
   }
-
-  /// The tapped notification's target waiting for the unlock, if any.
-  NotificationTarget? get pending => _pending;
 
   Future<void> _start() async {
     final push = ref.read(pushServiceProvider);

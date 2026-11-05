@@ -5,7 +5,7 @@ import 'secure_window_service.dart';
 
 part 'secure_screen_controller.g.dart';
 
-/// The S47 "Sembunyikan layar di app terbaru" choice, stored on the device.
+/// The "Sembunyikan layar di app terbaru" choice, stored on the device.
 ///
 /// `GiliranApp` watches it so the saved choice is applied to the window at
 /// start; the settings toggle calls [set].

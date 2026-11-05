@@ -4,20 +4,20 @@ import '../../../../core/error/problem_details.dart';
 
 part 'member_input.freezed.dart';
 
-/// A guest to add on S27.
+/// A guest to add.
 @freezed
 abstract class GuestInput with _$GuestInput {
   const factory({required String name, String? phone}) = _GuestInput;
 }
 
-/// A guest edit on S27. A null [name] or [phone] is left as it is;
+/// A guest edit. A null [name] or [phone] is left as it is;
 /// [clearPhone] removes the phone.
 @freezed
 abstract class UpdateGuestInput with _$UpdateGuestInput {
   const factory({String? name, String? phone, @Default(false) bool clearPhone}) = _UpdateGuestInput;
 }
 
-/// One slot's place in a fixed winning order (S17), 1 wins first.
+/// One slot's place in a fixed winning order, 1 wins first.
 @freezed
 abstract class FixedOrderEntry with _$FixedOrderEntry {
   const factory({required String slotId, required int position}) = _FixedOrderEntry;

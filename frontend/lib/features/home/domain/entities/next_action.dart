@@ -4,7 +4,7 @@ import '../../../group/domain/entities/group_summary.dart';
 
 part 'next_action.freezed.dart';
 
-/// What the Home hero asks for, most urgent first (S10).
+/// What the Home hero asks for, most urgent first.
 enum NextActionKind() {
   /// My proof was rejected; upload a new one.
   paymentRejected,
