@@ -66,6 +66,9 @@ info:
     | `fixed_order_incomplete` | 409 | Every slot needs a position before start |
     | `slots_not_filled` | 409 | Every slot needs a member before start |
     | `payment_info_missing` | 409 | Organizer payment info required before start |
+    | `forbidden_admin` | 403 | The route needs an admin account |
+    | `payment_provider_not_found` | 404 | Unknown payment provider id (admin routes) |
+    | `payment_provider_code_taken` | 409 | Another provider already uses this code |
     | `invalid_payment_state` | 409 | Payment status change not allowed |
     | `payment_already_reviewed` | 409 | Proof was already approved or rejected |
     | `period_not_open` | 409 | Period is not open for this action |
@@ -104,6 +107,10 @@ tags:
   - name: Me
     description: The signed-in user's profile, settings, devices and groups.
   - name: Groups
+  - name: Payment providers
+    description: The list of banks and e-wallets organizers choose from.
+  - name: Admin
+    description: Admin-only routes (`users.is_admin`); others get `403 forbidden_admin`.
   - name: Members
     description: Invites, guests, claims, leave requests and ownership.
   - name: Periods
@@ -690,8 +697,12 @@ paths:
     put:
       tags: [Groups]
       operationId: setPaymentInfo
-      summary: Set the organizer's bank account
-      description: Organizer only. Completed and closed groups are read-only (`group_not_active`).
+      summary: Set the organizer's payment account
+      description: |
+        Organizer only. `provider_id` comes from `GET /payment-providers`. It must be an
+        active provider, unless it is the one the group already uses; an unknown or
+        inactive id returns `validation_error` on field `provider_id`.
+        Completed and closed groups are read-only (`group_not_active`).
       requestBody:
         required: true
         content:
@@ -1832,6 +1843,213 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
+  # ------------------------------------------------------------------ Payment providers
+  /payment-providers:
+    get:
+      tags: [Payment providers]
+      operationId: listPaymentProviders
+      summary: List banks and e-wallets
+      description: |
+        Active providers only, ordered by `sort_order` then `name`. Not paginated: the
+        list is small and the app caches it. Pick one by `id` in `PUT /groups/{group_id}/payment-info`.
+      parameters:
+        - name: type
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/PaymentProviderType"
+      responses:
+        "200":
+          description: Active payment providers.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentProviderListEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  # ------------------------------------------------------------------ Admin
+  /admin/payment-providers:
+    get:
+      tags: [Admin]
+      operationId: adminListPaymentProviders
+      summary: List all payment providers
+      description: Admin only. Includes deactivated providers unless `include_inactive=false`.
+      parameters:
+        - name: type
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/PaymentProviderType"
+        - name: include_inactive
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: true
+      responses:
+        "200":
+          description: Payment providers.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminPaymentProviderListEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+    post:
+      tags: [Admin]
+      operationId: adminCreatePaymentProvider
+      summary: Add a payment provider
+      description: Admin only. The logo is uploaded separately.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePaymentProviderRequest"
+      responses:
+        "201":
+          description: Provider created.
+          headers:
+            Location:
+              $ref: "#/components/headers/Location"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminPaymentProviderEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /admin/payment-providers/{provider_id}:
+    parameters:
+      - $ref: "#/components/parameters/ProviderId"
+    get:
+      tags: [Admin]
+      operationId: adminGetPaymentProvider
+      summary: Get a payment provider
+      responses:
+        "200":
+          description: Provider.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminPaymentProviderEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      tags: [Admin]
+      operationId: adminUpdatePaymentProvider
+      summary: Edit a payment provider
+      description: |
+        Admin only. Send only the fields to change. `is_active: true` restores a
+        deactivated provider. Changing `type`, `code` or `name` shows up everywhere the
+        provider is displayed, including existing groups.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePaymentProviderRequest"
+      responses:
+        "200":
+          description: Updated provider.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminPaymentProviderEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+    delete:
+      tags: [Admin]
+      operationId: adminDeactivatePaymentProvider
+      summary: Deactivate a payment provider
+      description: |
+        Admin only. A soft delete: sets `is_active` to false. The provider leaves the
+        picker, but groups that use it keep showing it. Idempotent; the row is never
+        removed. Restore it with `PATCH` and `is_active: true`.
+      responses:
+        "204":
+          description: Deactivated.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /admin/payment-providers/{provider_id}/logo:
+    parameters:
+      - $ref: "#/components/parameters/ProviderId"
+    put:
+      tags: [Admin]
+      operationId: adminUploadPaymentProviderLogo
+      summary: Upload or replace a provider logo
+      description: |
+        Admin only. JPEG, PNG or WebP. The server fits the image within 256 px and
+        re-encodes it as PNG, which keeps transparency and strips metadata.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/ImageUpload"
+      responses:
+        "200":
+          description: Updated provider.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminPaymentProviderEnvelope"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+    delete:
+      tags: [Admin]
+      operationId: adminDeletePaymentProviderLogo
+      summary: Remove a provider logo
+      responses:
+        "204":
+          description: Removed; the app shows a generic icon.
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
   # ------------------------------------------------------------------ Public
   /public/draws/{verification_code}:
     parameters:
@@ -1889,6 +2107,13 @@ components:
         type: string
 
   parameters:
+    ProviderId:
+      name: provider_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
     GroupId:
       name: group_id
       in: path
@@ -2598,24 +2823,101 @@ components:
           description: Draft only.
     PaymentInfoRequest:
       type: object
-      required: [bank_name, account_number, account_holder]
+      required: [provider_id, account_number, account_holder]
       properties:
-        bank_name:
+        provider_id:
           type: string
-          maxLength: 50
-          examples: ["BCA"]
+          format: uuid
+          description: An active provider from `GET /payment-providers`.
         account_number:
           type: string
           pattern: "^[0-9]{6,20}$"
+          description: Bank account number or e-wallet number, digits only.
         account_holder:
           type: string
           maxLength: 100
+    PaymentProviderType:
+      type: string
+      enum: [bank, ewallet]
+    PaymentProvider:
+      type: object
+      required: [id, type, code, name, logo_url, sort_order]
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          $ref: "#/components/schemas/PaymentProviderType"
+        code:
+          type: string
+          pattern: "^[A-Z0-9_]{2,20}$"
+          examples: ["BCA", "GOPAY"]
+        name:
+          type: string
+          examples: ["Bank Central Asia"]
+        logo_url:
+          type: [string, "null"]
+          format: uri
+          description: Short-lived signed URL; null when no logo is set.
+        sort_order:
+          type: integer
+    AdminPaymentProvider:
+      allOf:
+        - $ref: "#/components/schemas/PaymentProvider"
+        - type: object
+          required: [is_active, created_at, updated_at]
+          properties:
+            is_active:
+              type: boolean
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+    CreatePaymentProviderRequest:
+      type: object
+      required: [type, code, name]
+      properties:
+        type:
+          $ref: "#/components/schemas/PaymentProviderType"
+        code:
+          type: string
+          pattern: "^[A-Z0-9_]{2,20}$"
+          description: Unique, including deactivated providers (`payment_provider_code_taken`).
+        name:
+          type: string
+          minLength: 2
+          maxLength: 50
+        sort_order:
+          type: integer
+          default: 0
+    UpdatePaymentProviderRequest:
+      type: object
+      minProperties: 1
+      properties:
+        type:
+          $ref: "#/components/schemas/PaymentProviderType"
+        code:
+          type: string
+          pattern: "^[A-Z0-9_]{2,20}$"
+        name:
+          type: string
+          minLength: 2
+          maxLength: 50
+        sort_order:
+          type: integer
+        is_active:
+          type: boolean
     PaymentInfo:
       type: object
-      required: [bank_name, account_number, account_holder, qris_image_url]
+      required: [provider, account_number, account_holder, qris_image_url]
       properties:
-        bank_name:
-          type: [string, "null"]
+        provider:
+          description: The chosen bank or e-wallet, even if it was deactivated later.
+          oneOf:
+            - $ref: "#/components/schemas/PaymentProvider"
+            - type: "null"
         account_number:
           type: [string, "null"]
         account_holder:
@@ -2766,6 +3068,28 @@ components:
       properties:
         data:
           $ref: "#/components/schemas/Group"
+    PaymentProviderListEnvelope:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/PaymentProvider"
+    AdminPaymentProviderListEnvelope:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminPaymentProvider"
+    AdminPaymentProviderEnvelope:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/AdminPaymentProvider"
     FixedOrderRequest:
       type: object
       required: [order]

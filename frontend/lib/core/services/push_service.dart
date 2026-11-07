@@ -167,6 +167,12 @@ class FirebasePushService() implements PushService {
   @override
   Future<String?> token() async {
     try {
+      if (defaultTargetPlatform == TargetPlatform.iOS && !await _apnsReady()) {
+        // getToken() throws apns-token-not-set until APNs hands one over:
+        // no Push Notifications capability, simulator, or still registering.
+        AppLogger.w('APNs token not available, skipping FCM token', tag: _tag);
+        return null;
+      }
       // The worker sends to FCM registration tokens (`PUT /me/push-token`).
       // register()/onRegistered give an installation id for direct send
       // instead, which the backend doesn't use, so the token API stays.
@@ -177,6 +183,16 @@ class FirebasePushService() implements PushService {
       AppLogger.w('FCM token unavailable', tag: _tag, error: e, stackTrace: st);
       return null;
     }
+  }
+
+  /// Waits up to ~3 s for the APNs token, which iOS delivers shortly after
+  /// registering for remote notifications.
+  Future<bool> _apnsReady() async {
+    for (var i = 0; i < 6; i++) {
+      if (await _fcm.getAPNSToken() != null) return true;
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+    }
+    return false;
   }
 
   @override
