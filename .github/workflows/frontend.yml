@@ -44,9 +44,15 @@ jobs:
         env:
           FIREBASE_OPTIONS_DART_B64: ${{ secrets.FIREBASE_OPTIONS_DART_B64 }}
         run: |
-          echo "$FIREBASE_OPTIONS_DART_B64" | base64 --decode > lib/firebase_options.dart
-          # The secret holds raw FlutterFire output, which isn't formatted to our page width.
-          dart format lib/firebase_options.dart
+          # lib/firebase_options.dart is tracked in git; only override it when the
+          # secret is set, otherwise an empty secret would wipe the file.
+          if [ -n "$FIREBASE_OPTIONS_DART_B64" ]; then
+            echo "$FIREBASE_OPTIONS_DART_B64" | base64 --decode > lib/firebase_options.dart
+            # The secret holds raw FlutterFire output, which isn't formatted to our page width.
+            dart format lib/firebase_options.dart
+          fi
+          grep -q "class DefaultFirebaseOptions" lib/firebase_options.dart \
+            || { echo "::error::lib/firebase_options.dart lacks DefaultFirebaseOptions (check FIREBASE_OPTIONS_DART_B64)"; exit 1; }
       # pub get also generates the l10n output.
       - run: flutter pub get
       # Before build_runner: generated *.g.dart files aren't formatted.
