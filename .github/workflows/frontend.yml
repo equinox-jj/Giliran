@@ -43,7 +43,10 @@ jobs:
       - name: Restore Firebase options
         env:
           FIREBASE_OPTIONS_DART_B64: ${{ secrets.FIREBASE_OPTIONS_DART_B64 }}
-        run: echo "$FIREBASE_OPTIONS_DART_B64" | base64 --decode > lib/firebase_options.dart
+        run: |
+          echo "$FIREBASE_OPTIONS_DART_B64" | base64 --decode > lib/firebase_options.dart
+          # The secret holds raw FlutterFire output, which isn't formatted to our page width.
+          dart format lib/firebase_options.dart
       # pub get also generates the l10n output.
       - run: flutter pub get
       # Before build_runner: generated *.g.dart files aren't formatted.
