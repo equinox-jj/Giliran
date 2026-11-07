@@ -7,7 +7,7 @@ abstract final class ApiEndpoints() {
   /// for a local backend.
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://10.0.2.2:8080/api/v1',
+    defaultValue: 'http://localhost:8080/api/v1',
   );
 
   /// The public site behind invite, claim and verification links.
