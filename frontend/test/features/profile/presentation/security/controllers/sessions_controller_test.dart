@@ -77,15 +77,18 @@ void main() {
 
   test('a failed load surfaces the failure and reload recovers', () async {
     // Arrange
+    await container.read(sessionsControllerProvider.future);
+    final controller = container.read(sessionsControllerProvider.notifier);
     profile.sessionsResult = const Left(Failure.network());
-    container.invalidate(sessionsControllerProvider);
-    await expectLater(container.read(sessionsControllerProvider.future), throwsA(isA<NetworkFailure>()));
+    await controller.reload();
+    final failed = container.read(sessionsControllerProvider);
     profile.sessionsResult = const Right(sessions);
 
     // Act
-    await container.read(sessionsControllerProvider.notifier).reload();
+    await controller.reload();
 
     // Assert
+    expect(failed.error, isA<NetworkFailure>());
     expect(container.read(sessionsControllerProvider).value, sessions);
   });
 }
