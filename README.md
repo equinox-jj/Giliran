@@ -26,6 +26,24 @@ flowchart LR
 - Sign-in is by emailed code, with an optional PIN.
 - Each draw publishes a seed hash when the period opens and reveals the seed at the draw, so anyone can recompute the winner. The app re-checks the draw on the device, and a public page at `/v/{code}` lets anyone verify it.
 
+## Screenshots
+
+| Launch | Onboarding 2 | Onboarding 3 | Login |
+| --- | --- | --- | --- |
+| <img src="screenshots/01-launch.png" width="200" alt="Launch"> | <img src="screenshots/02-onboarding-2.png" width="200" alt="Onboarding 2"> | <img src="screenshots/03-onboarding-3.png" width="200" alt="Onboarding 3"> | <img src="screenshots/04-login.png" width="200" alt="Login"> |
+
+| Sign-in code | Profile setup | PIN | Home (empty) |
+| --- | --- | --- | --- |
+| <img src="screenshots/05-otp.png" width="200" alt="Sign-in code"> | <img src="screenshots/06-profile.png" width="200" alt="Profile setup"> | <img src="screenshots/07-pin.png" width="200" alt="PIN"> | <img src="screenshots/08-home-empty.png" width="200" alt="Home, empty"> |
+
+| Create group 1 | Create group 2 | Group detail | Home |
+| --- | --- | --- | --- |
+| <img src="screenshots/09-create-group-1.png" width="200" alt="Create group, step 1"> | <img src="screenshots/10-create-group-2.png" width="200" alt="Create group, step 2"> | <img src="screenshots/11-group-detail.png" width="200" alt="Group detail"> | <img src="screenshots/12-home.png" width="200" alt="Home"> |
+
+| Activity | Profile |
+| --- | --- |
+| <img src="screenshots/13-activity.png" width="200" alt="Activity"> | <img src="screenshots/14-profile.png" width="200" alt="Profile"> |
+
 ## Quick start
 
 Run the backend, then point the app at it.
