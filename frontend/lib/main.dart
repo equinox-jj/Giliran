@@ -7,7 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'app/app.dart';
-import 'app/licenses.dart';
+import 'core/utils/licenses.dart';
 import 'app/push_controller.dart';
 import 'core/utils/logger/app_logger.dart';
 import 'firebase_options.dart';
