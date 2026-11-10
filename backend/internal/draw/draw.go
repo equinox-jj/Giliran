@@ -36,6 +36,7 @@ func Commit() (seed, hash string, err error) {
 	if _, err := rand.Read(b); err != nil {
 		return "", "", fmt.Errorf("draw: read seed: %w", err)
 	}
+
 	return hex.EncodeToString(b), hashOf(b), nil
 }
 
@@ -48,14 +49,17 @@ func Pick(seed string, periodID uuid.UUID, eligible []uuid.UUID) (uuid.UUID, int
 	if len(eligible) == 0 {
 		return uuid.Nil, 0, ErrNoEligible
 	}
+
 	key, err := decodeSeed(seed)
 	if err != nil {
 		return uuid.Nil, 0, err
 	}
+
 	mac := hmac.New(sha256.New, key)
 	mac.Write([]byte(periodID.String()))
 	sum := mac.Sum(nil)
 	i := int(binary.BigEndian.Uint64(sum[:8]) % uint64(len(eligible))) //nolint:gosec // below len(eligible)
+
 	return eligible[i], i, nil
 }
 
@@ -65,6 +69,7 @@ func HashMatches(seed, seedHash string) bool {
 	if err != nil {
 		return false
 	}
+
 	return hmac.Equal([]byte(hashOf(key)), []byte(seedHash))
 }
 
@@ -78,6 +83,7 @@ type Verification struct {
 // step 6).
 func Verify(seed, seedHash string, periodID uuid.UUID, eligible []uuid.UUID, winner uuid.UUID) Verification {
 	got, _, err := Pick(seed, periodID, eligible)
+
 	return Verification{HashMatches: HashMatches(seed, seedHash), WinnerMatches: err == nil && got == winner}
 }
 
@@ -100,6 +106,7 @@ func NextFixed(slots []FixedSlot) (uuid.UUID, error) {
 	if next == nil {
 		return uuid.Nil, ErrNoEligible
 	}
+
 	return next.ID, nil
 }
 
@@ -114,7 +121,9 @@ func MaskName(name string) string {
 	case 1:
 		return words[0]
 	}
+
 	r, _ := utf8.DecodeRuneInString(words[len(words)-1])
+
 	return words[0] + " " + string(unicode.ToUpper(r)) + "."
 }
 
@@ -122,14 +131,17 @@ func decodeSeed(seed string) ([]byte, error) {
 	if len(seed) != 2*SeedLength || strings.ToLower(seed) != seed {
 		return nil, ErrBadSeed
 	}
+
 	b, err := hex.DecodeString(seed)
 	if err != nil {
 		return nil, ErrBadSeed
 	}
+
 	return b, nil
 }
 
 func hashOf(b []byte) string {
 	sum := sha256.Sum256(b)
+
 	return hex.EncodeToString(sum[:])
 }
